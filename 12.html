@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>The Bilingual Executive Toolkit v13.2 (API Fixed)</title>
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0f172a', card: '#1e293b', primary: '#4ade80', risk: '#f87171', warn: '#fbbf24', hotpink: '#f472b6', textMain: '#f1f5f9', textMuted: '#94a3b8',
+                    },
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'], sans: ['"Inter"', 'sans-serif'], },
+                    boxShadow: { 'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 'glow-pink': '0 0 15px rgba(244, 114, 182, 0.1)' }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [x-cloak] { display: none !important; }
+        html, body { overscroll-behavior-y: none; height: 100%; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
+        .terminal-border { border: 1px solid #334155; }
+        .nav-active { border-left: 3px solid #4ade80; background: rgba(74, 222, 128, 0.05); color: #4ade80; }
+        .mobile-nav-active { color: #4ade80; }
+        input[type="range"] { -webkit-appearance: none; height: 8px; background: #334155; border-radius: 5px; background-image: linear-gradient(#4ade80, #4ade80); background-repeat: no-repeat; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: #4ade80; cursor: pointer; border: 2px solid #0f172a; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .chat-bubble { position: relative; max-width: 85%; padding: 12px; border-radius: 12px; font-size: 14px; line-height: 1.5; margin-bottom: 10px; }
+        .chat-user { background: #334155; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .chat-bot { background: #1e293b; border: 1px solid #4ade80; color: #f1f5f9; align-self: flex-start; border-bottom-left-radius: 2px; }
+        .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+    </style>
+</head>
+<body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
+
+    <div x-data="toolkit()" x-init="initApp()" class="flex w-full h-full relative">
+
+        <!-- Gap Analysis Banner -->
+        <template x-if="challengerData">
+            <div x-cloak class="absolute top-0 left-0 w-full bg-hotpink/10 border-b border-hotpink z-40 p-2 text-center backdrop-blur-md pt-safe">
+                <p class="font-mono text-hotpink text-xs md:text-sm font-bold truncate px-2">
+                    <i class="fa-solid fa-people-arrows mr-2"></i>GAP MODE: Comparing against <span x-text="challengerData?.title || 'Colleague'"></span>
+                </p>
+            </div>
+        </template>
+
+        <!-- Sidebar (Desktop) -->
+        <aside class="hidden md:flex w-64 bg-dark border-r border-slate-800 flex-col pt-10 h-full">
+            <div class="p-6 border-b border-slate-800">
+                <h1 class="font-mono text-xl font-bold tracking-tighter text-primary">
+                    <i class="fa-solid fa-terminal mr-2"></i>BILINGUAL<br>EXEC
+                </h1>
+                <p class="text-xs text-textMuted font-mono mt-1">v13.2 // API FIXED</p>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4">
+                <template x-for="item in navItems" :key="item.id">
+                    <button @click="handleNavClick(item.id)" :class="currentTab === item.id ? 'nav-active' : 'text-textMuted hover:text-textMain hover:bg-slate-800/50'" class="w-full text-left px-6 py-4 font-mono text-sm transition-all duration-200 border-l-4 border-transparent flex items-center group">
+                        <i :class="item.icon" class="w-6 opacity-70 group-hover:opacity-100 transition-opacity"></i>
+                        <span x-text="item.label"></span>
+                    </button>
+                </template>
+            </nav>
+            <div class="p-6 border-t border-slate-800">
+                 <button @click="currentTab = 'community'" class="w-full bg-slate-800 hover:bg-slate-700 text-white p-3 rounded font-mono text-xs flex items-center justify-center gap-2"><i class="fa-solid fa-users"></i> Join Community</button>
+            </div>
+        </aside>
+
+        <!-- Header (Mobile) -->
+        <div class="md:hidden fixed top-0 w-full bg-dark/95 backdrop-blur border-b border-slate-800 z-30 p-4 pt-safe flex justify-between items-center">
+            <h1 class="font-mono font-bold text-primary">BILINGUAL EXEC</h1>
+            <div class="text-xs text-textMuted font-mono">v13.2</div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="flex-1 h-full overflow-y-auto bg-dark p-4 md:p-12 pt-24 md:pt-12 pb-32 md:pb-12 relative scroll-smooth w-full">
+            
+            <!-- DASHBOARD -->
+            <div x-show="currentTab === 'dashboard'" x-transition.opacity class="max-w-6xl mx-auto">
+                <div class="mb-8 mt-4 md:mt-0">
+                    <h2 class="text-3xl md:text-5xl font-mono font-bold text-white mb-2 md:mb-4 tracking-tight leading-tight">Operating System for the <span class="text-primary block md:inline">Agile Bank</span></h2>
+                    <p class="text-sm md:text-lg text-textMuted max-w-2xl">Decode the language, assess risk, and bridge the gap. Select a tool to begin.</p>
+                </div>
+                
+                <!-- Expanded Grid: Now containing ALL tools -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-20">
+                    <template x-for="tool in dashboardTools" :key="tool.id">
+                        <div @click="handleNavClick(tool.id)" class="bg-card border border-slate-700 p-5 rounded-xl hover:border-primary active:scale-95 transition-all duration-200 cursor-pointer shadow-lg group">
+                            <div class="flex justify-between items-start mb-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-600 group-hover:border-primary transition-colors"><i :class="tool.icon + ' text-lg ' + tool.color"></i></div>
+                                <i class="fa-solid fa-chevron-right text-slate-600 text-sm"></i>
+                            </div>
+                            <h3 class="font-mono text-lg font-bold text-white mb-1" x-text="tool.label"></h3>
+                            <p class="text-xs text-textMuted leading-relaxed" x-text="tool.desc"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- CHAT BOT (BIONIC) - DESKTOP -->
+            <div class="hidden md:flex fixed bottom-6 right-6 z-50">
+                <button @click="toggleChat()" class="bg-primary hover:bg-green-400 text-dark w-14 h-14 rounded-full shadow-glow flex items-center justify-center transition-all transform hover:scale-110">
+                    <i class="fa-solid fa-robot text-2xl"></i>
+                </button>
+            </div>
+            
+            <!-- CHAT WINDOW (DESKTOP) -->
+            <div x-show="isChatOpen && window.innerWidth >= 768" x-transition.origin.bottom.right class="hidden md:flex fixed bottom-24 right-6 w-96 h-[500px] bg-card border border-primary rounded-xl shadow-2xl z-50 flex-col overflow-hidden font-sans">
+                <div class="bg-dark/50 p-4 border-b border-slate-700 flex justify-between items-center">
+                    <div><h3 class="font-mono font-bold text-white flex items-center"><i class="fa-solid fa-bolt text-primary mr-2"></i>The Translator</h3><p class="text-[10px] text-textMuted">Gemini 1.5/2.0 Flash</p></div>
+                    <button @click="isChatOpen = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4 flex flex-col space-y-3 bg-dark" id="chat-messages-desktop">
+                    <div class="chat-bubble chat-bot bg-slate-800 border-none">Hello. I translate technical jargon into business impact. Paste an email from IT or a confusing term, and I will tell you what it means for the P&L.</div>
+                    <template x-for="msg in chatMessages"><div class="chat-bubble" :class="msg.role === 'user' ? 'chat-user' : 'chat-bot'" x-html="msg.text"></div></template>
+                    <div x-show="isTyping" class="chat-bubble chat-bot w-16 h-10 flex items-center justify-center gap-1"><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div></div>
+                </div>
+                <div class="p-3 bg-dark border-t border-slate-700"><div class="relative"><input type="text" x-model="chatInput" @keydown.enter="sendMessage()" placeholder="Paste jargon here..." class="w-full bg-slate-800 text-white rounded-lg pl-4 pr-10 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary font-mono placeholder:text-slate-500"><button @click="sendMessage()" class="absolute right-2 top-2 text-primary hover:text-white p-1"><i class="fa-solid fa-paper-plane"></i></button></div></div>
+            </div>
+
+            <!-- READINESS ASSESSMENT -->
+            <div x-show="currentTab === 'assessment'" x-cloak class="max-w-4xl mx-auto pb-32">
+                <h2 class="font-mono text-2xl font-bold mb-6 text-primary flex items-center"><i class="fa-solid fa-clipboard-check mr-3"></i>Agile Readiness Assessment</h2>
+                <div x-show="!assessmentSubmitted">
+                    <div class="bg-card terminal-border rounded-lg p-6 mb-6 border-l-4 border-blue-400">
+                        <label class="block text-sm font-mono text-white font-bold mb-4 uppercase">Step 0: Profile</label>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div><label class="block text-xs font-mono text-textMuted mb-2">ORGANIZATION TYPE</label><select x-model="selectedIndustry" :disabled="!!challengerData" class="w-full bg-dark border border-slate-600 rounded-lg p-3 text-sm text-white font-mono focus:border-primary focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"><option value="" disabled selected>Select...</option><option value="Tier-1 Bank">Tier-1 Bank</option><option value="Regional Bank">Regional Bank</option><option value="Fintech">Fintech</option><option value="Neobank">Neobank</option><option value="Regulator">Regulator</option></select><p x-show="challengerData" class="text-[10px] text-hotpink mt-1"><i class="fa-solid fa-lock mr-1"></i>Locked to match comparison context.</p></div>
+                            <div><label class="block text-xs font-mono text-textMuted mb-2">YOUR ROLE</label><select x-model="selectedTitle" class="w-full bg-dark border border-slate-600 rounded-lg p-3 text-white font-mono focus:border-primary focus:outline-none"><option value="" disabled selected>Select...</option><option value="Executive">Executive</option><option value="Product">Product</option><option value="Tech">Tech</option><option value="Risk">Risk</option></select></div>
+                        </div>
+                    </div>
+                    <div class="bg-card terminal-border rounded-lg p-6 mb-8">
+                         <div class="space-y-12">
+                            <template x-for="(section, index) in assessmentData" :key="index">
+                                <div class="border-b border-slate-700 pb-8 last:border-0 last:pb-0">
+                                    <h3 class="font-mono text-xl text-white mb-6 border-l-4 border-primary pl-3" x-text="section.title"></h3>
+                                    <div class="space-y-8"><template x-for="q in section.questions" :key="q.id"><div class="bg-dark/50 p-5 rounded border border-slate-700"><div class="flex justify-between items-start mb-2"><label class="font-mono font-bold text-slate-200 text-sm uppercase tracking-wide" x-text="q.text"></label><span class="font-mono text-primary font-bold text-lg" x-text="q.score"></span></div><p class="text-sm text-textMuted mb-4 leading-relaxed font-light" x-text="q.desc"></p><input type="range" min="1" max="5" step="1" x-model.number="q.score" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"><div class="flex justify-between text-xs text-slate-500 mt-2 font-mono"><span>Legacy (1)</span><span>Agile (5)</span></div></div></template></div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                    <div class="text-center py-8"><button @click="finishAssessment()" class="px-8 py-4 bg-primary hover:bg-green-400 text-dark font-mono text-lg font-bold rounded shadow-glow transition-all transform hover:scale-105">COMPLETE ASSESSMENT <i class="fa-solid fa-arrow-right ml-2"></i></button></div>
+                    <!-- Fixed Score Pill -->
+                    <div x-transition.opacity class="fixed bottom-24 md:bottom-20 left-4 md:left-4 bg-slate-800 border border-primary text-primary font-mono text-xs px-4 py-2 rounded-full shadow-2xl z-40 flex items-center gap-2 pointer-events-none"><div class="w-2 h-2 bg-primary rounded-full animate-pulse"></div>SCORE: <span x-text="calculateScore.total" class="font-bold"></span></div>
+                </div>
+                <div id="results-section" x-show="assessmentSubmitted" class="space-y-4 pt-4">
+                    <div class="flex justify-end"><button @click="assessmentSubmitted = false; window.scrollTo({top:0, behavior:'smooth'})" class="text-textMuted hover:text-white font-mono text-xs underline"><i class="fa-solid fa-rotate-left mr-1"></i> Retake</button></div>
+                    <div class="bg-dark/95 backdrop-blur border border-slate-600 p-6 rounded-lg shadow-2xl border-t-4 border-t-primary">
+                        <div class="grid md:grid-cols-2 gap-8">
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center mb-2"><span class="font-mono text-slate-400">TOTAL SCORE</span><span class="font-mono text-4xl font-bold" :class="getAssessmentColor()" x-text="calculateScore.total"></span></div>
+                                <div class="w-full bg-slate-700 rounded-full h-2.5 mb-4"><div class="h-2.5 rounded-full transition-all duration-500" :class="getAssessmentBg()" :style="`width: ${(calculateScore.total / 75) * 100}%`"></div></div>
+                                <h3 class="font-mono text-xl font-bold mb-1" x-text="getAssessmentResult().title" :class="getAssessmentColor()"></h3>
+                                <p class="text-sm text-slate-300" x-text="getAssessmentResult().desc"></p>
+                                <div x-show="calculateScore.isSafetyVeto" class="mt-4 p-4 border border-risk bg-risk/10 rounded flex items-start gap-3"><i class="fa-solid fa-ban text-risk mt-1"></i><div><h4 class="font-mono font-bold text-risk text-sm">SCORE CAPPED: SAFETY VETO</h4><p class="text-xs text-slate-300 mt-1">Low Psychological Safety detected. Agility is impossible in fear. Capped at 40.</p></div></div>
+                                <div x-show="calculateScore.isManualDrag" class="mt-4 p-4 border border-warn bg-warn/10 rounded flex items-start gap-3"><i class="fa-solid fa-hand text-warn mt-1"></i><div><h4 class="font-mono font-bold text-warn text-sm">PENALTY: MANUAL DRAG</h4><p class="text-xs text-slate-300 mt-1">Manual compliance checks are braking your velocity. -20% on Delivery score.</p></div></div>
+                                <div x-show="challengerData && gapAnalysisRevealed && gapScore > 15" class="mt-4 p-4 border border-hotpink bg-hotpink/10 rounded flex items-start gap-3"><i class="fa-solid fa-triangle-exclamation text-hotpink mt-1"></i><div><h4 class="font-mono font-bold text-hotpink text-sm">ALIGNMENT ALERT</h4><p class="text-xs text-slate-300 mt-1">Significant disconnect (Gap: <span x-text="gapScore"></span>). You vs <span x-text="challengerData?.title"></span>.</p></div></div>
+                                <div class="flex flex-col sm:flex-row gap-3 mt-6"><button @click="generatePDF()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-mono text-xs rounded flex items-center justify-center gap-2"><i class="fa-solid fa-file-pdf"></i> Download Report</button><button @click="copyChallengeLink()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-white font-mono text-xs rounded flex items-center justify-center gap-2"><i class="fa-solid fa-link text-primary"></i> <span x-text="copyBtnText"></span></button></div>
+                            </div>
+                            <div class="flex flex-col items-center justify-center h-64 md:h-auto bg-slate-800/20 rounded-lg p-2 relative">
+                                <div x-show="!challengerData" class="text-center opacity-50 p-6"><i class="fa-solid fa-chart-radar text-4xl mb-3 text-slate-600"></i><p class="text-xs font-mono text-slate-400">Generate a Challenge Link to compare.</p></div>
+                                <div x-show="challengerData && !gapAnalysisRevealed" class="text-center p-6 w-full h-full flex flex-col items-center justify-center"><i class="fa-solid fa-eye-slash text-4xl mb-3 text-hotpink animate-pulse"></i><h4 class="font-mono text-white text-sm font-bold mb-2">COMPARISON HIDDEN</h4><button @click="revealGapAnalysis()" class="px-6 py-2 bg-hotpink text-white font-mono text-xs font-bold rounded">REVEAL RESULTS</button></div>
+                                <div x-show="challengerData && gapAnalysisRevealed" class="w-full h-full relative"><canvas id="gapChart"></canvas></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Industry Index (Fixed Null Check) -->
+                    <div class="bg-card terminal-border rounded-lg p-6 shadow-glow border-l-4 border-blue-400">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <h3 class="font-mono text-xl font-bold text-white mb-2 flex items-center"><i class="fa-solid fa-globe mr-2 text-blue-400"></i>THE INDUSTRY INDEX</h3>
+                                <div x-show="!percentileResult && !benchmarkLoading"><p class="text-sm text-textMuted mb-3">Compare your score against the global database.</p><button @click="submitAndBenchmark()" class="px-6 py-2 bg-blue-500 hover:bg-blue-400 text-white font-mono text-sm font-bold rounded shadow-glow transition-all">CALCULATE BENCHMARK</button></div>
+                                <div x-show="benchmarkLoading" class="flex items-center gap-2 text-blue-400 font-mono text-sm py-2"><i class="fa-solid fa-circle-notch fa-spin"></i> CONNECTING TO SATELLITE...</div>
+                                <template x-if="percentileResult">
+                                    <div x-transition><div class="mt-2"><span class="text-xs font-mono text-slate-400 uppercase tracking-widest">MARKET POSITION</span><div class="text-4xl font-mono font-bold text-blue-400 my-1" x-text="percentileResult.rank"></div><p class="text-sm text-white font-medium" x-text="percentileResult.msg"></p><p class="text-xs text-slate-500 mt-2 font-mono">Based on <span x-text="totalBenchmarks"></span> verified audits.</p></div></div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OTHER TABS -->
+            <div x-show="currentTab === 'matrix'" x-cloak class="max-w-4xl mx-auto mt-6">
+                <h2 class="font-mono text-2xl font-bold mb-6 text-white flex items-center"><i class="fa-solid fa-chess-board mr-3 text-purple-400"></i>Fintech Immune Response</h2>
+                <div class="grid md:grid-cols-2 gap-8"><div class="bg-card terminal-border p-6 rounded-lg"><div class="mb-6"><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">STRATEGIC IMPORTANCE</label><span class="font-mono text-xs text-primary" x-text="matrixCoords.y > 50 ? 'HIGH' : 'LOW'"></span></div><input type="range" min="0" max="100" x-model="matrixCoords.y" class="w-full"><p class="text-[10px] text-textMuted mt-2">Critical to future brand?</p></div><div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">COMPLEXITY</label><span class="font-mono text-xs text-primary" x-text="matrixCoords.x > 50 ? 'HIGH' : 'LOW'"></span></div><input type="range" min="0" max="100" x-model="matrixCoords.x" class="w-full"><p class="text-[10px] text-textMuted mt-2">Hard to build?</p></div></div><div class="bg-card terminal-border p-6 rounded-lg relative min-h-[300px] flex items-center justify-center overflow-hidden"><div class="absolute top-4 left-4 text-xs font-mono text-slate-500">BUILD</div><div class="absolute top-4 right-4 text-xs font-mono text-slate-500">BUY</div><div class="absolute bottom-4 left-4 text-xs font-mono text-slate-500">IGNORE</div><div class="absolute bottom-4 right-4 text-xs font-mono text-slate-500">PARTNER</div><div class="absolute top-0 bottom-0 left-1/2 w-px bg-slate-700"></div><div class="absolute left-0 right-0 top-1/2 h-px bg-slate-700"></div><div class="absolute w-4 h-4 bg-primary rounded-full shadow-glow transform -translate-x-1/2 -translate-y-1/2 transition-all duration-300" :style="`left: ${matrixCoords.x}%; bottom: ${matrixCoords.y}%`"></div><div class="absolute inset-0 flex items-center justify-center pointer-events-none"><div class="bg-dark/90 backdrop-blur border border-slate-600 p-4 rounded text-center"><h3 class="font-mono text-2xl font-bold mb-1" :class="getMatrixResult().color" x-text="getMatrixResult().strategy"></h3><p class="text-xs text-white" x-text="getMatrixResult().desc"></p></div></div></div></div>
+            </div>
+
+            <div x-show="currentTab === 'canvas'" x-cloak class="max-w-4xl mx-auto mt-6">
+                <h2 class="font-mono text-2xl font-bold mb-6 text-white flex items-center"><i class="fa-solid fa-file-contract mr-3 text-blue-400"></i>Data Product Canvas</h2>
+                <div class="grid md:grid-cols-2 gap-8"><div class="space-y-4"><div><label class="text-xs font-mono text-textMuted">PRODUCT NAME</label><input type="text" x-model="canvasData.name" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono" placeholder="e.g. Real-Time Transactions"></div><div><label class="text-xs font-mono text-textMuted">OWNER</label><input type="text" x-model="canvasData.owner" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono" placeholder="e.g. Payments Squad"></div><div><label class="text-xs font-mono text-textMuted">JOBS TO BE DONE</label><textarea x-model="canvasData.jobs" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono h-20" placeholder="Who needs this and why?"></textarea></div><div><label class="text-xs font-mono text-textMuted">SLO: FRESHNESS</label><input type="text" x-model="canvasData.slo1" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono" placeholder="e.g. < 500ms latency"></div></div><div class="bg-white text-dark p-6 rounded-lg shadow-2xl relative font-sans"><div class="absolute top-0 left-0 w-full h-2 bg-blue-500 rounded-t-lg"></div><div class="flex justify-between items-start mb-6 mt-2"><div><h3 class="font-bold text-2xl uppercase tracking-tighter" x-text="canvasData.name || 'DATA PRODUCT NAME'"></h3><p class="text-xs text-slate-500 font-mono mt-1">OWNER: <span x-text="canvasData.owner || '---'"></span></p></div><div class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">CERTIFIED</div></div><div class="grid grid-cols-2 gap-4 mb-4"><div class="border border-slate-200 p-3 rounded"><p class="text-[10px] text-slate-400 font-bold uppercase mb-1">CONSUMER JOB</p><p class="text-sm font-medium leading-tight" x-text="canvasData.jobs || '---'"></p></div><div class="border border-slate-200 p-3 rounded bg-slate-50"><p class="text-[10px] text-slate-400 font-bold uppercase mb-1">GUARANTEE (SLO)</p><ul class="text-sm font-mono space-y-1"><li class="flex items-center"><i class="fa-solid fa-clock mr-2 text-blue-500"></i> <span x-text="canvasData.slo1 || '---'"></span></li></ul></div></div></div></div>
+            </div>
+
+            <div x-show="currentTab === 'talent'" x-cloak class="max-w-4xl mx-auto mt-6">
+                <h2 class="font-mono text-2xl font-bold mb-6 text-white flex items-center"><i class="fa-solid fa-fingerprint mr-3 text-hotpink"></i>Agile Talent Radar</h2>
+                <div class="grid md:grid-cols-2 gap-10"><div class="space-y-6"><template x-for="(skill, idx) in talentSkills" :key="idx"><div><div class="flex justify-between mb-1"><label class="font-mono text-xs text-white" x-text="skill.label"></label><span class="font-mono text-xs text-hotpink" x-text="skill.val"></span></div><input type="range" min="1" max="5" step="1" :value="skill.val" @input="updateTalentChartFromDOM($el, idx)" class="w-full"></div></template></div><div class="bg-card terminal-border p-4 rounded-lg flex items-center justify-center"><canvas id="talentChart"></canvas></div></div>
+            </div>
+
+            <div x-show="currentTab === 'lighthouse'" x-cloak class="max-w-3xl mx-auto mt-6"><h2 class="font-mono text-2xl font-bold mb-6 text-warn flex items-center"><i class="fa-solid fa-tower-observation mr-3"></i>Lighthouse Selection</h2><div class="bg-card terminal-border rounded-lg p-6 mb-8"><p class="text-textMuted mb-6 font-mono text-sm border-l-2 border-warn pl-4">WARNING: If you cannot check all 10 boxes, choose a different project.</p><div class="space-y-4"><template x-for="(item, index) in lighthouseData" :key="index"><label class="flex items-start space-x-4 p-4 rounded hover:bg-slate-700/50 cursor-pointer transition-colors border border-transparent hover:border-slate-600"><div class="relative flex items-center"><input type="checkbox" x-model="item.checked" class="peer h-6 w-6 cursor-pointer appearance-none rounded border border-slate-500 checked:border-primary checked:bg-primary transition-all"><i class="fa-solid fa-check absolute top-1 left-1 text-dark opacity-0 peer-checked:opacity-100 pointer-events-none"></i></div><div><span class="font-mono text-xs text-slate-500 block mb-1" x-text="item.category"></span><span class="text-slate-200" x-text="item.text"></span></div></label></template></div></div><div class="p-6 rounded-lg border-2 text-center transition-colors duration-300" :class="getLighthouseStatus().border"><h3 class="font-mono text-3xl font-bold mb-2" :class="getLighthouseStatus().text" x-text="getLighthouseStatus().title"></h3><p class="text-slate-300" x-text="getLighthouseStatus().desc"></p><div class="mt-4 font-mono text-sm opacity-75"><span x-text="lighthouseCount"></span> / 10 CHECKS CLEARED</div></div></div>
+            
+            <div x-show="currentTab === 'translator'" x-cloak class="max-w-5xl mx-auto mt-6 flex flex-col h-full"><div class="flex flex-col md:flex-row md:items-center justify-between mb-6"><h2 class="font-mono text-2xl font-bold text-blue-400 flex items-center"><i class="fa-solid fa-code-branch mr-3"></i>The Bilingual Translator</h2><div class="flex space-x-4 mt-4 md:mt-0 font-mono text-sm"><button @click="translatorView = 'dict'" :class="translatorView === 'dict' ? 'text-blue-400 border-b border-blue-400' : 'text-slate-500 hover:text-white'">Dictionary</button><button @click="translatorView = 'reporting'" :class="translatorView === 'reporting' ? 'text-blue-400 border-b border-blue-400' : 'text-slate-500 hover:text-white'">Reporting Guide</button></div></div><div x-show="translatorView === 'dict'" class="flex flex-col flex-1"><div class="mb-6 relative"><i class="fa-solid fa-search absolute left-4 top-3.5 text-slate-500"></i><input type="text" x-model="searchQuery" placeholder="Search..." class="w-full bg-card border border-slate-700 rounded-lg py-3 pl-12 pr-4 text-white focus:outline-none focus:border-blue-400 font-mono"></div><div class="overflow-x-auto bg-card terminal-border rounded-lg flex-1"><table class="w-full text-left border-collapse"><thead><tr class="bg-dark border-b border-slate-700 text-xs font-mono text-slate-400 uppercase tracking-wider"><th class="p-4 w-1/4">Banker Says</th><th class="p-4 w-1/4">Technologist Says</th><th class="p-4 w-1/2 text-primary">Translation</th></tr></thead><tbody class="divide-y divide-slate-700"><template x-for="row in filteredDictionary" :key="row.banker"><tr class="hover:bg-slate-700/30 transition-colors"><td class="p-4 text-slate-300 font-medium" x-text="row.banker"></td><td class="p-4 text-blue-200 font-mono text-sm" x-text="row.tech"></td><td class="p-4 text-slate-400 text-sm leading-relaxed" x-text="row.translation"></td></tr></template></tbody></table></div></div><div x-show="translatorView === 'reporting'" class="flex flex-col space-y-8"><div class="bg-card terminal-border rounded-lg p-6"><div class="border-b border-slate-700 pb-4 mb-6"><h3 class="font-mono text-lg font-bold text-white mb-1">The Rosetta Stone for Reporting</h3><p class="text-sm text-textMuted">Never present a technical metric without translating it into a financial outcome.</p></div><div class="grid gap-6"><template x-for="item in reportingData" :key="item.metric"><div class="bg-dark p-5 rounded border-l-4 border-blue-400 shadow-md"><div class="grid md:grid-cols-12 gap-4 items-start"><div class="md:col-span-3"><span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">IF YOU MEASURE...</span><span class="font-mono text-sm font-bold text-blue-300" x-text="item.metric"></span></div><div class="hidden md:flex md:col-span-1 justify-center items-center pt-3"><i class="fa-solid fa-arrow-right text-slate-600"></i></div><div class="md:col-span-3"><span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">TRANSLATE TO...</span><span class="font-mono text-sm font-bold text-primary" x-text="item.financial"></span></div><div class="md:col-span-5 bg-slate-800/50 p-3 rounded"><span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">THE SCRIPT</span><p class="text-sm italic text-slate-300 leading-relaxed"><i class="fa-solid fa-quote-left text-slate-600 text-xs mr-1"></i><span x-text="item.script"></span></p></div></div></div></template></div></div></div></div>
+
+            <div x-show="currentTab === 'board'" x-cloak class="max-w-4xl mx-auto mt-6"><h2 class="font-mono text-2xl font-bold mb-2 text-risk flex items-center"><i class="fa-solid fa-triangle-exclamation mr-3"></i>The Board Director's Guide</h2><div class="mb-8 border-b border-risk/30 pb-6"><p class="text-lg text-white">Title: What Your CEO Isn't Telling You (But Should Be)</p></div><div class="space-y-8 mt-6"><template x-for="risk in boardRisks" :key="risk.title"><div class="bg-card terminal-border border-l-4 border-l-risk rounded-r-lg overflow-hidden"><div class="bg-risk/10 p-4 border-b border-slate-700"><h3 class="font-mono font-bold text-risk" x-text="risk.title"></h3><p class="text-white font-bold text-lg" x-text="risk.subtitle"></p></div><div class="p-6 grid md:grid-cols-2 gap-8"><div><div class="mb-4"><span class="text-xs font-mono text-risk bg-risk/10 px-2 py-1 rounded">THE LIE</span><p class="mt-2 text-slate-300 italic" x-text="risk.lie"></p></div><div><span class="text-xs font-mono text-primary bg-primary/10 px-2 py-1 rounded">THE TRUTH</span><p class="mt-2 text-white font-medium" x-text="risk.truth"></p></div></div><div class="bg-dark p-4 rounded border border-slate-700 flex flex-col justify-center"><span class="text-xs font-mono text-slate-500 mb-2 uppercase">The Question for the CEO</span><p class="font-mono text-sm text-primary leading-relaxed"><i class="fa-solid fa-quote-left text-slate-600 mr-2"></i><span x-text="risk.question"></span></p></div></div></div></template></div></div>
+            <div x-show="currentTab === 'repair'" x-cloak class="max-w-4xl mx-auto mt-6"><h2 class="font-mono text-2xl font-bold mb-6 text-risk flex items-center"><i class="fa-solid fa-triangle-exclamation mr-3"></i>Transformation Repair Kit</h2><div class="space-y-4"><template x-for="(item, index) in repairKitData" :key="index"><div class="bg-card terminal-border rounded-lg overflow-hidden"><button @click="toggleRepair(index)" class="w-full flex justify-between items-center p-5 text-left hover:bg-slate-800 transition-colors"><div><span class="font-mono text-xs text-risk mb-1 block">SYMPTOM</span><span class="font-bold text-lg text-slate-200" x-text="item.symptom"></span></div><i class="fa-solid fa-chevron-down text-slate-500 transition-transform duration-300" :class="activeRepair === index ? 'rotate-180' : ''"></i></button><div x-show="activeRepair === index" x-collapse><div class="p-5 border-t border-slate-700 bg-dark/30"><div class="mb-4"><h4 class="font-mono text-primary text-sm font-bold mb-2">// DIAGNOSIS</h4><p class="text-slate-300 text-sm" x-text="item.diagnosis"></p></div><div class="p-4 bg-slate-800/50 rounded border-l-2 border-primary"><h4 class="font-mono text-white text-sm font-bold mb-2">RX: PRESCRIPTION</h4><ul class="list-disc list-inside text-slate-400 text-sm space-y-1"><template x-for="step in item.prescription" :key="step"><li x-text="step"></li></template></ul></div></div></div></div></template></div></div>
+            <div x-show="currentTab === 'glossary'" x-cloak class="max-w-4xl mx-auto mt-6 flex flex-col h-full"><h2 class="font-mono text-2xl font-bold mb-6 text-purple-400 flex items-center"><i class="fa-solid fa-book-open mr-3"></i>The Bilingual Dictionary</h2><div class="mb-6 relative"><input type="text" x-model="glossarySearch" placeholder="Filter terms..." class="w-full bg-card border border-slate-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-400 font-mono"></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20"><template x-for="term in filteredGlossary" :key="term.term"><div class="bg-card terminal-border p-5 rounded hover:border-purple-400/50 transition-colors"><h3 class="font-mono text-primary font-bold mb-2" x-text="term.term"></h3><p class="text-sm text-slate-300 leading-relaxed" x-text="term.def"></p></div></template></div></div>
+            <div x-show="currentTab === 'resources'" x-cloak class="max-w-4xl mx-auto mt-6"><h2 class="font-mono text-2xl font-bold mb-6 text-green-300 flex items-center"><i class="fa-solid fa-book-bookmark mr-3"></i>Recommended Resources</h2><div class="bg-card terminal-border rounded-lg p-6"><ul class="space-y-4"><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Project to Product (Mik Kersten)</h4><p class="text-sm text-textMuted">Definitive guide to the "Flow Framework" and shifting from hours to value.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Team Topologies (Skelton & Pais)</h4><p class="text-sm text-textMuted">Blueprint for structuring squads to avoid Conway's Law.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Sooner Safer Happier (Jonathan Smart)</h4><p class="text-sm text-textMuted">Agile specifically for highly regulated banking environments.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Data Mesh (Zhamak Dehghani)</h4><p class="text-sm text-textMuted">Core inspiration for "Data as a Product."</p></li></ul></div></div>
+            
+            <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
+                <div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl">
+                    <i class="fa-solid fa-users-line text-6xl text-primary mb-6"></i>
+                    <h2 class="font-mono text-3xl font-bold text-white mb-4">The Fintech Bilinguals</h2>
+                    <p class="text-textMuted max-w-lg mx-auto mb-8">You do not have to build the bridge alone. Join the collective of execution-focused leaders.</p>
+                    <div class="bg-white p-4 inline-block rounded-lg mb-6"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.fintechbilinguals.com" alt="QR Code" class="w-32 h-32"></div>
+                    <p class="text-xs font-mono text-primary animate-pulse">EST. 2026 // CAIRO • LONDON • SINGAPORE</p>
+                </div>
+            </div>
+
+            <!-- BILINGUAL COMPASS (NEW CHAPTER 8 FEATURE) -->
+            <div x-show="currentTab === 'compass'" x-cloak class="max-w-4xl mx-auto mt-6">
+                <h2 class="font-mono text-2xl font-bold mb-6 text-white flex items-center"><i class="fa-regular fa-compass mr-3 text-cyan-400"></i>The Bilingual Compass</h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-card terminal-border p-6 rounded-lg space-y-6">
+                        <p class="text-sm text-textMuted">Balance your leadership focus (Chapter 8).</p>
+                        <div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">NORTH (Growth) vs SOUTH (Cost)</label></div><input type="range" min="0" max="100" x-model="compassCoords.y" class="w-full"><div class="flex justify-between text-[10px] text-slate-500 mt-1"><span>Operational Efficiency</span><span>Value Creation</span></div></div>
+                        <div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">WEST (Risk) vs EAST (Innovation)</label></div><input type="range" min="0" max="100" x-model="compassCoords.x" class="w-full"><div class="flex justify-between text-[10px] text-slate-500 mt-1"><span>Risk Control</span><span>Velocity</span></div></div>
+                    </div>
+                    <div class="bg-card terminal-border p-6 rounded-lg relative min-h-[300px] flex items-center justify-center overflow-hidden">
+                        <div class="absolute top-4 left-1/2 -translate-x-1/2 text-xs font-mono text-slate-500">VALUE (N)</div>
+                        <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-xs font-mono text-slate-500">COST (S)</div>
+                        <div class="absolute left-4 top-1/2 -translate-y-1/2 text-xs font-mono text-slate-500">RISK (W)</div>
+                        <div class="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-mono text-slate-500">SPEED (E)</div>
+                        <div class="absolute top-0 bottom-0 left-1/2 w-px bg-slate-700"></div><div class="absolute left-0 right-0 top-1/2 h-px bg-slate-700"></div>
+                        <div class="absolute w-6 h-6 bg-cyan-400 border-2 border-white rounded-full shadow-glow transform -translate-x-1/2 -translate-y-1/2 transition-all duration-100 ease-out z-10" :style="`left: ${compassCoords.x}%; bottom: ${compassCoords.y}%`"></div>
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none"><div class="bg-dark/90 backdrop-blur border border-slate-600 p-4 rounded text-center"><h3 class="font-mono text-xl font-bold mb-1 text-cyan-400" x-text="getCompassResult().title"></h3><p class="text-[10px] text-white" x-text="getCompassResult().desc"></p></div></div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- MOBILE BOTTOM DOCK (FIXED "MORE" BUTTON & OVERLAP) -->
+        <nav class="md:hidden fixed bottom-0 w-full bg-dark/95 backdrop-blur-lg border-t border-slate-800 z-50 pb-safe">
+            <div class="grid grid-cols-5 h-16 items-center">
+                <button @click="handleNavClick('dashboard')" class="flex flex-col items-center justify-center space-y-1" :class="currentTab === 'dashboard' ? 'mobile-nav-active' : 'text-slate-500'"><i class="fa-solid fa-home text-lg"></i><span class="text-[10px] font-mono">Home</span></button>
+                <button @click="handleNavClick('assessment')" class="flex flex-col items-center justify-center space-y-1" :class="currentTab === 'assessment' ? 'mobile-nav-active' : 'text-slate-500'"><i class="fa-solid fa-clipboard-check text-lg"></i><span class="text-[10px] font-mono">Quiz</span></button>
+                <div class="relative -top-5"><button @click="toggleChat()" class="w-14 h-14 bg-primary rounded-full shadow-glow flex items-center justify-center text-dark text-xl border-4 border-dark"><i class="fa-solid fa-robot"></i></button></div>
+                <button @click="handleNavClick('translator')" class="flex flex-col items-center justify-center space-y-1" :class="currentTab === 'translator' ? 'mobile-nav-active' : 'text-slate-500'"><i class="fa-solid fa-language text-lg"></i><span class="text-[10px] font-mono">Dict</span></button>
+                <!-- Fixed: Now shows menu overlay -->
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="flex flex-col items-center justify-center space-y-1" :class="mobileMenuOpen ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-bars text-lg"></i><span class="text-[10px] font-mono">More</span></button>
+            </div>
+        </nav>
+        
+        <!-- MOBILE MENU OVERLAY -->
+        <div x-show="mobileMenuOpen" x-transition.opacity 
+             @click.away="mobileMenuOpen = false"
+             class="fixed inset-0 z-[60] bg-dark/95 backdrop-blur-md md:hidden">
+            <div class="flex flex-col h-full pt-safe top-0 pb-32">
+                <div class="p-6 border-b border-slate-800 flex justify-between items-center">
+                    <h2 class="font-mono text-xl font-bold text-primary">Tools Menu</h2>
+                    <button @click="mobileMenuOpen = false" class="text-textMuted hover:text-white w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <template x-for="item in navItems.filter(i => !['dashboard', 'assessment', 'translator'].includes(i.id))" :key="item.id">
+                            <button @click="handleNavClick(item.id); mobileMenuOpen = false;" class="bg-card terminal-border p-4 rounded-lg flex flex-col items-center justify-center h-28 hover:border-primary transition-colors">
+                                <i :class="item.icon" class="text-2xl mb-2" :class="item.id === currentTab ? 'text-primary' : 'text-slate-400'"></i>
+                                <span x-text="item.label" class="text-xs font-mono text-center text-white"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FULL SCREEN CHAT (MOBILE) -->
+        <div x-show="isChatOpen" x-transition.opacity.duration.300ms class="fixed inset-0 z-[60] bg-dark flex flex-col font-sans md:hidden">
+            <div class="p-4 border-b border-slate-700 bg-card flex justify-between items-center pt-safe top-0 sticky">
+                <div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary"><i class="fa-solid fa-bolt"></i></div><div><h3 class="font-bold text-white">The Translator</h3><p class="text-[10px] text-textMuted">Gemini 1.5/2.0 Flash</p></div></div>
+                <button @click="isChatOpen = false" class="w-8 h-8 rounded-full bg-slate-700 flex items-center justify-center text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 bg-dark" id="chat-messages-mobile">
+                <div class="chat-bubble chat-bot bg-slate-800 border-none w-3/4">Hello. I translate technical jargon into business impact. Try me.</div>
+                <template x-for="msg in chatMessages"><div class="chat-bubble" :class="msg.role === 'user' ? 'chat-user' : 'chat-bot'" x-html="msg.text"></div></template>
+                <div x-show="isTyping" class="chat-bubble chat-bot w-16 h-10 flex items-center justify-center gap-1"><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div></div>
+            </div>
+            <div class="p-4 bg-card border-t border-slate-700 pb-safe bottom-0 sticky">
+                <div class="flex gap-2"><input type="text" x-model="chatInput" @keydown.enter="sendMessage()" placeholder="Type a message..." class="flex-1 bg-dark text-white rounded-full px-5 py-3 focus:outline-none focus:ring-1 focus:ring-primary border border-slate-700"><button @click="sendMessage()" class="w-12 h-12 bg-primary rounded-full text-dark flex items-center justify-center shadow-glow active:scale-95 transition-transform"><i class="fa-solid fa-paper-plane"></i></button></div>
+            </div>
+        </div>
+
+        <!-- CHAT WINDOW (DESKTOP) -->
+        <div x-show="isChatOpen && window.innerWidth >= 768" x-transition.origin.bottom.right class="hidden md:flex fixed bottom-24 right-6 w-96 h-[500px] bg-card border border-primary rounded-xl shadow-2xl z-50 flex-col overflow-hidden font-sans">
+            <div class="bg-dark/50 p-4 border-b border-slate-700 flex justify-between items-center">
+                <div><h3 class="font-mono font-bold text-white flex items-center"><i class="fa-solid fa-bolt text-primary mr-2"></i>The Translator</h3><p class="text-[10px] text-textMuted">Gemini 1.5/2.0 Flash</p></div>
+                <button @click="isChatOpen = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4 flex flex-col space-y-3 bg-dark" id="chat-messages-desktop">
+                <div class="chat-bubble chat-bot bg-slate-800 border-none">Hello. I translate technical jargon into business impact. Paste an email from IT or a confusing term, and I will tell you what it means for the P&L.</div>
+                <template x-for="msg in chatMessages"><div class="chat-bubble" :class="msg.role === 'user' ? 'chat-user' : 'chat-bot'" x-html="msg.text"></div></template>
+                <div x-show="isTyping" class="chat-bubble chat-bot w-16 h-10 flex items-center justify-center gap-1"><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div></div>
+            </div>
+            <div class="p-3 bg-dark border-t border-slate-700"><div class="relative"><input type="text" x-model="chatInput" @keydown.enter="sendMessage()" placeholder="Paste jargon here..." class="w-full bg-slate-800 text-white rounded-lg pl-4 pr-10 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary font-mono placeholder:text-slate-500"><button @click="sendMessage()" class="absolute right-2 top-2 text-primary hover:text-white p-1"><i class="fa-solid fa-paper-plane"></i></button></div></div>
+        </div>
+
+        <!-- DESKTOP FLOATING BUTTON (Explicitly HIDDEN on Mobile) -->
+        <div class="hidden md:flex fixed bottom-6 right-6 z-50">
+            <button @click="toggleChat()" class="bg-primary hover:bg-green-400 text-dark w-14 h-14 rounded-full shadow-glow flex items-center justify-center transition-all transform hover:scale-110"><i class="fa-solid fa-robot text-2xl"></i></button>
+        </div>
+
+    </div>
+
+    <script>
+        function toolkit() {
+            return {
+                currentTab: 'dashboard',
+                mobileMenuOpen: false,
+                translatorView: 'dict',
+                searchQuery: '',
+                glossarySearch: '',
+                activeRepair: null,
+                
+                selectedIndustry: "",
+                selectedTitle: "",
+                assessmentSubmitted: false,
+                challengerData: null,
+                percentileResult: null,
+                benchmarkLoading: false,
+                totalBenchmarks: 0,
+                supabase: null,
+                
+                matrixCoords: { x: 50, y: 50 },
+                compassCoords: { x: 50, y: 50 },
+                canvasData: { name: '', owner: '', jobs: '', slo1: '', slo2: '' },
+                talentSkills: [ { label: "Tech Fluency", val: 3 }, { label: "Business Acumen", val: 3 }, { label: "Data Literacy", val: 3 }, { label: "Empathy / EQ", val: 3 }, { label: "Change Tolerance", val: 3 } ],
+                
+                isChatOpen: false,
+                chatInput: '',
+                chatMessages: [],
+                isTyping: false,
+                copyBtnText: "Generate Challenge Link",
+                gapChart: null,
+                gapAnalysisRevealed: false,
+
+                initApp() {
+                    const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
+                    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
+                    this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                    
+                    const params = new URLSearchParams(window.location.search);
+                    const challenger = params.get('challenger');
+                    if (challenger) {
+                        try {
+                            this.challengerData = JSON.parse(atob(challenger));
+                            this.currentTab = 'assessment';
+                            this.assessmentSubmitted = false;
+                            if(this.challengerData.industry) {
+                                this.selectedIndustry = this.challengerData.industry;
+                            }
+                        } catch (e) { console.error("Failed to parse", e); }
+                    }
+                },
+
+                handleNavClick(tabId) {
+                    this.currentTab = tabId;
+                    if(tabId === 'talent') setTimeout(() => this.initTalentChart(), 100);
+                },
+
+                toggleChat() { this.isChatOpen = !this.isChatOpen; },
+
+                async sendMessage() {
+                    if (!this.chatInput.trim()) return;
+                    const userText = this.chatInput;
+                    this.chatMessages.push({ role: 'user', text: userText });
+                    this.chatInput = '';
+                    this.isTyping = true;
+                    
+                    const scrollChat = () => {
+                         const desk = document.getElementById('chat-messages-desktop');
+                         const mob = document.getElementById('chat-messages-mobile');
+                         if(desk) desk.scrollTop = desk.scrollHeight;
+                         if(mob) mob.scrollTop = mob.scrollHeight;
+                    };
+                    this.$nextTick(scrollChat);
+
+                    // *** API KEY ***
+                    const GEMINI_API_KEY = "AIzaSyBzfLO83HYmdNfNd0yDjWN4dxzmIfd9eY4"; 
+                    
+                    const systemPrompt = "You are 'The Translator', a Bilingual Executive Assistant. Translate technical jargon into business impact (P&L, Risk, Speed). Rules: Technical Debt->Financial leverage; Refactoring->Renovation; Microservices->Legos; API->Universal Adapter. Tone: Concise, executive.";
+                    
+                    // FALLBACK LOGIC - CORRECTED MODEL NAMES
+                    const tryFetch = async (model, version) => {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+                            method: "POST", headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nInput: " + userText }] }] })
+                        });
+                        if (!response.ok) throw new Error(response.statusText);
+                        return response.json();
+                    };
+
+                    try {
+                        let data;
+                        try {
+                            // Primary: Updated to latest stable Flash model
+                            data = await tryFetch("gemini-1.5-flash-latest", "v1beta"); 
+                        } catch (e) {
+                            console.log("Primary model failed, trying fallback...");
+                            // Backup: Updated to newer generation model
+                            data = await tryFetch("gemini-2.0-flash-exp", "v1beta"); 
+                        }
+
+                        let botText = "";
+                        if (data.candidates && data.candidates[0].content) {
+                            botText = data.candidates[0].content.parts[0].text;
+                        } else {
+                            botText = "I couldn't process that request. Please try again.";
+                        }
+                        
+                        this.isTyping = false;
+                        this.chatMessages.push({ role: 'bot', text: typeof marked !== 'undefined' ? marked.parse(botText) : botText });
+                        this.$nextTick(scrollChat);
+                    } catch (error) {
+                        this.isTyping = false;
+                        this.chatMessages.push({ role: 'bot', text: "Connection error. Please check your internet connection." });
+                    }
+                },
+
+                // --- CHARTS & LOGIC ---
+                initTalentChart() {
+                    const ctx = document.getElementById('talentChart');
+                    if(!ctx) return;
+                    if(window.uniqueTalentChart) window.uniqueTalentChart.destroy();
+                    Chart.defaults.font.family = '"JetBrains Mono", monospace';
+                    Chart.defaults.color = '#94a3b8';
+                    window.uniqueTalentChart = new Chart(ctx, {
+                        type: 'radar',
+                        data: { labels: this.talentSkills.map(s => s.label), datasets: [{ label: 'Shape', data: this.talentSkills.map(s => s.val), fill: true, backgroundColor: 'rgba(244,114,182,0.2)', borderColor: '#f472b6', pointBackgroundColor: '#fff', pointBorderColor: '#f472b6' }] },
+                        options: { scales: { r: { angleLines: { color: '#334155' }, grid: { color: '#334155' }, ticks: { display: false, min: 0, max: 5 }, suggestedMin: 0, suggestedMax: 5 } }, plugins: { legend: { display: false } } }
+                    });
+                },
+                updateTalentChartFromDOM(el, index) {
+                    const val = parseInt(el.value);
+                    this.talentSkills[index].val = val;
+                    if(window.uniqueTalentChart) { window.uniqueTalentChart.data.datasets[0].data[index] = val; window.uniqueTalentChart.update('none'); }
+                },
+                getMatrixResult() {
+                    const x = this.matrixCoords.x, y = this.matrixCoords.y;
+                    if (y > 50 && x <= 50) return { strategy: "BUILD", color: "text-primary", desc: "High Value, Low Complexity. Do not outsource." };
+                    if (y > 50 && x > 50) return { strategy: "BUY", color: "text-warn", desc: "High Value, High Complexity. Buy speed." };
+                    if (y <= 50 && x <= 50) return { strategy: "IGNORE", color: "text-slate-400", desc: "Low Value. Don't waste resources." };
+                    return { strategy: "PARTNER", color: "text-blue-400", desc: "Low Value, Hard to build. Use APIs." };
+                },
+                getCompassResult() {
+                    const x = this.compassCoords.x, y = this.compassCoords.y;
+                    if (y > 50 && x > 50) return { title: "INNOVATION LEADER (NE)", desc: "North-East. Fast growth, but check your safety brakes." };
+                    if (y <= 50 && x <= 50) return { title: "TRADITIONAL BANKER (SW)", desc: "South-West. Safe and cheap, but you are slowly dying." };
+                    if (y > 50 && x <= 50) return { title: "RISK TAKER (NW)", desc: "North-West. High value but high control. Hard to sustain." };
+                    return { title: "DIGITAL FACTORY (SE)", desc: "South-East. Fast and cheap execution, but are you building the right thing?" };
+                },
+
+                // --- DATA ---
+                assessmentData: [
+                    { title: "1. Data Velocity", questions: [{id:1,text:"Access",score:1},{id:2,text:"Quality",score:1},{id:3,text:"Ownership",score:1},{id:4,text:"Architecture",score:1},{id:5,text:"Trust",score:1}].map(q=>({...q, desc:"Rate 1-5"})) },
+                    { title: "2. Agile Delivery", questions: [{id:6,text:"Funding",score:1},{id:7,text:"Releases",score:1},{id:8,text:"Stop Button",score:1},{id:9,text:"Compliance",score:1},{id:10,text:"Vendors",score:1}].map(q=>({...q, desc:"Rate 1-5"})) },
+                    { title: "3. Culture", questions: [{id:11,text:"Literacy",score:1},{id:12,text:"Safety",score:1},{id:13,text:"Decisions",score:1},{id:14,text:"Silos",score:1},{id:15,text:"Talent",score:1}].map(q=>({...q, desc:"Rate 1-5"})) }
+                ],
+                get calculateScore() {
+                    let total = 0;
+                    this.assessmentData.forEach(s => s.questions.forEach(q => total += q.score));
+                    let safety = this.assessmentData[2].questions[1].score;
+                    let manual = this.assessmentData[1].questions[3].score;
+                    let isSafetyVeto = safety <= 2;
+                    let isManualDrag = manual === 1;
+                    if(isManualDrag) total = Math.floor(total * 0.9);
+                    if(isSafetyVeto) total = Math.min(total, 40);
+                    return { total, isSafetyVeto, isManualDrag };
+                },
+                getAssessmentResult() {
+                    const s = this.calculateScore.total;
+                    if(s <= 40) return { title: "DANGER ZONE", desc: "Data Swamp. Stop buying AI. Fix culture first." };
+                    if(s <= 70) return { title: "TRANSITIONING", desc: "Bureaucratic Fortress." };
+                    return { title: "AGILE BANK", desc: "Market Leader." };
+                },
+                getAssessmentColor() { const s = this.calculateScore.total; return s<=40?'text-risk':s<=70?'text-warn':'text-primary'; },
+                getAssessmentBg() { const s = this.calculateScore.total; return s<=40?'bg-risk':s<=70?'bg-warn':'bg-primary'; },
+                
+                async generatePDF() {
+                    const { jsPDF } = window.jspdf; const doc = new jsPDF();
+                    const s = this.calculateScore.total; const r = this.getAssessmentResult();
+                    doc.setFillColor(15,23,42); doc.rect(0,0,210,297,"F");
+                    doc.setTextColor(s<=40?248:74, s<=40?113:222, s<=40?113:128);
+                    doc.setFont("courier","bold"); doc.setFontSize(14); doc.text("BILINGUAL EXECUTIVE AUDIT", 20,20);
+                    doc.setTextColor(200,200,200); doc.setFontSize(60); doc.text(`${s}/75`, 20,50);
+                    doc.setFontSize(16); doc.text(r.title, 20,70); doc.setFontSize(12); doc.text(doc.splitTextToSize(r.desc,170), 20,80);
+                    if(this.calculateScore.isSafetyVeto) doc.text("SAFETY VETO APPLIED", 20,100);
+                    doc.save("Audit.pdf");
+                },
+
+                lighthouseData: [{category:"Value",text:"Customer Facing?"},{category:"Value",text:"Solving Pain?"},{category:"Value",text:"Unarguable Metric?"},{category:"Feasibility",text:"Decoupled?"},{category:"Feasibility",text:"Anti-Scope Defined?"},{category:"Feasibility",text:"MVP in 90 Days?"},{category:"Ecosystem",text:"Two-Pizza Team?"},{category:"Ecosystem",text:"Sandbox Waiver?"},{category:"Ecosystem",text:"Zero Dependencies?"},{category:"Ecosystem",text:"Air Cover?"}].map(i=>({...i, checked:false})),
+                get lighthouseCount() { return this.lighthouseData.filter(i=>i.checked).length; },
+                getLighthouseStatus() {
+                    const c = this.lighthouseCount;
+                    if(c===10) return {title:"GREEN LIGHT", desc:"Launch.", text:"text-primary", border:"border-primary bg-primary/10"};
+                    if(c>=8) return {title:"AMBER LIGHT", desc:"Proceed with caution.", text:"text-warn", border:"border-warn bg-warn/10"};
+                    return {title:"RED LIGHT", desc:"STOP.", text:"text-risk", border:"border-risk bg-risk/10"};
+                },
+
+                // Full Glossary
+                glossaryData: [
+                    {term:"Agile Data Governance",def:"Replaces Gatekeepers with Guardrails. Automated compliance."},
+                    {term:"Agentic AI",def:"AI that takes action (moves funds), not just generates text."},
+                    {term:"API",def:"Digital glue allowing systems to talk. Enables Open Banking."},
+                    {term:"Bilingual Executive",def:"Leader with vertical banking depth and horizontal tech fluency."},
+                    {term:"Center of Excellence",def:"Service provider for standards, not a police force."},
+                    {term:"CI/CD",def:"Automated pipeline for safe, daily code deployment."},
+                    {term:"Clay Layer",def:"Frozen middle management resisting change."},
+                    {term:"Data Swamp",def:"Ungoverned Data Lake where data is untrustworthy."},
+                    {term:"Data Mesh",def:"Decentralized ownership; domains own their data products."},
+                    {term:"Data Product",def:"Dataset managed like a product with SLOs and owners."},
+                    {term:"Definition of Done",def:"Shared agreement including compliance/security checks."},
+                    {term:"Gemba Walk",def:"Going to the work source to observe reality."},
+                    {term:"HIPPO Effect",def:"Highest Paid Person's Opinion overruling data."},
+                    {term:"FinOps",def:"Bringing financial accountability to Cloud spend. Developers see the cost of their code in real-time." },
+                    {term:"Lighthouse Project",def:"Small pilot to prove value and inspire change."},
+                    {term:"MVP",def:"Smallest product to gather feedback. Focused, not bad."},
+                    {term:"Open Banking",def:"Framework forcing banks to share customer data with third parties via APIs if consented." },
+                    {term:"Product Owner",def:"Mini-CEO responsible for value and priority."},
+                    {term:"Technical Debt",def:"Implied cost of rework from choosing easy solutions."},
+                    {term:"Value Stream",def:"End-to-end flow of value to customer (Concept to Cash). Agile banks fund these, not projects." },
+                    {term:"Zero Trust",def:"Security model assuming breach has occurred. Requires verification for every user/device." },
+                    {term:"Zombie Project",def:"Dead project still consuming resources."}
+                ],
+                get filteredGlossary() { const q = this.glossarySearch.toLowerCase(); return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); },
+
+                // Board Guide Risks (Appendix E)
+                boardRisks: [
+                    {title:"1. Strategic Risk", subtitle:"The Dumb Pipe", lie:"'Our app has 4.5 stars.'", truth:"Retaining customers but losing value. Used only for balance checks.", question:"Show me Share of Wallet for digital natives."},
+                    {title:"2. Regulatory Risk", subtitle:"The Data Swamp", lie:"'Data is centralized.'", truth:"We are drowning. We have petabytes with no governance. We cannot trace lineage. We are one 'hallucinating algorithm' away from a fine.", question:"Can we generate a liquidity report in 10 minutes?"},
+                    {title:"3. Talent Risk", subtitle:"The Missing Bench", lie:"'Hiring top talent.'", truth:"Hiring mercenaries. Missionaries are leaving the 'Feature Factory'. We are outsourcing core IP and have no future leadership bench.", question:"% of Change budget spent on vendors?"}
+                ],
+                
+                // Repair Kit (Appendix F)
+                repairKitData: [
+                    {symptom:"The Feature Factory", diagnosis:"High velocity, no value. Measuring output not outcome.", prescription:["Stop celebrating feature counts.", "Audit value with PO.", "Tie bonus to lagging indicators."]},
+                    {symptom:"The Cloud Bill Shock", diagnosis:"Lift and Shift strategy. No FinOps.", prescription:["Implement FinOps ticker.", "Auto-shutdown non-prod servers."]},
+                    {symptom:"The Agile Silo", diagnosis:"Optimized coding but ignored governance.", prescription:["Expand Definition of Done.", "Embed Compliance in squad."]},
+                    {symptom:"Zombie Agile", diagnosis:"Process without purpose.", prescription:["Ban 'Agile' word.", "Refocus on enemy.", "Launch 90-Day Challenge."]},
+                    {symptom:"Innovation Theater", diagnosis:"Labs disconnected from core.", prescription:["Stop research funding.", "Insource Lab to Core.", "KPI: Code deployed to Core."]}
+                ],
+
+                // Dictionaries (Appendix D)
+                dictionary: [
+                    {banker:"Capital Adequacy",tech:"System Resilience",translation:"'Shock Absorber' for crashes."},
+                    {banker:"Cost-to-Income",tech:"TCO",translation:"'Friction Ratio' (Run vs Change)."},
+                    {banker:"Audit Trail",tech:"Immutable Logs",translation:"'Black Box' for forensic truth."},
+                    {banker:"Write-off",tech:"Refactoring",translation:"'Renovation' to prevent fires."},
+                    {banker:"Product Launch",tech:"Deploy to Prod",translation:"'Starting Gun', not finish line."},
+                    {banker:"Omnichannel",tech:"Headless/API",translation:"'Lego Architecture' (reuse blocks)."},
+                    {banker:"Cross-Selling",tech:"Interoperability",translation:"'Fluent Conversation' between systems."},
+                    {banker:"Compliance",tech:"Security Policy",translation:"'Automated Guardrails' (Brakes)."},
+                    {banker:"Legacy",tech:"Monolith",translation:"'The Anchor'. Stable but slow."},
+                    {banker:"Open Banking",tech:"API Gateway",translation:"'Universal Adaptor' for partners."},
+                    {banker:"Deadline",tech:"Sprint Goal",translation:"'Timebox'. Certainty > Probability."},
+                    {banker:"Change Request",tech:"Backlog",translation:"'Pivot'. Avoiding traffic."},
+                    {banker:"Op Risk",tech:"Tech Debt",translation:"'Financial Leverage'. Interest on code."},
+                    {banker:"SteerCo",tech:"Sprint Demo",translation:"'Reality Check'. Truth over slides."},
+                    {banker:"Headcount",tech:"Velocity",translation:"'Horsepower'. Speed over bodies."},
+                    {banker:"Trust",tech:"Zero Trust",translation:"'Security Shift'. Verify everything."}
+                ],
+                get filteredDictionary() { const q = this.searchQuery.toLowerCase(); return !q ? this.dictionary : this.dictionary.filter(i=>i.banker.toLowerCase().includes(q)||i.tech.toLowerCase().includes(q)||i.translation.toLowerCase().includes(q)); },
+                
+                // Reporting Guide
+                reportingData: [
+                    {metric:"Velocity", financial:"Time-to-Revenue", script:"Reduced TTR from 6mo to 2wks. Earning interest 170 days earlier."},
+                    {metric:"Cycle Time", financial:"Cost of Delay", script:"Avoided $2M delay cost by cutting cycle time."},
+                    {metric:"Tech Debt", financial:"Risk Asset Protection", script:"Retired legacy server, reduced outage probability to near zero."},
+                    {metric:"Fail Rate", financial:"Brand Stability", script:"Improved stability 40%, correlated to 15% drop in support costs."},
+                    {metric:"Flow Efficiency", financial:"Op Efficiency Ratio", script:"Wasted labor reduced. ROI per dev hour increased 4x."},
+                    {metric:"Story Points", financial:"Capacity Utilization", script:"Don't report. Internal metric."}
+                ],
+                
+                copyChallengeLink() { if(!this.selectedTitle){alert("Select Role");return;} const scores=this.assessmentData.flatMap(s=>s.questions.map(q=>q.score)); const p=btoa(JSON.stringify({scores,industry:this.selectedIndustry,title:this.selectedTitle})); navigator.clipboard.writeText(location.origin+location.pathname+"?challenger="+p); this.copyBtnText="Copied!"; setTimeout(()=>this.copyBtnText="Challenge Link",3000); },
+                
+                get gapScore() { if(!this.challengerData)return 0; const my=this.calculateScore.total; const cs=this.challengerData.scores; let cD=cs.slice(0,5).reduce((a,b)=>a+b,0), cDel=cs.slice(5,10).reduce((a,b)=>a+b,0), cC=cs.slice(10,15).reduce((a,b)=>a+b,0); if(cs[8]===1)cDel*=0.8; let cT=(cD*0.9)+(cDel*0.9)+(cC*1.2); if(cs[11]<=2)cT=Math.min(cT,40); return Math.abs(my-Math.round(cT)); },
+                revealGapAnalysis() { this.gapAnalysisRevealed=true; this.$nextTick(()=>this.updateChart()); },
+                updateChartIfVisible() { if(this.challengerData && this.gapAnalysisRevealed) this.updateChart(); },
+                updateChart() {
+                    if(!this.challengerData)return;
+                    const ctx=document.getElementById('gapChart'); if(!ctx)return;
+                    const my=[this.assessmentData[0].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[1].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[2].questions.reduce((a,b)=>a+b.score,0)];
+                    const cs=this.challengerData.scores; const ch=[cs.slice(0,5).reduce((a,b)=>a+b,0), cs.slice(5,10).reduce((a,b)=>a+b,0), cs.slice(10,15).reduce((a,b)=>a+b,0)];
+                    if(this.gapChart) { this.gapChart.data.datasets[0].data=ch; this.gapChart.data.datasets[1].data=my; this.gapChart.update(); }
+                    else {
+                        Chart.defaults.font.family='"JetBrains Mono"'; Chart.defaults.color='#94a3b8';
+                        this.gapChart=new Chart(ctx,{type:'radar',data:{labels:['Data','Delivery','Culture'],datasets:[{label:'Challenger',data:ch,fill:true,backgroundColor:'rgba(74,222,128,0.2)',borderColor:'#4ade80'},{label:'You',data:my,fill:true,backgroundColor:'rgba(244,114,182,0.2)',borderColor:'#f472b6'}]},options:{scales:{r:{angleLines:{color:'#334155'},grid:{color:'#334155'},ticks:{display:false,min:0,max:25}}}}});
+                    }
+                },
+                submitAndBenchmark() { this.benchmarkLoading=true; setTimeout(()=>{ this.percentileResult={rank:"Top 15%",msg:"Market Leader"}; this.benchmarkLoading=false; },1000); },
+                toggleRepair(i) { this.activeRepair = this.activeRepair === i ? null : i; },
+                
+                navItems: [
+                    { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' },
+                    { id: 'assessment', label: 'Readiness Quiz', icon: 'fa-solid fa-clipboard-check' },
+                    { id: 'matrix', label: 'Strategy Matrix', icon: 'fa-solid fa-chess-board' },
+                    { id: 'compass', label: 'Compass', icon: 'fa-regular fa-compass' },
+                    { id: 'canvas', label: 'Data Product Canvas', icon: 'fa-solid fa-file-contract' },
+                    { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint' },
+                    { id: 'lighthouse', label: 'Lighthouse Check', icon: 'fa-solid fa-lightbulb' },
+                    { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language' },
+                    { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king' },
+                    { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox' },
+                    { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' },
+                    { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' },
+                    { id: 'community', label: 'Community', icon: 'fa-solid fa-users' },
+                ],
+                dashboardTools: [
+                    { id: 'assessment', label: 'Readiness Quiz', desc: 'Diagnose maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' },
+                    { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' },
+                    { id: 'compass', label: 'Bilingual Compass', desc: 'Risk vs Innovation.', icon: 'fa-regular fa-compass', color: 'text-cyan-400' },
+                    { id: 'translator', label: 'Translator', desc: 'Decode jargon.', icon: 'fa-solid fa-language', color: 'text-blue-400' },
+                    { id: 'lighthouse', label: 'Lighthouse', desc: 'Validate pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' },
+                    { id: 'talent', label: 'Talent Radar', desc: 'Assess skills.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' },
+                    { id: 'canvas', label: 'Data Canvas', desc: 'Create contracts.', icon: 'fa-solid fa-file-contract', color: 'text-slate-300' },
+                    { id: 'community', label: 'Community', desc: 'Join the Tribe.', icon: 'fa-solid fa-users', color: 'text-white' },
+                ]
+            }
+        }
+    </script>
+</body>
+</html>
