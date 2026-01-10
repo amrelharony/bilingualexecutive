@@ -3,12 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>The Bilingual Executive Toolkit v15.0 (Ultimate)</title>
+    <title>The Bilingual Executive Toolkit v16.0 (Ultimate VIP)</title>
     
+    <!-- PWA Manifest info -->
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -27,7 +32,15 @@
                         dark: '#0f172a', card: '#1e293b', primary: '#4ade80', risk: '#f87171', warn: '#fbbf24', hotpink: '#f472b6', textMain: '#f1f5f9', textMuted: '#94a3b8',
                     },
                     fontFamily: { mono: ['"JetBrains Mono"', 'monospace'], sans: ['"Inter"', 'sans-serif'], },
-                    boxShadow: { 'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 'glow-pink': '0 0 15px rgba(244, 114, 182, 0.1)' }
+                    boxShadow: { 'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 'glow-vip': '0 0 20px rgba(244, 114, 182, 0.2)' },
+                    animation: { 'glitch': 'glitch 1s linear infinite' },
+                    keyframes: {
+                        glitch: {
+                            '2%, 64%': { transform: 'translate(2px,0) skew(0deg)' },
+                            '4%, 60%': { transform: 'translate(-2px,0) skew(0deg)' },
+                            '62%': { transform: 'translate(0,0) skew(5deg)' },
+                        }
+                    }
                 }
             }
         }
@@ -42,8 +55,12 @@
         .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         .nav-active { border-left: 4px solid #4ade80; background: rgba(74, 222, 128, 0.05); color: #4ade80; }
+        .nav-active-vip { border-left: 4px solid #f472b6; background: rgba(244, 114, 182, 0.1); color: #f472b6; }
+        
         input[type="range"] { -webkit-appearance: none; height: 8px; background: #334155; border-radius: 5px; }
-        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #4ade80; cursor: pointer; border: 2px solid #0f172a; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #4ade80; cursor: pointer; border: 2px solid #0f172a; margin-top: -6px;}
+        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #334155; border-radius: 5px; }
+
         .chat-bubble { max-width: 85%; padding: 12px; border-radius: 12px; font-size: 14px; line-height: 1.5; margin-bottom: 10px; }
         .chat-user { background: #334155; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
         .chat-bot { background: #1e293b; border: 1px solid #4ade80; color: #f1f5f9; align-self: flex-start; border-bottom-left-radius: 2px; }
@@ -57,86 +74,116 @@
 
     <div x-data="toolkit()" x-init="initApp()" class="flex w-full h-full relative">
 
-        <!-- Banner -->
+        <!-- VIP BOOT SEQUENCE -->
+        <div x-show="showVipIntro" x-transition.opacity.duration.500ms class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center font-mono text-hotpink cursor-wait">
+            <div class="max-w-md w-full p-6">
+                <div class="text-xs text-slate-500 mb-2 font-bold tracking-widest">NFC SIGNAL DETECTED...</div>
+                <h1 class="text-4xl font-bold mb-4 animate-pulse">WELCOME, ARCHITECT.</h1>
+                <div class="space-y-2 text-sm text-primary font-mono">
+                    <p x-show="bootStep >= 1">> Verifying Token... [OK]</p>
+                    <p x-show="bootStep >= 2">> Unlocking Financial Engine... [OK]</p>
+                    <p x-show="bootStep >= 3">> Activating God Mode... [OK]</p>
+                </div>
+                <div class="mt-8 w-full bg-slate-900 h-1 rounded-full overflow-hidden">
+                    <div class="bg-hotpink h-1 transition-all duration-[3000ms] ease-out" :style="`width: ${bootProgress}%`"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PWA INSTALL PROMPT (Mobile) -->
+        <div x-show="showPwaPrompt && isMobile" x-transition class="md:hidden fixed top-0 left-0 w-full bg-gradient-to-r from-slate-900 to-slate-800 text-white p-3 z-[60] border-b border-primary/30 flex justify-between items-center shadow-xl">
+            <div class="flex items-center gap-3">
+                <div class="bg-primary/20 p-2 rounded text-primary"><i class="fa-solid fa-download"></i></div>
+                <div class="text-xs"><p class="font-bold">Install App</p><p class="text-slate-400">Add to Home Screen for offline use</p></div>
+            </div>
+            <button @click="showPwaPrompt = false" class="text-slate-400 px-3"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Gap Analysis Banner -->
         <template x-if="challengerData">
             <div x-cloak class="absolute top-0 left-0 w-full bg-hotpink/10 border-b border-hotpink z-40 p-2 text-center backdrop-blur-md pt-safe">
-                <p class="font-mono text-hotpink text-xs md:text-sm font-bold truncate px-2">
-                    <i class="fa-solid fa-people-arrows mr-2"></i>GAP MODE: Comparing against <span x-text="challengerData?.title || 'Colleague'"></span>
-                </p>
+                <p class="font-mono text-hotpink text-xs md:text-sm font-bold truncate px-2"><i class="fa-solid fa-people-arrows mr-2"></i>GAP MODE: Comparing against <span x-text="challengerData?.title || 'Colleague'"></span></p>
             </div>
         </template>
 
-        <!-- Sidebar (Desktop) -->
+        <!-- SIDEBAR (Desktop) -->
         <aside class="hidden md:flex w-64 bg-dark border-r border-slate-800 flex-col pt-10 h-full">
             <div class="p-6 border-b border-slate-800">
-                <h1 class="font-mono text-xl font-bold tracking-tighter text-primary">
-                    <i class="fa-solid fa-terminal mr-2"></i>BILINGUAL<br>EXEC
+                <h1 class="font-mono text-xl font-bold tracking-tighter" :class="isVipMode ? 'text-hotpink' : 'text-primary'">
+                    <i class="fa-solid" :class="isVipMode ? 'fa-microchip' : 'fa-terminal'"></i> BILINGUAL<br>EXEC
                 </h1>
-                <p class="text-[10px] text-textMuted font-mono mt-1 uppercase tracking-widest">v15.0 // ULTIMATE</p>
+                <p class="text-[10px] text-textMuted font-mono mt-1 uppercase tracking-widest flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full" :class="isVipMode ? 'bg-hotpink animate-pulse' : 'bg-primary'"></span> 
+                    <span x-text="isVipMode ? 'ARCHITECT MODE' : 'v16.0 // ULTIMATE'"></span>
+                </p>
             </div>
             <nav class="flex-1 overflow-y-auto py-4">
                 <template x-for="item in navItems" :key="item.id">
-                    <button @click="handleNavClick(item.id)" :class="currentTab === item.id ? 'nav-active' : 'text-textMuted hover:text-textMain hover:bg-slate-800/50'" class="w-full text-left px-6 py-3 font-mono text-xs transition-all duration-200 border-l-4 border-transparent flex items-center group">
-                        <i :class="item.icon" class="w-6 opacity-70 group-hover:opacity-100 transition-opacity"></i>
+                    <button @click="handleNavClick(item.id)" x-show="!item.vip || isVipMode" :class="currentTab === item.id ? (item.vip ? 'nav-active-vip' : 'nav-active') : 'text-textMuted hover:text-textMain hover:bg-slate-800/50'" class="w-full text-left px-6 py-3 font-mono text-xs transition-all duration-200 border-l-4 border-transparent flex items-center group">
+                        <i :class="item.icon" class="w-5 mr-3 opacity-70 group-hover:opacity-100 transition-opacity"></i>
                         <span x-text="item.label"></span>
+                        <i x-show="item.vip" class="ml-auto fa-solid fa-lock-open text-[10px] text-hotpink"></i>
                     </button>
                 </template>
             </nav>
         </aside>
 
-        <!-- Header (Mobile) -->
-        <div class="md:hidden fixed top-0 w-full bg-dark/95 backdrop-blur border-b border-slate-800 z-30 p-4 pt-safe flex justify-between items-center">
-            <h1 class="font-mono font-bold text-primary tracking-tighter">BILINGUAL EXEC</h1>
-            <div class="text-[10px] text-textMuted font-mono border border-slate-700 px-2 py-0.5 rounded">v15.0</div>
-        </div>
-
-        <!-- Main Content -->
+        <!-- MAIN CONTENT -->
         <main class="flex-1 h-full overflow-y-auto bg-dark p-4 md:p-12 pt-24 md:pt-12 pb-32 md:pb-12 relative scroll-smooth w-full">
             
             <!-- DASHBOARD -->
             <div x-show="currentTab === 'dashboard'" x-transition.opacity class="max-w-6xl mx-auto">
                 <div class="mb-8 mt-4 md:mt-0">
-                    <h2 class="text-3xl md:text-6xl font-mono font-bold text-white mb-2 md:mb-4 tracking-tighter leading-none">Decode the <span class="text-primary block md:inline">Agile Bank.</span></h2>
+                    <h2 class="text-3xl md:text-6xl font-mono font-bold text-white mb-2 md:mb-4 tracking-tighter leading-none">Decode the <span :class="isVipMode ? 'text-hotpink' : 'text-primary'" class="block md:inline">Agile Bank.</span></h2>
                     <p class="text-sm md:text-xl text-textMuted max-w-2xl font-light">Operating System for the modern Fintech executive. Select a tool.</p>
+                </div>
+
+                <!-- Notebook LM Audio -->
+                <div class="bg-gradient-to-r from-slate-800 to-slate-900 p-4 md:p-6 rounded-xl border border-slate-700 mb-8 flex flex-col md:flex-row items-center gap-4 shadow-lg group hover:border-primary/50 transition-all">
+                    <div class="bg-primary/20 p-4 rounded-full text-primary group-hover:scale-110 transition-transform"><i class="fa-solid fa-podcast text-2xl"></i></div>
+                    <div class="flex-1 text-center md:text-left"><h3 class="text-white font-mono font-bold text-sm md:text-base flex items-center justify-center md:justify-start gap-2">THE BILINGUAL BRIEFING <span class="bg-primary text-dark text-[10px] px-2 rounded">AI GENERATED</span></h3><p class="text-xs text-textMuted mt-1">Deep dive discussion into Chapter 10: The Future Bank.</p></div>
+                    <audio controls class="h-10 w-full md:w-80 opacity-90 rounded-lg"><source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">Your browser does not support the audio element.</audio>
                 </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-20">
                     <template x-for="tool in dashboardTools" :key="tool.id">
-                        <div @click="handleNavClick(tool.id)" class="bg-card border border-slate-700 p-5 rounded-xl hover:border-primary active:scale-95 transition-all duration-200 cursor-pointer shadow-lg group">
-                            <div class="flex justify-between items-start mb-3">
-                                <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-600 group-hover:border-primary transition-colors"><i :class="tool.icon + ' text-lg ' + tool.color"></i></div>
-                                <i class="fa-solid fa-chevron-right text-slate-600 text-sm"></i>
-                            </div>
-                            <h3 class="font-mono text-lg font-bold text-white mb-1" x-text="tool.label"></h3>
-                            <p class="text-xs text-textMuted leading-relaxed" x-text="tool.desc"></p>
+                        <div @click="handleNavClick(tool.id)" x-show="!tool.vip || isVipMode" class="bg-card border border-slate-700 p-5 rounded-xl hover:border-primary active:scale-95 transition-all duration-200 cursor-pointer shadow-lg group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-2" x-show="tool.vip"><i class="fa-solid fa-star text-hotpink text-xs animate-pulse"></i></div>
+                            <div class="flex justify-between items-start mb-3"><div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-600 group-hover:border-primary transition-colors"><i :class="tool.icon + ' text-lg ' + tool.color"></i></div><i class="fa-solid fa-chevron-right text-slate-600 text-sm"></i></div>
+                            <h3 class="font-mono text-lg font-bold text-white mb-1" x-text="tool.label"></h3><p class="text-xs text-textMuted leading-relaxed" x-text="tool.desc"></p>
                         </div>
                     </template>
+                </div>
+            </div>
+
+            <!-- ARCHITECT CONSOLE (VIP ONLY) -->
+            <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
+                <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-microchip text-9xl text-hotpink"></i></div>
+                    <h2 class="font-mono text-3xl font-bold text-hotpink mb-2 flex items-center"><i class="fa-solid fa-user-secret mr-3"></i>VIP ARCHITECT CONSOLE</h2>
+                    <p class="text-sm text-slate-300 font-mono max-w-2xl relative z-10">ACCESS GRANTED via NFC Physical Token. <br>You are now viewing the raw infrastructure templates used in Chapter 6 & 10.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-card terminal-border p-6 rounded-lg border-t-4 border-t-hotpink"><h3 class="text-white font-bold mb-3 font-mono flex justify-between">JSON: Data Product Contract</h3><div class="bg-black p-4 rounded text-xs text-green-400 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner"><pre>{
+  "product_id": "DP-PAY-001",
+  "domain": "Payments_Processing",
+  "owner": "Sarah_Connor@meridian.com",
+  "slo": { "freshness": "200ms", "accuracy": "99.999%" }
+}</pre></div><button class="w-full border border-slate-600 hover:bg-slate-700 text-slate-300 text-xs font-mono py-3 rounded transition-colors flex items-center justify-center gap-2"><i class="fa-regular fa-copy"></i> COPY SCHEMA</button></div>
+                    <div class="bg-card terminal-border p-6 rounded-lg border-t-4 border-t-hotpink"><h3 class="text-white font-bold mb-3 font-mono flex justify-between">PROMPT: The Boardroom Script</h3><div class="bg-black p-4 rounded text-xs text-blue-300 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner h-32"><pre>Act as a CDO presenting to a skeptical Board. 
+We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Analogy'. Focus on Risk, not just Speed.</pre></div><button class="w-full bg-hotpink hover:bg-pink-600 text-white font-bold py-3 rounded text-xs font-mono transition-all flex items-center justify-center gap-2 shadow-glow-vip"><i class="fa-solid fa-robot"></i> COPY PROMPT</button></div>
                 </div>
             </div>
 
             <!-- ASSESSMENT -->
             <div x-show="currentTab === 'assessment'" x-cloak class="max-w-4xl mx-auto">
                 <div x-show="!assessmentSubmitted">
-                    <h2 class="font-mono text-2xl font-bold mb-6 text-primary flex items-center"><i class="fa-solid fa-clipboard-check mr-3"></i>Agile Readiness Assessment</h2>
+                    <div class="flex justify-between items-center mb-6"><h2 class="font-mono text-2xl font-bold text-primary flex items-center"><i class="fa-solid fa-clipboard-check mr-3"></i>Agile Readiness Assessment</h2><button @click="resetAssessment()" class="text-xs text-textMuted underline hover:text-white"><i class="fa-solid fa-rotate-left mr-1"></i>Reset</button></div>
                     <div class="space-y-12 mb-20">
                         <template x-for="(section, sIdx) in assessmentData" :key="sIdx">
-                            <div class="bg-card/50 p-6 rounded-xl border border-slate-800">
-                                <h3 class="font-mono text-xl text-white mb-6 border-l-4 border-primary pl-3" x-text="section.title"></h3>
-                                <div class="space-y-8">
-                                    <template x-for="(q, qIdx) in section.questions" :key="qIdx">
-                                        <div class="bg-dark/50 p-5 rounded border border-slate-700">
-                                            <div class="flex justify-between items-start mb-2">
-                                                <label class="font-mono font-bold text-slate-200 text-sm uppercase tracking-wide" x-text="q.text"></label>
-                                                <span class="font-mono text-primary font-bold text-lg" x-text="q.score"></span>
-                                            </div>
-                                            <p class="text-xs text-textMuted mb-2" x-text="q.desc"></p>
-                                            <input type="range" min="1" max="5" step="1" x-model.number="q.score" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
-                                        </div>
-                                    </template>
-                                </div>
-                            </div>
+                            <div class="bg-card/50 p-6 rounded-xl border border-slate-800"><h3 class="font-mono text-xl text-white mb-6 border-l-4 border-primary pl-3" x-text="section.title"></h3><div class="space-y-8"><template x-for="(q, qIdx) in section.questions" :key="qIdx"><div class="bg-dark/50 p-5 rounded border border-slate-700"><div class="flex justify-between items-start mb-2"><label class="font-mono font-bold text-slate-200 text-sm uppercase tracking-wide" x-text="q.text"></label><span class="font-mono text-primary font-bold text-lg" x-text="q.score"></span></div><p class="text-xs text-textMuted mb-2" x-text="q.desc"></p><input type="range" min="1" max="5" step="1" x-model.number="q.score" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"></div></template></div></div>
                         </template>
-                        <button @click="finishAssessment()" class="w-full py-4 bg-primary text-dark font-mono font-bold rounded-lg shadow-glow hover:bg-green-400 transition-colors">FINISH ASSESSMENT</button>
+                        <button @click="finishAssessment()" class="w-full py-4 bg-primary text-dark font-mono font-bold rounded-lg shadow-glow hover:bg-green-400 transition-colors flex justify-center items-center gap-2">CALCULATE SCORE <i class="fa-solid fa-calculator"></i></button>
                     </div>
                 </div>
 
@@ -148,13 +195,12 @@
                         <h3 class="text-2xl font-bold text-white mb-4" x-text="getAssessmentResult().title"></h3>
                         <p class="text-textMuted max-w-lg mx-auto mb-6" x-text="getAssessmentResult().desc"></p>
                         
-                        <!-- Logic Penalties Display -->
-                        <div x-show="calculateScore.isSafetyVeto" class="mb-4 p-4 border border-risk bg-risk/10 rounded flex items-start gap-3 text-left max-w-lg mx-auto"><i class="fa-solid fa-ban text-risk mt-1"></i><div><h4 class="font-mono font-bold text-risk text-sm">SCORE CAPPED: SAFETY VETO</h4><p class="text-xs text-slate-300 mt-1">Low Psychological Safety detected (Score &le; 2). Agility is impossible in fear. Score capped at 40.</p></div></div>
-                        <div x-show="calculateScore.isManualDrag" class="mb-6 p-4 border border-warn bg-warn/10 rounded flex items-start gap-3 text-left max-w-lg mx-auto"><i class="fa-solid fa-hand text-warn mt-1"></i><div><h4 class="font-mono font-bold text-warn text-sm">PENALTY: MANUAL DRAG</h4><p class="text-xs text-slate-300 mt-1">Manual compliance checks are braking your velocity. -10% penalty applied.</p></div></div>
+                        <div x-show="calculateScore.isSafetyVeto" class="mb-4 p-4 border border-risk bg-risk/10 rounded flex items-start gap-3 text-left max-w-lg mx-auto"><i class="fa-solid fa-ban text-risk mt-1"></i><div><h4 class="font-mono font-bold text-risk text-sm">SAFETY VETO APPLIED</h4><p class="text-xs text-slate-300 mt-1">Low Safety score. Agility is impossible in fear. Score capped at 40.</p></div></div>
+                        <div x-show="calculateScore.isManualDrag" class="mb-6 p-4 border border-warn bg-warn/10 rounded flex items-start gap-3 text-left max-w-lg mx-auto"><i class="fa-solid fa-hand text-warn mt-1"></i><div><h4 class="font-mono font-bold text-warn text-sm">MANUAL DRAG PENALTY</h4><p class="text-xs text-slate-300 mt-1">Manual compliance reduces velocity. -20% final score reduction applied.</p></div></div>
 
                         <div class="flex flex-wrap gap-4 justify-center">
-                            <button @click="generatePDF()" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded font-mono text-xs transition-colors"><i class="fa-solid fa-file-pdf mr-2"></i>PDF REPORT</button>
-                            <button @click="copyChallengeLink()" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded font-mono text-xs text-primary transition-colors"><i class="fa-solid fa-link mr-2"></i><span x-text="copyBtnText"></span></button>
+                            <button @click="generatePDF()" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded font-mono text-xs"><i class="fa-solid fa-file-pdf mr-2"></i>PDF REPORT</button>
+                            <button @click="copyChallengeLink()" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded font-mono text-xs text-primary"><i class="fa-solid fa-link mr-2"></i><span x-text="copyBtnText"></span></button>
                         </div>
                     </div>
                     
@@ -165,216 +211,90 @@
                 </div>
             </div>
 
-            <!-- TRANSLATOR -->
+            <!-- TRANSLATOR (Search) -->
             <div x-show="currentTab === 'translator'" x-cloak class="max-w-5xl mx-auto">
-                <h2 class="font-mono text-2xl font-bold text-blue-400 mb-6 flex items-center"><i class="fa-solid fa-language mr-3"></i>The Bilingual Translator</h2>
-                <div class="mb-6 relative">
-                    <input type="text" x-model="searchQuery" placeholder="Search technical or business terms..." class="w-full bg-card border border-slate-700 rounded-lg py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-400 font-mono">
-                    <i class="fa-solid fa-search absolute left-4 top-5 text-slate-500"></i>
-                </div>
-                <div class="grid gap-4 pb-20">
-                    <template x-for="row in filteredDictionary" :key="row.banker">
-                        <div class="bg-card border border-slate-800 p-5 rounded-lg hover:border-blue-400/50 transition-colors">
-                            <div class="grid md:grid-cols-3 gap-4">
-                                <div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Banker Says</span><p class="font-bold text-white" x-text="row.banker"></p></div>
-                                <div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Engineer Says</span><p class="font-mono text-blue-300 text-sm" x-text="row.tech"></p></div>
-                                <div class="md:border-l border-slate-700 md:pl-4"><span class="text-[10px] text-primary font-mono block uppercase mb-1">True Meaning</span><p class="text-sm text-slate-300 italic" x-text="row.translation"></p></div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
+                <h2 class="font-mono text-2xl font-bold text-blue-400 mb-6 flex items-center"><i class="fa-solid fa-language mr-3"></i>The Translator Dictionary</h2>
+                <div class="mb-6 relative"><input type="text" x-model="searchQuery" placeholder="Search technical or business terms..." class="w-full bg-card border border-slate-700 rounded-lg py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-400 font-mono"><i class="fa-solid fa-search absolute left-4 top-5 text-slate-500"></i></div>
+                <div class="grid gap-4 pb-20"><template x-for="row in filteredDictionary" :key="row.banker"><div class="bg-card border border-slate-800 p-5 rounded-lg hover:border-blue-400/50 transition-colors"><div class="grid md:grid-cols-3 gap-4"><div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Banker Says</span><p class="font-bold text-white" x-text="row.banker"></p></div><div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Engineer Says</span><p class="font-mono text-blue-300 text-sm" x-text="row.tech"></p></div><div class="md:border-l border-slate-700 md:pl-4"><span class="text-[10px] text-primary font-mono block uppercase mb-1">True Meaning</span><p class="text-sm text-slate-300 italic" x-text="row.translation"></p></div></div></div></template></div>
             </div>
 
-            <!-- STRATEGY MATRIX -->
+            <!-- MATRIX -->
             <div x-show="currentTab === 'matrix'" x-cloak class="max-w-4xl mx-auto">
                 <h2 class="font-mono text-2xl font-bold mb-6 text-purple-400 flex items-center"><i class="fa-solid fa-chess-board mr-3"></i>Execution Strategy Matrix</h2>
                 <div class="grid md:grid-cols-2 gap-8">
-                    <div class="bg-card p-6 rounded-xl border border-slate-800 space-y-8">
-                        <div><label class="block font-mono text-xs text-textMuted mb-4 uppercase">Strategic Importance (<span x-text="matrixCoords.y"></span>%)</label><input type="range" min="0" max="100" x-model="matrixCoords.y" class="w-full"></div>
-                        <div><label class="block font-mono text-xs text-textMuted mb-4 uppercase">Technical Complexity (<span x-text="matrixCoords.x"></span>%)</label><input type="range" min="0" max="100" x-model="matrixCoords.x" class="w-full"></div>
-                    </div>
-                    <div class="bg-card border border-slate-700 rounded-xl relative aspect-square flex items-center justify-center overflow-hidden">
-                        <div class="absolute inset-0 grid grid-cols-2 grid-rows-2">
-                            <div class="border-r border-b border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase">Build (In-house)</div>
-                            <div class="border-b border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase text-right">Buy / Partner</div>
-                            <div class="border-r border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase flex items-end">Ignore / Deprioritize</div>
-                            <div class="p-4 text-[10px] font-mono text-slate-600 uppercase text-right flex items-end justify-end">Outsource</div>
-                        </div>
-                        <div class="absolute w-6 h-6 bg-primary rounded-full shadow-glow transition-all duration-300" :style="`left: ${matrixCoords.x}%; bottom: ${matrixCoords.y}%`" style="transform: translate(-50%, 50%)"></div>
-                        <div class="z-10 bg-dark/90 p-4 rounded-lg border border-primary text-center">
-                            <p class="font-mono text-xl font-bold text-primary" x-text="getMatrixResult().strategy"></p>
-                            <p class="text-[10px] text-white mt-1" x-text="getMatrixResult().desc"></p>
-                        </div>
-                    </div>
+                    <div class="bg-card p-6 rounded-xl border border-slate-800 space-y-8"><div><label class="block font-mono text-xs text-textMuted mb-4 uppercase">Strategic Importance (<span x-text="matrixCoords.y"></span>%)</label><input type="range" min="0" max="100" x-model="matrixCoords.y" class="w-full"></div><div><label class="block font-mono text-xs text-textMuted mb-4 uppercase">Technical Complexity (<span x-text="matrixCoords.x"></span>%)</label><input type="range" min="0" max="100" x-model="matrixCoords.x" class="w-full"></div></div>
+                    <div class="bg-card border border-slate-700 rounded-xl relative aspect-square flex items-center justify-center overflow-hidden"><div class="absolute inset-0 grid grid-cols-2 grid-rows-2"><div class="border-r border-b border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase">Build (In-house)</div><div class="border-b border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase text-right">Buy / Partner</div><div class="border-r border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase flex items-end">Ignore</div><div class="p-4 text-[10px] font-mono text-slate-600 uppercase text-right flex items-end justify-end">Outsource</div></div><div class="absolute w-6 h-6 bg-primary rounded-full shadow-glow transition-all duration-300" :style="`left: ${matrixCoords.x}%; bottom: ${matrixCoords.y}%`" style="transform: translate(-50%, 50%)"></div><div class="z-10 bg-dark/90 p-4 rounded-lg border border-primary text-center"><p class="font-mono text-xl font-bold text-primary" x-text="getMatrixResult().strategy"></p><p class="text-[10px] text-white mt-1" x-text="getMatrixResult().desc"></p></div></div>
                 </div>
             </div>
 
-            <!-- COMPASS (RESTORED) -->
+            <!-- COMPASS -->
             <div x-show="currentTab === 'compass'" x-cloak class="max-w-4xl mx-auto">
                 <h2 class="font-mono text-2xl font-bold mb-6 text-cyan-400 flex items-center"><i class="fa-regular fa-compass mr-3"></i>The Bilingual Compass</h2>
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div class="bg-card p-6 rounded-xl border border-slate-800 space-y-6">
-                        <p class="text-sm text-textMuted">Balance your leadership focus.</p>
-                        <div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">NORTH (Growth) vs SOUTH (Cost)</label></div><input type="range" min="0" max="100" x-model="compassCoords.y" class="w-full"></div>
-                        <div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">WEST (Risk) vs EAST (Speed)</label></div><input type="range" min="0" max="100" x-model="compassCoords.x" class="w-full"></div>
-                    </div>
-                    <div class="bg-card border border-slate-700 rounded-xl relative aspect-square flex items-center justify-center overflow-hidden">
-                        <div class="absolute top-4 text-[10px] font-mono text-slate-500">VALUE (N)</div><div class="absolute bottom-4 text-[10px] font-mono text-slate-500">COST (S)</div><div class="absolute left-4 text-[10px] font-mono text-slate-500">RISK (W)</div><div class="absolute right-4 text-[10px] font-mono text-slate-500">SPEED (E)</div>
-                        <div class="absolute inset-0 flex items-center justify-center"><div class="w-full h-px bg-slate-800"></div><div class="h-full w-px bg-slate-800 absolute"></div></div>
-                        <div class="absolute w-6 h-6 bg-cyan-400 border-2 border-white rounded-full shadow-glow transform -translate-x-1/2 -translate-y-1/2 transition-all duration-100 ease-out z-10" :style="`left: ${compassCoords.x}%; bottom: ${compassCoords.y}%`"></div>
-                        <div class="z-10 bg-dark/90 p-4 rounded-lg border border-cyan-400 text-center"><h3 class="font-mono text-xl font-bold mb-1 text-cyan-400" x-text="getCompassResult().title"></h3><p class="text-[10px] text-white" x-text="getCompassResult().desc"></p></div>
-                    </div>
-                </div>
+                <div class="grid md:grid-cols-2 gap-8"><div class="bg-card p-6 rounded-xl border border-slate-800 space-y-6"><p class="text-sm text-textMuted">Balance your leadership focus.</p><div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">NORTH (Growth) vs SOUTH (Cost)</label></div><input type="range" min="0" max="100" x-model="compassCoords.y" class="w-full"></div><div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">WEST (Risk) vs EAST (Speed)</label></div><input type="range" min="0" max="100" x-model="compassCoords.x" class="w-full"></div></div><div class="bg-card border border-slate-700 rounded-xl relative aspect-square flex items-center justify-center overflow-hidden"><div class="absolute top-4 text-[10px] font-mono text-slate-500">VALUE (N)</div><div class="absolute bottom-4 text-[10px] font-mono text-slate-500">COST (S)</div><div class="absolute left-4 text-[10px] font-mono text-slate-500">RISK (W)</div><div class="absolute right-4 text-[10px] font-mono text-slate-500">SPEED (E)</div><div class="absolute inset-0 flex items-center justify-center"><div class="w-full h-px bg-slate-800"></div><div class="h-full w-px bg-slate-800 absolute"></div></div><div class="absolute w-6 h-6 bg-cyan-400 border-2 border-white rounded-full shadow-glow transform -translate-x-1/2 -translate-y-1/2 transition-all duration-100 ease-out z-10" :style="`left: ${compassCoords.x}%; bottom: ${compassCoords.y}%`"></div><div class="z-10 bg-dark/90 p-4 rounded-lg border border-cyan-400 text-center"><h3 class="font-mono text-xl font-bold mb-1 text-cyan-400" x-text="getCompassResult().title"></h3><p class="text-[10px] text-white" x-text="getCompassResult().desc"></p></div></div></div>
             </div>
 
-            <!-- CANVAS (RESTORED) -->
-            <div x-show="currentTab === 'canvas'" x-cloak class="max-w-4xl mx-auto">
-                <h2 class="font-mono text-2xl font-bold mb-6 text-white flex items-center"><i class="fa-solid fa-file-contract mr-3 text-blue-400"></i>Data Product Canvas</h2>
-                <div class="grid md:grid-cols-2 gap-8">
-                    <div class="space-y-4">
-                        <div><label class="text-xs font-mono text-textMuted">PRODUCT NAME</label><input type="text" x-model="canvasData.name" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono" placeholder="e.g. Real-Time Transactions"></div>
-                        <div><label class="text-xs font-mono text-textMuted">OWNER</label><input type="text" x-model="canvasData.owner" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono" placeholder="e.g. Payments Squad"></div>
-                        <div><label class="text-xs font-mono text-textMuted">JOBS TO BE DONE</label><textarea x-model="canvasData.jobs" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono h-20" placeholder="Who needs this and why?"></textarea></div>
-                        <div><label class="text-xs font-mono text-textMuted">SLO: FRESHNESS</label><input type="text" x-model="canvasData.slo1" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono" placeholder="e.g. < 500ms latency"></div>
-                    </div>
-                    <div class="bg-white text-dark p-6 rounded-lg shadow-2xl relative font-sans">
-                        <div class="absolute top-0 left-0 w-full h-2 bg-blue-500 rounded-t-lg"></div>
-                        <div class="flex justify-between items-start mb-6 mt-2"><div><h3 class="font-bold text-2xl uppercase tracking-tighter" x-text="canvasData.name || 'PRODUCT NAME'"></h3><p class="text-xs text-slate-500 font-mono mt-1">OWNER: <span x-text="canvasData.owner || '---'"></span></p></div><div class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">CERTIFIED</div></div>
-                        <div class="grid grid-cols-2 gap-4 mb-4"><div class="border border-slate-200 p-3 rounded"><p class="text-[10px] text-slate-400 font-bold uppercase mb-1">CONSUMER JOB</p><p class="text-sm font-medium leading-tight" x-text="canvasData.jobs || '---'"></p></div><div class="border border-slate-200 p-3 rounded bg-slate-50"><p class="text-[10px] text-slate-400 font-bold uppercase mb-1">GUARANTEE (SLO)</p><ul class="text-sm font-mono space-y-1"><li class="flex items-center"><i class="fa-solid fa-clock mr-2 text-blue-500"></i> <span x-text="canvasData.slo1 || '---'"></span></li></ul></div></div>
-                    </div>
-                </div>
-            </div>
+            <!-- CANVAS -->
+            <div x-show="currentTab === 'canvas'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-white flex items-center"><i class="fa-solid fa-file-contract mr-3 text-blue-400"></i>Data Product Canvas</h2><div class="grid md:grid-cols-2 gap-8"><div class="space-y-4"><div><label class="text-xs font-mono text-textMuted">PRODUCT NAME</label><input type="text" x-model="canvasData.name" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono"></div><div><label class="text-xs font-mono text-textMuted">OWNER</label><input type="text" x-model="canvasData.owner" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono"></div><div><label class="text-xs font-mono text-textMuted">JOBS TO BE DONE</label><textarea x-model="canvasData.jobs" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono h-20"></textarea></div><div><label class="text-xs font-mono text-textMuted">SLO: FRESHNESS</label><input type="text" x-model="canvasData.slo1" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono"></div></div><div class="bg-white text-dark p-6 rounded-lg shadow-2xl relative font-sans"><div class="absolute top-0 left-0 w-full h-2 bg-blue-500 rounded-t-lg"></div><div class="flex justify-between items-start mb-6 mt-2"><div><h3 class="font-bold text-2xl uppercase tracking-tighter" x-text="canvasData.name || 'PRODUCT NAME'"></h3><p class="text-xs text-slate-500 font-mono mt-1">OWNER: <span x-text="canvasData.owner || '---'"></span></p></div><div class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">CERTIFIED</div></div><div class="grid grid-cols-2 gap-4 mb-4"><div class="border border-slate-200 p-3 rounded"><p class="text-[10px] text-slate-400 font-bold uppercase mb-1">CONSUMER JOB</p><p class="text-sm font-medium leading-tight" x-text="canvasData.jobs || '---'"></p></div><div class="border border-slate-200 p-3 rounded bg-slate-50"><p class="text-[10px] text-slate-400 font-bold uppercase mb-1">GUARANTEE (SLO)</p><ul class="text-sm font-mono space-y-1"><li class="flex items-center"><i class="fa-solid fa-clock mr-2 text-blue-500"></i> <span x-text="canvasData.slo1 || '---'"></span></li></ul></div></div></div></div></div>
 
-            <!-- TALENT RADAR -->
-            <div x-show="currentTab === 'talent'" x-cloak class="max-w-4xl mx-auto">
-                <h2 class="font-mono text-2xl font-bold mb-6 text-hotpink flex items-center"><i class="fa-solid fa-fingerprint mr-3"></i>Agile Talent Radar</h2>
-                <div class="grid md:grid-cols-2 gap-10">
-                    <div class="space-y-6">
-                        <template x-for="(skill, idx) in talentSkills" :key="idx">
-                            <div>
-                                <div class="flex justify-between mb-2"><label class="font-mono text-xs text-white uppercase" x-text="skill.label"></label><span class="font-mono text-hotpink" x-text="skill.val"></span></div>
-                                <input type="range" min="1" max="5" step="1" x-model.number="skill.val" @input="updateTalentChart()" class="w-full">
-                            </div>
-                        </template>
-                    </div>
-                    <div class="bg-card border border-slate-800 p-4 rounded-xl flex items-center justify-center h-80">
-                        <canvas id="talentChart"></canvas>
-                    </div>
-                </div>
-            </div>
+            <!-- TALENT -->
+            <div x-show="currentTab === 'talent'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-hotpink flex items-center"><i class="fa-solid fa-fingerprint mr-3"></i>Agile Talent Radar</h2><div class="grid md:grid-cols-2 gap-10"><div class="space-y-6"><template x-for="(skill, idx) in talentSkills" :key="idx"><div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white uppercase" x-text="skill.label"></label><span class="font-mono text-hotpink" x-text="skill.val"></span></div><input type="range" min="1" max="5" step="1" x-model.number="skill.val" @input="updateTalentChart()" class="w-full"></div></template></div><div class="bg-card border border-slate-800 p-4 rounded-xl flex items-center justify-center h-80"><canvas id="talentChart"></canvas></div></div></div>
 
-            <!-- LIGHTHOUSE CHECKLIST (RESTORED) -->
-            <div x-show="currentTab === 'lighthouse'" x-cloak class="max-w-3xl mx-auto">
-                <h2 class="font-mono text-2xl font-bold mb-6 text-warn flex items-center"><i class="fa-solid fa-lightbulb mr-3"></i>Lighthouse Selection</h2>
-                <div class="bg-card border border-slate-700 rounded-xl p-6 mb-8">
-                    <p class="text-textMuted mb-6 font-mono text-sm border-l-2 border-warn pl-4">WARNING: If you cannot check all 10 boxes, choose a different project.</p>
-                    <div class="space-y-3">
-                        <template x-for="(item, index) in lighthouseData" :key="index">
-                            <label class="flex items-start space-x-4 p-3 rounded hover:bg-slate-800 cursor-pointer transition-colors">
-                                <input type="checkbox" x-model="item.checked" class="mt-1 h-4 w-4 rounded border-slate-500 text-primary focus:ring-primary bg-dark">
-                                <div><span class="font-mono text-[10px] text-slate-500 block mb-0.5" x-text="item.category"></span><span class="text-sm text-slate-200" x-text="item.text"></span></div>
-                            </label>
-                        </template>
-                    </div>
-                </div>
-                <div class="p-6 rounded-xl border-2 text-center transition-colors duration-300" :class="getLighthouseStatus().border">
-                    <h3 class="font-mono text-3xl font-bold mb-2" :class="getLighthouseStatus().text" x-text="getLighthouseStatus().title"></h3>
-                    <p class="text-slate-300" x-text="getLighthouseStatus().desc"></p>
-                    <div class="mt-4 font-mono text-sm opacity-75"><span x-text="lighthouseCount"></span> / 10 CHECKS CLEARED</div>
-                </div>
-            </div>
+            <!-- LIGHTHOUSE -->
+            <div x-show="currentTab === 'lighthouse'" x-cloak class="max-w-3xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-warn flex items-center"><i class="fa-solid fa-lightbulb mr-3"></i>Lighthouse Selection</h2><div class="bg-card border border-slate-700 rounded-xl p-6 mb-8"><p class="text-textMuted mb-6 font-mono text-sm border-l-2 border-warn pl-4">WARNING: If you cannot check all 10 boxes, choose a different project.</p><div class="space-y-3"><template x-for="(item, index) in lighthouseData" :key="index"><label class="flex items-start space-x-4 p-3 rounded hover:bg-slate-800 cursor-pointer transition-colors"><input type="checkbox" x-model="item.checked" class="mt-1 h-4 w-4 rounded border-slate-500 text-primary bg-dark"><div><span class="font-mono text-[10px] text-slate-500 block mb-0.5" x-text="item.category"></span><span class="text-sm text-slate-200" x-text="item.text"></span></div></label></template></div></div><div class="p-6 rounded-xl border-2 text-center transition-colors duration-300" :class="getLighthouseStatus().border"><h3 class="font-mono text-3xl font-bold mb-2" :class="getLighthouseStatus().text" x-text="getLighthouseStatus().title"></h3><p class="text-slate-300" x-text="getLighthouseStatus().desc"></p><div class="mt-4 font-mono text-sm opacity-75"><span x-text="lighthouseCount"></span> / 10 CHECKS CLEARED</div></div></div>
 
-            <!-- BOARD GUIDE (RESTORED) -->
-            <div x-show="currentTab === 'board'" x-cloak class="max-w-4xl mx-auto">
-                <h2 class="font-mono text-2xl font-bold mb-6 text-risk flex items-center"><i class="fa-solid fa-chess-king mr-3"></i>The Board Director's Guide</h2>
-                <div class="space-y-6">
-                    <template x-for="risk in boardRisks" :key="risk.title">
-                        <div class="bg-card border border-slate-700 border-l-4 border-l-risk rounded-r-xl overflow-hidden">
-                            <div class="bg-risk/10 p-4 border-b border-slate-700"><h3 class="font-mono font-bold text-risk" x-text="risk.title"></h3><p class="text-white font-bold" x-text="risk.subtitle"></p></div>
-                            <div class="p-6 grid md:grid-cols-2 gap-8">
-                                <div><div class="mb-4"><span class="text-[10px] font-mono text-risk bg-risk/10 px-2 py-1 rounded">THE LIE</span><p class="mt-2 text-slate-300 italic text-sm" x-text="risk.lie"></p></div>
-                                <div><span class="text-[10px] font-mono text-primary bg-primary/10 px-2 py-1 rounded">THE TRUTH</span><p class="mt-2 text-white font-medium text-sm" x-text="risk.truth"></p></div></div>
-                                <div class="bg-dark p-4 rounded border border-slate-700 flex flex-col justify-center"><span class="text-[10px] font-mono text-slate-500 mb-2 uppercase">The Question for the CEO</span><p class="font-mono text-sm text-primary leading-relaxed"><i class="fa-solid fa-quote-left text-slate-600 mr-2"></i><span x-text="risk.question"></span></p></div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
+            <!-- BOARD -->
+            <div x-show="currentTab === 'board'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-risk flex items-center"><i class="fa-solid fa-chess-king mr-3"></i>The Board Director's Guide</h2><div class="space-y-6"><template x-for="risk in boardRisks" :key="risk.title"><div class="bg-card border border-slate-700 border-l-4 border-l-risk rounded-r-xl overflow-hidden"><div class="bg-risk/10 p-4 border-b border-slate-700"><h3 class="font-mono font-bold text-risk" x-text="risk.title"></h3><p class="text-white font-bold" x-text="risk.subtitle"></p></div><div class="p-6 grid md:grid-cols-2 gap-8"><div><div class="mb-4"><span class="text-[10px] font-mono text-risk bg-risk/10 px-2 py-1 rounded">THE LIE</span><p class="mt-2 text-slate-300 italic text-sm" x-text="risk.lie"></p></div><div><span class="text-[10px] font-mono text-primary bg-primary/10 px-2 py-1 rounded">THE TRUTH</span><p class="mt-2 text-white font-medium text-sm" x-text="risk.truth"></p></div></div><div class="bg-dark p-4 rounded border border-slate-700 flex flex-col justify-center"><span class="text-[10px] font-mono text-slate-500 mb-2 uppercase">The Question for the CEO</span><p class="font-mono text-sm text-primary leading-relaxed"><i class="fa-solid fa-quote-left text-slate-600 mr-2"></i><span x-text="risk.question"></span></p></div></div></div></template></div></div>
 
-            <!-- REPAIR KIT (RESTORED) -->
-            <div x-show="currentTab === 'repair'" x-cloak class="max-w-4xl mx-auto">
-                <h2 class="font-mono text-2xl font-bold mb-6 text-risk flex items-center"><i class="fa-solid fa-toolbox mr-3"></i>Transformation Repair Kit</h2>
-                <div class="space-y-4">
-                    <template x-for="(item, index) in repairKitData" :key="index">
-                        <div class="bg-card border border-slate-700 rounded-xl overflow-hidden">
-                            <button @click="activeRepair = activeRepair === index ? null : index" class="w-full flex justify-between items-center p-5 text-left hover:bg-slate-800 transition-colors">
-                                <div><span class="font-mono text-[10px] text-risk mb-1 block">SYMPTOM</span><span class="font-bold text-lg text-slate-200" x-text="item.symptom"></span></div>
-                                <i class="fa-solid fa-chevron-down text-slate-500 transition-transform duration-300" :class="activeRepair === index ? 'rotate-180' : ''"></i>
-                            </button>
-                            <div x-show="activeRepair === index" x-collapse><div class="p-5 border-t border-slate-700 bg-dark/30"><div class="mb-4"><h4 class="font-mono text-primary text-xs font-bold mb-2">// DIAGNOSIS</h4><p class="text-slate-300 text-sm" x-text="item.diagnosis"></p></div><div class="p-4 bg-slate-800/50 rounded border-l-2 border-primary"><h4 class="font-mono text-white text-xs font-bold mb-2">RX: PRESCRIPTION</h4><ul class="list-disc list-inside text-slate-400 text-sm space-y-1"><template x-for="step in item.prescription" :key="step"><li x-text="step"></li></template></ul></div></div></div>
-                        </div>
-                    </template>
-                </div>
-            </div>
+            <!-- REPAIR -->
+            <div x-show="currentTab === 'repair'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-risk flex items-center"><i class="fa-solid fa-toolbox mr-3"></i>Transformation Repair Kit</h2><div class="space-y-4"><template x-for="(item, index) in repairKitData" :key="index"><div class="bg-card border border-slate-700 rounded-xl overflow-hidden"><button @click="activeRepair = activeRepair === index ? null : index" class="w-full flex justify-between items-center p-5 text-left hover:bg-slate-800 transition-colors"><div><span class="font-mono text-[10px] text-risk mb-1 block">SYMPTOM</span><span class="font-bold text-lg text-slate-200" x-text="item.symptom"></span></div><i class="fa-solid fa-chevron-down text-slate-500 transition-transform duration-300" :class="activeRepair === index ? 'rotate-180' : ''"></i></button><div x-show="activeRepair === index" x-collapse><div class="p-5 border-t border-slate-700 bg-dark/30"><div class="mb-4"><h4 class="font-mono text-primary text-xs font-bold mb-2">// DIAGNOSIS</h4><p class="text-slate-300 text-sm" x-text="item.diagnosis"></p></div><div class="p-4 bg-slate-800/50 rounded border-l-2 border-primary"><h4 class="font-mono text-white text-xs font-bold mb-2">RX: PRESCRIPTION</h4><ul class="list-disc list-inside text-slate-400 text-sm space-y-1"><template x-for="step in item.prescription" :key="step"><li x-text="step"></li></template></ul></div></div></div></div></template></div></div>
             
-            <!-- GLOSSARY (RESTORED) -->
-            <div x-show="currentTab === 'glossary'" x-cloak class="max-w-4xl mx-auto">
-                <h2 class="font-mono text-2xl font-bold mb-6 text-purple-400 flex items-center"><i class="fa-solid fa-book-open mr-3"></i>The Bilingual Dictionary</h2>
-                <div class="mb-6 relative"><input type="text" x-model="glossarySearch" placeholder="Filter terms..." class="w-full bg-card border border-slate-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-400 font-mono"></div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20">
-                    <template x-for="term in filteredGlossary" :key="term.term"><div class="bg-card border border-slate-700 p-5 rounded-lg hover:border-purple-400/50 transition-colors"><h3 class="font-mono text-primary font-bold mb-2" x-text="term.term"></h3><p class="text-sm text-slate-300 leading-relaxed" x-text="term.def"></p></div></template>
-                </div>
-            </div>
+            <!-- GLOSSARY -->
+            <div x-show="currentTab === 'glossary'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-purple-400 flex items-center"><i class="fa-solid fa-book-open mr-3"></i>The Glossary</h2><div class="mb-6"><input type="text" x-model="glossarySearch" placeholder="Filter terms..." class="w-full bg-card border border-slate-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-400 font-mono"></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20"><template x-for="term in filteredGlossary" :key="term.term"><div class="bg-card border border-slate-700 p-5 rounded-lg hover:border-purple-400/50 transition-colors"><h3 class="font-mono text-primary font-bold mb-2" x-text="term.term"></h3><p class="text-sm text-slate-300 leading-relaxed" x-text="term.def"></p></div></template></div></div>
 
-            <!-- RESOURCES (RESTORED) -->
-            <div x-show="currentTab === 'resources'" x-cloak class="max-w-4xl mx-auto">
-                <h2 class="font-mono text-2xl font-bold mb-6 text-green-300 flex items-center"><i class="fa-solid fa-book-bookmark mr-3"></i>Recommended Resources</h2>
-                <div class="bg-card border border-slate-700 rounded-xl p-6">
-                    <ul class="space-y-4">
-                        <li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Project to Product (Mik Kersten)</h4><p class="text-sm text-textMuted">Definitive guide to the "Flow Framework".</p></li>
-                        <li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Team Topologies (Skelton & Pais)</h4><p class="text-sm text-textMuted">Blueprint for structuring squads.</p></li>
-                        <li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Sooner Safer Happier (Jonathan Smart)</h4><p class="text-sm text-textMuted">Agile for regulated banks.</p></li>
-                        <li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Data Mesh (Zhamak Dehghani)</h4><p class="text-sm text-textMuted">Data as a Product.</p></li>
-                    </ul>
-                </div>
-            </div>
+            <!-- RESOURCES -->
+            <div x-show="currentTab === 'resources'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-green-300 flex items-center"><i class="fa-solid fa-book-bookmark mr-3"></i>Recommended Resources</h2><div class="bg-card border border-slate-700 rounded-xl p-6"><ul class="space-y-4"><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Project to Product (Mik Kersten)</h4><p class="text-sm text-textMuted">Definitive guide to the "Flow Framework".</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Team Topologies (Skelton & Pais)</h4><p class="text-sm text-textMuted">Blueprint for structuring squads.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Sooner Safer Happier (Jonathan Smart)</h4><p class="text-sm text-textMuted">Agile for regulated banks.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Data Mesh (Zhamak Dehghani)</h4><p class="text-sm text-textMuted">Data as a Product.</p></li></ul></div></div>
 
             <!-- COMMUNITY -->
-            <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
-                <div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl">
-                    <i class="fa-solid fa-users-line text-6xl text-primary mb-6"></i>
-                    <h2 class="font-mono text-3xl font-bold text-white mb-4">The Fintech Bilinguals</h2>
-                    <p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders.</p>
-                    <div class="bg-white p-4 inline-block rounded-lg mb-6"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.fintechbilinguals.com" alt="QR Code" class="w-32 h-32"></div>
-                </div>
-            </div>
+            <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center"><div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl"><i class="fa-solid fa-users-line text-6xl text-primary mb-6"></i><h2 class="font-mono text-3xl font-bold text-white mb-4">The Fintech Bilinguals</h2><p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders.</p><div class="bg-white p-4 inline-block rounded-lg mb-6"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.fintechbilinguals.com" alt="QR Code" class="w-32 h-32"></div></div></div>
 
         </main>
 
-        <!-- CHAT INTERFACE (v14.0 UI + v13.2 Logic) -->
+        <!-- CHAT INTERFACE WITH API SETTINGS -->
         <div x-show="isChatOpen" class="fixed inset-0 z-50 md:inset-auto md:bottom-24 md:right-6 md:w-96 md:h-[550px] bg-dark flex flex-col md:rounded-2xl border-l md:border border-primary shadow-2xl overflow-hidden font-sans" x-transition>
             <div class="bg-card p-4 border-b border-slate-700 flex justify-between items-center pt-safe">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary"><i class="fa-solid fa-bolt text-sm"></i></div>
                     <div><h3 class="font-bold text-white text-sm">Bilingual AI Assistant</h3><p class="text-[10px] text-textMuted uppercase tracking-tighter">Gemini 1.5 Flash / 2.0 Failover</p></div>
                 </div>
-                <button @click="isChatOpen = false" class="text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+                <div class="flex items-center gap-2">
+                    <button @click="showKeyModal = true" class="text-slate-400 hover:text-primary p-2" title="API Settings"><i class="fa-solid fa-key"></i></button>
+                    <button @click="isChatOpen = false" class="text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
             </div>
             
             <div class="flex-1 overflow-y-auto p-4 flex flex-col space-y-4 bg-dark" id="chat-messages-container">
                 <div class="chat-bubble chat-bot">Hello. I translate IT jargon into P&L impact. How can I help you today?</div>
-                <template x-for="msg in chatMessages">
-                    <div class="chat-bubble" :class="msg.role === 'user' ? 'chat-user' : 'chat-bot'" x-html="msg.text"></div>
-                </template>
-                <div x-show="isTyping" class="chat-bubble chat-bot flex gap-1 items-center w-16">
-                    <div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div>
-                </div>
+                <template x-for="msg in chatMessages"><div class="chat-bubble" :class="msg.role === 'user' ? 'chat-user' : 'chat-bot'" x-html="msg.text"></div></template>
+                <div x-show="isTyping" class="chat-bubble chat-bot flex gap-1 items-center w-16"><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div></div>
             </div>
 
             <div class="p-4 bg-card border-t border-slate-800 pb-safe">
                 <div class="relative flex gap-2">
                     <input type="text" x-model="chatInput" @keydown.enter="sendMessage()" placeholder="Ask a question..." class="flex-1 bg-dark text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-slate-700">
                     <button @click="sendMessage()" class="w-12 h-12 bg-primary rounded-full text-dark flex items-center justify-center active:scale-90 transition-transform"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API KEY MODAL -->
+        <div x-show="showKeyModal" class="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm" x-cloak>
+            <div class="bg-card border border-slate-600 p-6 rounded-lg max-w-sm w-full shadow-2xl">
+                <h3 class="text-white font-bold mb-2">API Settings</h3>
+                <p class="text-xs text-slate-400 mb-4">Enter your Google Gemini API Key. Keys are stored safely in your browser's local memory.</p>
+                <input type="password" x-model="userApiKey" placeholder="AIzaSy..." class="w-full bg-dark border border-slate-600 rounded p-2 text-white mb-4 font-mono text-sm">
+                <div class="flex justify-end gap-2">
+                    <button @click="showKeyModal = false" class="text-xs text-slate-400 px-3 py-2">Close</button>
+                    <button @click="saveApiKey()" class="bg-primary text-dark text-xs font-bold px-4 py-2 rounded">Save Key</button>
                 </div>
             </div>
         </div>
@@ -400,9 +320,8 @@
             <div class="flex justify-between items-center mb-8"><h2 class="text-primary font-mono text-xl font-bold">Tools Menu</h2><button @click="mobileMenuOpen=false"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
             <div class="grid grid-cols-2 gap-4 pb-20">
                 <template x-for="item in navItems" :key="item.id">
-                    <button @click="handleNavClick(item.id); mobileMenuOpen=false" class="bg-card p-4 rounded-xl border border-slate-800 flex flex-col items-center gap-2">
-                        <i :class="item.icon" class="text-xl text-slate-400"></i>
-                        <span x-text="item.label" class="text-[10px] font-mono text-white text-center"></span>
+                    <button @click="handleNavClick(item.id); mobileMenuOpen=false" x-show="!item.vip || isVipMode" class="bg-card p-4 rounded-xl border border-slate-800 flex flex-col items-center gap-2">
+                        <i :class="item.icon" class="text-xl text-slate-400"></i><span x-text="item.label" class="text-[10px] font-mono text-white text-center"></span>
                     </button>
                 </template>
             </div>
@@ -411,14 +330,30 @@
     </div>
 
     <script>
+        const DEFAULT_API_KEY = "AIzaSyBzfLO83HYmdNfNd0yDjWN4dxzmIfd9eY4"; 
+
         function toolkit() {
             return {
                 currentTab: 'dashboard',
                 mobileMenuOpen: false,
+                isMobile: window.innerWidth < 768,
+                showPwaPrompt: true,
+                
+                // VIP Logic
+                isVipMode: false,
+                showVipIntro: false,
+                bootStep: 0,
+                bootProgress: 0,
+
+                // AI Logic
                 isChatOpen: false,
                 chatInput: '',
                 chatMessages: [],
                 isTyping: false,
+                userApiKey: '',
+                showKeyModal: false,
+
+                // Data state
                 searchQuery: '',
                 glossarySearch: '',
                 assessmentSubmitted: false,
@@ -426,18 +361,23 @@
                 copyBtnText: "Copy Challenge Link",
                 activeRepair: null,
                 
-                // State Data
                 matrixCoords: { x: 50, y: 50 },
                 compassCoords: { x: 50, y: 50 },
                 canvasData: { name: '', owner: '', jobs: '', slo1: '' },
                 talentSkills: [ { label: "Tech Fluency", val: 3 }, { label: "P&L Literacy", val: 3 }, { label: "Data Culture", val: 3 }, { label: "Squad Autonomy", val: 3 }, { label: "Change EQ", val: 3 } ],
                 
-                // Charts
                 talentChartInstance: null,
                 gapChartInstance: null,
 
                 initApp() {
                     const params = new URLSearchParams(window.location.search);
+                    
+                    // 1. VIP Mode Check
+                    if (params.get('access') === 'vip_nfc_001') {
+                        this.triggerVipSequence();
+                    }
+
+                    // 2. Gap Mode Check
                     const challenger = params.get('challenger');
                     if (challenger) {
                         try {
@@ -445,6 +385,37 @@
                             this.currentTab = 'assessment';
                         } catch (e) { console.error("URL Parameter Error", e); }
                     }
+
+                    // 3. Load Saved Key & Scores
+                    const savedKey = localStorage.getItem('bilingual_api_key');
+                    if(savedKey) this.userApiKey = savedKey;
+
+                    const savedScores = localStorage.getItem('bilingual_scores');
+                    if (savedScores) {
+                        try {
+                            const parsed = JSON.parse(savedScores);
+                            this.assessmentData.forEach((section, sIdx) => {
+                                section.questions.forEach((q, qIdx) => {
+                                    if(parsed[sIdx] && parsed[sIdx][qIdx]) q.score = parsed[sIdx][qIdx];
+                                });
+                            });
+                        } catch(e) {}
+                    }
+
+                    // 4. Watcher for Auto-save
+                    this.$watch('assessmentData', (val) => {
+                        const simpleScores = val.map(s => s.questions.map(q => q.score));
+                        localStorage.setItem('bilingual_scores', JSON.stringify(simpleScores));
+                    });
+                },
+
+                triggerVipSequence() {
+                    this.isVipMode = true;
+                    this.showVipIntro = true;
+                    setTimeout(() => { this.bootStep = 1; this.bootProgress = 30; }, 500);
+                    setTimeout(() => { this.bootStep = 2; this.bootProgress = 60; }, 1500);
+                    setTimeout(() => { this.bootStep = 3; this.bootProgress = 100; }, 2500);
+                    setTimeout(() => { this.showVipIntro = false; this.currentTab = 'architect'; }, 4000);
                 },
 
                 handleNavClick(tab) {
@@ -456,7 +427,12 @@
                     });
                 },
 
-                // AI LOGIC (v13.2 Robustness)
+                saveApiKey() {
+                    localStorage.setItem('bilingual_api_key', this.userApiKey);
+                    this.showKeyModal = false;
+                },
+
+                // ROBUST AI WITH FALLBACKS
                 async sendMessage() {
                     if (!this.chatInput.trim()) return;
                     const userText = this.chatInput;
@@ -465,11 +441,11 @@
                     this.isTyping = true;
                     this.scrollToBottom();
 
-                    const GEMINI_API_KEY = "AIzaSyBzfLO83HYmdNfNd0yDjWN4dxzmIfd9eY4"; 
-                    const systemPrompt = "You are 'The Translator', a Bilingual Executive Assistant. Translate technical jargon into business impact (P&L, Risk, Speed). Rules: Technical Debt->Financial leverage; Refactoring->Renovation; Microservices->Legos; API->Universal Adapter. Tone: Concise, executive.";
+                    const API_KEY = this.userApiKey || DEFAULT_API_KEY; 
+                    const systemPrompt = "You are 'The Translator', a Bilingual Executive Assistant. Translate technical jargon into business impact (P&L, Risk, Speed). Rules: Technical Debt->Financial leverage; Refactoring->Renovation; Microservices->Legos. Tone: Concise, executive.";
                     
                     const tryFetch = async (model, version) => {
-                        const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${GEMINI_API_KEY}`, {
+                        const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${API_KEY}`, {
                             method: "POST", headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nInput: " + userText }] }] })
                         });
@@ -482,15 +458,13 @@
                         try {
                             data = await tryFetch("gemini-1.5-flash-latest", "v1beta"); // Primary
                         } catch (e) {
-                            console.log("Primary model failed, trying fallback...");
+                            console.log("Primary model failed, trying fallback 2.0...");
                             data = await tryFetch("gemini-2.0-flash-exp", "v1beta"); // Fallback
                         }
 
-                        let botText = "";
+                        let botText = "I couldn't process that request.";
                         if (data.candidates && data.candidates[0].content) {
                             botText = data.candidates[0].content.parts[0].text;
-                        } else {
-                            botText = "I couldn't process that request. Please try again.";
                         }
                         
                         this.isTyping = false;
@@ -498,7 +472,7 @@
                         this.scrollToBottom();
                     } catch (error) {
                         this.isTyping = false;
-                        this.chatMessages.push({ role: 'bot', text: "Connection error. Please check your internet connection." });
+                        this.chatMessages.push({ role: 'bot', text: "Connection error. Please check your API Key." });
                     }
                 },
 
@@ -509,84 +483,11 @@
                     });
                 },
 
-                // Charts
-                updateTalentChart() {
-                    const ctx = document.getElementById('talentChart');
-                    if (!ctx) return;
-                    if (this.talentChartInstance) this.talentChartInstance.destroy();
-                    Chart.defaults.font.family = '"JetBrains Mono", monospace';
-                    this.talentChartInstance = new Chart(ctx, {
-                        type: 'radar',
-                        data: {
-                            labels: this.talentSkills.map(s => s.label),
-                            datasets: [{ data: this.talentSkills.map(s => s.val), backgroundColor: 'rgba(244, 114, 182, 0.2)', borderColor: '#f472b6', pointBackgroundColor: '#fff' }]
-                        },
-                        options: {
-                            plugins: { legend: { display: false } },
-                            scales: { r: { min: 0, max: 5, ticks: { display: false }, grid: { color: '#334155' }, angleLines: { color: '#334155' } } }
-                        }
-                    });
-                },
-
-                finishAssessment() {
-                    this.assessmentSubmitted = true;
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    if (this.challengerData) this.$nextTick(() => this.updateGapChart());
-                },
-
-                updateGapChart() {
-                    const ctx = document.getElementById('gapChart');
-                    if (!ctx) return;
-                    if (this.gapChartInstance) this.gapChartInstance.destroy();
-
-                    // Uses v13.2 Logic for segmentation
-                    const my = [
-                        this.assessmentData[0].questions.reduce((a,b)=>a+b.score,0), 
-                        this.assessmentData[1].questions.reduce((a,b)=>a+b.score,0), 
-                        this.assessmentData[2].questions.reduce((a,b)=>a+b.score,0)
-                    ];
-                    // Handles Challenger Data format
-                    const cs = this.challengerData.scores;
-                    const ch = [
-                         cs.slice(0,5).reduce((a,b)=>a+b,0), 
-                         cs.slice(5,10).reduce((a,b)=>a+b,0), 
-                         cs.slice(10,15).reduce((a,b)=>a+b,0)
-                    ];
-
-                    this.gapChartInstance = new Chart(ctx, {
-                        type: 'radar',
-                        data: {
-                            labels: ['Data', 'Delivery', 'Culture'],
-                            datasets: [
-                                { label: 'You', data: my, borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.2)' },
-                                { label: 'Challenger', data: ch, borderColor: '#f472b6', backgroundColor: 'rgba(244, 114, 182, 0.2)' }
-                            ]
-                        },
-                        options: { scales: { r: { min: 0, max: 25, grid: { color: '#334155' }, angleLines: { color: '#334155' } } } }
-                    });
-                },
-
-                // Business Logic Calculators
-                getMatrixResult() {
-                    const { x, y } = this.matrixCoords;
-                    if (y > 60 && x < 40) return { strategy: "BUILD", desc: "Critical IP. High value, low complexity. Don't let vendors touch this." };
-                    if (y > 60 && x >= 40) return { strategy: "BUY", desc: "High value but hard to build. Buy speed (SaaS/Partner)." };
-                    if (y <= 60 && x >= 60) return { strategy: "OUTSOURCE", desc: "Non-core commodity. Use standard off-the-shelf tools." };
-                    return { strategy: "DEPRIORITIZE", desc: "Low value. Don't waste resources." };
-                },
-                getCompassResult() {
-                    const { x, y } = this.compassCoords;
-                    if (y > 50 && x > 50) return { title: "INNOVATION LEADER (NE)", desc: "North-East. Fast growth, but check your safety brakes." };
-                    if (y <= 50 && x <= 50) return { title: "TRADITIONAL BANKER (SW)", desc: "South-West. Safe and cheap, but you are slowly dying." };
-                    if (y > 50 && x <= 50) return { title: "RISK TAKER (NW)", desc: "North-West. High value but high control. Hard to sustain." };
-                    return { title: "DIGITAL FACTORY (SE)", desc: "South-East. Fast and cheap execution, but are you building the right thing?" };
-                },
-
-                // Data & Scoring
+                // Assessment Logic
                 assessmentData: [
-                    { title: "Data Velocity", questions: [{text:"Accessibility",score:1,desc:"Can devs get data without a ticket?"},{text:"Quality",score:1,desc:"Is data trusted?"},{text:"Ownership",score:1,desc:"Is ownership clear?"},{text:"Architecture",score:1,desc:"Mesh or Monolith?"},{text:"Trust",score:1,desc:"Single source of truth?"}] },
-                    { title: "Agile Delivery", questions: [{text:"Funding",score:1,desc:"Projects or Value Streams?"},{text:"Releases",score:1,desc:"Monthly or Daily?"},{text:"Architecture",score:1,desc:"Decoupled?"},{text:"Compliance",score:1,desc:"Manual (1) or Auto (5)?"},{text:"Vendors",score:1,desc:"Partners or Body Shop?"}] },
-                    { title: "Culture", questions: [{text:"Literacy",score:1,desc:"Does ExCo understand Tech?"},{text:"Safety",score:1,desc:"Is failure punished?"},{text:"Decisions",score:1,desc:"HiPPO or Data?"},{text:"Silos",score:1,desc:"Functional or Cross-functional?"},{text:"Talent",score:1,desc:"Mercenaries or Missionaries?"}] }
+                    { title: "Data Velocity", questions: [{text:"Accessibility",score:3,desc:"Can devs get data without a ticket?"},{text:"Quality",score:3,desc:"Is data trusted?"},{text:"Ownership",score:3,desc:"Is ownership clear?"},{text:"Architecture",score:3,desc:"Mesh or Monolith?"},{text:"Trust",score:3,desc:"Single source of truth?"}] },
+                    { title: "Agile Delivery", questions: [{text:"Funding",score:3,desc:"Projects or Value Streams?"},{text:"Releases",score:3,desc:"Monthly or Daily?"},{text:"Architecture",score:3,desc:"Decoupled?"},{text:"Compliance",score:3,desc:"Manual (1) or Auto (5)?"},{text:"Vendors",score:3,desc:"Partners or Body Shop?"}] },
+                    { title: "Culture", questions: [{text:"Literacy",score:3,desc:"Does ExCo understand Tech?"},{text:"Safety",score:3,desc:"Is failure punished?"},{text:"Decisions",score:3,desc:"HiPPO or Data?"},{text:"Silos",score:3,desc:"Functional or Squads?"},{text:"Talent",score:3,desc:"Mercenaries or Missionaries?"}] }
                 ],
                 get calculateScore() {
                     let total = 0;
@@ -595,9 +496,10 @@
                     let compliance = this.assessmentData[1].questions[3].score;
                     
                     let isSafetyVeto = safety <= 2;
-                    let isManualDrag = compliance === 1;
+                    let isManualDrag = compliance <= 2;
                     
-                    if(isManualDrag) total = Math.floor(total * 0.9);
+                    // VIP Refined Logic: 20% Penalty for Manual Drag
+                    if(isManualDrag) total = Math.floor(total * 0.8); 
                     if(isSafetyVeto) total = Math.min(total, 40);
                     
                     return { total, isSafetyVeto, isManualDrag };
@@ -605,11 +507,39 @@
                 getAssessmentResult() {
                     const s = this.calculateScore.total;
                     if (s <= 40) return { title: "DANGER ZONE", desc: "Data Swamp. Stop buying AI. Fix culture first." };
-                    if (s <= 65) return { title: "TRANSITIONING", desc: "Pockets of agility exist but are crushed by legacy governance." };
+                    if (s <= 60) return { title: "TRANSITIONING", desc: "Pockets of agility exist but are crushed by legacy governance." };
                     return { title: "AGILE BANK", desc: "Market Leader capability. Data flows fast." };
                 },
-                getAssessmentColor() { const s = this.calculateScore.total; return s<=40?'text-risk':s<=65?'text-warn':'text-primary'; },
+                getAssessmentColor() { const s = this.calculateScore.total; return s<=40?'text-risk':s<=60?'text-warn':'text-primary'; },
                 
+                finishAssessment() { this.assessmentSubmitted = true; window.scrollTo({ top: 0, behavior: 'smooth' }); if (this.challengerData) this.$nextTick(() => this.updateGapChart()); },
+                resetAssessment() { this.assessmentSubmitted = false; localStorage.removeItem('bilingual_scores'); this.assessmentData.forEach(s => s.questions.forEach(q => q.score = 3)); },
+                
+                // Charts & Outputs
+                updateTalentChart() {
+                    const ctx = document.getElementById('talentChart');
+                    if (!ctx) return;
+                    if (this.talentChartInstance) this.talentChartInstance.destroy();
+                    Chart.defaults.font.family = '"JetBrains Mono", monospace';
+                    this.talentChartInstance = new Chart(ctx, {
+                        type: 'radar',
+                        data: { labels: this.talentSkills.map(s => s.label), datasets: [{ data: this.talentSkills.map(s => s.val), backgroundColor: 'rgba(244, 114, 182, 0.2)', borderColor: '#f472b6', pointBackgroundColor: '#fff' }] },
+                        options: { plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 5, ticks: { display: false }, grid: { color: '#334155' }, angleLines: { color: '#334155' } } } }
+                    });
+                },
+
+                updateGapChart() {
+                    const ctx = document.getElementById('gapChart');
+                    if (!ctx) return;
+                    if (this.gapChartInstance) this.gapChartInstance.destroy();
+
+                    const my = [this.assessmentData[0].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[1].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[2].questions.reduce((a,b)=>a+b.score,0)];
+                    const cs = this.challengerData.scores;
+                    const ch = [cs.slice(0,5).reduce((a,b)=>a+b,0), cs.slice(5,10).reduce((a,b)=>a+b,0), cs.slice(10,15).reduce((a,b)=>a+b,0)];
+
+                    this.gapChartInstance = new Chart(ctx, { type: 'radar', data: { labels: ['Data', 'Delivery', 'Culture'], datasets: [{ label: 'You', data: my, borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.2)' }, { label: 'Challenger', data: ch, borderColor: '#f472b6', backgroundColor: 'rgba(244, 114, 182, 0.2)' }] }, options: { scales: { r: { min: 0, max: 25, grid: { color: '#334155' }, angleLines: { color: '#334155' } } } } });
+                },
+
                 async generatePDF() {
                     const { jsPDF } = window.jspdf; const doc = new jsPDF();
                     const s = this.calculateScore.total; const r = this.getAssessmentResult();
@@ -625,57 +555,39 @@
                 copyChallengeLink() {
                     const scores = this.assessmentData.flatMap(s => s.questions.map(q => q.score));
                     const payload = btoa(JSON.stringify({ scores, title: "Executive Peer" }));
-                    const url = `${window.location.origin}${window.location.pathname}?challenger=${payload}`;
-                    navigator.clipboard.writeText(url);
+                    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?challenger=${payload}`);
                     this.copyBtnText = "Link Copied!";
                     setTimeout(() => this.copyBtnText = "Copy Challenge Link", 2000);
                 },
 
-                // Dictionaries & Content
-                dictionary: [
-                    { banker: "Technical Debt", tech: "Legacy Refactoring", translation: "Interest on past shortcuts. It's making your P&L brittle." },
-                    { banker: "Op-Ex Efficiency", tech: "CI/CD Pipeline", translation: "Automated work that replaces manual human error." },
-                    { banker: "Market Responsiveness", tech: "Microservices", translation: "Breaking the bank into Legos so we can change one part without breaking the rest." },
-                    { banker: "Data Governance", tech: "Data Mesh", translation: "Moving from a central bottleneck to decentralized ownership." },
-                    { banker: "Business Continuity", tech: "Chaos Engineering", translation: "Testing the bank by intentionally breaking things to ensure it survives real disasters." },
-                    { banker: "Capital Adequacy", tech: "System Resilience", translation: "'Shock Absorber' for crashes." },
-                    { banker: "Write-off", tech: "Refactoring", translation: "'Renovation' to prevent fires." },
-                    { banker: "Compliance", tech: "Security Policy", translation: "'Automated Guardrails' (Brakes)." }
-                ],
-                get filteredDictionary() {
-                    const q = this.searchQuery.toLowerCase();
-                    return this.dictionary.filter(i => i.banker.toLowerCase().includes(q) || i.tech.toLowerCase().includes(q) || i.translation.toLowerCase().includes(q));
+                // Tools Logic
+                getMatrixResult() {
+                    const { x, y } = this.matrixCoords;
+                    if (y > 60 && x < 40) return { strategy: "BUILD", desc: "Critical IP. High value, low complexity. Keep in-house." };
+                    if (y > 60 && x >= 40) return { strategy: "BUY", desc: "High value but hard to build. Buy speed (SaaS/Partner)." };
+                    if (y <= 60 && x >= 60) return { strategy: "OUTSOURCE", desc: "Non-core commodity. Use standard off-the-shelf tools." };
+                    return { strategy: "DEPRIORITIZE", desc: "Low value. Don't waste resources." };
                 },
+                getCompassResult() {
+                    const { x, y } = this.compassCoords;
+                    if (y > 50 && x > 50) return { title: "INNOVATION LEADER (NE)", desc: "Fast growth, but check your safety brakes." };
+                    if (y <= 50 && x <= 50) return { title: "TRADITIONAL BANKER (SW)", desc: "Safe and cheap, but you are slowly dying." };
+                    if (y > 50 && x <= 50) return { title: "RISK TAKER (NW)", desc: "High value but high control. Hard to sustain." };
+                    return { title: "DIGITAL FACTORY (SE)", desc: "Fast execution, but are you building the right thing?" };
+                },
+
+                dictionary: [ { banker: "Technical Debt", tech: "Legacy Refactoring", translation: "Interest on past shortcuts. It's making your P&L brittle." }, { banker: "Op-Ex Efficiency", tech: "CI/CD Pipeline", translation: "Automated work that replaces manual human error." }, { banker: "Market Responsiveness", tech: "Microservices", translation: "Breaking the bank into Legos so we can change one part without breaking the rest." }, { banker: "Data Governance", tech: "Data Mesh", translation: "Moving from a central bottleneck to decentralized ownership." }, { banker: "Business Continuity", tech: "Chaos Engineering", translation: "Testing the bank by intentionally breaking things to ensure it survives real disasters." } ],
+                get filteredDictionary() { const q = this.searchQuery.toLowerCase(); return this.dictionary.filter(i => i.banker.toLowerCase().includes(q) || i.tech.toLowerCase().includes(q) || i.translation.toLowerCase().includes(q)); },
                 
                 lighthouseData: [{category:"Value",text:"Customer Facing?"},{category:"Value",text:"Solving Pain?"},{category:"Value",text:"Unarguable Metric?"},{category:"Feasibility",text:"Decoupled?"},{category:"Feasibility",text:"Anti-Scope Defined?"},{category:"Feasibility",text:"MVP in 90 Days?"},{category:"Ecosystem",text:"Two-Pizza Team?"},{category:"Ecosystem",text:"Sandbox Waiver?"},{category:"Ecosystem",text:"Zero Dependencies?"},{category:"Ecosystem",text:"Air Cover?"}].map(i=>({...i, checked:false})),
                 get lighthouseCount() { return this.lighthouseData.filter(i=>i.checked).length; },
-                getLighthouseStatus() {
-                    const c = this.lighthouseCount;
-                    if(c===10) return {title:"GREEN LIGHT", desc:"Launch.", text:"text-primary", border:"border-primary bg-primary/10"};
-                    if(c>=8) return {title:"AMBER LIGHT", desc:"Proceed with caution.", text:"text-warn", border:"border-warn bg-warn/10"};
-                    return {title:"RED LIGHT", desc:"STOP.", text:"text-risk", border:"border-risk bg-risk/10"};
-                },
+                getLighthouseStatus() { const c = this.lighthouseCount; if(c===10) return {title:"GREEN LIGHT", desc:"Launch.", text:"text-primary", border:"border-primary bg-primary/10"}; if(c>=8) return {title:"AMBER LIGHT", desc:"Proceed with caution.", text:"text-warn", border:"border-warn bg-warn/10"}; return {title:"RED LIGHT", desc:"STOP.", text:"text-risk", border:"border-risk bg-risk/10"}; },
 
-                repairKitData: [
-                    {symptom:"The Feature Factory", diagnosis:"High velocity, no value. Measuring output not outcome.", prescription:["Stop celebrating feature counts.", "Audit value with PO.", "Tie bonus to lagging indicators."]},
-                    {symptom:"The Cloud Bill Shock", diagnosis:"Lift and Shift strategy. No FinOps.", prescription:["Implement FinOps ticker.", "Auto-shutdown non-prod servers."]},
-                    {symptom:"The Agile Silo", diagnosis:"Optimized coding but ignored governance.", prescription:["Expand Definition of Done.", "Embed Compliance in squad."]},
-                    {symptom:"Zombie Agile", diagnosis:"Process without purpose.", prescription:["Ban 'Agile' word.", "Refocus on enemy.", "Launch 90-Day Challenge."]}
-                ],
+                repairKitData: [{symptom:"The Feature Factory", diagnosis:"High velocity, no value. Measuring output not outcome.", prescription:["Stop celebrating feature counts.", "Audit value with PO."]}, {symptom:"The Cloud Bill Shock", diagnosis:"Lift and Shift strategy. No FinOps.", prescription:["Implement FinOps ticker.", "Auto-shutdown non-prod servers."]}, {symptom:"The Agile Silo", diagnosis:"Optimized coding but ignored governance.", prescription:["Expand Definition of Done.", "Embed Compliance in squad."]}, {symptom:"Zombie Agile", diagnosis:"Process without purpose.", prescription:["Ban 'Agile' word.", "Refocus on enemy."]} ],
 
-                boardRisks: [
-                    {title:"1. Strategic Risk", subtitle:"The Dumb Pipe", lie:"'Our app has 4.5 stars.'", truth:"Retaining customers but losing value. Used only for balance checks.", question:"Show me Share of Wallet for digital natives."},
-                    {title:"2. Regulatory Risk", subtitle:"The Data Swamp", lie:"'Data is centralized.'", truth:"We are drowning. We have petabytes with no governance.", question:"Can we generate a liquidity report in 10 minutes?"},
-                    {title:"3. Talent Risk", subtitle:"The Missing Bench", lie:"'Hiring top talent.'", truth:"Hiring mercenaries. Missionaries are leaving.", question:"% of Change budget spent on vendors?"}
-                ],
+                boardRisks: [{title:"1. Strategic Risk", subtitle:"The Dumb Pipe", lie:"'Our app has 4.5 stars.'", truth:"Retaining customers but losing value. Used only for balance checks.", question:"Show me Share of Wallet for digital natives."}, {title:"2. Regulatory Risk", subtitle:"The Data Swamp", lie:"'Data is centralized.'", truth:"We are drowning. We have petabytes with no governance.", question:"Can we generate a liquidity report in 10 minutes?"}, {title:"3. Talent Risk", subtitle:"The Missing Bench", lie:"'Hiring top talent.'", truth:"Hiring mercenaries. Missionaries are leaving.", question:"% of Change budget spent on vendors?"} ],
 
-                glossaryData: [
-                    {term:"Agentic AI",def:"AI that takes action (moves funds), not just generates text."},
-                    {term:"API",def:"Digital glue allowing systems to talk. Enables Open Banking."},
-                    {term:"Data Mesh",def:"Decentralized ownership; domains own their data products."},
-                    {term:"FinOps",def:"Bringing financial accountability to Cloud spend."},
-                    {term:"Tech Debt",def:"Implied cost of rework from choosing easy solutions."}
-                ],
+                glossaryData: [{term:"Agentic AI",def:"AI that takes action (moves funds), not just generates text."}, {term:"API",def:"Digital glue allowing systems to talk. Enables Open Banking."}, {term:"Data Mesh",def:"Decentralized ownership; domains own their data products."}, {term:"FinOps",def:"Bringing financial accountability to Cloud spend."}, {term:"Tech Debt",def:"Implied cost of rework from choosing easy solutions."}],
                 get filteredGlossary() { const q = this.glossarySearch.toLowerCase(); return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); },
 
                 navItems: [
@@ -692,18 +604,17 @@
                     { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' },
                     { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' },
                     { id: 'community', label: 'Community', icon: 'fa-solid fa-users' },
+                    { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
                 ],
 
                 dashboardTools: [
                     { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' },
                     { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' },
                     { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' },
-                    { id: 'compass', label: 'Compass', desc: 'Balance Risk and Innovation.', icon: 'fa-regular fa-compass', color: 'text-cyan-400' },
                     { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' },
                     { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' },
-                    { id: 'canvas', label: 'Data Canvas', desc: 'Define data products.', icon: 'fa-solid fa-file-contract', color: 'text-slate-300' },
                     { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' },
-                    { id: 'board', label: 'Board Guide', desc: 'Questions for the CEO.', icon: 'fa-solid fa-chess-king', color: 'text-white' },
+                    { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true },
                 ]
             }
         }
