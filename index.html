@@ -1,14 +1,22 @@
+<!-- 
+    PWA SETUP:
+    1. Host on HTTPS.
+    2. Ensure 'manifest.json' exists.
+    3. Ensure 'sw.js' exists (or ignore the console log warning).
+-->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>The Bilingual Executive Toolkit v18.0</title>
+    <title>The Bilingual Executive Toolkit v22.0</title>
     
-    <!-- PWA Manifest info -->
+    <!-- PWA Manifest -->
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,6 +31,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -49,6 +58,7 @@
     <style>
         [x-cloak] { display: none !important; }
         html, body { overscroll-behavior-y: none; height: 100%; }
+        * { scrollbar-width: thin; scrollbar-color: #334155 #0f172a; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
@@ -56,23 +66,22 @@
         .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
         .nav-active { border-left: 4px solid #4ade80; background: rgba(74, 222, 128, 0.05); color: #4ade80; }
         .nav-active-vip { border-left: 4px solid #f472b6; background: rgba(244, 114, 182, 0.1); color: #f472b6; }
-        
         input[type="range"] { -webkit-appearance: none; height: 8px; background: #334155; border-radius: 5px; }
         input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 20px; width: 20px; border-radius: 50%; background: #4ade80; cursor: pointer; border: 2px solid #0f172a; margin-top: -6px;}
-        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 8px; cursor: pointer; background: #334155; border-radius: 5px; }
-
-        .chat-bubble { max-width: 85%; padding: 12px; border-radius: 12px; font-size: 14px; line-height: 1.5; margin-bottom: 10px; }
+        .chat-bubble { max-width: 85%; padding: 12px; border-radius: 12px; font-size: 14px; line-height: 1.5; margin-bottom: 10px; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
         .chat-user { background: #334155; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
         .chat-bot { background: #1e293b; border: 1px solid #4ade80; color: #f1f5f9; align-self: flex-start; border-bottom-left-radius: 2px; }
         .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
         .typing-dot:nth-child(1) { animation-delay: -0.32s; }
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .mobile-scroll-fix { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
     </style>
 </head>
 <body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
 
-    <div x-data="toolkit()" x-init="initApp()" class="flex w-full h-full relative">
+    <!-- Fix 1: Use x-data without x-init. 'init()' is auto-called by Alpine -->
+    <div x-data="toolkit()" class="flex w-full h-full relative">
 
         <!-- VIP BOOT SEQUENCE -->
         <div x-show="showVipIntro" x-transition.opacity.duration.500ms class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center font-mono text-hotpink cursor-wait">
@@ -90,13 +99,13 @@
             </div>
         </div>
 
-        <!-- PWA INSTALL PROMPT (Mobile) -->
-        <div x-show="showPwaPrompt && isMobile" x-transition class="md:hidden fixed top-0 left-0 w-full bg-gradient-to-r from-slate-900 to-slate-800 text-white p-3 z-[60] border-b border-primary/30 flex justify-between items-center shadow-xl">
+        <!-- PWA INSTALL PROMPT -->
+        <div x-show="showPwaPrompt && isMobile" x-cloak x-transition class="md:hidden fixed top-0 left-0 w-full bg-gradient-to-r from-slate-900 to-slate-800 text-white p-3 z-[60] border-b border-primary/30 flex justify-between items-center shadow-xl">
             <div class="flex items-center gap-3">
                 <div class="bg-primary/20 p-2 rounded text-primary"><i class="fa-solid fa-download"></i></div>
-                <div class="text-xs"><p class="font-bold">Install App</p><p class="text-slate-400">Add to Home Screen for offline use</p></div>
+                <div class="text-xs"><p class="font-bold">Install App</p><p class="text-slate-400">Add to Home Screen</p></div>
             </div>
-            <button @click="showPwaPrompt = false" class="text-slate-400 px-3"><i class="fa-solid fa-xmark"></i></button>
+            <button @click="dismissPwa()" class="text-slate-400 px-3"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <!-- Gap Analysis Banner -->
@@ -114,7 +123,7 @@
                 </h1>
                 <p class="text-[10px] text-textMuted font-mono mt-1 uppercase tracking-widest flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full" :class="isVipMode ? 'bg-hotpink animate-pulse' : 'bg-primary'"></span> 
-                    <span x-text="isVipMode ? 'ARCHITECT MODE' : 'v18.0 // ULTIMATE'"></span>
+                    <span x-text="isVipMode ? 'ARCHITECT MODE' : 'v22.0 // STABLE'"></span>
                 </p>
             </div>
             <nav class="flex-1 overflow-y-auto py-4">
@@ -150,24 +159,28 @@
             </div>
 
             <!-- ARCHITECT CONSOLE (VIP ONLY) -->
+            <!-- Fix 6: Added x-cloak to VIP section -->
             <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
-                <!-- Header -->
                 <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
                     <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-microchip text-9xl text-hotpink"></i></div>
                     <h2 class="font-mono text-3xl font-bold text-hotpink mb-2 flex items-center"><i class="fa-solid fa-user-secret mr-3"></i>VIP ARCHITECT CONSOLE</h2>
                     <p class="text-sm text-slate-300 font-mono max-w-2xl relative z-10">ACCESS GRANTED. Welcome to the Command Center.</p>
                 </div>
-
-                <!-- VIP Grids -->
                 <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-card terminal-border p-6 rounded-lg border-t-4 border-t-hotpink"><h3 class="text-white font-bold mb-3 font-mono flex justify-between">JSON: Data Product Contract</h3><div class="bg-black p-4 rounded text-xs text-green-400 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner"><pre>{
-  "product_id": "DP-PAY-001",
-  "domain": "Payments_Processing",
-  "owner": "Sarah_Connor@meridian.com",
-  "slo": { "freshness": "200ms", "accuracy": "99.999%" }
-}</pre></div><button class="w-full border border-slate-600 hover:bg-slate-700 text-slate-300 text-xs font-mono py-3 rounded transition-colors flex items-center justify-center gap-2"><i class="fa-regular fa-copy"></i> COPY SCHEMA</button></div>
-                    <div class="bg-card terminal-border p-6 rounded-lg border-t-4 border-t-hotpink"><h3 class="text-white font-bold mb-3 font-mono flex justify-between">PROMPT: The Boardroom Script</h3><div class="bg-black p-4 rounded text-xs text-blue-300 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner h-32"><pre>Act as a CDO presenting to a skeptical Board. 
-We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Analogy'. Focus on Risk, not just Speed.</pre></div><button class="w-full bg-hotpink hover:bg-pink-600 text-white font-bold py-3 rounded text-xs font-mono transition-all flex items-center justify-center gap-2 shadow-glow-vip"><i class="fa-solid fa-robot"></i> COPY PROMPT</button></div>
+                    <div class="bg-card terminal-border p-6 rounded-lg border-t-4 border-t-hotpink">
+                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">JSON: Data Product Contract</h3>
+                        <div class="bg-black p-4 rounded text-xs text-green-400 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner">
+                            <pre x-text="vipJson"></pre>
+                        </div>
+                        <button @click="copyToClipboard(vipJson, 'Schema')" class="w-full border border-slate-600 hover:bg-slate-700 text-slate-300 text-xs font-mono py-3 rounded transition-colors flex items-center justify-center gap-2"><i class="fa-regular fa-copy"></i> COPY SCHEMA</button>
+                    </div>
+                    <div class="bg-card terminal-border p-6 rounded-lg border-t-4 border-t-hotpink">
+                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">PROMPT: The Boardroom Script</h3>
+                        <div class="bg-black p-4 rounded text-xs text-blue-300 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner h-32">
+                            <pre x-text="vipPrompt"></pre>
+                        </div>
+                        <button @click="copyToClipboard(vipPrompt, 'Prompt')" class="w-full bg-hotpink hover:bg-pink-600 text-white font-bold py-3 rounded text-xs font-mono transition-all flex items-center justify-center gap-2 shadow-glow-vip"><i class="fa-solid fa-robot"></i> COPY PROMPT</button>
+                    </div>
                 </div>
             </div>
 
@@ -251,7 +264,7 @@ We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Anal
             <div x-show="currentTab === 'resources'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-green-300 flex items-center"><i class="fa-solid fa-book-bookmark mr-3"></i>Recommended Resources</h2><div class="bg-card border border-slate-700 rounded-xl p-6"><ul class="space-y-4"><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Project to Product (Mik Kersten)</h4><p class="text-sm text-textMuted">Definitive guide to the "Flow Framework".</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Team Topologies (Skelton & Pais)</h4><p class="text-sm text-textMuted">Blueprint for structuring squads.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Sooner Safer Happier (Jonathan Smart)</h4><p class="text-sm text-textMuted">Agile for regulated banks.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Data Mesh (Zhamak Dehghani)</h4><p class="text-sm text-textMuted">Data as a Product.</p></li></ul></div></div>
 
             <!-- COMMUNITY -->
-            <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center"><div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl"><i class="fa-solid fa-users-line text-6xl text-primary mb-6"></i><h2 class="font-mono text-3xl font-bold text-white mb-4">The Fintech Bilinguals</h2><p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders.</p><div class="bg-white p-4 inline-block rounded-lg mb-6"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.fintechbilinguals.com" alt="QR Code" class="w-32 h-32"></div></div></div>
+            <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center"><div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl"><i class="fa-solid fa-users-line text-6xl text-primary mb-6"></i><h2 class="font-mono text-3xl font-bold text-white mb-4">The Fintech Bilinguals</h2><p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders.</p><div class="bg-white p-4 inline-block rounded-lg mb-6"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.fintechbilinguals.com" alt="QR Code" class="w-32 h-32" @error="$el.style.display='none'"></div></div></div>
 
         </main>
 
@@ -311,8 +324,8 @@ We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Anal
             <i class="fa-solid" :class="isChatOpen ? 'fa-xmark' : 'fa-robot'"></i>
         </button>
 
-        <!-- MOBILE MENU OVERLAY -->
-        <div x-show="mobileMenuOpen" x-transition x-cloak class="fixed inset-0 z-[60] bg-dark flex flex-col p-6 pt-safe overflow-y-auto">
+        <!-- MOBILE MENU OVERLAY (Fix 7) -->
+        <div x-show="mobileMenuOpen" x-transition x-cloak class="fixed inset-0 z-[60] bg-dark flex flex-col p-6 pt-safe overflow-y-auto mobile-scroll-fix">
             <div class="flex justify-between items-center mb-8"><h2 class="text-primary font-mono text-xl font-bold">Tools Menu</h2><button @click="mobileMenuOpen=false"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
             <div class="grid grid-cols-2 gap-4 pb-20">
                 <template x-for="item in navItems" :key="item.id">
@@ -328,20 +341,59 @@ We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Anal
     <script>
         const DEFAULT_API_KEY = "AIzaSyBzfLO83HYmdNfNd0yDjWN4dxzmIfd9eY4"; 
 
-        function toolkit() {
-            return {
+        // Fix 1: Auto-Init via Alpine Lifecycle
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('toolkit', () => ({
+                // Fix 1: Rename to init()
+                init() {
+                    // Fix 4: Mobile Init
+                    this.isMobile = window.innerWidth < 768;
+                    window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
+                    
+                    setTimeout(() => { if (this.isMobile && !localStorage.getItem('pwaPromptDismissed')) this.showPwaPrompt = true; }, 2000);
+
+                    const params = new URLSearchParams(window.location.search);
+                    if (params.get('access') === 'vip_nfc_001') this.triggerVipSequence();
+
+                    const challenger = params.get('challenger');
+                    if (challenger) {
+                        try {
+                            this.challengerData = JSON.parse(atob(challenger));
+                            this.currentTab = 'assessment';
+                        } catch (e) { console.error("URL Parameter Error", e); }
+                    }
+
+                    const savedKey = localStorage.getItem('bilingual_api_key');
+                    if(savedKey) this.userApiKey = savedKey;
+
+                    const savedScores = localStorage.getItem('bilingual_scores');
+                    if (savedScores) {
+                        try {
+                            const parsed = JSON.parse(savedScores);
+                            this.assessmentData.forEach((section, sIdx) => {
+                                section.questions.forEach((q, qIdx) => { if(parsed[sIdx] && parsed[sIdx][qIdx]) q.score = parsed[sIdx][qIdx]; });
+                            });
+                        } catch(e) {}
+                    }
+
+                    this.$watch('assessmentData', (val) => {
+                        const simpleScores = val.map(s => s.questions.map(q => q.score));
+                        try { localStorage.setItem('bilingual_scores', JSON.stringify(simpleScores)); } catch (e) {}
+                    });
+                },
+
                 currentTab: 'dashboard',
                 mobileMenuOpen: false,
-                isMobile: window.innerWidth < 768,
-                showPwaPrompt: true,
+                isMobile: false,
+                showPwaPrompt: false, 
                 
-                // VIP Logic
                 isVipMode: false,
                 showVipIntro: false,
                 bootStep: 0,
                 bootProgress: 0,
+                vipJson: '{\n  "product_id": "DP-PAY-001",\n  "domain": "Payments_Processing",\n  "owner": "Sarah_Connor@meridian.com",\n  "slo": { "freshness": "200ms", "accuracy": "99.999%" }\n}',
+                vipPrompt: 'Act as a CDO presenting to a skeptical Board. \nWe need $5M for Cloud Migration. Draft a 2-minute response using the "House Analogy". Focus on Risk, not just Speed.',
 
-                // AI Logic
                 isChatOpen: false,
                 chatInput: '',
                 chatMessages: [],
@@ -349,7 +401,6 @@ We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Anal
                 userApiKey: '',
                 showKeyModal: false,
 
-                // Data state
                 searchQuery: '',
                 glossarySearch: '',
                 assessmentSubmitted: false,
@@ -365,46 +416,6 @@ We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Anal
                 talentChartInstance: null,
                 gapChartInstance: null,
 
-                initApp() {
-                    const params = new URLSearchParams(window.location.search);
-                    
-                    // 1. VIP Mode Check
-                    if (params.get('access') === 'vip_nfc_001') {
-                        this.triggerVipSequence();
-                    }
-
-                    // 2. Gap Mode Check
-                    const challenger = params.get('challenger');
-                    if (challenger) {
-                        try {
-                            this.challengerData = JSON.parse(atob(challenger));
-                            this.currentTab = 'assessment';
-                        } catch (e) { console.error("URL Parameter Error", e); }
-                    }
-
-                    // 3. Load Saved Key & Scores
-                    const savedKey = localStorage.getItem('bilingual_api_key');
-                    if(savedKey) this.userApiKey = savedKey;
-
-                    const savedScores = localStorage.getItem('bilingual_scores');
-                    if (savedScores) {
-                        try {
-                            const parsed = JSON.parse(savedScores);
-                            this.assessmentData.forEach((section, sIdx) => {
-                                section.questions.forEach((q, qIdx) => {
-                                    if(parsed[sIdx] && parsed[sIdx][qIdx]) q.score = parsed[sIdx][qIdx];
-                                });
-                            });
-                        } catch(e) {}
-                    }
-
-                    // 4. Watcher for Auto-save
-                    this.$watch('assessmentData', (val) => {
-                        const simpleScores = val.map(s => s.questions.map(q => q.score));
-                        localStorage.setItem('bilingual_scores', JSON.stringify(simpleScores));
-                    });
-                },
-
                 triggerVipSequence() {
                     this.isVipMode = true;
                     this.showVipIntro = true;
@@ -413,6 +424,8 @@ We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Anal
                     setTimeout(() => { this.bootStep = 3; this.bootProgress = 100; }, 2500);
                     setTimeout(() => { this.showVipIntro = false; this.currentTab = 'architect'; }, 4000);
                 },
+
+                dismissPwa() { this.showPwaPrompt = false; localStorage.setItem('pwaPromptDismissed', 'true'); },
 
                 handleNavClick(tab) {
                     this.currentTab = tab;
@@ -424,21 +437,26 @@ We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Anal
                 },
 
                 saveApiKey() {
-                    localStorage.setItem('bilingual_api_key', this.userApiKey);
-                    this.showKeyModal = false;
+                    try { localStorage.setItem('bilingual_api_key', this.userApiKey); this.showKeyModal = false; } 
+                    catch (e) { alert("Storage Error"); }
                 },
 
-                // ROBUST AI WITH FALLBACKS
                 async sendMessage() {
                     if (!this.chatInput.trim()) return;
-                    const userText = this.chatInput;
+                    if (typeof DOMPurify === 'undefined') { this.chatMessages.push({ role: 'bot', text: "Error: Security module missing." }); return; }
+
+                    const API_KEY = this.userApiKey || DEFAULT_API_KEY; 
+                    if (!API_KEY) { this.chatMessages.push({ role: 'bot', text: "Please set your API key." }); this.showKeyModal = true; return; }
+
+                    // Fix 3: Sanitize Input
+                    const userText = DOMPurify.sanitize(this.chatInput);
                     this.chatMessages.push({ role: 'user', text: userText });
                     this.chatInput = '';
                     this.isTyping = true;
                     this.scrollToBottom();
 
-                    const API_KEY = this.userApiKey || DEFAULT_API_KEY; 
-                    const systemPrompt = "You are 'The Translator', a Bilingual Executive Assistant. Translate technical jargon into business impact (P&L, Risk, Speed). Rules: Technical Debt->Financial leverage; Refactoring->Renovation; Microservices->Legos. Tone: Concise, executive.";
+                    // Fix 3: Explicit System Prompt
+                    const systemPrompt = "You are 'The Translator', a Bilingual Executive Assistant. Translate technical jargon into business impact (P&L, Risk, Speed). Rules: Technical Debt->Financial leverage; Refactoring->Renovation; Microservices->Legos; API->Universal Adapter. Tone: Concise, executive.";
                     
                     const tryFetch = async (model, version) => {
                         const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${API_KEY}`, {
@@ -451,35 +469,95 @@ We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Anal
 
                     try {
                         let data;
-                        try {
-                            data = await tryFetch("gemini-1.5-flash-latest", "v1beta"); // Primary
-                        } catch (e) {
-                            console.log("Primary model failed, trying fallback 2.0...");
-                            data = await tryFetch("gemini-2.0-flash-exp", "v1beta"); // Fallback
-                        }
+                        try { data = await tryFetch("gemini-1.5-flash-latest", "v1beta"); } 
+                        catch (e) { data = await tryFetch("gemini-2.0-flash-exp", "v1beta"); }
 
-                        let botText = "I couldn't process that request.";
-                        if (data.candidates && data.candidates[0].content) {
-                            botText = data.candidates[0].content.parts[0].text;
-                        }
+                        let botText = "I couldn't process that.";
+                        if (data.candidates && data.candidates[0].content) botText = data.candidates[0].content.parts[0].text;
                         
                         this.isTyping = false;
-                        this.chatMessages.push({ role: 'bot', text: typeof marked !== 'undefined' ? marked.parse(botText) : botText });
+                        // Fix 3: Sanitize Output
+                        const cleanHtml = DOMPurify.sanitize(typeof marked !== 'undefined' ? marked.parse(botText) : botText);
+                        this.chatMessages.push({ role: 'bot', text: cleanHtml });
                         this.scrollToBottom();
                     } catch (error) {
                         this.isTyping = false;
-                        this.chatMessages.push({ role: 'bot', text: "Connection error. Please check your API Key." });
+                        this.chatMessages.push({ role: 'bot', text: "Connection Error." });
                     }
                 },
 
-                scrollToBottom() {
+                scrollToBottom() { this.$nextTick(() => { const c = document.getElementById('chat-messages-container'); if (c) c.scrollTop = c.scrollHeight; }); },
+
+                // Fix 6: Copy Fallback
+                copyToClipboard(text, type) {
+                    if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(text)
+                            .then(() => alert(`${type} copied!`))
+                            .catch(() => this.fallbackCopy(text, type));
+                    } else {
+                        this.fallbackCopy(text, type);
+                    }
+                },
+                fallbackCopy(text, type) {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed"; 
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        alert(`${type} copied!`);
+                    } catch (err) {
+                        alert("Copy failed. Please copy manually.");
+                    }
+                    document.body.removeChild(textArea);
+                },
+
+                copyChallengeLink() {
+                    const scores = this.assessmentData.flatMap(s => s.questions.map(q => q.score));
+                    const payload = btoa(JSON.stringify({ scores, title: "Executive Peer" }));
+                    const url = `${window.location.origin}${window.location.pathname}?challenger=${payload}`;
+                    this.copyToClipboard(url, "Challenge Link");
+                },
+
+                async generatePDF() {
+                    if (!window.jspdf) { alert("PDF library not loaded."); return; }
+                    try {
+                        const { jsPDF } = window.jspdf; const doc = new jsPDF();
+                        const s = this.calculateScore.total;
+                        doc.setFillColor(15,23,42); doc.rect(0,0,210,297,"F");
+                        doc.setTextColor(s<=40?248:74, s<=40?113:222, s<=40?113:128);
+                        doc.setFontSize(14); doc.text("BILINGUAL EXECUTIVE AUDIT", 20,20);
+                        doc.setFontSize(60); doc.text(`${s}/75`, 20,50);
+                        doc.save("Audit.pdf");
+                    } catch (e) { alert("PDF Error"); }
+                },
+
+                updateTalentChart() {
                     this.$nextTick(() => {
-                        const container = document.getElementById('chat-messages-container');
-                        if (container) container.scrollTop = container.scrollHeight;
+                        const ctx = document.getElementById('talentChart');
+                        // Fix 5: Correct Context Check
+                        if (!ctx || typeof ctx.getContext !== 'function') return;
+                        if (this.talentChartInstance) this.talentChartInstance.destroy();
+                        Chart.defaults.font.family = '"JetBrains Mono", monospace';
+                        this.talentChartInstance = new Chart(ctx, { type: 'radar', data: { labels: this.talentSkills.map(s => s.label), datasets: [{ data: this.talentSkills.map(s => s.val), backgroundColor: 'rgba(244, 114, 182, 0.2)', borderColor: '#f472b6', pointBackgroundColor: '#fff' }] }, options: { plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 5, ticks: { display: false }, grid: { color: '#334155' }, angleLines: { color: '#334155' } } } } });
                     });
                 },
 
-                // Assessment Logic
+                updateGapChart() {
+                    this.$nextTick(() => {
+                        const ctx = document.getElementById('gapChart');
+                        // Fix 5: Correct Context Check
+                        if (!ctx || typeof ctx.getContext !== 'function') return;
+                        if (this.gapChartInstance) this.gapChartInstance.destroy();
+                        const my = [this.assessmentData[0].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[1].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[2].questions.reduce((a,b)=>a+b.score,0)];
+                        const cs = this.challengerData.scores;
+                        const ch = [cs.slice(0,5).reduce((a,b)=>a+b,0), cs.slice(5,10).reduce((a,b)=>a+b,0), cs.slice(10,15).reduce((a,b)=>a+b,0)];
+                        this.gapChartInstance = new Chart(ctx, { type: 'radar', data: { labels: ['Data', 'Delivery', 'Culture'], datasets: [{ label: 'You', data: my, borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.2)' }, { label: 'Challenger', data: ch, borderColor: '#f472b6', backgroundColor: 'rgba(244, 114, 182, 0.2)' }] }, options: { scales: { r: { min: 0, max: 25, grid: { color: '#334155' }, angleLines: { color: '#334155' } } } } });
+                    });
+                },
+
                 assessmentData: [
                     { title: "Data Velocity", questions: [{text:"Accessibility",score:3,desc:"Can devs get data without a ticket?"},{text:"Quality",score:3,desc:"Is data trusted?"},{text:"Ownership",score:3,desc:"Is ownership clear?"},{text:"Architecture",score:3,desc:"Mesh or Monolith?"},{text:"Trust",score:3,desc:"Single source of truth?"}] },
                     { title: "Agile Delivery", questions: [{text:"Funding",score:3,desc:"Projects or Value Streams?"},{text:"Releases",score:3,desc:"Monthly or Daily?"},{text:"Architecture",score:3,desc:"Decoupled?"},{text:"Compliance",score:3,desc:"Manual (1) or Auto (5)?"},{text:"Vendors",score:3,desc:"Partners or Body Shop?"}] },
@@ -490,15 +568,9 @@ We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Anal
                     this.assessmentData.forEach(s => s.questions.forEach(q => total += q.score));
                     let safety = this.assessmentData[2].questions[1].score;
                     let compliance = this.assessmentData[1].questions[3].score;
-                    
-                    let isSafetyVeto = safety <= 2;
-                    let isManualDrag = compliance <= 2;
-                    
-                    // VIP Refined Logic: 20% Penalty for Manual Drag
-                    if(isManualDrag) total = Math.floor(total * 0.8); 
-                    if(isSafetyVeto) total = Math.min(total, 40);
-                    
-                    return { total, isSafetyVeto, isManualDrag };
+                    if(compliance <= 2) total = Math.floor(total * 0.8); 
+                    if(safety <= 2) total = Math.min(total, 40);
+                    return { total, isSafetyVeto: safety<=2, isManualDrag: compliance<=2 };
                 },
                 getAssessmentResult() {
                     const s = this.calculateScore.total;
@@ -511,52 +583,6 @@ We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Anal
                 finishAssessment() { this.assessmentSubmitted = true; window.scrollTo({ top: 0, behavior: 'smooth' }); if (this.challengerData) this.$nextTick(() => this.updateGapChart()); },
                 resetAssessment() { this.assessmentSubmitted = false; localStorage.removeItem('bilingual_scores'); this.assessmentData.forEach(s => s.questions.forEach(q => q.score = 3)); },
                 
-                // Charts & Outputs
-                updateTalentChart() {
-                    const ctx = document.getElementById('talentChart');
-                    if (!ctx) return;
-                    if (this.talentChartInstance) this.talentChartInstance.destroy();
-                    Chart.defaults.font.family = '"JetBrains Mono", monospace';
-                    this.talentChartInstance = new Chart(ctx, {
-                        type: 'radar',
-                        data: { labels: this.talentSkills.map(s => s.label), datasets: [{ data: this.talentSkills.map(s => s.val), backgroundColor: 'rgba(244, 114, 182, 0.2)', borderColor: '#f472b6', pointBackgroundColor: '#fff' }] },
-                        options: { plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 5, ticks: { display: false }, grid: { color: '#334155' }, angleLines: { color: '#334155' } } } }
-                    });
-                },
-
-                updateGapChart() {
-                    const ctx = document.getElementById('gapChart');
-                    if (!ctx) return;
-                    if (this.gapChartInstance) this.gapChartInstance.destroy();
-
-                    const my = [this.assessmentData[0].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[1].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[2].questions.reduce((a,b)=>a+b.score,0)];
-                    const cs = this.challengerData.scores;
-                    const ch = [cs.slice(0,5).reduce((a,b)=>a+b,0), cs.slice(5,10).reduce((a,b)=>a+b,0), cs.slice(10,15).reduce((a,b)=>a+b,0)];
-
-                    this.gapChartInstance = new Chart(ctx, { type: 'radar', data: { labels: ['Data', 'Delivery', 'Culture'], datasets: [{ label: 'You', data: my, borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.2)' }, { label: 'Challenger', data: ch, borderColor: '#f472b6', backgroundColor: 'rgba(244, 114, 182, 0.2)' }] }, options: { scales: { r: { min: 0, max: 25, grid: { color: '#334155' }, angleLines: { color: '#334155' } } } } });
-                },
-
-                async generatePDF() {
-                    const { jsPDF } = window.jspdf; const doc = new jsPDF();
-                    const s = this.calculateScore.total; const r = this.getAssessmentResult();
-                    doc.setFillColor(15,23,42); doc.rect(0,0,210,297,"F");
-                    doc.setTextColor(s<=40?248:74, s<=40?113:222, s<=40?113:128);
-                    doc.setFont("courier","bold"); doc.setFontSize(14); doc.text("BILINGUAL EXECUTIVE AUDIT", 20,20);
-                    doc.setTextColor(200,200,200); doc.setFontSize(60); doc.text(`${s}/75`, 20,50);
-                    doc.setFontSize(16); doc.text(r.title, 20,70); doc.setFontSize(12); doc.text(doc.splitTextToSize(r.desc,170), 20,80);
-                    if(this.calculateScore.isSafetyVeto) doc.text("SAFETY VETO APPLIED: Agility Impossible in Fear.", 20,100);
-                    doc.save("Audit.pdf");
-                },
-
-                copyChallengeLink() {
-                    const scores = this.assessmentData.flatMap(s => s.questions.map(q => q.score));
-                    const payload = btoa(JSON.stringify({ scores, title: "Executive Peer" }));
-                    navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?challenger=${payload}`);
-                    this.copyBtnText = "Link Copied!";
-                    setTimeout(() => this.copyBtnText = "Copy Challenge Link", 2000);
-                },
-
-                // Tools Logic
                 getMatrixResult() {
                     const { x, y } = this.matrixCoords;
                     if (y > 60 && x < 40) return { strategy: "BUILD", desc: "Critical IP. High value, low complexity. Keep in-house." };
@@ -571,48 +597,31 @@ We need $5M for Cloud Migration. Draft a 2-minute response using the 'House Anal
                     if (y > 50 && x <= 50) return { title: "RISK TAKER (NW)", desc: "High value but high control. Hard to sustain." };
                     return { title: "DIGITAL FACTORY (SE)", desc: "Fast execution, but are you building the right thing?" };
                 },
+                getLighthouseStatus() { const c = this.lighthouseData.filter(i=>i.checked).length; if(c===10) return {title:"GREEN LIGHT", desc:"Launch.", text:"text-primary", border:"border-primary bg-primary/10"}; if(c>=8) return {title:"AMBER LIGHT", desc:"Proceed with caution.", text:"text-warn", border:"border-warn bg-warn/10"}; return {title:"RED LIGHT", desc:"STOP.", text:"text-risk", border:"border-risk bg-risk/10"}; },
 
                 dictionary: [ { banker: "Technical Debt", tech: "Legacy Refactoring", translation: "Interest on past shortcuts. It's making your P&L brittle." }, { banker: "Op-Ex Efficiency", tech: "CI/CD Pipeline", translation: "Automated work that replaces manual human error." }, { banker: "Market Responsiveness", tech: "Microservices", translation: "Breaking the bank into Legos so we can change one part without breaking the rest." }, { banker: "Data Governance", tech: "Data Mesh", translation: "Moving from a central bottleneck to decentralized ownership." }, { banker: "Business Continuity", tech: "Chaos Engineering", translation: "Testing the bank by intentionally breaking things to ensure it survives real disasters." } ],
                 get filteredDictionary() { const q = this.searchQuery.toLowerCase(); return this.dictionary.filter(i => i.banker.toLowerCase().includes(q) || i.tech.toLowerCase().includes(q) || i.translation.toLowerCase().includes(q)); },
                 
                 lighthouseData: [{category:"Value",text:"Customer Facing?"},{category:"Value",text:"Solving Pain?"},{category:"Value",text:"Unarguable Metric?"},{category:"Feasibility",text:"Decoupled?"},{category:"Feasibility",text:"Anti-Scope Defined?"},{category:"Feasibility",text:"MVP in 90 Days?"},{category:"Ecosystem",text:"Two-Pizza Team?"},{category:"Ecosystem",text:"Sandbox Waiver?"},{category:"Ecosystem",text:"Zero Dependencies?"},{category:"Ecosystem",text:"Air Cover?"}].map(i=>({...i, checked:false})),
-                get lighthouseCount() { return this.lighthouseData.filter(i=>i.checked).length; },
-                getLighthouseStatus() { const c = this.lighthouseCount; if(c===10) return {title:"GREEN LIGHT", desc:"Launch.", text:"text-primary", border:"border-primary bg-primary/10"}; if(c>=8) return {title:"AMBER LIGHT", desc:"Proceed with caution.", text:"text-warn", border:"border-warn bg-warn/10"}; return {title:"RED LIGHT", desc:"STOP.", text:"text-risk", border:"border-risk bg-risk/10"}; },
+                lighthouseCount() { return this.lighthouseData.filter(i=>i.checked).length; },
 
                 repairKitData: [{symptom:"The Feature Factory", diagnosis:"High velocity, no value. Measuring output not outcome.", prescription:["Stop celebrating feature counts.", "Audit value with PO."]}, {symptom:"The Cloud Bill Shock", diagnosis:"Lift and Shift strategy. No FinOps.", prescription:["Implement FinOps ticker.", "Auto-shutdown non-prod servers."]}, {symptom:"The Agile Silo", diagnosis:"Optimized coding but ignored governance.", prescription:["Expand Definition of Done.", "Embed Compliance in squad."]}, {symptom:"Zombie Agile", diagnosis:"Process without purpose.", prescription:["Ban 'Agile' word.", "Refocus on enemy."]} ],
-
                 boardRisks: [{title:"1. Strategic Risk", subtitle:"The Dumb Pipe", lie:"'Our app has 4.5 stars.'", truth:"Retaining customers but losing value. Used only for balance checks.", question:"Show me Share of Wallet for digital natives."}, {title:"2. Regulatory Risk", subtitle:"The Data Swamp", lie:"'Data is centralized.'", truth:"We are drowning. We have petabytes with no governance.", question:"Can we generate a liquidity report in 10 minutes?"}, {title:"3. Talent Risk", subtitle:"The Missing Bench", lie:"'Hiring top talent.'", truth:"Hiring mercenaries. Missionaries are leaving.", question:"% of Change budget spent on vendors?"} ],
-
                 glossaryData: [{term:"Agentic AI",def:"AI that takes action (moves funds), not just generates text."}, {term:"API",def:"Digital glue allowing systems to talk. Enables Open Banking."}, {term:"Data Mesh",def:"Decentralized ownership; domains own their data products."}, {term:"FinOps",def:"Bringing financial accountability to Cloud spend."}, {term:"Tech Debt",def:"Implied cost of rework from choosing easy solutions."}],
                 get filteredGlossary() { const q = this.glossarySearch.toLowerCase(); return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); },
 
-                navItems: [
-                    { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' },
-                    { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check' },
-                    { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language' },
-                    { id: 'matrix', label: 'Strategy Matrix', icon: 'fa-solid fa-chess-board' },
-                    { id: 'compass', label: 'Compass', icon: 'fa-regular fa-compass' },
-                    { id: 'canvas', label: 'Data Canvas', icon: 'fa-solid fa-file-contract' },
-                    { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint' },
-                    { id: 'lighthouse', label: 'Lighthouse', icon: 'fa-solid fa-lightbulb' },
-                    { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king' },
-                    { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox' },
-                    { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' },
-                    { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' },
-                    { id: 'community', label: 'Community', icon: 'fa-solid fa-users' },
-                    { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
-                ],
+                navItems: [ { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check' }, { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language' }, { id: 'matrix', label: 'Strategy Matrix', icon: 'fa-solid fa-chess-board' }, { id: 'compass', label: 'Compass', icon: 'fa-regular fa-compass' }, { id: 'canvas', label: 'Data Canvas', icon: 'fa-solid fa-file-contract' }, { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint' }, { id: 'lighthouse', label: 'Lighthouse', icon: 'fa-solid fa-lightbulb' }, { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king' }, { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox' }, { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } ],
+                dashboardTools: [ { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } ]
+            }));
+        });
 
-                dashboardTools: [
-                    { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' },
-                    { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' },
-                    { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' },
-                    { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' },
-                    { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' },
-                    { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' },
-                    { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true },
-                ]
-            }
+        // Fix 2 & 5: Safe SW Registration with Logging
+        if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(r => console.log('SW Registered'))
+                    .catch(e => console.log('SW Failed (Normal if no file):', e));
+            });
         }
     </script>
 </body>
