@@ -2,17 +2,18 @@
     PWA SETUP:
     1. Host on HTTPS.
     2. Ensure 'manifest.json' exists.
-    3. Ensure 'sw.js' exists (or ignore the console log warning).
+    3. Ensure 'sw.js' exists (optional, code now handles missing file gracefully).
 -->
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Fix 5: Update Viewport for Mobile Safety -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>The Bilingual Executive Toolkit v22.0</title>
+    <title>The Bilingual Executive Toolkit v22.1</title>
     
-    <!-- PWA Manifest -->
+    <!-- PWA Manifest & Meta -->
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -76,12 +77,14 @@
         .typing-dot:nth-child(2) { animation-delay: -0.16s; }
         @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
         .mobile-scroll-fix { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+        /* Fix 9: Mobile Menu Scroll Lock */
+        .mobile-menu-open { overflow: hidden !important; position: fixed; width: 100%; }
     </style>
 </head>
 <body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
 
-    <!-- Fix 1: Use x-data without x-init. 'init()' is auto-called by Alpine -->
-    <div x-data="toolkit()" class="flex w-full h-full relative">
+    <!-- Fix 1: x-data="toolkit" allows init() to be called automatically by Alpine -->
+    <div x-data="toolkit" class="flex w-full h-full relative">
 
         <!-- VIP BOOT SEQUENCE -->
         <div x-show="showVipIntro" x-transition.opacity.duration.500ms class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center font-mono text-hotpink cursor-wait">
@@ -123,7 +126,7 @@
                 </h1>
                 <p class="text-[10px] text-textMuted font-mono mt-1 uppercase tracking-widest flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full" :class="isVipMode ? 'bg-hotpink animate-pulse' : 'bg-primary'"></span> 
-                    <span x-text="isVipMode ? 'ARCHITECT MODE' : 'v22.0 // STABLE'"></span>
+                    <span x-text="isVipMode ? 'ARCHITECT MODE' : 'v22.1 // PATCHED'"></span>
                 </p>
             </div>
             <nav class="flex-1 overflow-y-auto py-4">
@@ -159,7 +162,6 @@
             </div>
 
             <!-- ARCHITECT CONSOLE (VIP ONLY) -->
-            <!-- Fix 6: Added x-cloak to VIP section -->
             <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
                 <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
                     <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-microchip text-9xl text-hotpink"></i></div>
@@ -324,7 +326,7 @@
             <i class="fa-solid" :class="isChatOpen ? 'fa-xmark' : 'fa-robot'"></i>
         </button>
 
-        <!-- MOBILE MENU OVERLAY (Fix 7) -->
+        <!-- MOBILE MENU OVERLAY -->
         <div x-show="mobileMenuOpen" x-transition x-cloak class="fixed inset-0 z-[60] bg-dark flex flex-col p-6 pt-safe overflow-y-auto mobile-scroll-fix">
             <div class="flex justify-between items-center mb-8"><h2 class="text-primary font-mono text-xl font-bold">Tools Menu</h2><button @click="mobileMenuOpen=false"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
             <div class="grid grid-cols-2 gap-4 pb-20">
@@ -339,18 +341,25 @@
     </div>
 
     <script>
-        const DEFAULT_API_KEY = "AIzaSyBzfLO83HYmdNfNd0yDjWN4dxzmIfd9eY4"; 
+        // Fix 7: Remove hardcoded key for security
+        // Users must provide their own key via the settings modal
 
-        // Fix 1: Auto-Init via Alpine Lifecycle
+        // Fix 1: Register Alpine data BEFORE Alpine initializes
         document.addEventListener('alpine:init', () => {
             Alpine.data('toolkit', () => ({
-                // Fix 1: Rename to init()
                 init() {
-                    // Fix 4: Mobile Init
+                    // Fix 4: Mobile Init & PWA Detection (Issue 8)
                     this.isMobile = window.innerWidth < 768;
                     window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
                     
-                    setTimeout(() => { if (this.isMobile && !localStorage.getItem('pwaPromptDismissed')) this.showPwaPrompt = true; }, 2000);
+                    const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+                    
+                    // Fix 6: Safe LocalStorage Check
+                    try {
+                        if (this.isMobile && !isPWA && !localStorage.getItem('pwaPromptDismissed')) {
+                            setTimeout(() => { this.showPwaPrompt = true; }, 2000);
+                        }
+                    } catch (e) { console.warn("Storage access restricted"); }
 
                     const params = new URLSearchParams(window.location.search);
                     if (params.get('access') === 'vip_nfc_001') this.triggerVipSequence();
@@ -363,22 +372,29 @@
                         } catch (e) { console.error("URL Parameter Error", e); }
                     }
 
-                    const savedKey = localStorage.getItem('bilingual_api_key');
-                    if(savedKey) this.userApiKey = savedKey;
+                    // Fix 6: Safe LocalStorage
+                    try {
+                        const savedKey = localStorage.getItem('bilingual_api_key');
+                        if(savedKey) this.userApiKey = savedKey;
 
-                    const savedScores = localStorage.getItem('bilingual_scores');
-                    if (savedScores) {
-                        try {
+                        const savedScores = localStorage.getItem('bilingual_scores');
+                        if (savedScores) {
                             const parsed = JSON.parse(savedScores);
                             this.assessmentData.forEach((section, sIdx) => {
                                 section.questions.forEach((q, qIdx) => { if(parsed[sIdx] && parsed[sIdx][qIdx]) q.score = parsed[sIdx][qIdx]; });
                             });
-                        } catch(e) {}
-                    }
+                        }
+                    } catch(e) {}
 
                     this.$watch('assessmentData', (val) => {
                         const simpleScores = val.map(s => s.questions.map(q => q.score));
                         try { localStorage.setItem('bilingual_scores', JSON.stringify(simpleScores)); } catch (e) {}
+                    });
+
+                    // Fix 9: Mobile Scroll Lock
+                    this.$watch('mobileMenuOpen', (value) => {
+                        if (value) document.body.classList.add('mobile-menu-open');
+                        else document.body.classList.remove('mobile-menu-open');
                     });
                 },
 
@@ -425,7 +441,10 @@
                     setTimeout(() => { this.showVipIntro = false; this.currentTab = 'architect'; }, 4000);
                 },
 
-                dismissPwa() { this.showPwaPrompt = false; localStorage.setItem('pwaPromptDismissed', 'true'); },
+                dismissPwa() { 
+                    this.showPwaPrompt = false; 
+                    try { localStorage.setItem('pwaPromptDismissed', 'true'); } catch(e){}
+                },
 
                 handleNavClick(tab) {
                     this.currentTab = tab;
@@ -437,25 +456,32 @@
                 },
 
                 saveApiKey() {
-                    try { localStorage.setItem('bilingual_api_key', this.userApiKey); this.showKeyModal = false; } 
-                    catch (e) { alert("Storage Error"); }
+                    try { 
+                        localStorage.setItem('bilingual_api_key', this.userApiKey); 
+                        this.showKeyModal = false; 
+                        alert("API Key saved securely to your device.");
+                    } 
+                    catch (e) { alert("Storage Error: Private Browsing may be enabled."); }
                 },
 
                 async sendMessage() {
                     if (!this.chatInput.trim()) return;
                     if (typeof DOMPurify === 'undefined') { this.chatMessages.push({ role: 'bot', text: "Error: Security module missing." }); return; }
 
-                    const API_KEY = this.userApiKey || DEFAULT_API_KEY; 
-                    if (!API_KEY) { this.chatMessages.push({ role: 'bot', text: "Please set your API key." }); this.showKeyModal = true; return; }
+                    // Fix 7: Enforce user key
+                    const API_KEY = this.userApiKey; 
+                    if (!API_KEY) { 
+                        this.chatMessages.push({ role: 'bot', text: "Please set your Gemini API key in settings (Key icon)." }); 
+                        this.showKeyModal = true; 
+                        return; 
+                    }
 
-                    // Fix 3: Sanitize Input
                     const userText = DOMPurify.sanitize(this.chatInput);
                     this.chatMessages.push({ role: 'user', text: userText });
                     this.chatInput = '';
                     this.isTyping = true;
                     this.scrollToBottom();
 
-                    // Fix 3: Explicit System Prompt
                     const systemPrompt = "You are 'The Translator', a Bilingual Executive Assistant. Translate technical jargon into business impact (P&L, Risk, Speed). Rules: Technical Debt->Financial leverage; Refactoring->Renovation; Microservices->Legos; API->Universal Adapter. Tone: Concise, executive.";
                     
                     const tryFetch = async (model, version) => {
@@ -463,7 +489,7 @@
                             method: "POST", headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nInput: " + userText }] }] })
                         });
-                        if (!response.ok) throw new Error(response.statusText);
+                        if (!response.ok) throw new Error(`${response.status}`);
                         return response.json();
                     };
 
@@ -476,19 +502,31 @@
                         if (data.candidates && data.candidates[0].content) botText = data.candidates[0].content.parts[0].text;
                         
                         this.isTyping = false;
-                        // Fix 3: Sanitize Output
-                        const cleanHtml = DOMPurify.sanitize(typeof marked !== 'undefined' ? marked.parse(botText) : botText);
+                        
+                        // Fix 3: Safe Markdown Parsing
+                        let parsedText = botText;
+                        try {
+                            if (typeof marked !== 'undefined') parsedText = marked.parse(botText);
+                        } catch (e) {
+                            console.warn("Markdown Parse Error", e);
+                            parsedText = botText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        }
+                        
+                        const cleanHtml = DOMPurify.sanitize(parsedText);
                         this.chatMessages.push({ role: 'bot', text: cleanHtml });
                         this.scrollToBottom();
                     } catch (error) {
                         this.isTyping = false;
-                        this.chatMessages.push({ role: 'bot', text: "Connection Error." });
+                        // Fix 10: Better Error Messages
+                        let msg = "Connection Error.";
+                        if (error.message.includes("403")) msg = "Invalid API Key. Please check settings.";
+                        if (error.message.includes("429")) msg = "Quota exceeded. Try again later.";
+                        this.chatMessages.push({ role: 'bot', text: msg });
                     }
                 },
 
                 scrollToBottom() { this.$nextTick(() => { const c = document.getElementById('chat-messages-container'); if (c) c.scrollTop = c.scrollHeight; }); },
 
-                // Fix 6: Copy Fallback
                 copyToClipboard(text, type) {
                     if (navigator.clipboard && window.isSecureContext) {
                         navigator.clipboard.writeText(text)
@@ -537,8 +575,8 @@
                 updateTalentChart() {
                     this.$nextTick(() => {
                         const ctx = document.getElementById('talentChart');
-                        // Fix 5: Correct Context Check
-                        if (!ctx || typeof ctx.getContext !== 'function') return;
+                        // Fix 4: Correct Context Check
+                        if (!ctx || !ctx.getContext) return;
                         if (this.talentChartInstance) this.talentChartInstance.destroy();
                         Chart.defaults.font.family = '"JetBrains Mono", monospace';
                         this.talentChartInstance = new Chart(ctx, { type: 'radar', data: { labels: this.talentSkills.map(s => s.label), datasets: [{ data: this.talentSkills.map(s => s.val), backgroundColor: 'rgba(244, 114, 182, 0.2)', borderColor: '#f472b6', pointBackgroundColor: '#fff' }] }, options: { plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 5, ticks: { display: false }, grid: { color: '#334155' }, angleLines: { color: '#334155' } } } } });
@@ -548,8 +586,8 @@
                 updateGapChart() {
                     this.$nextTick(() => {
                         const ctx = document.getElementById('gapChart');
-                        // Fix 5: Correct Context Check
-                        if (!ctx || typeof ctx.getContext !== 'function') return;
+                        // Fix 4: Correct Context Check
+                        if (!ctx || !ctx.getContext) return;
                         if (this.gapChartInstance) this.gapChartInstance.destroy();
                         const my = [this.assessmentData[0].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[1].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[2].questions.reduce((a,b)=>a+b.score,0)];
                         const cs = this.challengerData.scores;
@@ -581,7 +619,7 @@
                 getAssessmentColor() { const s = this.calculateScore.total; return s<=40?'text-risk':s<=60?'text-warn':'text-primary'; },
                 
                 finishAssessment() { this.assessmentSubmitted = true; window.scrollTo({ top: 0, behavior: 'smooth' }); if (this.challengerData) this.$nextTick(() => this.updateGapChart()); },
-                resetAssessment() { this.assessmentSubmitted = false; localStorage.removeItem('bilingual_scores'); this.assessmentData.forEach(s => s.questions.forEach(q => q.score = 3)); },
+                resetAssessment() { this.assessmentSubmitted = false; try { localStorage.removeItem('bilingual_scores'); }catch(e){} this.assessmentData.forEach(s => s.questions.forEach(q => q.score = 3)); },
                 
                 getMatrixResult() {
                     const { x, y } = this.matrixCoords;
@@ -615,12 +653,19 @@
             }));
         });
 
-        // Fix 2 & 5: Safe SW Registration with Logging
+        // Fix 2: Safe Service Worker Registration
         if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(r => console.log('SW Registered'))
-                    .catch(e => console.log('SW Failed (Normal if no file):', e));
+                // Check if SW exists before registering to avoid 404 console errors
+                fetch('/sw.js')
+                    .then(response => {
+                        if (response.status === 200) {
+                            navigator.serviceWorker.register('/sw.js')
+                                .then(r => console.log('SW Registered'))
+                                .catch(e => console.log('SW Fail:', e));
+                        }
+                    })
+                    .catch(() => {});
             });
         }
     </script>
