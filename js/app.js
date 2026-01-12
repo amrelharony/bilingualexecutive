@@ -6,34 +6,23 @@ document.addEventListener('alpine:init', () => {
         // INITIALIZATION
         // ------------------------------------------------------------------
         init() {
-            // Mobile Detection
             this.isMobile = window.innerWidth < 768;
             window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
             
-            // Listen for the Android "Add to Home Screen" event
-            window.addEventListener('beforeinstallprompt', (e) => {
-                // Prevent Chrome 67 and earlier from automatically showing the prompt
-                e.preventDefault();
-                // Stash the event so it can be triggered later.
-                this.deferredPrompt = e;
-                // Show our custom banner
-                if (this.isMobile) this.showPwaPrompt = true;
-            });
-
-            // PWA Installation Prompt Logic
+            // PWA & Install Logic
             const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
-            
-            try {
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                this.deferredPrompt = e;
                 if (this.isMobile && !isPWA && !localStorage.getItem('pwaPromptDismissed')) {
                     setTimeout(() => { this.showPwaPrompt = true; }, 2000);
                 }
-            } catch (e) { console.warn("Storage access restricted"); }
+            });
 
-            // URL Param: VIP Mode Trigger (?access=vip_nfc_001)
+            // VIP & Challenger Logic
             const params = new URLSearchParams(window.location.search);
             if (params.get('access') === 'vip_nfc_001') this.triggerVipSequence();
 
-            // URL Param: Challenger Mode (Loading peer scores)
             const challenger = params.get('challenger');
             if (challenger) {
                 try {
@@ -42,7 +31,7 @@ document.addEventListener('alpine:init', () => {
                 } catch (e) { console.error("URL Parameter Error", e); }
             }
 
-            // Restore LocalStorage Data
+            // Restore Data
             try {
                 const savedKey = localStorage.getItem('bilingual_api_key');
                 if(savedKey) this.userApiKey = savedKey;
@@ -74,11 +63,9 @@ document.addEventListener('alpine:init', () => {
         currentTab: 'dashboard',
         mobileMenuOpen: false,
         isMobile: false,
-        deferredPrompt: null, 
         showPwaPrompt: false, 
+        deferredPrompt: null,
         
-        
-        // VIP Mode
         isVipMode: false,
         showVipIntro: false,
         bootStep: 0,
@@ -86,7 +73,6 @@ document.addEventListener('alpine:init', () => {
         vipJson: '{\n  "product_id": "DP-PAY-001",\n  "domain": "Payments_Processing",\n  "owner": "Sarah_Connor@meridian.com",\n  "slo": { "freshness": "200ms", "accuracy": "99.999%" }\n}',
         vipPrompt: 'Act as a CDO presenting to a skeptical Board. \nWe need $5M for Cloud Migration. Draft a 2-minute response using the "House Analogy". Focus on Risk, not just Speed.',
 
-        // Chat / AI
         isChatOpen: false,
         chatInput: '',
         chatMessages: [],
@@ -94,7 +80,6 @@ document.addEventListener('alpine:init', () => {
         userApiKey: '',
         showKeyModal: false,
 
-        // Assessment / Tools
         searchQuery: '',
         glossarySearch: '',
         assessmentSubmitted: false,
@@ -107,14 +92,155 @@ document.addEventListener('alpine:init', () => {
         canvasData: { name: '', owner: '', jobs: '', slo1: '' },
         talentSkills: [ { label: "Tech Fluency", val: 3 }, { label: "P&L Literacy", val: 3 }, { label: "Data Culture", val: 3 }, { label: "Squad Autonomy", val: 3 }, { label: "Change EQ", val: 3 } ],
         
-        // Chart Instances
         talentChartInstance: null,
         gapChartInstance: null,
 
         // ------------------------------------------------------------------
+        // NEW FEATURE: CASE STUDY SIMULATOR
+        // ------------------------------------------------------------------
+        caseStudy: {
+            active: false,
+            step: 0,
+            gameOver: false,
+            finalMessage: "",
+            metrics: { politicalCapital: 50, velocity: 10, risk: 50 },
+            history: [],
+            scenarios: [
+                {
+                    id: 0,
+                    title: "The $30M Zombie",
+                    context: "You are Sarah, the new CDO. 'Project Olympus' is 18 months late, $30M over budget, and has delivered zero value. The CFO wants to save it.",
+                    question: "What is your first move?",
+                    choices: [
+                        {
+                            text: "Try to fix it. Hire consultants to audit the code.",
+                            outcome: "failure",
+                            feedback: "Sunk Cost Fallacy. You wasted another $5M. The Board lost faith.",
+                            impact: { politicalCapital: -20, velocity: -5, risk: +10 }
+                        },
+                        {
+                            text: "Kill it immediately. Reallocate budget to a pilot.",
+                            outcome: "success",
+                            feedback: "Bilingual Move. You stopped the bleeding and freed up resources.",
+                            impact: { politicalCapital: -10, velocity: +20, risk: -10 }
+                        }
+                    ]
+                },
+                {
+                    id: 1,
+                    title: "The Risk Wall",
+                    context: "Your 'Instant Loan' pilot is ready. The CRO blocks it: 'I don't trust code. I need a human analyst to sign off every loan.'",
+                    question: "How do you respond?",
+                    choices: [
+                        {
+                            text: "Escalate to the CEO. Complaining about the CRO.",
+                            outcome: "failure",
+                            feedback: "Political Trap. You made an enemy of Risk. They will block everything.",
+                            impact: { politicalCapital: -30, velocity: 0, risk: 0 }
+                        },
+                        {
+                            text: "The 'Red Screen' Demo. Show automated policy checks.",
+                            outcome: "success",
+                            feedback: "Bilingual Move. You proved the code is stricter than a human.",
+                            impact: { politicalCapital: +20, velocity: +30, risk: -20 }
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    title: "The Demo Day",
+                    context: "90 Days are up. The app works. The Board expects a status report explaining delays.",
+                    question: "How do you present?",
+                    choices: [
+                        {
+                            text: "A 20-slide Strategy Deck on the 'Roadmap'.",
+                            outcome: "neutral",
+                            feedback: "Innovation Theater. They don't believe you. Just another PowerPoint.",
+                            impact: { politicalCapital: 0, velocity: 0, risk: 0 }
+                        },
+                        {
+                            text: "Live Demo. Ask the Chairman to apply right now.",
+                            outcome: "success",
+                            feedback: "Moment of Truth. The loan approves in 3 minutes. Culture shifts.",
+                            impact: { politicalCapital: +50, velocity: +20, risk: 0 }
+                        }
+                    ]
+                }
+            ],
+            start() {
+                this.active = true;
+                this.step = 0;
+                this.gameOver = false;
+                this.metrics = { politicalCapital: 50, velocity: 20, risk: 50 };
+                this.history = [];
+            },
+            makeChoice(choiceIndex) {
+                const currentScenario = this.scenarios[this.step];
+                const choice = currentScenario.choices[choiceIndex];
+                
+                this.metrics.politicalCapital += choice.impact.politicalCapital;
+                this.metrics.velocity += choice.impact.velocity;
+                this.metrics.risk += choice.impact.risk;
+                
+                this.history.push({
+                    step: this.step + 1,
+                    scenario: currentScenario.title,
+                    decision: choice.text,
+                    feedback: choice.feedback,
+                    result: choice.outcome
+                });
+
+                if (this.metrics.politicalCapital <= 0) {
+                    this.endGame("Fired. You lost the support of the Board.");
+                    return;
+                }
+                if (this.step < this.scenarios.length - 1) {
+                    this.step++;
+                } else {
+                    this.endGame("Victory! You have navigated the Clay Layer.");
+                }
+            },
+            endGame(message) {
+                this.gameOver = true;
+                this.finalMessage = message;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // NAVIGATION & TOOLS
+        // ------------------------------------------------------------------
+        navItems: [ 
+            { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, 
+            { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' }, // NEW
+            { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check' }, 
+            { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language' }, 
+            { id: 'matrix', label: 'Strategy Matrix', icon: 'fa-solid fa-chess-board' }, 
+            { id: 'compass', label: 'Compass', icon: 'fa-regular fa-compass' }, 
+            { id: 'canvas', label: 'Data Canvas', icon: 'fa-solid fa-file-contract' }, 
+            { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint' }, 
+            { id: 'lighthouse', label: 'Lighthouse', icon: 'fa-solid fa-lightbulb' }, 
+            { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king' }, 
+            { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox' }, 
+            { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
+            { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
+            { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
+            { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } 
+        ],
+        
+        dashboardTools: [ 
+            { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' }, // NEW
+            { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
+            { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, 
+            { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, 
+            { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
+            { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
+            { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
+            { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
+        ],
+
+        // ------------------------------------------------------------------
         // METHODS
         // ------------------------------------------------------------------
-
         triggerVipSequence() {
             this.isVipMode = true;
             this.showVipIntro = true;
@@ -130,7 +256,6 @@ document.addEventListener('alpine:init', () => {
         },
 
         async installPwa() {
-            // ANDROID / DESKTOP (Chrome/Edge)
             if (this.deferredPrompt) {
                 this.deferredPrompt.prompt();
                 const { outcome } = await this.deferredPrompt.userChoice;
@@ -138,11 +263,9 @@ document.addEventListener('alpine:init', () => {
                     this.deferredPrompt = null;
                     this.showPwaPrompt = false;
                 }
-            } 
-            // IOS (iPhone/iPad) - Manual Instructions required
-            else {
+            } else {
                 alert("To install on iPhone:\n1. Tap the 'Share' button (square with arrow)\n2. Scroll down and tap 'Add to Home Screen'");
-                this.dismissPwa(); // Hide banner after showing instructions
+                this.dismissPwa();
             }
         },
 
@@ -194,7 +317,6 @@ document.addEventListener('alpine:init', () => {
 
             try {
                 let data;
-                // Failover logic: Try Flash first, then experimental
                 try { data = await tryFetch("gemini-1.5-flash-latest", "v1beta"); } 
                 catch (e) { data = await tryFetch("gemini-2.0-flash-exp", "v1beta"); }
 
@@ -234,7 +356,6 @@ document.addEventListener('alpine:init', () => {
                 this.fallbackCopy(text, type);
             }
         },
-        
         fallbackCopy(text, type) {
             const textArea = document.createElement("textarea");
             textArea.value = text;
@@ -271,28 +392,20 @@ document.addEventListener('alpine:init', () => {
             } catch (e) { alert("PDF Error"); }
         },
 
-// ------------------------------------------------------------------
-        // CHART RENDERING (REVERTED TO ORIGINAL)
-        // ------------------------------------------------------------------
-        
         updateTalentChart() {
             this.$nextTick(() => {
                 const ctx = document.getElementById('talentChart');
                 if (!ctx || !ctx.getContext) return;
                 if (this.talentChartInstance) this.talentChartInstance.destroy();
                 
-                // Back to JetBrains Mono
                 Chart.defaults.font.family = '"JetBrains Mono", monospace';
-                
                 this.talentChartInstance = new Chart(ctx, { 
                     type: 'radar', 
                     data: { 
                         labels: this.talentSkills.map(s => s.label), 
                         datasets: [{ 
                             data: this.talentSkills.map(s => s.val), 
-                            // Pink Background
                             backgroundColor: 'rgba(244, 114, 182, 0.2)', 
-                            // Pink Border
                             borderColor: '#f472b6', 
                             pointBackgroundColor: '#fff' 
                         }] 
@@ -301,7 +414,9 @@ document.addEventListener('alpine:init', () => {
                         plugins: { legend: { display: false } }, 
                         scales: { 
                             r: { 
-                                min: 0, max: 5, ticks: { display: false }, 
+                                min: 0, 
+                                max: 5, 
+                                ticks: { display: false }, 
                                 grid: { color: '#334155' }, 
                                 angleLines: { color: '#334155' } 
                             } 
@@ -335,9 +450,7 @@ document.addEventListener('alpine:init', () => {
                     data: { 
                         labels: ['Data', 'Delivery', 'Culture'], 
                         datasets: [
-                            // YOU: Green
                             { label: 'You', data: my, borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.2)' }, 
-                            // CHALLENGER: Pink
                             { label: 'Challenger', data: ch, borderColor: '#f472b6', backgroundColor: 'rgba(244, 114, 182, 0.2)' }
                         ] 
                     }, 
@@ -351,9 +464,8 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
-        // STATIC DATA & COMPUTED LOGIC
+        // STATIC DATA
         // ------------------------------------------------------------------
-
         assessmentData: [
             { title: "Data Velocity", questions: [{text:"Accessibility",score:3,desc:"Can devs get data without a ticket?"},{text:"Quality",score:3,desc:"Is data trusted?"},{text:"Ownership",score:3,desc:"Is ownership clear?"},{text:"Architecture",score:3,desc:"Mesh or Monolith?"},{text:"Trust",score:3,desc:"Single source of truth?"}] },
             { title: "Agile Delivery", questions: [{text:"Funding",score:3,desc:"Projects or Value Streams?"},{text:"Releases",score:3,desc:"Monthly or Daily?"},{text:"Architecture",score:3,desc:"Decoupled?"},{text:"Compliance",score:3,desc:"Manual (1) or Auto (5)?"},{text:"Vendors",score:3,desc:"Partners or Body Shop?"}] },
@@ -404,134 +516,7 @@ document.addEventListener('alpine:init', () => {
         repairKitData: [{symptom:"The Feature Factory", diagnosis:"High velocity, no value. Measuring output not outcome.", prescription:["Stop celebrating feature counts.", "Audit value with PO."]}, {symptom:"The Cloud Bill Shock", diagnosis:"Lift and Shift strategy. No FinOps.", prescription:["Implement FinOps ticker.", "Auto-shutdown non-prod servers."]}, {symptom:"The Agile Silo", diagnosis:"Optimized coding but ignored governance.", prescription:["Expand Definition of Done.", "Embed Compliance in squad."]}, {symptom:"Zombie Agile", diagnosis:"Process without purpose.", prescription:["Ban 'Agile' word.", "Refocus on enemy."]} ],
         boardRisks: [{title:"1. Strategic Risk", subtitle:"The Dumb Pipe", lie:"'Our app has 4.5 stars.'", truth:"Retaining customers but losing value. Used only for balance checks.", question:"Show me Share of Wallet for digital natives."}, {title:"2. Regulatory Risk", subtitle:"The Data Swamp", lie:"'Data is centralized.'", truth:"We are drowning. We have petabytes with no governance.", question:"Can we generate a liquidity report in 10 minutes?"}, {title:"3. Talent Risk", subtitle:"The Missing Bench", lie:"'Hiring top talent.'", truth:"Hiring mercenaries. Missionaries are leaving.", question:"% of Change budget spent on vendors?"} ],
         glossaryData: [{term:"Agentic AI",def:"AI that takes action (moves funds), not just generates text."}, {term:"API",def:"Digital glue allowing systems to talk. Enables Open Banking."}, {term:"Data Mesh",def:"Decentralized ownership; domains own their data products."}, {term:"FinOps",def:"Bringing financial accountability to Cloud spend."}, {term:"Tech Debt",def:"Implied cost of rework from choosing easy solutions."}],
-        get filteredGlossary() { const q = this.glossarySearch.toLowerCase(); return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); },
+        get filteredGlossary() { const q = this.glossarySearch.toLowerCase(); return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); }
 
-        navItems: [ { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check' }, { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language' }, { id: 'matrix', label: 'Strategy Matrix', icon: 'fa-solid fa-chess-board' }, { id: 'compass', label: 'Compass', icon: 'fa-regular fa-compass' }, { id: 'canvas', label: 'Data Canvas', icon: 'fa-solid fa-file-contract' }, { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint' }, { id: 'lighthouse', label: 'Lighthouse', icon: 'fa-solid fa-lightbulb' }, { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king' }, { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox' }, { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } ],
-        dashboardTools: [ { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },  { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } ] 
     }));
 });
-
-        // ------------------------------------------------------------------
-        // CASE STUDY SIMULATOR (Meridian Trust)
-        // ------------------------------------------------------------------
-        caseStudy: {
-            active: false,
-            step: 0,
-            gameOver: false,
-            // The 3 Key Metrics from the book
-            metrics: {
-                politicalCapital: 50, // Your ability to influence
-                velocity: 10,         // Speed of delivery
-                risk: 50              // Operational risk (Lower is better)
-            },
-            history: [], // Tracks decisions for the debrief
-            
-            // The Story Engine
-            scenarios: [
-                {
-                    id: 0,
-                    title: "The $30M Zombie",
-                    context: "You are Sarah, the new CDO. You discover 'Project Olympus' is 18 months late, $30M over budget, and has delivered zero value. The CFO wants to save it to avoid a write-off.",
-                    question: "What is your first move?",
-                    choices: [
-                        {
-                            text: "Try to fix it. Hire McKinsey to audit the code and descale the scope.",
-                            outcome: "failure",
-                            feedback: "The Sunk Cost Fallacy. You spent another $5M and 6 months realizing the foundation was rotten. The Board has lost faith.",
-                            impact: { politicalCapital: -20, velocity: -5, risk: +10 }
-                        },
-                        {
-                            text: "Kill it immediately. Reallocate budget to a small 'Lighthouse' pilot.",
-                            outcome: "success",
-                            feedback: "Bilingual Move. You stopped the bleeding. The CFO is angry about the write-off, but you freed up resources for a 'Goldilocks' pilot.",
-                            impact: { politicalCapital: -10, velocity: +20, risk: -10 }
-                        }
-                    ]
-                },
-                {
-                    id: 1,
-                    title: "The Risk Wall",
-                    context: "Your 'Instant Loan' pilot is ready. David (CRO) blocks it. He says: 'I don't trust code. I need a human analyst to sign off every loan.'",
-                    question: "How do you respond?",
-                    choices: [
-                        {
-                            text: "Escalate to the CEO. Tell him David is blocking innovation.",
-                            outcome: "failure",
-                            feedback: "The Political Trap. You made an enemy of the CRO. He will now use 'Compliance' to strangle every future project. You lost the Clay Layer.",
-                            impact: { politicalCapital: -30, velocity: 0, risk: 0 }
-                        },
-                        {
-                            text: "The 'Red Screen' Demo. Show him the automated policy checks in the code.",
-                            outcome: "success",
-                            feedback: "Bilingual Move. You didn't argue philosophy; you showed evidence. You proved the code is stricter than a human. David signs the waiver.",
-                            impact: { politicalCapital: +20, velocity: +30, risk: -20 }
-                        }
-                    ]
-                },
-                {
-                    id: 2,
-                    title: "The Demo Day",
-                    context: "90 Days are up. The app works. The Board is gathered. They expect a status report explaining why it's late (because it's always late).",
-                    question: "How do you present?",
-                    choices: [
-                        {
-                            text: "A 20-slide Strategy Deck explaining the 'Agile Transformation Roadmap'.",
-                            outcome: "neutral",
-                            feedback: "Innovation Theater. The Board nods, but they don't believe you. You are just another exec with a PowerPoint. You bought time, but not trust.",
-                            impact: { politicalCapital: 0, velocity: 0, risk: 0 }
-                        },
-                        {
-                            text: "Live Demo. Ask the Chairman to apply for a loan on his phone right now.",
-                            outcome: "success",
-                            feedback: "The Moment of Truth. The loan approves in 3 minutes. The 'ping' of money hitting the account changes the culture instantly.",
-                            impact: { politicalCapital: +50, velocity: +20, risk: 0 }
-                        }
-                    ]
-                }
-            ],
-
-            start() {
-                this.active = true;
-                this.step = 0;
-                this.gameOver = false;
-                this.metrics = { politicalCapital: 50, velocity: 20, risk: 50 };
-                this.history = [];
-            },
-
-            makeChoice(choiceIndex) {
-                const currentScenario = this.scenarios[this.step];
-                const choice = currentScenario.choices[choiceIndex];
-                
-                // Update Metrics
-                this.metrics.politicalCapital += choice.impact.politicalCapital;
-                this.metrics.velocity += choice.impact.velocity;
-                this.metrics.risk += choice.impact.risk;
-                
-                // Log History
-                this.history.push({
-                    step: this.step + 1,
-                    scenario: currentScenario.title,
-                    decision: choice.text,
-                    feedback: choice.feedback,
-                    result: choice.outcome
-                });
-
-                // Check Game Over Conditions
-                if (this.metrics.politicalCapital <= 0) {
-                    this.endGame("Fired. You lost the support of the Board.");
-                    return;
-                }
-
-                // Advance
-                if (this.step < this.scenarios.length - 1) {
-                    this.step++;
-                } else {
-                    this.endGame("Victory! You have navigated the Clay Layer.");
-                }
-            },
-
-            endGame(message) {
-                this.gameOver = true;
-                this.finalMessage = message;
-            }
-        },
