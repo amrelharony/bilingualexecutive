@@ -245,7 +245,40 @@
             <div x-show="currentTab === 'resources'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-green-300 flex items-center"><i class="fa-solid fa-book-bookmark mr-3"></i>Recommended Resources</h2><div class="bg-card border border-slate-700 rounded-xl p-6"><ul class="space-y-4"><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Project to Product (Mik Kersten)</h4><p class="text-sm text-textMuted">Definitive guide to the "Flow Framework".</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Team Topologies (Skelton & Pais)</h4><p class="text-sm text-textMuted">Blueprint for structuring squads.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Sooner Safer Happier (Jonathan Smart)</h4><p class="text-sm text-textMuted">Agile for regulated banks.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Data Mesh (Zhamak Dehghani)</h4><p class="text-sm text-textMuted">Data as a Product.</p></li></ul></div></div>
 
             <!-- COMMUNITY -->
-            <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center"><div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl"><i class="fa-solid fa-users-line text-6xl text-primary mb-6"></i><h2 class="font-mono text-3xl font-bold text-white mb-4">The Fintech Bilinguals</h2><p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders.</p><div class="bg-white p-4 inline-block rounded-lg mb-6"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.fintechbilinguals.com" alt="QR Code" class="w-32 h-32" @error="$el.style.display='none'"></div></div></div>
+            <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
+                <div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl relative overflow-hidden">
+                    
+                    <!-- WhatsApp Brand Icon -->
+                    <div class="mb-6">
+                        <i class="fa-brands fa-whatsapp text-6xl text-[#25D366]"></i>
+                    </div>
+
+                    <h2 class="font-mono text-3xl font-bold text-white mb-4">The Fintech Bilinguals</h2>
+                    <p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders. Access exclusive playbooks and peer support.</p>
+
+                    <!-- DESKTOP VIEW: Show QR Code -->
+                    <div class="hidden md:flex flex-col items-center">
+                        <div class="bg-white p-4 rounded-xl shadow-lg mb-4">
+                            <!-- QR Code Generated from your URL -->
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://chat.whatsapp.com/DgFrhnzrKpAJnmLM1Oqmgg" 
+                                 alt="WhatsApp QR Code" 
+                                 class="w-40 h-40">
+                        </div>
+                        <p class="text-xs text-textMuted font-mono uppercase tracking-widest">Scan with your phone to join</p>
+                    </div>
+
+                    <!-- MOBILE VIEW: Show Clickable Button -->
+                    <div class="md:hidden">
+                        <a href="https://chat.whatsapp.com/DgFrhnzrKpAJnmLM1Oqmgg" target="_blank" 
+                           class="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#128c7e] text-white font-bold py-4 px-6 rounded-full shadow-glow transition-all active:scale-95">
+                            <i class="fa-brands fa-whatsapp text-2xl"></i>
+                            <span class="font-mono text-sm">JOIN COMMUNITY</span>
+                        </a>
+                        <p class="text-[10px] text-textMuted mt-4">Opens directly in WhatsApp</p>
+                    </div>
+
+                </div>
+            </div>
 
         </main>
 
