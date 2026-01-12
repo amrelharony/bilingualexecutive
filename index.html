@@ -6,15 +6,15 @@
     <title>The Bilingual Executive Toolkit v22.1</title>
     
     <!-- PWA Manifest & Meta -->
-    <meta name="theme-color" content="#152238">
+    <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
 
-    <!-- Fonts: Importing Montserrat & Roboto (Helvetica & Minion usually local or fallback) -->
+    <!-- Fonts: Back to Inter & JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
     <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -30,41 +30,28 @@
     <link rel="stylesheet" href="css/styles.css">
     <script src="js/app.js"></script>
 
-    <!-- TAILWIND CONFIG (Updated for Book Theme) -->
+    <!-- TAILWIND CONFIG (Reverted to Original) -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        // Book Cover Navy
-                        dark: '#152238', 
-                        // Slightly lighter Navy for cards
-                        card: '#1e2e4a', 
-                        // Book Cover Teal
-                        primary: '#2E8B83', 
-                        // Lighter Teal for hover effects
-                        accent: '#4FD1C5',
-                        
-                        // Utility Colors
-                        risk: '#ef4444', 
-                        warn: '#f59e0b', 
-                        textMain: '#ffffff', 
+                        dark: '#0f172a', 
+                        card: '#1e293b', 
+                        primary: '#4ade80',  // Neon Green
+                        risk: '#f87171', 
+                        warn: '#fbbf24', 
+                        hotpink: '#f472b6',  // Neon Pink
+                        textMain: '#f1f5f9', 
                         textMuted: '#94a3b8',
                     },
                     fontFamily: { 
-                        // Front Cover Font
-                        brand: ['"Montserrat"', 'sans-serif'],
-                        // Titles (User Request)
-                        sans: ['"Helvetica Neue"', 'Helvetica', 'Arial', 'sans-serif'], 
-                        // Main Body (User Request)
-                        body: ['"Roboto"', 'sans-serif'],
-                        // Long Reading (User Request)
-                        serif: ['"Minion Pro"', '"Times New Roman"', 'serif'],
-                        // Code snippets
-                        mono: ['"JetBrains Mono"', 'monospace']
+                        mono: ['"JetBrains Mono"', 'monospace'], 
+                        sans: ['"Inter"', 'sans-serif'], 
                     },
                     boxShadow: { 
-                        'glow': '0 0 15px rgba(46, 139, 131, 0.3)', 
+                        'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 
+                        'glow-vip': '0 0 20px rgba(244, 114, 182, 0.2)' 
                     },
                     animation: { 'glitch': 'glitch 1s linear infinite' }
                 }
@@ -72,6 +59,7 @@
         }
     </script>
 </head>
+
 <body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
 
     <!-- The 'toolkit' data object is defined in js/app.js -->
