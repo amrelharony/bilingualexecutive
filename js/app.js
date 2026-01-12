@@ -218,11 +218,107 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
+        // FEATURE 3: BILINGUAL FLASHCARD QUIZ
+        // ------------------------------------------------------------------
+        quiz: {
+            active: false,
+            finished: false,
+            currentQuestion: 0,
+            score: 0,
+            feedback: null, // 'correct' or 'incorrect'
+            
+            // The Question Bank
+            questions: [
+                {
+                    term: "Technical Debt",
+                    type: "Tech -> Business",
+                    options: [
+                        { text: "Money we owe to technology vendors for cloud servers.", correct: false },
+                        { text: "The implied cost of future rework caused by choosing an easy solution now.", correct: true }, // The Business Impact
+                        { text: "A bug in the code that causes the app to crash.", correct: false }
+                    ]
+                },
+                {
+                    term: "API (Application Programming Interface)",
+                    type: "Tech -> Business",
+                    options: [
+                        { text: "The 'Universal Adapter' that allows our systems to talk to partners like Fintechs.", correct: true },
+                        { text: "A specific type of database used for high-speed trading.", correct: false },
+                        { text: "A graphical user interface for the mobile app.", correct: false }
+                    ]
+                },
+                {
+                    term: "The Monolith",
+                    type: "Tech -> Business",
+                    options: [
+                        { text: "A large, successful bank with a dominant market share.", correct: false },
+                        { text: "The 'Anchor' system. A unified legacy codebase that is stable but very hard to change.", correct: true },
+                        { text: "A physical server located in the basement.", correct: false }
+                    ]
+                },
+                {
+                    term: "Zero Trust",
+                    type: "Security -> Business",
+                    options: [
+                        { text: "A culture where employees do not trust management.", correct: false },
+                        { text: "A security model that assumes the breach has already occurred and verifies every request.", correct: true },
+                        { text: "A policy that stops us from hiring external consultants.", correct: false }
+                    ]
+                },
+                {
+                    term: "Microservices",
+                    type: "Architecture -> Business",
+                    options: [
+                        { text: "Small banking services offered to retail customers.", correct: false },
+                        { text: "A department with fewer than 10 employees.", correct: false },
+                        { text: "Lego Blocks. Breaking a system into small parts so we can update one without breaking the others.", correct: true }
+                    ]
+                }
+            ],
+
+            start() {
+                this.active = true;
+                this.finished = false;
+                this.currentQuestion = 0;
+                this.score = 0;
+                this.feedback = null;
+                this.shuffleQuestions();
+            },
+
+            shuffleQuestions() {
+                // Simple shuffle to keep it fresh
+                this.questions.sort(() => Math.random() - 0.5);
+            },
+
+            submitAnswer(isCorrect) {
+                if (this.feedback) return; // Prevent double clicks
+
+                if (isCorrect) {
+                    this.score++;
+                    this.feedback = 'correct';
+                } else {
+                    this.feedback = 'incorrect';
+                }
+
+                // Auto-advance after 1.5 seconds
+                setTimeout(() => {
+                    if (this.currentQuestion < this.questions.length - 1) {
+                        this.currentQuestion++;
+                        this.feedback = null;
+                    } else {
+                        this.finished = true;
+                    }
+                }, 1500);
+            }
+        },
+
+        // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
         // ------------------------------------------------------------------
         navItems: [ 
             { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, 
-            { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' }, // NEW
+            { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' },
+            { id: 'quiz', label: 'Flashcards', icon: 'fa-solid fa-graduation-cap' },
             { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check' }, 
             { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language' }, 
             { id: 'matrix', label: 'Strategy Matrix', icon: 'fa-solid fa-chess-board' }, 
@@ -239,7 +335,8 @@ document.addEventListener('alpine:init', () => {
         ],
         
         dashboardTools: [ 
-            { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' }, // NEW
+            { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' }, 
+            { id: 'quiz', label: 'Flashcards', desc: 'Test your fluency in tech jargon.', icon: 'fa-solid fa-graduation-cap', color: 'text-cyan-400' },
             { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
             { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, 
             { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, 
