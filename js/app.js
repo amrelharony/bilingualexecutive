@@ -243,7 +243,7 @@ document.addEventListener('alpine:init', () => {
         },
 
 // ------------------------------------------------------------------
-        // CHART RENDERING (UPDATED FOR BOOK THEME)
+        // CHART RENDERING (REVERTED TO ORIGINAL)
         // ------------------------------------------------------------------
         
         updateTalentChart() {
@@ -252,8 +252,8 @@ document.addEventListener('alpine:init', () => {
                 if (!ctx || !ctx.getContext) return;
                 if (this.talentChartInstance) this.talentChartInstance.destroy();
                 
-                // Using Roboto for charts
-                Chart.defaults.font.family = '"Roboto", sans-serif';
+                // Back to JetBrains Mono
+                Chart.defaults.font.family = '"JetBrains Mono", monospace';
                 
                 this.talentChartInstance = new Chart(ctx, { 
                     type: 'radar', 
@@ -261,10 +261,10 @@ document.addEventListener('alpine:init', () => {
                         labels: this.talentSkills.map(s => s.label), 
                         datasets: [{ 
                             data: this.talentSkills.map(s => s.val), 
-                            // Teal Background with Opacity
-                            backgroundColor: 'rgba(46, 139, 131, 0.2)', 
-                            // Solid Teal Border
-                            borderColor: '#2E8B83', 
+                            // Pink Background
+                            backgroundColor: 'rgba(244, 114, 182, 0.2)', 
+                            // Pink Border
+                            borderColor: '#f472b6', 
                             pointBackgroundColor: '#fff' 
                         }] 
                     }, 
@@ -273,9 +273,8 @@ document.addEventListener('alpine:init', () => {
                         scales: { 
                             r: { 
                                 min: 0, max: 5, ticks: { display: false }, 
-                                grid: { color: '#1e2e4a' }, // Card color for grid
-                                angleLines: { color: '#1e2e4a' },
-                                pointLabels: { color: '#94a3b8', font: { size: 10 } }
+                                grid: { color: '#334155' }, 
+                                angleLines: { color: '#334155' } 
                             } 
                         } 
                     } 
@@ -307,21 +306,21 @@ document.addEventListener('alpine:init', () => {
                     data: { 
                         labels: ['Data', 'Delivery', 'Culture'], 
                         datasets: [
-                            // YOU: Teal
-                            { label: 'You', data: my, borderColor: '#2E8B83', backgroundColor: 'rgba(46, 139, 131, 0.2)' }, 
-                            // CHALLENGER: White/Silver (Instead of Pink)
-                            { label: 'Challenger', data: ch, borderColor: '#ffffff', backgroundColor: 'rgba(255, 255, 255, 0.1)' }
+                            // YOU: Green
+                            { label: 'You', data: my, borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.2)' }, 
+                            // CHALLENGER: Pink
+                            { label: 'Challenger', data: ch, borderColor: '#f472b6', backgroundColor: 'rgba(244, 114, 182, 0.2)' }
                         ] 
                     }, 
                     options: { 
                         scales: { 
-                            r: { min: 0, max: 25, grid: { color: '#1e2e4a' }, angleLines: { color: '#1e2e4a' } } 
+                            r: { min: 0, max: 25, grid: { color: '#334155' }, angleLines: { color: '#334155' } } 
                         } 
                     } 
                 });
             });
         },
-        
+
         // ------------------------------------------------------------------
         // STATIC DATA & COMPUTED LOGIC
         // ------------------------------------------------------------------
