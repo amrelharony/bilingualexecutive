@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>The Bilingual Executive Toolkit v22.1</title>
+    
+    <!-- PWA Manifest & Meta -->
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
+
+    <!-- YOUR LOCAL FILES -->
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/app.js"></script>
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0f172a', card: '#1e293b', primary: '#4ade80', risk: '#f87171', warn: '#fbbf24', hotpink: '#f472b6', textMain: '#f1f5f9', textMuted: '#94a3b8',
+                    },
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'], sans: ['"Inter"', 'sans-serif'], },
+                    boxShadow: { 'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 'glow-vip': '0 0 20px rgba(244, 114, 182, 0.2)' },
+                    animation: { 'glitch': 'glitch 1s linear infinite' }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
+
+    <!-- The 'toolkit' data object is defined in js/app.js -->
+    <div x-data="toolkit" class="flex w-full h-full relative">
+
+        <!-- VIP BOOT SEQUENCE -->
+        <div x-show="showVipIntro" x-transition.opacity.duration.500ms class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center font-mono text-hotpink cursor-wait">
+            <div class="max-w-md w-full p-6">
+                <div class="text-xs text-slate-500 mb-2 font-bold tracking-widest">NFC SIGNAL DETECTED...</div>
+                <h1 class="text-4xl font-bold mb-4 animate-pulse">WELCOME, ARCHITECT.</h1>
+                <div class="space-y-2 text-sm text-primary font-mono">
+                    <p x-show="bootStep >= 1">> Verifying Token... [OK]</p>
+                    <p x-show="bootStep >= 2">> Unlocking Financial Engine... [OK]</p>
+                    <p x-show="bootStep >= 3">> Activating God Mode... [OK]</p>
+                </div>
+                <div class="mt-8 w-full bg-slate-900 h-1 rounded-full overflow-hidden">
+                    <div class="bg-hotpink h-1 transition-all duration-[3000ms] ease-out" :style="`width: ${bootProgress}%`"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PWA INSTALL PROMPT -->
+        <div x-show="showPwaPrompt && isMobile" x-cloak x-transition class="md:hidden fixed top-0 left-0 w-full bg-gradient-to-r from-slate-900 to-slate-800 text-white p-3 z-[60] border-b border-primary/30 flex justify-between items-center shadow-xl">
+            <div class="flex items-center gap-3">
+                <div class="bg-primary/20 p-2 rounded text-primary"><i class="fa-solid fa-download"></i></div>
+                <div class="text-xs"><p class="font-bold">Install App</p><p class="text-slate-400">Add to Home Screen</p></div>
+            </div>
+            <button @click="dismissPwa()" class="text-slate-400 px-3"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Gap Analysis Banner -->
+        <template x-if="challengerData">
+            <div x-cloak class="absolute top-0 left-0 w-full bg-hotpink/10 border-b border-hotpink z-40 p-2 text-center backdrop-blur-md pt-safe">
+                <p class="font-mono text-hotpink text-xs md:text-sm font-bold truncate px-2"><i class="fa-solid fa-people-arrows mr-2"></i>GAP MODE: Comparing against <span x-text="challengerData?.title || 'Colleague'"></span></p>
+            </div>
+        </template>
+
+        <!-- SIDEBAR (Desktop) -->
+        <aside class="hidden md:flex w-64 bg-dark border-r border-slate-800 flex-col pt-10 h-full">
+            <div class="p-6 border-b border-slate-800">
+                <h1 class="font-mono text-xl font-bold tracking-tighter" :class="isVipMode ? 'text-hotpink' : 'text-primary'">
+                    <i class="fa-solid" :class="isVipMode ? 'fa-microchip' : 'fa-terminal'"></i> BILINGUAL<br>EXEC
+                </h1>
+                <p class="text-[10px] text-textMuted font-mono mt-1 uppercase tracking-widest flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full" :class="isVipMode ? 'bg-hotpink animate-pulse' : 'bg-primary'"></span> 
+                    <span x-text="isVipMode ? 'ARCHITECT MODE' : 'v22.1 // PATCHED'"></span>
+                </p>
+            </div>
+            <nav class="flex-1 overflow-y-auto py-4">
+                <template x-for="item in navItems" :key="item.id">
+                    <button @click="handleNavClick(item.id)" x-show="!item.vip || isVipMode" :class="currentTab === item.id ? (item.vip ? 'nav-active-vip' : 'nav-active') : 'text-textMuted hover:text-textMain hover:bg-slate-800/50'" class="w-full text-left px-6 py-3 font-mono text-xs transition-all duration-200 border-l-4 border-transparent flex items-center group">
+                        <i :class="item.icon" class="w-5 mr-3 opacity-70 group-hover:opacity-100 transition-opacity"></i>
+                        <span x-text="item.label"></span>
+                        <i x-show="item.vip" class="ml-auto fa-solid fa-lock-open text-[10px] text-hotpink"></i>
+                    </button>
+                </template>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 h-full overflow-y-auto bg-dark p-4 md:p-12 pt-24 md:pt-12 pb-32 md:pb-12 relative scroll-smooth w-full">
+            
+            <!-- DASHBOARD -->
+            <div x-show="currentTab === 'dashboard'" x-transition.opacity class="max-w-6xl mx-auto">
+                <div class="mb-8 mt-4 md:mt-0">
+                    <h2 class="text-3xl md:text-6xl font-mono font-bold text-white mb-2 md:mb-4 tracking-tighter leading-none">Decode the <span :class="isVipMode ? 'text-hotpink' : 'text-primary'" class="block md:inline">Agile Bank.</span></h2>
+                    <p class="text-sm md:text-xl text-textMuted max-w-2xl font-light">Operating System for the modern Fintech executive. Select a tool.</p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 pb-20">
+                    <template x-for="tool in dashboardTools" :key="tool.id">
+                        <div @click="handleNavClick(tool.id)" x-show="!tool.vip || isVipMode" class="bg-card border border-slate-700 p-5 rounded-xl hover:border-primary active:scale-95 transition-all duration-200 cursor-pointer shadow-lg group relative overflow-hidden">
+                            <div class="absolute top-0 right-0 p-2" x-show="tool.vip"><i class="fa-solid fa-star text-hotpink text-xs animate-pulse"></i></div>
+                            <div class="flex justify-between items-start mb-3"><div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center border border-slate-600 group-hover:border-primary transition-colors"><i :class="tool.icon + ' text-lg ' + tool.color"></i></div><i class="fa-solid fa-chevron-right text-slate-600 text-sm"></i></div>
+                            <h3 class="font-mono text-lg font-bold text-white mb-1" x-text="tool.label"></h3><p class="text-xs text-textMuted leading-relaxed" x-text="tool.desc"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- ARCHITECT CONSOLE (VIP ONLY) -->
+            <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
+                <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-microchip text-9xl text-hotpink"></i></div>
+                    <h2 class="font-mono text-3xl font-bold text-hotpink mb-2 flex items-center"><i class="fa-solid fa-user-secret mr-3"></i>VIP ARCHITECT CONSOLE</h2>
+                    <p class="text-sm text-slate-300 font-mono max-w-2xl relative z-10">ACCESS GRANTED. Welcome to the Command Center.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
+                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">JSON: Data Product Contract</h3>
+                        <div class="bg-black p-4 rounded text-xs text-green-400 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner">
+                            <pre x-text="vipJson"></pre>
+                        </div>
+                        <button @click="copyToClipboard(vipJson, 'Schema')" class="w-full border border-slate-600 hover:bg-slate-700 text-slate-300 text-xs font-mono py-3 rounded transition-colors flex items-center justify-center gap-2"><i class="fa-regular fa-copy"></i> COPY SCHEMA</button>
+                    </div>
+                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
+                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">PROMPT: The Boardroom Script</h3>
+                        <div class="bg-black p-4 rounded text-xs text-blue-300 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner h-32">
+                            <pre x-text="vipPrompt"></pre>
+                        </div>
+                        <button @click="copyToClipboard(vipPrompt, 'Prompt')" class="w-full bg-hotpink hover:bg-pink-600 text-white font-bold py-3 rounded text-xs font-mono transition-all flex items-center justify-center gap-2 shadow-glow-vip"><i class="fa-solid fa-robot"></i> COPY PROMPT</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ASSESSMENT -->
+            <div x-show="currentTab === 'assessment'" x-cloak class="max-w-4xl mx-auto">
+                <div x-show="!assessmentSubmitted">
+                    <div class="flex justify-between items-center mb-6"><h2 class="font-mono text-2xl font-bold text-primary flex items-center"><i class="fa-solid fa-clipboard-check mr-3"></i>Agile Readiness Assessment</h2><button @click="resetAssessment()" class="text-xs text-textMuted underline hover:text-white"><i class="fa-solid fa-rotate-left mr-1"></i>Reset</button></div>
+                    <div class="space-y-12 mb-20">
+                        <template x-for="(section, sIdx) in assessmentData" :key="sIdx">
+                            <div class="bg-card/50 p-6 rounded-xl border border-slate-800"><h3 class="font-mono text-xl text-white mb-6 border-l-4 border-primary pl-3" x-text="section.title"></h3><div class="space-y-8"><template x-for="(q, qIdx) in section.questions" :key="qIdx"><div class="bg-dark/50 p-5 rounded border border-slate-700"><div class="flex justify-between items-start mb-2"><label class="font-mono font-bold text-slate-200 text-sm uppercase tracking-wide" x-text="q.text"></label><span class="font-mono text-primary font-bold text-lg" x-text="q.score"></span></div><p class="text-xs text-textMuted mb-2" x-text="q.desc"></p><input type="range" min="1" max="5" step="1" x-model.number="q.score" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"></div></template></div></div>
+                        </template>
+                        <button @click="finishAssessment()" class="w-full py-4 bg-primary text-dark font-mono font-bold rounded-lg shadow-glow hover:bg-green-400 transition-colors flex justify-center items-center gap-2">CALCULATE SCORE <i class="fa-solid fa-calculator"></i></button>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div x-show="assessmentSubmitted" class="space-y-6">
+                    <div class="flex justify-between items-end"><h2 class="font-mono text-2xl font-bold text-primary">Audit Results</h2><button @click="assessmentSubmitted=false" class="text-xs text-textMuted underline"><i class="fa-solid fa-rotate-left mr-1"></i>Retake</button></div>
+                    <div class="bg-card border border-slate-700 p-8 rounded-xl text-center shadow-2xl">
+                        <div class="text-6xl font-mono font-bold mb-2" :class="getAssessmentColor()" x-text="calculateScore.total"></div>
+                        <h3 class="text-2xl font-bold text-white mb-4" x-text="getAssessmentResult().title"></h3>
+                        <p class="text-textMuted max-w-lg mx-auto mb-6" x-text="getAssessmentResult().desc"></p>
+                        
+                        <div x-show="calculateScore.isSafetyVeto" class="mb-4 p-4 border border-risk bg-risk/10 rounded flex items-start gap-3 text-left max-w-lg mx-auto"><i class="fa-solid fa-ban text-risk mt-1"></i><div><h4 class="font-mono font-bold text-risk text-sm">SAFETY VETO APPLIED</h4><p class="text-xs text-slate-300 mt-1">Low Safety score. Agility is impossible in fear. Score capped at 40.</p></div></div>
+                        <div x-show="calculateScore.isManualDrag" class="mb-6 p-4 border border-warn bg-warn/10 rounded flex items-start gap-3 text-left max-w-lg mx-auto"><i class="fa-solid fa-hand text-warn mt-1"></i><div><h4 class="font-mono font-bold text-warn text-sm">MANUAL DRAG PENALTY</h4><p class="text-xs text-slate-300 mt-1">Manual compliance reduces velocity. -20% final score reduction applied.</p></div></div>
+
+                        <div class="flex flex-wrap gap-4 justify-center">
+                            <button @click="generatePDF()" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded font-mono text-xs"><i class="fa-solid fa-file-pdf mr-2"></i>PDF REPORT</button>
+                            <button @click="copyChallengeLink()" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded font-mono text-xs text-primary"><i class="fa-solid fa-link mr-2"></i><span x-text="copyBtnText"></span></button>
+                        </div>
+                    </div>
+                    
+                    <div x-show="challengerData" class="bg-card border border-hotpink/30 p-6 rounded-xl">
+                        <h4 class="font-mono text-sm text-hotpink mb-4 uppercase font-bold">Gap Analysis vs Colleague</h4>
+                        <div class="h-64 flex justify-center"><canvas id="gapChart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TRANSLATOR (Search) -->
+            <div x-show="currentTab === 'translator'" x-cloak class="max-w-5xl mx-auto">
+                <h2 class="font-mono text-2xl font-bold text-blue-400 mb-6 flex items-center"><i class="fa-solid fa-language mr-3"></i>The Translator Dictionary</h2>
+                <div class="mb-6 relative"><input type="text" x-model="searchQuery" placeholder="Search technical or business terms..." class="w-full bg-card border border-slate-700 rounded-lg py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-400 font-mono"><i class="fa-solid fa-search absolute left-4 top-5 text-slate-500"></i></div>
+                <div class="grid gap-4 pb-20"><template x-for="row in filteredDictionary" :key="row.banker"><div class="bg-card border border-slate-800 p-5 rounded-lg hover:border-blue-400/50 transition-colors"><div class="grid md:grid-cols-3 gap-4"><div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Banker Says</span><p class="font-bold text-white" x-text="row.banker"></p></div><div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Engineer Says</span><p class="font-mono text-blue-300 text-sm" x-text="row.tech"></p></div><div class="md:border-l border-slate-700 md:pl-4"><span class="text-[10px] text-primary font-mono block uppercase mb-1">True Meaning</span><p class="text-sm text-slate-300 italic" x-text="row.translation"></p></div></div></div></template></div>
+            </div>
+
+            <!-- MATRIX -->
+            <div x-show="currentTab === 'matrix'" x-cloak class="max-w-4xl mx-auto">
+                <h2 class="font-mono text-2xl font-bold mb-6 text-purple-400 flex items-center"><i class="fa-solid fa-chess-board mr-3"></i>Execution Strategy Matrix</h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-card p-6 rounded-xl border border-slate-800 space-y-8"><div><label class="block font-mono text-xs text-textMuted mb-4 uppercase">Strategic Importance (<span x-text="matrixCoords.y"></span>%)</label><input type="range" min="0" max="100" x-model="matrixCoords.y" class="w-full"></div><div><label class="block font-mono text-xs text-textMuted mb-4 uppercase">Technical Complexity (<span x-text="matrixCoords.x"></span>%)</label><input type="range" min="0" max="100" x-model="matrixCoords.x" class="w-full"></div></div>
+                    <div class="bg-card border border-slate-700 rounded-xl relative aspect-square flex items-center justify-center overflow-hidden"><div class="absolute inset-0 grid grid-cols-2 grid-rows-2"><div class="border-r border-b border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase">Build (In-house)</div><div class="border-b border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase text-right">Buy / Partner</div><div class="border-r border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase flex items-end">Ignore</div><div class="p-4 text-[10px] font-mono text-slate-600 uppercase text-right flex items-end justify-end">Outsource</div></div><div class="absolute w-6 h-6 bg-primary rounded-full shadow-glow transition-all duration-300" :style="`left: ${matrixCoords.x}%; bottom: ${matrixCoords.y}%`" style="transform: translate(-50%, 50%)"></div><div class="z-10 bg-dark/90 p-4 rounded-lg border border-primary text-center"><p class="font-mono text-xl font-bold text-primary" x-text="getMatrixResult().strategy"></p><p class="text-[10px] text-white mt-1" x-text="getMatrixResult().desc"></p></div></div>
+                </div>
+            </div>
+
+            <!-- COMPASS -->
+            <div x-show="currentTab === 'compass'" x-cloak class="max-w-4xl mx-auto">
+                <h2 class="font-mono text-2xl font-bold mb-6 text-cyan-400 flex items-center"><i class="fa-regular fa-compass mr-3"></i>The Bilingual Compass</h2>
+                <div class="grid md:grid-cols-2 gap-8"><div class="bg-card p-6 rounded-xl border border-slate-800 space-y-6"><p class="text-sm text-textMuted">Balance your leadership focus.</p><div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">NORTH (Growth) vs SOUTH (Cost)</label></div><input type="range" min="0" max="100" x-model="compassCoords.y" class="w-full"></div><div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">WEST (Risk) vs EAST (Speed)</label></div><input type="range" min="0" max="100" x-model="compassCoords.x" class="w-full"></div></div><div class="bg-card border border-slate-700 rounded-xl relative aspect-square flex items-center justify-center overflow-hidden"><div class="absolute top-4 text-[10px] font-mono text-slate-500">VALUE (N)</div><div class="absolute bottom-4 text-[10px] font-mono text-slate-500">COST (S)</div><div class="absolute left-4 text-[10px] font-mono text-slate-500">RISK (W)</div><div class="absolute right-4 text-[10px] font-mono text-slate-500">SPEED (E)</div><div class="absolute inset-0 flex items-center justify-center"><div class="w-full h-px bg-slate-800"></div><div class="h-full w-px bg-slate-800 absolute"></div></div><div class="absolute w-6 h-6 bg-cyan-400 border-2 border-white rounded-full shadow-glow transform -translate-x-1/2 -translate-y-1/2 transition-all duration-100 ease-out z-10" :style="`left: ${compassCoords.x}%; bottom: ${compassCoords.y}%`"></div><div class="z-10 bg-dark/90 p-4 rounded-lg border border-cyan-400 text-center"><h3 class="font-mono text-xl font-bold mb-1 text-cyan-400" x-text="getCompassResult().title"></h3><p class="text-[10px] text-white" x-text="getCompassResult().desc"></p></div></div></div>
+            </div>
+
+            <!-- CANVAS -->
+            <div x-show="currentTab === 'canvas'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-white flex items-center"><i class="fa-solid fa-file-contract mr-3 text-blue-400"></i>Data Product Canvas</h2><div class="grid md:grid-cols-2 gap-8"><div class="space-y-4"><div><label class="text-xs font-mono text-textMuted">PRODUCT NAME</label><input type="text" x-model="canvasData.name" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono"></div><div><label class="text-xs font-mono text-textMuted">OWNER</label><input type="text" x-model="canvasData.owner" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono"></div><div><label class="text-xs font-mono text-textMuted">JOBS TO BE DONE</label><textarea x-model="canvasData.jobs" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono h-20"></textarea></div><div><label class="text-xs font-mono text-textMuted">SLO: FRESHNESS</label><input type="text" x-model="canvasData.slo1" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono"></div></div><div class="bg-white text-dark p-6 rounded-lg shadow-2xl relative font-sans"><div class="absolute top-0 left-0 w-full h-2 bg-blue-500 rounded-t-lg"></div><div class="flex justify-between items-start mb-6 mt-2"><div><h3 class="font-bold text-2xl uppercase tracking-tighter" x-text="canvasData.name || 'PRODUCT NAME'"></h3><p class="text-xs text-slate-500 font-mono mt-1">OWNER: <span x-text="canvasData.owner || '---'"></span></p></div><div class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">CERTIFIED</div></div><div class="grid grid-cols-2 gap-4 mb-4"><div class="border border-slate-200 p-3 rounded"><p class="text-[10px] text-slate-400 font-bold uppercase mb-1">CONSUMER JOB</p><p class="text-sm font-medium leading-tight" x-text="canvasData.jobs || '---'"></p></div><div class="border border-slate-200 p-3 rounded bg-slate-50"><p class="text-[10px] text-slate-400 font-bold uppercase mb-1">GUARANTEE (SLO)</p><ul class="text-sm font-mono space-y-1"><li class="flex items-center"><i class="fa-solid fa-clock mr-2 text-blue-500"></i> <span x-text="canvasData.slo1 || '---'"></span></li></ul></div></div></div></div></div>
+
+            <!-- TALENT -->
+            <div x-show="currentTab === 'talent'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-hotpink flex items-center"><i class="fa-solid fa-fingerprint mr-3"></i>Agile Talent Radar</h2><div class="grid md:grid-cols-2 gap-10"><div class="space-y-6"><template x-for="(skill, idx) in talentSkills" :key="idx"><div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white uppercase" x-text="skill.label"></label><span class="font-mono text-hotpink" x-text="skill.val"></span></div><input type="range" min="1" max="5" step="1" x-model.number="skill.val" @input="updateTalentChart()" class="w-full"></div></template></div><div class="bg-card border border-slate-800 p-4 rounded-xl flex items-center justify-center h-80"><canvas id="talentChart"></canvas></div></div></div>
+
+            <!-- LIGHTHOUSE -->
+            <div x-show="currentTab === 'lighthouse'" x-cloak class="max-w-3xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-warn flex items-center"><i class="fa-solid fa-lightbulb mr-3"></i>Lighthouse Selection</h2><div class="bg-card border border-slate-700 rounded-xl p-6 mb-8"><p class="text-textMuted mb-6 font-mono text-sm border-l-2 border-warn pl-4">WARNING: If you cannot check all 10 boxes, choose a different project.</p><div class="space-y-3"><template x-for="(item, index) in lighthouseData" :key="index"><label class="flex items-start space-x-4 p-3 rounded hover:bg-slate-800 cursor-pointer transition-colors"><input type="checkbox" x-model="item.checked" class="mt-1 h-4 w-4 rounded border-slate-500 text-primary bg-dark"><div><span class="font-mono text-[10px] text-slate-500 block mb-0.5" x-text="item.category"></span><span class="text-sm text-slate-200" x-text="item.text"></span></div></label></template></div></div><div class="p-6 rounded-xl border-2 text-center transition-colors duration-300" :class="getLighthouseStatus().border"><h3 class="font-mono text-3xl font-bold mb-2" :class="getLighthouseStatus().text" x-text="getLighthouseStatus().title"></h3><p class="text-slate-300" x-text="getLighthouseStatus().desc"></p><div class="mt-4 font-mono text-sm opacity-75"><span x-text="lighthouseCount"></span> / 10 CHECKS CLEARED</div></div></div>
+
+            <!-- BOARD -->
+            <div x-show="currentTab === 'board'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-risk flex items-center"><i class="fa-solid fa-chess-king mr-3"></i>The Board Director's Guide</h2><div class="space-y-6"><template x-for="risk in boardRisks" :key="risk.title"><div class="bg-card border border-slate-700 border-l-4 border-l-risk rounded-r-xl overflow-hidden"><div class="bg-risk/10 p-4 border-b border-slate-700"><h3 class="font-mono font-bold text-risk" x-text="risk.title"></h3><p class="text-white font-bold" x-text="risk.subtitle"></p></div><div class="p-6 grid md:grid-cols-2 gap-8"><div><div class="mb-4"><span class="text-[10px] font-mono text-risk bg-risk/10 px-2 py-1 rounded">THE LIE</span><p class="mt-2 text-slate-300 italic text-sm" x-text="risk.lie"></p></div><div><span class="text-[10px] font-mono text-primary bg-primary/10 px-2 py-1 rounded">THE TRUTH</span><p class="mt-2 text-white font-medium text-sm" x-text="risk.truth"></p></div></div><div class="bg-dark p-4 rounded border border-slate-700 flex flex-col justify-center"><span class="text-[10px] font-mono text-slate-500 mb-2 uppercase">The Question for the CEO</span><p class="font-mono text-sm text-primary leading-relaxed"><i class="fa-solid fa-quote-left text-slate-600 mr-2"></i><span x-text="risk.question"></span></p></div></div></div></template></div></div>
+
+            <!-- REPAIR -->
+            <div x-show="currentTab === 'repair'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-risk flex items-center"><i class="fa-solid fa-toolbox mr-3"></i>Transformation Repair Kit</h2><div class="space-y-4"><template x-for="(item, index) in repairKitData" :key="index"><div class="bg-card border border-slate-700 rounded-xl overflow-hidden"><button @click="activeRepair = activeRepair === index ? null : index" class="w-full flex justify-between items-center p-5 text-left hover:bg-slate-800 transition-colors"><div><span class="font-mono text-[10px] text-risk mb-1 block">SYMPTOM</span><span class="font-bold text-lg text-slate-200" x-text="item.symptom"></span></div><i class="fa-solid fa-chevron-down text-slate-500 transition-transform duration-300" :class="activeRepair === index ? 'rotate-180' : ''"></i></button><div x-show="activeRepair === index" x-collapse><div class="p-5 border-t border-slate-700 bg-dark/30"><div class="mb-4"><h4 class="font-mono text-primary text-xs font-bold mb-2">// DIAGNOSIS</h4><p class="text-slate-300 text-sm" x-text="item.diagnosis"></p></div><div class="p-4 bg-slate-800/50 rounded border-l-2 border-primary"><h4 class="font-mono text-white text-xs font-bold mb-2">RX: PRESCRIPTION</h4><ul class="list-disc list-inside text-slate-400 text-sm space-y-1"><template x-for="step in item.prescription" :key="step"><li x-text="step"></li></template></ul></div></div></div></div></template></div></div>
+            
+            <!-- GLOSSARY -->
+            <div x-show="currentTab === 'glossary'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-purple-400 flex items-center"><i class="fa-solid fa-book-open mr-3"></i>The Glossary</h2><div class="mb-6"><input type="text" x-model="glossarySearch" placeholder="Filter terms..." class="w-full bg-card border border-slate-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-400 font-mono"></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20"><template x-for="term in filteredGlossary" :key="term.term"><div class="bg-card border border-slate-700 p-5 rounded-lg hover:border-purple-400/50 transition-colors"><h3 class="font-mono text-primary font-bold mb-2" x-text="term.term"></h3><p class="text-sm text-slate-300 leading-relaxed" x-text="term.def"></p></div></template></div></div>
+
+            <!-- RESOURCES -->
+            <div x-show="currentTab === 'resources'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-green-300 flex items-center"><i class="fa-solid fa-book-bookmark mr-3"></i>Recommended Resources</h2><div class="bg-card border border-slate-700 rounded-xl p-6"><ul class="space-y-4"><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Project to Product (Mik Kersten)</h4><p class="text-sm text-textMuted">Definitive guide to the "Flow Framework".</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Team Topologies (Skelton & Pais)</h4><p class="text-sm text-textMuted">Blueprint for structuring squads.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Sooner Safer Happier (Jonathan Smart)</h4><p class="text-sm text-textMuted">Agile for regulated banks.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Data Mesh (Zhamak Dehghani)</h4><p class="text-sm text-textMuted">Data as a Product.</p></li></ul></div></div>
+
+            <!-- COMMUNITY -->
+            <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center"><div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl"><i class="fa-solid fa-users-line text-6xl text-primary mb-6"></i><h2 class="font-mono text-3xl font-bold text-white mb-4">The Fintech Bilinguals</h2><p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders.</p><div class="bg-white p-4 inline-block rounded-lg mb-6"><img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://www.fintechbilinguals.com" alt="QR Code" class="w-32 h-32" @error="$el.style.display='none'"></div></div></div>
+
+        </main>
+
+        <!-- CHAT INTERFACE WITH API SETTINGS -->
+        <div x-show="isChatOpen" class="fixed inset-0 z-50 md:inset-auto md:bottom-24 md:right-6 md:w-96 md:h-[550px] bg-dark flex flex-col md:rounded-2xl border-l md:border border-primary shadow-2xl overflow-hidden font-sans" x-transition>
+            <div class="bg-card p-4 border-b border-slate-700 flex justify-between items-center pt-safe">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary"><i class="fa-solid fa-bolt text-sm"></i></div>
+                    <div><h3 class="font-bold text-white text-sm">Bilingual AI Assistant</h3><p class="text-[10px] text-textMuted uppercase tracking-tighter">Gemini 1.5 Flash / 2.0 Failover</p></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button @click="showKeyModal = true" class="text-slate-400 hover:text-primary p-2" title="API Settings"><i class="fa-solid fa-key"></i></button>
+                    <button @click="isChatOpen = false" class="text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-4 flex flex-col space-y-4 bg-dark" id="chat-messages-container">
+                <div class="chat-bubble chat-bot">Hello. I translate IT jargon into P&L impact. How can I help you today?</div>
+                <template x-for="msg in chatMessages"><div class="chat-bubble" :class="msg.role === 'user' ? 'chat-user' : 'chat-bot'" x-html="msg.text"></div></template>
+                <div x-show="isTyping" class="chat-bubble chat-bot flex gap-1 items-center w-16"><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div></div>
+            </div>
+
+            <div class="p-4 bg-card border-t border-slate-800 pb-safe">
+                <div class="relative flex gap-2">
+                    <input type="text" x-model="chatInput" @keydown.enter="sendMessage()" placeholder="Ask a question..." class="flex-1 bg-dark text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-slate-700">
+                    <button @click="sendMessage()" class="w-12 h-12 bg-primary rounded-full text-dark flex items-center justify-center active:scale-90 transition-transform"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API KEY MODAL -->
+        <div x-show="showKeyModal" class="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm" x-cloak>
+            <div class="bg-card border border-slate-600 p-6 rounded-lg max-w-sm w-full shadow-2xl">
+                <h3 class="text-white font-bold mb-2">API Settings</h3>
+                <p class="text-xs text-slate-400 mb-4">Enter your Google Gemini API Key. Keys are stored safely in your browser's local memory.</p>
+                <input type="password" x-model="userApiKey" placeholder="AIzaSy..." class="w-full bg-dark border border-slate-600 rounded p-2 text-white mb-4 font-mono text-sm">
+                <div class="flex justify-end gap-2">
+                    <button @click="showKeyModal = false" class="text-xs text-slate-400 px-3 py-2">Close</button>
+                    <button @click="saveApiKey()" class="bg-primary text-dark text-xs font-bold px-4 py-2 rounded">Save Key</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- MOBILE NAV -->
+        <nav class="md:hidden fixed bottom-0 w-full bg-dark/95 backdrop-blur-lg border-t border-slate-800 z-50 pb-safe">
+            <div class="grid grid-cols-5 h-16 items-center">
+                <button @click="handleNavClick('dashboard')" class="flex flex-col items-center" :class="currentTab === 'dashboard' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-home text-lg"></i><span class="text-[9px] font-mono mt-1">Home</span></button>
+                <button @click="handleNavClick('assessment')" class="flex flex-col items-center" :class="currentTab === 'assessment' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-clipboard-check text-lg"></i><span class="text-[9px] font-mono mt-1">Audit</span></button>
+                <div class="relative -top-5"><button @click="isChatOpen = !isChatOpen" class="w-14 h-14 bg-primary rounded-full shadow-glow flex items-center justify-center text-dark border-4 border-dark"><i class="fa-solid fa-bolt text-xl"></i></button></div>
+                <button @click="handleNavClick('translator')" class="flex flex-col items-center" :class="currentTab === 'translator' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-language text-lg"></i><span class="text-[9px] font-mono mt-1">Trans</span></button>
+                <button @click="mobileMenuOpen = !mobileMenuOpen" class="flex flex-col items-center" :class="mobileMenuOpen ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-bars-staggered text-lg"></i><span class="text-[9px] font-mono mt-1">Menu</span></button>
+            </div>
+        </nav>
+
+        <!-- FLOATING CHAT BUTTON (Desktop) -->
+        <button @click="isChatOpen = !isChatOpen" class="hidden md:flex fixed bottom-8 right-8 w-16 h-16 bg-primary rounded-full shadow-glow items-center justify-center text-dark text-2xl z-40 transition-transform hover:scale-110">
+            <i class="fa-solid" :class="isChatOpen ? 'fa-xmark' : 'fa-robot'"></i>
+        </button>
+
+        <!-- MOBILE MENU OVERLAY -->
+        <div x-show="mobileMenuOpen" x-transition x-cloak class="fixed inset-0 z-[60] bg-dark flex flex-col p-6 pt-safe overflow-y-auto mobile-scroll-fix">
+            <div class="flex justify-between items-center mb-8"><h2 class="text-primary font-mono text-xl font-bold">Tools Menu</h2><button @click="mobileMenuOpen=false"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
+            <div class="grid grid-cols-2 gap-4 pb-20">
+                <template x-for="item in navItems" :key="item.id">
+                    <button @click="handleNavClick(item.id); mobileMenuOpen=false" x-show="!item.vip || isVipMode" class="bg-card p-4 rounded-xl border border-slate-800 flex flex-col items-center gap-2">
+                        <i :class="item.icon" class="text-xl text-slate-400"></i><span x-text="item.label" class="text-[10px] font-mono text-white text-center"></span>
+                    </button>
+                </template>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Service Worker Registration
+        // This ensures the app works offline by loading the sw.js file
+        if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+            window.addEventListener('load', () => {
+                fetch('sw.js')
+                    .then(response => {
+                        if (response.status === 200) {
+                            navigator.serviceWorker.register('sw.js')
+                                .then(r => console.log('SW Registered'))
+                                .catch(e => console.log('SW Fail:', e));
+                        }
+                    })
+                    .catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>
