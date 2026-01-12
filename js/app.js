@@ -410,3 +410,128 @@ document.addEventListener('alpine:init', () => {
         dashboardTools: [ { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } ]
     }));
 });
+
+        // ------------------------------------------------------------------
+        // CASE STUDY SIMULATOR (Meridian Trust)
+        // ------------------------------------------------------------------
+        caseStudy: {
+            active: false,
+            step: 0,
+            gameOver: false,
+            // The 3 Key Metrics from the book
+            metrics: {
+                politicalCapital: 50, // Your ability to influence
+                velocity: 10,         // Speed of delivery
+                risk: 50              // Operational risk (Lower is better)
+            },
+            history: [], // Tracks decisions for the debrief
+            
+            // The Story Engine
+            scenarios: [
+                {
+                    id: 0,
+                    title: "The $30M Zombie",
+                    context: "You are Sarah, the new CDO. You discover 'Project Olympus' is 18 months late, $30M over budget, and has delivered zero value. The CFO wants to save it to avoid a write-off.",
+                    question: "What is your first move?",
+                    choices: [
+                        {
+                            text: "Try to fix it. Hire McKinsey to audit the code and descale the scope.",
+                            outcome: "failure",
+                            feedback: "The Sunk Cost Fallacy. You spent another $5M and 6 months realizing the foundation was rotten. The Board has lost faith.",
+                            impact: { politicalCapital: -20, velocity: -5, risk: +10 }
+                        },
+                        {
+                            text: "Kill it immediately. Reallocate budget to a small 'Lighthouse' pilot.",
+                            outcome: "success",
+                            feedback: "Bilingual Move. You stopped the bleeding. The CFO is angry about the write-off, but you freed up resources for a 'Goldilocks' pilot.",
+                            impact: { politicalCapital: -10, velocity: +20, risk: -10 }
+                        }
+                    ]
+                },
+                {
+                    id: 1,
+                    title: "The Risk Wall",
+                    context: "Your 'Instant Loan' pilot is ready. David (CRO) blocks it. He says: 'I don't trust code. I need a human analyst to sign off every loan.'",
+                    question: "How do you respond?",
+                    choices: [
+                        {
+                            text: "Escalate to the CEO. Tell him David is blocking innovation.",
+                            outcome: "failure",
+                            feedback: "The Political Trap. You made an enemy of the CRO. He will now use 'Compliance' to strangle every future project. You lost the Clay Layer.",
+                            impact: { politicalCapital: -30, velocity: 0, risk: 0 }
+                        },
+                        {
+                            text: "The 'Red Screen' Demo. Show him the automated policy checks in the code.",
+                            outcome: "success",
+                            feedback: "Bilingual Move. You didn't argue philosophy; you showed evidence. You proved the code is stricter than a human. David signs the waiver.",
+                            impact: { politicalCapital: +20, velocity: +30, risk: -20 }
+                        }
+                    ]
+                },
+                {
+                    id: 2,
+                    title: "The Demo Day",
+                    context: "90 Days are up. The app works. The Board is gathered. They expect a status report explaining why it's late (because it's always late).",
+                    question: "How do you present?",
+                    choices: [
+                        {
+                            text: "A 20-slide Strategy Deck explaining the 'Agile Transformation Roadmap'.",
+                            outcome: "neutral",
+                            feedback: "Innovation Theater. The Board nods, but they don't believe you. You are just another exec with a PowerPoint. You bought time, but not trust.",
+                            impact: { politicalCapital: 0, velocity: 0, risk: 0 }
+                        },
+                        {
+                            text: "Live Demo. Ask the Chairman to apply for a loan on his phone right now.",
+                            outcome: "success",
+                            feedback: "The Moment of Truth. The loan approves in 3 minutes. The 'ping' of money hitting the account changes the culture instantly.",
+                            impact: { politicalCapital: +50, velocity: +20, risk: 0 }
+                        }
+                    ]
+                }
+            ],
+
+            start() {
+                this.active = true;
+                this.step = 0;
+                this.gameOver = false;
+                this.metrics = { politicalCapital: 50, velocity: 20, risk: 50 };
+                this.history = [];
+            },
+
+            makeChoice(choiceIndex) {
+                const currentScenario = this.scenarios[this.step];
+                const choice = currentScenario.choices[choiceIndex];
+                
+                // Update Metrics
+                this.metrics.politicalCapital += choice.impact.politicalCapital;
+                this.metrics.velocity += choice.impact.velocity;
+                this.metrics.risk += choice.impact.risk;
+                
+                // Log History
+                this.history.push({
+                    step: this.step + 1,
+                    scenario: currentScenario.title,
+                    decision: choice.text,
+                    feedback: choice.feedback,
+                    result: choice.outcome
+                });
+
+                // Check Game Over Conditions
+                if (this.metrics.politicalCapital <= 0) {
+                    this.endGame("Fired. You lost the support of the Board.");
+                    return;
+                }
+
+                // Advance
+                if (this.step < this.scenarios.length - 1) {
+                    this.step++;
+                } else {
+                    this.endGame("Victory! You have navigated the Clay Layer.");
+                }
+            },
+
+            endGame(message) {
+                this.gameOver = true;
+                this.finalMessage = message;
+            }
+        },
