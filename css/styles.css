@@ -1,104 +1,45 @@
 /* css/styles.css */
 
-/* Hide elements until Alpine is ready */
 [x-cloak] { display: none !important; }
+html, body { overscroll-behavior-y: none; height: 100%; }
 
-/* Prevent rubber-banding on iOS and set full height */
-html, body { 
-    overscroll-behavior-y: none; 
-    height: 100%; 
-}
-
-/* Custom Scrollbar Styling (Firefox) */
-* { 
-    scrollbar-width: thin; 
-    scrollbar-color: #334155 #0f172a; 
-}
-
-/* Custom Scrollbar Styling (Chrome/Safari/Edge) */
+/* Scrollbars - Matching the Navy Theme */
+* { scrollbar-width: thin; scrollbar-color: #2E8B83 #152238; }
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #0f172a; }
-::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+::-webkit-scrollbar-track { background: #152238; }
+::-webkit-scrollbar-thumb { background: #2E8B83; border-radius: 4px; }
 
-/* Safe Area Insets for modern phones (The Notch) */
 .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
 .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
 
-/* Navigation Active States */
+/* Navigation - Using Book Teal */
 .nav-active { 
-    border-left: 4px solid #4ade80; 
-    background: rgba(74, 222, 128, 0.05); 
-    color: #4ade80; 
+    border-left: 4px solid #2E8B83; 
+    background: rgba(46, 139, 131, 0.1); 
+    color: #2E8B83; 
 }
 .nav-active-vip { 
-    border-left: 4px solid #f472b6; 
-    background: rgba(244, 114, 182, 0.1); 
-    color: #f472b6; 
+    border-left: 4px solid #ffffff; 
+    background: rgba(255, 255, 255, 0.1); 
+    color: #ffffff; 
 }
 
-/* Custom Range Slider Styling */
-input[type="range"] { 
-    -webkit-appearance: none; 
-    height: 8px; 
-    background: #334155; 
-    border-radius: 5px; 
-}
+/* Range Sliders - Teal Thumb */
+input[type="range"] { -webkit-appearance: none; height: 8px; background: #1e2e4a; border-radius: 5px; }
 input[type="range"]::-webkit-slider-thumb { 
-    -webkit-appearance: none; 
-    height: 20px; 
-    width: 20px; 
-    border-radius: 50%; 
-    background: #4ade80; 
-    cursor: pointer; 
-    border: 2px solid #0f172a; 
-    margin-top: -6px;
+    -webkit-appearance: none; height: 20px; width: 20px; 
+    border-radius: 50%; background: #2E8B83; cursor: pointer; 
+    border: 2px solid #152238; margin-top: -6px;
 }
 
-/* Chat Bubble Styling */
-.chat-bubble { 
-    max-width: 85%; 
-    padding: 12px; 
-    border-radius: 12px; 
-    font-size: 14px; 
-    line-height: 1.5; 
-    margin-bottom: 10px; 
-    word-wrap: break-word; 
-    overflow-wrap: break-word; 
-    word-break: break-word; 
-}
-.chat-user { 
-    background: #334155; 
-    color: white; 
-    align-self: flex-end; 
-    border-bottom-right-radius: 2px; 
-}
-.chat-bot { 
-    background: #1e293b; 
-    border: 1px solid #4ade80; 
-    color: #f1f5f9; 
-    align-self: flex-start; 
-    border-bottom-left-radius: 2px; 
-}
+/* Chat Bubbles */
+.chat-bubble { max-width: 85%; padding: 12px; border-radius: 12px; font-size: 14px; line-height: 1.5; margin-bottom: 10px; font-family: "Roboto", sans-serif; }
+.chat-user { background: #1e2e4a; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+.chat-bot { background: #152238; border: 1px solid #2E8B83; color: #f1f5f9; align-self: flex-start; border-bottom-left-radius: 2px; }
 
-/* Chat Typing Animation */
 .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
 .typing-dot:nth-child(1) { animation-delay: -0.32s; }
 .typing-dot:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes typing { 
-    0%, 80%, 100% { transform: scale(0); } 
-    40% { transform: scale(1); } 
-}
-
-/* iOS Scroll Fixes */
-.mobile-scroll-fix { 
-    overscroll-behavior: contain; 
-    -webkit-overflow-scrolling: touch; 
-}
-
-/* Prevent body scroll when mobile menu is open */
-.mobile-menu-open { 
-    overflow: hidden !important; 
-    position: fixed; 
-    width: 100%; 
-}
+@keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+.mobile-scroll-fix { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.mobile-menu-open { overflow: hidden !important; position: fixed; width: 100%; }
