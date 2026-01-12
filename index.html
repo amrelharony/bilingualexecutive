@@ -300,28 +300,39 @@
                 </div>
 
                 <!-- Results -->
-                <div x-show="assessmentSubmitted" class="space-y-6">
-                    <div class="flex justify-between items-end"><h2 class="font-mono text-2xl font-bold text-primary">Audit Results</h2><button @click="assessmentSubmitted=false" class="text-xs text-textMuted underline"><i class="fa-solid fa-rotate-left mr-1"></i>Retake</button></div>
-                    <div class="bg-card border border-slate-700 p-8 rounded-xl text-center shadow-2xl">
-                        <div class="text-6xl font-mono font-bold mb-2" :class="getAssessmentColor()" x-text="calculateScore.total"></div>
-                        <h3 class="text-2xl font-bold text-white mb-4" x-text="getAssessmentResult().title"></h3>
-                        <p class="text-textMuted max-w-lg mx-auto mb-6" x-text="getAssessmentResult().desc"></p>
-                        
-                        <div x-show="calculateScore.isSafetyVeto" class="mb-4 p-4 border border-risk bg-risk/10 rounded flex items-start gap-3 text-left max-w-lg mx-auto"><i class="fa-solid fa-ban text-risk mt-1"></i><div><h4 class="font-mono font-bold text-risk text-sm">SAFETY VETO APPLIED</h4><p class="text-xs text-slate-300 mt-1">Low Safety score. Agility is impossible in fear. Score capped at 40.</p></div></div>
+               <div x-show="calculateScore.isSafetyVeto" class="mb-4 p-4 border border-risk bg-risk/10 rounded flex items-start gap-3 text-left max-w-lg mx-auto"><i class="fa-solid fa-ban text-risk mt-1"></i><div><h4 class="font-mono font-bold text-risk text-sm">SAFETY VETO APPLIED</h4><p class="text-xs text-slate-300 mt-1">Low Safety score. Agility is impossible in fear. Score capped at 40.</p></div></div>
                         <div x-show="calculateScore.isManualDrag" class="mb-6 p-4 border border-warn bg-warn/10 rounded flex items-start gap-3 text-left max-w-lg mx-auto"><i class="fa-solid fa-hand text-warn mt-1"></i><div><h4 class="font-mono font-bold text-warn text-sm">MANUAL DRAG PENALTY</h4><p class="text-xs text-slate-300 mt-1">Manual compliance reduces velocity. -20% final score reduction applied.</p></div></div>
 
-                        <div class="flex flex-wrap gap-4 justify-center">
-                            <button @click="generatePDF()" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded font-mono text-xs"><i class="fa-solid fa-file-pdf mr-2"></i>PDF REPORT</button>
-                            <button @click="copyChallengeLink()" class="bg-slate-800 hover:bg-slate-700 px-6 py-3 rounded font-mono text-xs text-primary"><i class="fa-solid fa-link mr-2"></i><span x-text="copyBtnText"></span></button>
+                        <!-- NEW ROADMAP GENERATOR UI -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                            
+                            <!-- Standard PDF Report -->
+                            <button @click="generatePDF()" class="bg-card hover:bg-slate-700 border border-slate-600 text-white p-4 rounded-xl flex items-center justify-center gap-3 transition-all group">
+                                <div class="bg-slate-700 group-hover:bg-slate-600 w-10 h-10 rounded-full flex items-center justify-center">
+                                    <i class="fa-solid fa-file-pdf"></i>
+                                </div>
+                                <div class="text-left">
+                                    <span class="block font-bold text-xs">DOWNLOAD REPORT</span>
+                                    <span class="block text-[10px] text-textMuted">Standard Audit Certificate</span>
+                                </div>
+                            </button>
+
+                            <!-- The New Roadmap Generator -->
+                            <button @click="generateRoadmap()" class="bg-primary/10 hover:bg-primary/20 border border-primary text-primary p-4 rounded-xl flex items-center justify-center gap-3 transition-all group shadow-glow">
+                                <div class="bg-primary text-dark w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-map-location-dot"></i>
+                                </div>
+                                <div class="text-left">
+                                    <span class="block font-bold text-xs">GENERATE PLAYBOOK</span>
+                                    <span class="block text-[10px] opacity-80">90-Day Action Plan</span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <div class="mt-6">
+                            <button @click="copyChallengeLink()" class="text-xs text-textMuted hover:text-white underline"><i class="fa-solid fa-link mr-2"></i><span x-text="copyBtnText"></span></button>
                         </div>
                     </div>
-                    
-                    <div x-show="challengerData" class="bg-card border border-hotpink/30 p-6 rounded-xl">
-                        <h4 class="font-mono text-sm text-hotpink mb-4 uppercase font-bold">Gap Analysis vs Colleague</h4>
-                        <div class="h-64 flex justify-center"><canvas id="gapChart"></canvas></div>
-                    </div>
-                </div>
-            </div>
 
             <!-- TRANSLATOR (Search) -->
             <div x-show="currentTab === 'translator'" x-cloak class="max-w-5xl mx-auto">
