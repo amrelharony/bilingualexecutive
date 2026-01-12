@@ -7,11 +7,11 @@
     
     <!-- PWA Manifest & Meta -->
     <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="manifest" href="manifest.json">
 
-    <!-- Fonts: Back to Inter & JetBrains Mono -->
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -30,39 +30,23 @@
     <link rel="stylesheet" href="css/styles.css">
     <script src="js/app.js"></script>
 
-    <!-- TAILWIND CONFIG (Reverted to Original) -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        dark: '#0f172a', 
-                        card: '#1e293b', 
-                        primary: '#4ade80',  // Neon Green
-                        risk: '#f87171', 
-                        warn: '#fbbf24', 
-                        hotpink: '#f472b6',  // Neon Pink
-                        textMain: '#f1f5f9', 
-                        textMuted: '#94a3b8',
+                        dark: '#0f172a', card: '#1e293b', primary: '#4ade80', risk: '#f87171', warn: '#fbbf24', hotpink: '#f472b6', textMain: '#f1f5f9', textMuted: '#94a3b8',
                     },
-                    fontFamily: { 
-                        mono: ['"JetBrains Mono"', 'monospace'], 
-                        sans: ['"Inter"', 'sans-serif'], 
-                    },
-                    boxShadow: { 
-                        'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 
-                        'glow-vip': '0 0 20px rgba(244, 114, 182, 0.2)' 
-                    },
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'], sans: ['"Inter"', 'sans-serif'], },
+                    boxShadow: { 'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 'glow-vip': '0 0 20px rgba(244, 114, 182, 0.2)' },
                     animation: { 'glitch': 'glitch 1s linear infinite' }
                 }
             }
         }
     </script>
 </head>
-
 <body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
 
-    <!-- The 'toolkit' data object is defined in js/app.js -->
     <div x-data="toolkit" class="flex w-full h-full relative">
 
         <!-- VIP BOOT SEQUENCE -->
@@ -84,8 +68,6 @@
         <!-- PWA INSTALL PROMPT -->
         <div x-show="showPwaPrompt && isMobile" x-cloak x-transition 
              class="md:hidden fixed top-0 left-0 w-full bg-slate-900 text-white p-4 pt-safe z-[100] border-b border-primary/30 flex justify-between items-center shadow-2xl">
-            
-            <!-- Clickable Area: Triggers Install -->
             <button @click="installPwa()" class="flex items-center gap-4 text-left flex-1">
                 <div class="bg-primary/20 w-10 h-10 rounded-full flex items-center justify-center text-primary shrink-0 animate-pulse">
                     <i class="fa-solid fa-download"></i>
@@ -95,8 +77,6 @@
                     <p class="text-xs text-slate-400">Tap here to add to Home Screen</p>
                 </div>
             </button>
-
-            <!-- Close Button -->
             <button @click.stop="dismissPwa()" class="text-slate-500 hover:text-white px-4 py-2">
                 <i class="fa-solid fa-xmark text-xl"></i>
             </button>
@@ -150,6 +130,136 @@
                         </div>
                     </template>
                 </div>
+            </div>
+
+            <!-- SIMULATOR TAB -->
+            <div x-show="currentTab === 'simulator'" x-cloak class="max-w-4xl mx-auto">
+                
+                <!-- Intro Screen -->
+                <div x-show="!caseStudy.active" class="text-center py-10">
+                    <div class="inline-block p-6 rounded-full bg-card border border-primary/30 mb-6">
+                        <i class="fa-solid fa-chess-knight text-5xl text-primary"></i>
+                    </div>
+                    <h2 class="text-4xl font-mono font-bold text-white mb-4">The Meridian Trust Protocol</h2>
+                    <p class="text-textMuted max-w-xl mx-auto mb-8">
+                        Step into the shoes of Sarah, the new CDO. You have 90 days to save a failing bank.
+                        Your decisions will impact Political Capital, Velocity, and Risk.
+                    </p>
+                    <button @click="caseStudy.start()" class="bg-primary hover:bg-green-400 text-dark font-bold py-4 px-8 rounded-lg shadow-glow transition-all">
+                        START SIMULATION
+                    </button>
+                </div>
+
+                <!-- Game Interface -->
+                <div x-show="caseStudy.active && !caseStudy.gameOver" class="grid md:grid-cols-3 gap-6">
+                    
+                    <!-- Left: The Situation -->
+                    <div class="md:col-span-2 space-y-6">
+                        <div class="bg-card border-l-4 border-primary p-6 rounded-r-lg shadow-lg relative overflow-hidden">
+                            <span class="text-[10px] font-mono text-primary tracking-widest uppercase mb-2 block">
+                                Decision Point <span x-text="caseStudy.step + 1"></span>/3
+                            </span>
+                            <h3 class="text-2xl font-bold text-white mb-4" x-text="caseStudy.scenarios[caseStudy.step].title"></h3>
+                            <p class="text-slate-300 leading-relaxed text-lg" x-text="caseStudy.scenarios[caseStudy.step].context"></p>
+                            
+                            <div class="mt-8 p-4 bg-dark/50 rounded border border-slate-700">
+                                <p class="font-mono text-warn text-sm mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>THE DILEMMA</p>
+                                <p class="text-white font-bold italic" x-text="caseStudy.scenarios[caseStudy.step].question"></p>
+                            </div>
+                        </div>
+
+                        <!-- Choices -->
+                        <div class="grid gap-4">
+                            <template x-for="(choice, index) in caseStudy.scenarios[caseStudy.step].choices" :key="index">
+                                <button @click="caseStudy.makeChoice(index)" 
+                                        class="text-left p-5 rounded-lg border border-slate-600 hover:border-primary hover:bg-slate-800 transition-all group relative">
+                                    <div class="absolute top-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity text-primary">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </div>
+                                    <span class="font-mono text-xs text-slate-500 block mb-1">OPTION <span x-text="index + 1"></span></span>
+                                    <span class="text-white font-medium" x-text="choice.text"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Right: The Dashboard -->
+                    <div class="bg-card border border-slate-700 p-6 rounded-xl h-fit sticky top-6">
+                        <h4 class="font-mono text-xs text-slate-400 uppercase mb-6 border-b border-slate-700 pb-2">Live Telemetry</h4>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-xs text-white">Political Capital</span>
+                                    <span class="text-xs font-mono" :class="caseStudy.metrics.politicalCapital < 30 ? 'text-risk' : 'text-primary'" x-text="caseStudy.metrics.politicalCapital + '%'"></span>
+                                </div>
+                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
+                                    <div class="h-full transition-all duration-500" 
+                                         :class="caseStudy.metrics.politicalCapital < 30 ? 'bg-risk' : 'bg-primary'"
+                                         :style="`width: ${caseStudy.metrics.politicalCapital}%`"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-xs text-white">Velocity</span>
+                                    <span class="text-xs font-mono text-purple-400" x-text="caseStudy.metrics.velocity"></span>
+                                </div>
+                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
+                                    <div class="bg-purple-400 h-full transition-all duration-500" :style="`width: ${caseStudy.metrics.velocity}%`"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-xs text-white">Risk Exposure</span>
+                                    <span class="text-xs font-mono" :class="caseStudy.metrics.risk > 70 ? 'text-risk' : 'text-blue-400'" x-text="caseStudy.metrics.risk + '%'"></span>
+                                </div>
+                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
+                                    <div class="h-full transition-all duration-500" 
+                                         :class="caseStudy.metrics.risk > 70 ? 'bg-risk' : 'bg-blue-400'"
+                                         :style="`width: ${caseStudy.metrics.risk}%`"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 pt-6 border-t border-slate-700">
+                            <p class="text-[10px] text-textMuted text-center italic">
+                                "The Bilingual Executive trades Scale for Speed."
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Over / Success Screen -->
+                <div x-show="caseStudy.gameOver" class="max-w-2xl mx-auto text-center">
+                    <div class="mb-6">
+                        <i class="fa-solid fa-flag-checkered text-6xl" :class="caseStudy.metrics.politicalCapital > 0 ? 'text-primary' : 'text-risk'"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-2" x-text="caseStudy.metrics.politicalCapital > 0 ? 'MISSION COMPLETE' : 'TERMINATED'"></h2>
+                    <p class="text-xl text-slate-300 mb-8" x-text="caseStudy.finalMessage"></p>
+
+                    <div class="bg-card text-left p-6 rounded-xl border border-slate-700 mb-8">
+                        <h4 class="font-mono text-sm text-primary mb-4 border-b border-slate-700 pb-2">MISSION DEBRIEF</h4>
+                        <div class="space-y-4">
+                            <template x-for="log in caseStudy.history">
+                                <div class="text-sm">
+                                    <p class="font-bold text-white text-xs mb-1" x-text="log.scenario"></p>
+                                    <div class="flex gap-2">
+                                        <div class="w-1 bg-slate-600 shrink-0"></div>
+                                        <div>
+                                            <p class="text-slate-400 italic mb-1" x-text="log.decision"></p>
+                                            <p :class="log.result === 'success' ? 'text-primary' : 'text-warn'" x-text="log.feedback"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <button @click="caseStudy.start()" class="text-slate-400 hover:text-white underline">Replay Simulation</button>
+                </div>
+
             </div>
 
             <!-- ARCHITECT CONSOLE (VIP ONLY) -->
@@ -292,136 +402,6 @@
                 </div>
             </div>
 
-            <!-- SIMULATOR TAB -->
-            <div x-show="currentTab === 'simulator'" x-cloak class="max-w-4xl mx-auto">
-                
-                <!-- Intro Screen -->
-                <div x-show="!caseStudy.active" class="text-center py-10">
-                    <div class="inline-block p-6 rounded-full bg-card border border-primary/30 mb-6">
-                        <i class="fa-solid fa-chess-knight text-5xl text-primary"></i>
-                    </div>
-                    <h2 class="text-4xl font-mono font-bold text-white mb-4">The Meridian Trust Protocol</h2>
-                    <p class="text-textMuted max-w-xl mx-auto mb-8">
-                        Step into the shoes of Sarah, the new CDO. You have 90 days to save a failing bank.
-                        Your decisions will impact Political Capital, Velocity, and Risk.
-                    </p>
-                    <button @click="caseStudy.start()" class="bg-primary hover:bg-green-400 text-dark font-bold py-4 px-8 rounded-lg shadow-glow transition-all">
-                        START SIMULATION
-                    </button>
-                </div>
-
-                <!-- Game Interface -->
-                <div x-show="caseStudy.active && !caseStudy.gameOver" class="grid md:grid-cols-3 gap-6">
-                    
-                    <!-- Left: The Situation -->
-                    <div class="md:col-span-2 space-y-6">
-                        <div class="bg-card border-l-4 border-primary p-6 rounded-r-lg shadow-lg relative overflow-hidden">
-                            <span class="text-[10px] font-mono text-primary tracking-widest uppercase mb-2 block">
-                                Decision Point <span x-text="caseStudy.step + 1"></span>/3
-                            </span>
-                            <h3 class="text-2xl font-bold text-white mb-4" x-text="caseStudy.scenarios[caseStudy.step].title"></h3>
-                            <p class="text-slate-300 leading-relaxed text-lg" x-text="caseStudy.scenarios[caseStudy.step].context"></p>
-                            
-                            <div class="mt-8 p-4 bg-dark/50 rounded border border-slate-700">
-                                <p class="font-mono text-warn text-sm mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>THE DILEMMA</p>
-                                <p class="text-white font-bold italic" x-text="caseStudy.scenarios[caseStudy.step].question"></p>
-                            </div>
-                        </div>
-
-                        <!-- Choices -->
-                        <div class="grid gap-4">
-                            <template x-for="(choice, index) in caseStudy.scenarios[caseStudy.step].choices" :key="index">
-                                <button @click="caseStudy.makeChoice(index)" 
-                                        class="text-left p-5 rounded-lg border border-slate-600 hover:border-primary hover:bg-slate-800 transition-all group relative">
-                                    <div class="absolute top-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity text-primary">
-                                        <i class="fa-solid fa-arrow-right"></i>
-                                    </div>
-                                    <span class="font-mono text-xs text-slate-500 block mb-1">OPTION <span x-text="index + 1"></span></span>
-                                    <span class="text-white font-medium" x-text="choice.text"></span>
-                                </button>
-                            </template>
-                        </div>
-                    </div>
-
-                    <!-- Right: The Dashboard -->
-                    <div class="bg-card border border-slate-700 p-6 rounded-xl h-fit sticky top-6">
-                        <h4 class="font-mono text-xs text-slate-400 uppercase mb-6 border-b border-slate-700 pb-2">Live Telemetry</h4>
-                        
-                        <div class="space-y-6">
-                            <div>
-                                <div class="flex justify-between mb-1">
-                                    <span class="text-xs text-white">Political Capital</span>
-                                    <span class="text-xs font-mono" :class="caseStudy.metrics.politicalCapital < 30 ? 'text-risk' : 'text-primary'" x-text="caseStudy.metrics.politicalCapital + '%'"></span>
-                                </div>
-                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
-                                    <div class="h-full transition-all duration-500" 
-                                         :class="caseStudy.metrics.politicalCapital < 30 ? 'bg-risk' : 'bg-primary'"
-                                         :style="`width: ${caseStudy.metrics.politicalCapital}%`"></div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between mb-1">
-                                    <span class="text-xs text-white">Velocity</span>
-                                    <span class="text-xs font-mono text-purple-400" x-text="caseStudy.metrics.velocity"></span>
-                                </div>
-                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
-                                    <div class="bg-purple-400 h-full transition-all duration-500" :style="`width: ${caseStudy.metrics.velocity}%`"></div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between mb-1">
-                                    <span class="text-xs text-white">Risk Exposure</span>
-                                    <span class="text-xs font-mono" :class="caseStudy.metrics.risk > 70 ? 'text-risk' : 'text-blue-400'" x-text="caseStudy.metrics.risk + '%'"></span>
-                                </div>
-                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
-                                    <div class="h-full transition-all duration-500" 
-                                         :class="caseStudy.metrics.risk > 70 ? 'bg-risk' : 'bg-blue-400'"
-                                         :style="`width: ${caseStudy.metrics.risk}%`"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-8 pt-6 border-t border-slate-700">
-                            <p class="text-[10px] text-textMuted text-center italic">
-                                "The Bilingual Executive trades Scale for Speed."
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Game Over / Success Screen -->
-                <div x-show="caseStudy.gameOver" class="max-w-2xl mx-auto text-center">
-                    <div class="mb-6">
-                        <i class="fa-solid fa-flag-checkered text-6xl" :class="caseStudy.metrics.politicalCapital > 0 ? 'text-primary' : 'text-risk'"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold text-white mb-2" x-text="caseStudy.metrics.politicalCapital > 0 ? 'MISSION COMPLETE' : 'TERMINATED'"></h2>
-                    <p class="text-xl text-slate-300 mb-8" x-text="caseStudy.finalMessage"></p>
-
-                    <div class="bg-card text-left p-6 rounded-xl border border-slate-700 mb-8">
-                        <h4 class="font-mono text-sm text-primary mb-4 border-b border-slate-700 pb-2">MISSION DEBRIEF</h4>
-                        <div class="space-y-4">
-                            <template x-for="log in caseStudy.history">
-                                <div class="text-sm">
-                                    <p class="font-bold text-white text-xs mb-1" x-text="log.scenario"></p>
-                                    <div class="flex gap-2">
-                                        <div class="w-1 bg-slate-600 shrink-0"></div>
-                                        <div>
-                                            <p class="text-slate-400 italic mb-1" x-text="log.decision"></p>
-                                            <p :class="log.result === 'success' ? 'text-primary' : 'text-warn'" x-text="log.feedback"></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-
-                    <button @click="caseStudy.start()" class="text-slate-400 hover:text-white underline">Replay Simulation</button>
-                </div>
-
-            </div>
-
         </main>
 
         <!-- CHAT INTERFACE WITH API SETTINGS -->
@@ -495,8 +475,6 @@
     </div>
 
     <script>
-        // Service Worker Registration
-        // This ensures the app works offline by loading the sw.js file
         if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
             window.addEventListener('load', () => {
                 fetch('sw.js')
