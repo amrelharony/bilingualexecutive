@@ -1,41 +1,40 @@
 /* css/styles.css */
-
 [x-cloak] { display: none !important; }
 html, body { overscroll-behavior-y: none; height: 100%; }
 
-/* Scrollbars - Matching the Navy Theme */
-* { scrollbar-width: thin; scrollbar-color: #2E8B83 #152238; }
+/* Original Scrollbars */
+* { scrollbar-width: thin; scrollbar-color: #334155 #0f172a; }
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: #152238; }
-::-webkit-scrollbar-thumb { background: #2E8B83; border-radius: 4px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 
 .pt-safe { padding-top: env(safe-area-inset-top, 20px); }
 .pb-safe { padding-bottom: env(safe-area-inset-bottom, 20px); }
 
-/* Navigation - Using Book Teal */
+/* Navigation - Neon Green */
 .nav-active { 
-    border-left: 4px solid #2E8B83; 
-    background: rgba(46, 139, 131, 0.1); 
-    color: #2E8B83; 
+    border-left: 4px solid #4ade80; 
+    background: rgba(74, 222, 128, 0.05); 
+    color: #4ade80; 
 }
 .nav-active-vip { 
-    border-left: 4px solid #ffffff; 
-    background: rgba(255, 255, 255, 0.1); 
-    color: #ffffff; 
+    border-left: 4px solid #f472b6; 
+    background: rgba(244, 114, 182, 0.1); 
+    color: #f472b6; 
 }
 
-/* Range Sliders - Teal Thumb */
-input[type="range"] { -webkit-appearance: none; height: 8px; background: #1e2e4a; border-radius: 5px; }
+/* Range Sliders */
+input[type="range"] { -webkit-appearance: none; height: 8px; background: #334155; border-radius: 5px; }
 input[type="range"]::-webkit-slider-thumb { 
     -webkit-appearance: none; height: 20px; width: 20px; 
-    border-radius: 50%; background: #2E8B83; cursor: pointer; 
-    border: 2px solid #152238; margin-top: -6px;
+    border-radius: 50%; background: #4ade80; cursor: pointer; 
+    border: 2px solid #0f172a; margin-top: -6px;
 }
 
 /* Chat Bubbles */
-.chat-bubble { max-width: 85%; padding: 12px; border-radius: 12px; font-size: 14px; line-height: 1.5; margin-bottom: 10px; font-family: "Roboto", sans-serif; }
-.chat-user { background: #1e2e4a; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-.chat-bot { background: #152238; border: 1px solid #2E8B83; color: #f1f5f9; align-self: flex-start; border-bottom-left-radius: 2px; }
+.chat-bubble { max-width: 85%; padding: 12px; border-radius: 12px; font-size: 14px; line-height: 1.5; margin-bottom: 10px; word-wrap: break-word; overflow-wrap: break-word; word-break: break-word; }
+.chat-user { background: #334155; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+.chat-bot { background: #1e293b; border: 1px solid #4ade80; color: #f1f5f9; align-self: flex-start; border-bottom-left-radius: 2px; }
 
 .typing-dot { animation: typing 1.4s infinite ease-in-out both; }
 .typing-dot:nth-child(1) { animation-delay: -0.32s; }
