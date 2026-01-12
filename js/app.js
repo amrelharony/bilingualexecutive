@@ -10,6 +10,16 @@ document.addEventListener('alpine:init', () => {
             this.isMobile = window.innerWidth < 768;
             window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
             
+            // Listen for the Android "Add to Home Screen" event
+            window.addEventListener('beforeinstallprompt', (e) => {
+                // Prevent Chrome 67 and earlier from automatically showing the prompt
+                e.preventDefault();
+                // Stash the event so it can be triggered later.
+                this.deferredPrompt = e;
+                // Show our custom banner
+                if (this.isMobile) this.showPwaPrompt = true;
+            });
+
             // PWA Installation Prompt Logic
             const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
             
@@ -64,7 +74,9 @@ document.addEventListener('alpine:init', () => {
         currentTab: 'dashboard',
         mobileMenuOpen: false,
         isMobile: false,
+        deferredPrompt: null, 
         showPwaPrompt: false, 
+        
         
         // VIP Mode
         isVipMode: false,
@@ -115,6 +127,23 @@ document.addEventListener('alpine:init', () => {
         dismissPwa() { 
             this.showPwaPrompt = false; 
             try { localStorage.setItem('pwaPromptDismissed', 'true'); } catch(e){}
+        },
+
+        async installPwa() {
+            // ANDROID / DESKTOP (Chrome/Edge)
+            if (this.deferredPrompt) {
+                this.deferredPrompt.prompt();
+                const { outcome } = await this.deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    this.deferredPrompt = null;
+                    this.showPwaPrompt = false;
+                }
+            } 
+            // IOS (iPhone/iPad) - Manual Instructions required
+            else {
+                alert("To install on iPhone:\n1. Tap the 'Share' button (square with arrow)\n2. Scroll down and tap 'Add to Home Screen'");
+                this.dismissPwa(); // Hide banner after showing instructions
+            }
         },
 
         handleNavClick(tab) {
