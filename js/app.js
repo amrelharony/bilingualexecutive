@@ -535,7 +535,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         
-// ------------------------------------------------------------------
+        // ------------------------------------------------------------------
         //  API SANDBOX
         // ------------------------------------------------------------------
         apiSandbox: {
@@ -675,8 +675,6 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-       
-        
         // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
         // ------------------------------------------------------------------
@@ -757,7 +755,6 @@ document.addEventListener('alpine:init', () => {
                 if (tab === 'talent') this.updateTalentChart();
                 if (tab === 'assessment' && this.assessmentSubmitted) this.updateGapChart();
                 if (tab === 'culture') this.culturalMonitor.renderChart();
-
             });
         },
 
@@ -799,14 +796,14 @@ document.addEventListener('alpine:init', () => {
             };
 
            try {
-    let data;
-    // First, try the new Gemini 3 Flash model
-    try { 
-        data = await tryFetch("gemini-3-flash-preview", "v1beta"); 
-    } catch (e) { 
-        // Fallback to the stable Gemini 2.5 Flash model
-        data = await tryFetch("gemini-2.5-flash", "v1beta"); 
-    }
+                let data;
+                // First, try the new Gemini 3 Flash model
+                try { 
+                    data = await tryFetch("gemini-3-flash-preview", "v1beta"); 
+                } catch (e) { 
+                    // Fallback to the stable Gemini 2.5 Flash model
+                    data = await tryFetch("gemini-2.5-flash", "v1beta"); 
+                }
 
                 let botText = "I couldn't process that.";
                 if (data.candidates && data.candidates[0].content) botText = data.candidates[0].content.parts[0].text;
@@ -833,7 +830,12 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        scrollToBottom() { this.$nextTick(() => { const c = document.getElementById('chat-messages-container'); if (c) c.scrollTop = c.scrollHeight; }); },
+        scrollToBottom() { 
+            this.$nextTick(() => { 
+                const c = document.getElementById('chat-messages-container'); 
+                if (c) c.scrollTop = c.scrollHeight; 
+            }); 
+        },
 
         copyToClipboard(text, type) {
             if (navigator.clipboard && window.isSecureContext) {
@@ -844,6 +846,7 @@ document.addEventListener('alpine:init', () => {
                 this.fallbackCopy(text, type);
             }
         },
+        
         fallbackCopy(text, type) {
             const textArea = document.createElement("textarea");
             textArea.value = text;
@@ -867,10 +870,9 @@ document.addEventListener('alpine:init', () => {
             this.copyToClipboard(url, "Challenge Link");
         },
 
-       // ------------------------------------------------------------------
+        // ------------------------------------------------------------------
         // FEATURE 2: ROADMAP GENERATOR
         // ------------------------------------------------------------------
-        
         async generateRoadmap() {
             if (!window.jspdf) { alert("PDF library loading..."); return; }
             const { jsPDF } = window.jspdf;
@@ -1057,6 +1059,7 @@ document.addEventListener('alpine:init', () => {
             { title: "Agile Delivery", questions: [{text:"Funding",score:3,desc:"Projects or Value Streams?"},{text:"Releases",score:3,desc:"Monthly or Daily?"},{text:"Architecture",score:3,desc:"Decoupled?"},{text:"Compliance",score:3,desc:"Manual (1) or Auto (5)?"},{text:"Vendors",score:3,desc:"Partners or Body Shop?"}] },
             { title: "Culture", questions: [{text:"Literacy",score:3,desc:"Does ExCo understand Tech?"},{text:"Safety",score:3,desc:"Is failure punished?"},{text:"Decisions",score:3,desc:"HiPPO or Data?"},{text:"Silos",score:3,desc:"Functional or Squads?"},{text:"Talent",score:3,desc:"Mercenaries or Missionaries?"}] }
         ],
+        
         get calculateScore() {
             let total = 0;
             this.assessmentData.forEach(s => s.questions.forEach(q => total += q.score));
@@ -1066,16 +1069,30 @@ document.addEventListener('alpine:init', () => {
             if(safety <= 2) total = Math.min(total, 40);
             return { total, isSafetyVeto: safety<=2, isManualDrag: compliance<=2 };
         },
+        
         getAssessmentResult() {
             const s = this.calculateScore.total;
             if (s <= 40) return { title: "DANGER ZONE", desc: "Data Swamp. Stop buying AI. Fix culture first." };
             if (s <= 60) return { title: "TRANSITIONING", desc: "Pockets of agility exist but are crushed by legacy governance." };
             return { title: "AGILE BANK", desc: "Market Leader capability. Data flows fast." };
         },
-        getAssessmentColor() { const s = this.calculateScore.total; return s<=40?'text-risk':s<=60?'text-warn':'text-primary'; },
         
-        finishAssessment() { this.assessmentSubmitted = true; window.scrollTo({ top: 0, behavior: 'smooth' }); if (this.challengerData) this.$nextTick(() => this.updateGapChart()); },
-        resetAssessment() { this.assessmentSubmitted = false; try { localStorage.removeItem('bilingual_scores'); }catch(e){} this.assessmentData.forEach(s => s.questions.forEach(q => q.score = 3)); },
+        getAssessmentColor() { 
+            const s = this.calculateScore.total; 
+            return s<=40?'text-risk':s<=60?'text-warn':'text-primary'; 
+        },
+        
+        finishAssessment() { 
+            this.assessmentSubmitted = true; 
+            window.scrollTo({ top: 0, behavior: 'smooth' }); 
+            if (this.challengerData) this.$nextTick(() => this.updateGapChart()); 
+        },
+        
+        resetAssessment() { 
+            this.assessmentSubmitted = false; 
+            try { localStorage.removeItem('bilingual_scores'); } catch(e){} 
+            this.assessmentData.forEach(s => s.questions.forEach(q => q.score = 3)); 
+        },
         
         getMatrixResult() {
             const { x, y } = this.matrixCoords;
@@ -1084,6 +1101,7 @@ document.addEventListener('alpine:init', () => {
             if (y <= 60 && x >= 60) return { strategy: "OUTSOURCE", desc: "Non-core commodity. Use standard off-the-shelf tools." };
             return { strategy: "DEPRIORITIZE", desc: "Low value. Don't waste resources." };
         },
+        
         getCompassResult() {
             const { x, y } = this.compassCoords;
             if (y > 50 && x > 50) return { title: "INNOVATION LEADER (NE)", desc: "Fast growth, but check your safety brakes." };
@@ -1091,18 +1109,69 @@ document.addEventListener('alpine:init', () => {
             if (y > 50 && x <= 50) return { title: "RISK TAKER (NW)", desc: "High value but high control. Hard to sustain." };
             return { title: "DIGITAL FACTORY (SE)", desc: "Fast execution, but are you building the right thing?" };
         },
-        getLighthouseStatus() { const c = this.lighthouseData.filter(i=>i.checked).length; if(c===10) return {title:"GREEN LIGHT", desc:"Launch.", text:"text-primary", border:"border-primary bg-primary/10"}; if(c>=8) return {title:"AMBER LIGHT", desc:"Proceed with caution.", text:"text-warn", border:"border-warn bg-warn/10"}; return {title:"RED LIGHT", desc:"STOP.", text:"text-risk", border:"border-risk bg-risk/10"}; },
-
-        dictionary: [ { banker: "Technical Debt", tech: "Legacy Refactoring", translation: "Interest on past shortcuts. It's making your P&L brittle." }, { banker: "Op-Ex Efficiency", tech: "CI/CD Pipeline", translation: "Automated work that replaces manual human error." }, { banker: "Market Responsiveness", tech: "Microservices", translation: "Breaking the bank into Legos so we can change one part without breaking the rest." }, { banker: "Data Governance", tech: "Data Mesh", translation: "Moving from a central bottleneck to decentralized ownership." }, { banker: "Business Continuity", tech: "Chaos Engineering", translation: "Testing the bank by intentionally breaking things to ensure it survives real disasters." } ],
-        get filteredDictionary() { const q = this.searchQuery.toLowerCase(); return this.dictionary.filter(i => i.banker.toLowerCase().includes(q) || i.tech.toLowerCase().includes(q) || i.translation.toLowerCase().includes(q)); },
         
-        lighthouseData: [{category:"Value",text:"Customer Facing?"},{category:"Value",text:"Solving Pain?"},{category:"Value",text:"Unarguable Metric?"},{category:"Feasibility",text:"Decoupled?"},{category:"Feasibility",text:"Anti-Scope Defined?"},{category:"Feasibility",text:"MVP in 90 Days?"},{category:"Ecosystem",text:"Two-Pizza Team?"},{category:"Ecosystem",text:"Sandbox Waiver?"},{category:"Ecosystem",text:"Zero Dependencies?"},{category:"Ecosystem",text:"Air Cover?"}].map(i=>({...i, checked:false})),
-        lighthouseCount() { return this.lighthouseData.filter(i=>i.checked).length; },
+        getLighthouseStatus() { 
+            const c = this.lighthouseData.filter(i=>i.checked).length; 
+            if(c===10) return {title:"GREEN LIGHT", desc:"Launch.", text:"text-primary", border:"border-primary bg-primary/10"}; 
+            if(c>=8) return {title:"AMBER LIGHT", desc:"Proceed with caution.", text:"text-warn", border:"border-warn bg-warn/10"}; 
+            return {title:"RED LIGHT", desc:"STOP.", text:"text-risk", border:"border-risk bg-risk/10"}; 
+        },
 
-        repairKitData: [{symptom:"The Feature Factory", diagnosis:"High velocity, no value. Measuring output not outcome.", prescription:["Stop celebrating feature counts.", "Audit value with PO."]}, {symptom:"The Cloud Bill Shock", diagnosis:"Lift and Shift strategy. No FinOps.", prescription:["Implement FinOps ticker.", "Auto-shutdown non-prod servers."]}, {symptom:"The Agile Silo", diagnosis:"Optimized coding but ignored governance.", prescription:["Expand Definition of Done.", "Embed Compliance in squad."]}, {symptom:"Zombie Agile", diagnosis:"Process without purpose.", prescription:["Ban 'Agile' word.", "Refocus on enemy."]} ],
-        boardRisks: [{title:"1. Strategic Risk", subtitle:"The Dumb Pipe", lie:"'Our app has 4.5 stars.'", truth:"Retaining customers but losing value. Used only for balance checks.", question:"Show me Share of Wallet for digital natives."}, {title:"2. Regulatory Risk", subtitle:"The Data Swamp", lie:"'Data is centralized.'", truth:"We are drowning. We have petabytes with no governance.", question:"Can we generate a liquidity report in 10 minutes?"}, {title:"3. Talent Risk", subtitle:"The Missing Bench", lie:"'Hiring top talent.'", truth:"Hiring mercenaries. Missionaries are leaving.", question:"% of Change budget spent on vendors?"} ],
-        glossaryData: [{term:"Agentic AI",def:"AI that takes action (moves funds), not just generates text."}, {term:"API",def:"Digital glue allowing systems to talk. Enables Open Banking."}, {term:"Data Mesh",def:"Decentralized ownership; domains own their data products."}, {term:"FinOps",def:"Bringing financial accountability to Cloud spend."}, {term:"Tech Debt",def:"Implied cost of rework from choosing easy solutions."}],
-        get filteredGlossary() { const q = this.glossarySearch.toLowerCase(); return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); }
+        dictionary: [ 
+            { banker: "Technical Debt", tech: "Legacy Refactoring", translation: "Interest on past shortcuts. It's making your P&L brittle." }, 
+            { banker: "Op-Ex Efficiency", tech: "CI/CD Pipeline", translation: "Automated work that replaces manual human error." }, 
+            { banker: "Market Responsiveness", tech: "Microservices", translation: "Breaking the bank into Legos so we can change one part without breaking the rest." }, 
+            { banker: "Data Governance", tech: "Data Mesh", translation: "Moving from a central bottleneck to decentralized ownership." }, 
+            { banker: "Business Continuity", tech: "Chaos Engineering", translation: "Testing the bank by intentionally breaking things to ensure it survives real disasters." } 
+        ],
+        
+        get filteredDictionary() { 
+            const q = this.searchQuery.toLowerCase(); 
+            return this.dictionary.filter(i => i.banker.toLowerCase().includes(q) || i.tech.toLowerCase().includes(q) || i.translation.toLowerCase().includes(q)); 
+        },
+        
+        lighthouseData: [
+            {category:"Value",text:"Customer Facing?"},
+            {category:"Value",text:"Solving Pain?"},
+            {category:"Value",text:"Unarguable Metric?"},
+            {category:"Feasibility",text:"Decoupled?"},
+            {category:"Feasibility",text:"Anti-Scope Defined?"},
+            {category:"Feasibility",text:"MVP in 90 Days?"},
+            {category:"Ecosystem",text:"Two-Pizza Team?"},
+            {category:"Ecosystem",text:"Sandbox Waiver?"},
+            {category:"Ecosystem",text:"Zero Dependencies?"},
+            {category:"Ecosystem",text:"Air Cover?"}
+        ].map(i=>({...i, checked:false})),
+        
+        lighthouseCount() { 
+            return this.lighthouseData.filter(i=>i.checked).length; 
+        },
 
-    }));
-});
+        repairKitData: [
+            {symptom:"The Feature Factory", diagnosis:"High velocity, no value. Measuring output not outcome.", prescription:["Stop celebrating feature counts.", "Audit value with PO."]}, 
+            {symptom:"The Cloud Bill Shock", diagnosis:"Lift and Shift strategy. No FinOps.", prescription:["Implement FinOps ticker.", "Auto-shutdown non-prod servers."]}, 
+            {symptom:"The Agile Silo", diagnosis:"Optimized coding but ignored governance.", prescription:["Expand Definition of Done.", "Embed Compliance in squad."]}, 
+            {symptom:"Zombie Agile", diagnosis:"Process without purpose.", prescription:["Ban 'Agile' word.", "Refocus on enemy."]}
+        ],
+        
+        boardRisks: [
+            {title:"1. Strategic Risk", subtitle:"The Dumb Pipe", lie:"'Our app has 4.5 stars.'", truth:"Retaining customers but losing value. Used only for balance checks.", question:"Show me Share of Wallet for digital natives."}, 
+            {title:"2. Regulatory Risk", subtitle:"The Data Swamp", lie:"'Data is centralized.'", truth:"We are drowning. We have petabytes with no governance.", question:"Can we generate a liquidity report in 10 minutes?"}, 
+            {title:"3. Talent Risk", subtitle:"The Missing Bench", lie:"'Hiring top talent.'", truth:"Hiring mercenaries. Missionaries are leaving.", question:"% of Change budget spent on vendors?"}
+        ],
+        
+        glossaryData: [
+            {term:"Agentic AI",def:"AI that takes action (moves funds), not just generates text."}, 
+            {term:"API",def:"Digital glue allowing systems to talk. Enables Open Banking."}, 
+            {term:"Data Mesh",def:"Decentralized ownership; domains own their data products."}, 
+            {term:"FinOps",def:"Bringing financial accountability to Cloud spend."}, 
+            {term:"Tech Debt",def:"Implied cost of rework from choosing easy solutions."}
+        ],
+        
+        get filteredGlossary() { 
+            const q = this.glossarySearch.toLowerCase(); 
+            return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); 
+        }
+
+    })); // <-- This closes the Alpine.data object
+}); // <-- This closes the event listener
