@@ -533,10 +533,15 @@ document.addEventListener('alpine:init', () => {
                 return response.json();
             };
 
-            try {
-                let data;
-                try { data = await tryFetch("gemini-1.5-flash-latest", "v1beta"); } 
-                catch (e) { data = await tryFetch("gemini-2.0-flash-exp", "v1beta"); }
+           try {
+    let data;
+    // First, try the new Gemini 3 Flash model
+    try { 
+        data = await tryFetch("gemini-3-flash-preview", "v1beta"); 
+    } catch (e) { 
+        // Fallback to the stable Gemini 2.5 Flash model
+        data = await tryFetch("gemini-2.5-flash", "v1beta"); 
+    }
 
                 let botText = "I couldn't process that.";
                 if (data.candidates && data.candidates[0].content) botText = data.candidates[0].content.parts[0].text;
