@@ -675,56 +675,7 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // ------------------------------------------------------------------
-        //  WHAT-IF SCENARIO PLANNER
-        // ------------------------------------------------------------------
-// ------------------------------------------------------------------
-        // FEATURE 7: WHAT-IF SCENARIO PLANNER
-        // ------------------------------------------------------------------
-        whatIf: {
-            input: '',
-            loading: false,
-            result: null,
-            examples: [
-                "What if we outsource our Core Banking to a SaaS provider?",
-                "What if we delay the cloud migration by 12 months?",
-                "What if we use AI to automate loan approvals?"
-            ],
-            setInput(text) { this.input = text; },
-            async analyze() {
-                if (!this.input.trim()) return;
-                this.loading = true;
-                this.result = null;
-                const API_KEY = localStorage.getItem('bilingual_api_key');
-                if (!API_KEY) {
-                    this.result = "<p class='text-risk font-bold'>Error: API Key missing. Please click the 'Key' icon in the top right.</p>";
-                    this.loading = false;
-                    return;
-                }
-                // The "Consultant" System Prompt
-                const systemPrompt = `
-                    ACT AS: A top-tier Strategy Consultant advising a Bank Board.
-                    TASK: Analyze the following strategic hypothesis: "${this.input}"
-                    OUTPUT FORMAT: A structured 'Board Briefing Note'. Use Markdown.
-                    SECTIONS: 1. Executive Verdict (Green/Yellow/Red). 2. Technical Reality. 3. Financial Lens. 4. Risk & Governance. 5. Recommendation.
-                    TONE: Professional, concise, brutal honesty.
-                `;
-                try {
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
-                    });
-                    if (!response.ok) throw new Error("API Error");
-                    let json = await response.json();
-                    let rawText = json.candidates[0].content.parts[0].text;
-                    this.result = DOMPurify.sanitize(marked.parse(rawText));
-                } catch (e) {
-                    this.result = `<p class='text-risk'>Simulation Failed. Check API Key.</p>`;
-                } finally {
-                    this.loading = false;
-                }
-            }
-        }, 
+       
         
         // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
