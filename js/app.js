@@ -313,7 +313,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
-        // FEATURE 4: ROLE-PLAY SIMULATOR
+        // ROLE-PLAY SIMULATOR
         // ------------------------------------------------------------------
         rolePlay: {
             active: false,
@@ -400,7 +400,7 @@ document.addEventListener('alpine:init', () => {
                 // 4. Call Gemini
                 try {
                     // Try Flash model first
-                    let model = "gemini-1.5-flash-latest";
+                    let model = "gemini-3-flash-preview";
                     let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
                         method: "POST", headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
