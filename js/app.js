@@ -218,7 +218,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
-        // FEATURE 3: BILINGUAL FLASHCARD QUIZ
+        // BILINGUAL FLASHCARD QUIZ
         // ------------------------------------------------------------------
         quiz: {
             active: false,
@@ -313,11 +313,120 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
+        // FEATURE 4: ROLE-PLAY SIMULATOR
+        // ------------------------------------------------------------------
+        rolePlay: {
+            active: false,
+            scenario: null,
+            messages: [],
+            input: '',
+            loading: false,
+            
+            // The Scenarios
+            scenarios: [
+                {
+                    id: 'cloud',
+                    title: 'The Cloud Skeptic',
+                    myRole: 'Chief Digital Officer',
+                    opponent: 'CFO',
+                    topic: 'Cloud Migration Cost',
+                    intro: 'I see a $10M request for AWS. Our physical data centers are fully paid for. Why should I approve this massive OpEx spike just to rent computers?'
+                },
+                {
+                    id: 'mvp',
+                    title: 'The Scope Creeper',
+                    myRole: 'Product Owner',
+                    opponent: 'Head of Sales',
+                    topic: 'Minimum Viable Product',
+                    intro: 'I saw the prototype. It looks basic. We cannot launch without the "Gold Tier" features. My clients expect perfection, not an experiment.'
+                },
+                {
+                    id: 'risk',
+                    title: 'The Gatekeeper',
+                    myRole: 'Tech Lead',
+                    opponent: 'Chief Risk Officer',
+                    topic: 'Automated Compliance',
+                    intro: 'You want to deploy code daily? Absolutely not. I need 2 weeks to review every release manually. How can a script be safer than my signature?'
+                }
+            ],
+
+            start(index) {
+                this.active = true;
+                this.scenario = this.scenarios[index];
+                this.messages = [
+                    { role: 'opponent', text: this.scenario.intro }
+                ];
+                this.input = '';
+            },
+
+            stop() {
+                this.active = false;
+                this.messages = [];
+            },
+
+            async send() {
+                if (!this.input.trim()) return;
+                
+                // 1. Add User Message
+                this.messages.push({ role: 'user', text: this.input });
+                const userText = this.input;
+                this.input = '';
+                this.loading = true;
+
+                // 2. Check API Key
+                const API_KEY = localStorage.getItem('bilingual_api_key');
+                if (!API_KEY) {
+                    this.messages.push({ role: 'system', text: 'Error: Please set API Key in settings.' });
+                    this.loading = false;
+                    return;
+                }
+
+                // 3. Construct the "Roleplay" Prompt
+                // We trick the AI into playing a character
+                const systemPrompt = `
+                    ACT AS: ${this.scenario.opponent} at a traditional bank.
+                    USER IS: ${this.scenario.myRole}.
+                    TOPIC: ${this.scenario.topic}.
+                    GOAL: You are skeptical and resistant to change. The user must convince you using "Business Value" (ROI, Speed, Risk Reduction).
+                    RULES: 
+                    1. If the user uses tech jargon (Kubernetes, APIs) without explaining the business value, push back hard.
+                    2. If the user explains the value well (e.g., "Speed to market," "Cost of delay"), start to agree.
+                    3. Keep responses short (under 50 words). Conversational style.
+                    4. If they convince you, say "You have a deal."
+                    
+                    HISTORY: ${JSON.stringify(this.messages)}
+                `;
+
+                // 4. Call Gemini
+                try {
+                    // Try Flash model first
+                    let model = "gemini-1.5-flash-latest";
+                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
+                    });
+                    
+                    if (!response.ok) throw new Error("API Error");
+                    let json = await response.json();
+                    let reply = json.candidates[0].content.parts[0].text;
+
+                    this.messages.push({ role: 'opponent', text: reply });
+                } catch (e) {
+                    this.messages.push({ role: 'system', text: "Connection error. The simulation has ended." });
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+
+        
+        // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
         // ------------------------------------------------------------------
         navItems: [ 
             { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, 
             { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' },
+             { id: 'roleplay', label: 'Role-Play Dojo', icon: 'fa-solid fa-user-tie' },
             { id: 'quiz', label: 'Flashcards', icon: 'fa-solid fa-graduation-cap' },
             { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check' }, 
             { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language' }, 
@@ -335,7 +444,8 @@ document.addEventListener('alpine:init', () => {
         ],
         
         dashboardTools: [ 
-            { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' }, 
+            { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
+            { id: 'roleplay', label: 'Role-Play Dojo', desc: 'Simulate high-stakes conversations.', icon: 'fa-solid fa-user-tie', color: 'text-warn' },
             { id: 'quiz', label: 'Flashcards', desc: 'Test your fluency in tech jargon.', icon: 'fa-solid fa-graduation-cap', color: 'text-cyan-400' },
             { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
             { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, 
