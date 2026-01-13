@@ -681,11 +681,11 @@ document.addEventListener('alpine:init', () => {
         // NAVIGATION & TOOLS
         // ------------------------------------------------------------------
         navItems: [ 
-            { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' },
+            { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, 
+            { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' }, 
             { id: 'whatif', label: 'Scenario Planner', icon: 'fa-solid fa-chess-rook' },
-            { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' },
-            { id: 'sandbox', label: 'Architecture Sim', icon: 'fa-solid fa-shapes' },
             { id: 'roleplay', label: 'Role-Play Dojo', icon: 'fa-solid fa-user-tie' },
+            { id: 'sandbox', label: 'Architecture Sim', icon: 'fa-solid fa-shapes' },
             { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse' },
             { id: 'quiz', label: 'Flashcards', icon: 'fa-solid fa-graduation-cap' },
             { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check' }, 
@@ -700,26 +700,26 @@ document.addEventListener('alpine:init', () => {
             { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
-            { id: 'whatif', label: 'Scenario Planner', icon: 'fa-solid fa-chess-rook' },
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } 
         ],
         
         dashboardTools: [ 
             { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
-            { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.',icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
+            { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
             { id: 'roleplay', label: 'Role-Play Dojo', desc: 'Simulate high-stakes conversations.', icon: 'fa-solid fa-user-tie', color: 'text-warn' },
             { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture & speed.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
             { id: 'quiz', label: 'Flashcards', desc: 'Test your fluency in tech jargon.', icon: 'fa-solid fa-graduation-cap', color: 'text-cyan-400' },
+            { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational health.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
             { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
             { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, 
             { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, 
-            { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational health.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
             { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
-            { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
-        ],
+        ]
+    })); // END of Toolkit Data
+}); // END of Event Listener
 
         // ------------------------------------------------------------------
         // METHODS
