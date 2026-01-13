@@ -66,6 +66,9 @@ document.addEventListener('alpine:init', () => {
                 if (value) document.body.classList.add('mobile-menu-open');
                 else document.body.classList.remove('mobile-menu-open');
             });
+          
+            this.culturalMonitor.init(); 
+
         },
 
         // ------------------------------------------------------------------
@@ -419,7 +422,118 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        
+        // ------------------------------------------------------------------
+        // FEATURE 5: CULTURAL DEBT MONITOR
+        // ------------------------------------------------------------------
+        culturalMonitor: {
+            history: [],
+            isCheckinOpen: false,
+            answers: { q1: null, q2: null, q3: null },
+            chartInstance: null,
+
+            // Initialize: Load history from LocalStorage
+            init() {
+                try {
+                    const saved = localStorage.getItem('bilingual_culture_history');
+                    if (saved) this.history = JSON.parse(saved);
+                } catch (e) { console.error("Load Error", e); }
+            },
+
+            // The Check-In Logic
+            submitCheckin() {
+                // Calculate Debt Score (0-100, Higher is worse)
+                let debt = 0;
+                
+                // Q1: Bad News Shared? (If Yes, Debt decreases. If No, Fear exists.)
+                if (this.answers.q1 === 'no') debt += 40; 
+                
+                // Q2: HiPPO Override? (If Yes, Debt increases.)
+                if (this.answers.q2 === 'yes') debt += 30;
+
+                // Q3: Shipped Value? (If No, Stagnation adds debt.)
+                if (this.answers.q3 === 'no') debt += 30;
+
+                const entry = {
+                    date: new Date().toLocaleDateString(),
+                    score: debt,
+                    timestamp: Date.now()
+                };
+
+                this.history.push(entry);
+                // Keep last 10 entries
+                if (this.history.length > 10) this.history.shift();
+                
+                localStorage.setItem('bilingual_culture_history', JSON.stringify(this.history));
+                
+                this.isCheckinOpen = false;
+                this.answers = { q1: null, q2: null, q3: null };
+                
+                // Refresh Chart
+                this.renderChart();
+            },
+
+            get currentScore() {
+                if (this.history.length === 0) return 0;
+                return this.history[this.history.length - 1].score;
+            },
+
+            get status() {
+                const s = this.currentScore;
+                if (s < 30) return { label: "HEALTHY", color: "text-primary", desc: "High safety. Fast flow." };
+                if (s < 70) return { label: "AT RISK", color: "text-warn", desc: "Friction is building. Intervene now." };
+                return { label: "TOXIC", color: "text-risk", desc: "Culture of fear. Transformation stalled." };
+            },
+
+            get recommendation() {
+                const s = this.currentScore;
+                if (s < 30) return "Keep reinforcing the 'No Jargon' rule.";
+                if (s < 70) return "Run a 'Bad News' Audit. Ask teams what they are hiding.";
+                return "Emergency: Kill a 'Zombie Project' publicly to restore trust.";
+            },
+
+            reset() {
+                if(confirm("Clear all history?")) {
+                    this.history = [];
+                    localStorage.removeItem('bilingual_culture_history');
+                    if(this.chartInstance) this.chartInstance.destroy();
+                }
+            },
+
+            renderChart() {
+                // Wait for DOM
+                setTimeout(() => {
+                    const ctx = document.getElementById('debtChart');
+                    if (!ctx) return;
+                    
+                    if (this.chartInstance) this.chartInstance.destroy();
+
+                    const labels = this.history.map(h => h.date);
+                    const data = this.history.map(h => h.score);
+                    const color = this.currentScore > 50 ? '#f87171' : '#4ade80';
+
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Cultural Debt %',
+                                data: data,
+                                borderColor: color,
+                                backgroundColor: color + '20', // transparent
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            scales: { y: { min: 0, max: 100, grid: { color: '#334155' } }, x: { display: false } },
+                            plugins: { legend: { display: false } },
+                            animation: false
+                        }
+                    });
+                }, 100);
+            }
+        },
+
         // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
         // ------------------------------------------------------------------
@@ -427,6 +541,7 @@ document.addEventListener('alpine:init', () => {
             { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, 
             { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' },
              { id: 'roleplay', label: 'Role-Play Dojo', icon: 'fa-solid fa-user-tie' },
+             { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse' },
             { id: 'quiz', label: 'Flashcards', icon: 'fa-solid fa-graduation-cap' },
             { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check' }, 
             { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language' }, 
@@ -450,6 +565,7 @@ document.addEventListener('alpine:init', () => {
             { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
             { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, 
             { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, 
+            { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational health.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
             { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
