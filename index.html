@@ -341,7 +341,93 @@
                 </div>
 
             </div>
+            
+<!-- ROLE-PLAY DOJO TAB -->
+            <div x-show="currentTab === 'roleplay'" x-cloak class="max-w-4xl mx-auto">
+                
+                <!-- 1. Selection Screen -->
+                <div x-show="!rolePlay.active">
+                    <div class="text-center mb-10 pt-4">
+                        <h2 class="text-3xl font-mono font-bold text-white mb-2">The Negotiation Dojo</h2>
+                        <p class="text-textMuted">Choose a scenario. Convince the skeptic. Don't use jargon.</p>
+                    </div>
 
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <template x-for="(scenario, index) in rolePlay.scenarios" :key="index">
+                            <button @click="rolePlay.start(index)" 
+                                    class="bg-card border border-slate-700 hover:border-warn p-6 rounded-xl text-left group transition-all hover:-translate-y-1">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="bg-slate-800 p-3 rounded-lg group-hover:bg-warn group-hover:text-dark transition-colors">
+                                        <i class="fa-solid fa-comments text-xl"></i>
+                                    </div>
+                                    <span class="text-[10px] font-mono border border-slate-600 px-2 py-1 rounded text-slate-400">HARD</span>
+                                </div>
+                                <h3 class="text-lg font-bold text-white mb-1" x-text="scenario.title"></h3>
+                                <p class="text-xs text-textMuted mb-4">VS <span x-text="scenario.opponent"></span></p>
+                                <p class="text-sm text-slate-300 line-clamp-3 italic">"<span x-text="scenario.intro"></span>"</p>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- 2. Active Simulation Screen -->
+                <div x-show="rolePlay.active" class="flex flex-col h-[600px] bg-card rounded-xl border border-slate-700 shadow-2xl relative overflow-hidden">
+                    
+                    <!-- Header -->
+                    <div class="p-4 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-warn/20 flex items-center justify-center text-warn">
+                                <i class="fa-solid fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-white text-sm" x-text="rolePlay.scenario?.opponent"></h3>
+                                <p class="text-[10px] text-textMuted">Topic: <span x-text="rolePlay.scenario?.topic"></span></p>
+                            </div>
+                        </div>
+                        <button @click="rolePlay.stop()" class="text-slate-400 hover:text-white text-xs px-3 py-1 border border-slate-600 rounded">
+                            End Session
+                        </button>
+                    </div>
+
+                    <!-- Chat Area -->
+                    <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-dark/50" id="rp-chat-box">
+                        <template x-for="msg in rolePlay.messages">
+                            <div class="flex flex-col" :class="msg.role === 'user' ? 'items-end' : 'items-start'">
+                                <div class="max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed"
+                                     :class="msg.role === 'user' ? 'bg-primary text-dark rounded-br-none' : (msg.role === 'system' ? 'bg-red-900/50 text-red-200 border border-red-500' : 'bg-card border border-slate-600 text-white rounded-bl-none')">
+                                    <span x-text="msg.text"></span>
+                                </div>
+                                <span class="text-[10px] text-slate-500 mt-1 uppercase font-mono" x-text="msg.role === 'user' ? 'You' : (msg.role === 'system' ? 'System' : rolePlay.scenario?.opponent)"></span>
+                            </div>
+                        </template>
+                        
+                        <!-- Typing Indicator -->
+                        <div x-show="rolePlay.loading" class="flex items-center gap-2 text-slate-500 text-xs ml-2">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Opponent is thinking...
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="p-4 bg-card border-t border-slate-700">
+                        <div class="relative">
+                            <input type="text" 
+                                   x-model="rolePlay.input" 
+                                   @keydown.enter="rolePlay.send()"
+                                   :disabled="rolePlay.loading"
+                                   placeholder="Type your response (Focus on business value)..." 
+                                   class="w-full bg-dark text-white rounded-lg pl-4 pr-12 py-4 focus:outline-none focus:border-warn border border-slate-600 font-mono text-sm disabled:opacity-50">
+                            
+                            <button @click="rolePlay.send()" 
+                                    :disabled="rolePlay.loading"
+                                    class="absolute right-2 top-2 bottom-2 bg-warn text-dark w-10 rounded flex items-center justify-center hover:bg-yellow-400 transition-colors disabled:opacity-50">
+                                <i class="fa-solid fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            
             <!-- ARCHITECT CONSOLE (VIP ONLY) -->
             <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
                 <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
