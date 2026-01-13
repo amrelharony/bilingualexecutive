@@ -602,6 +602,80 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
+        // WHAT-IF SCENARIO PLANNER
+        // ------------------------------------------------------------------
+        whatIf: {
+            input: '',
+            loading: false,
+            result: null,
+            
+            // Quick-start prompts for the user
+            examples: [
+                "What if we outsource our Core Banking maintenance to a vendor?",
+                "What if we delay the mobile app rewrite by 6 months to save cash?",
+                "What if we use Generative AI to automate loan approvals?"
+            ],
+
+            setInput(text) {
+                this.input = text;
+            },
+
+            async analyze() {
+                if (!this.input.trim()) return;
+                
+                this.loading = true;
+                this.result = null;
+
+                const API_KEY = localStorage.getItem('bilingual_api_key');
+                if (!API_KEY) {
+                    this.result = "<p class='text-risk font-bold'>Error: API Key missing. Please click the 'Key' icon in the top right to set your Google Gemini API Key.</p>";
+                    this.loading = false;
+                    return;
+                }
+
+                // The "Consultant" System Prompt
+                const systemPrompt = `
+                    ACT AS: A top-tier Strategy Consultant advising a Bank Board.
+                    TASK: Analyze the following strategic hypothesis: "${this.input}"
+                    
+                    OUTPUT FORMAT: A structured 'Board Briefing Note'.
+                    Use Markdown formatting (## for headers, ** for bold).
+                    
+                    SECTIONS REQUIRED:
+                    1. **Executive Verdict**: Start with a clear "GREEN LIGHT", "YELLOW LIGHT", or "RED LIGHT" status and a 1-sentence summary.
+                    2. **The Technical Reality** (Speak to the CTO): Architecture impact, legacy integration risks, complexity.
+                    3. **The Financial Lens** (Speak to the CFO): CapEx vs OpEx implications, ROI timeline, hidden costs.
+                    4. **Risk & Governance** (Speak to the CRO): Regulatory hurdles, data privacy, brand risk.
+                    5. **The Bilingual Recommendation**: A final decisive paragraph on how to proceed safely.
+                    
+                    TONE: Professional, concise, brutal honesty. No corporate fluff.
+                `;
+
+                try {
+                    // Failover logic for models
+                    let model = "gemini-1.5-flash-latest";
+                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
+                    });
+                    
+                    if (!response.ok) throw new Error("API Error");
+                    let json = await response.json();
+                    let rawText = json.candidates[0].content.parts[0].text;
+                    
+                    // Convert Markdown to HTML using the 'marked' library (loaded in index.html)
+                    // Then sanitize it for security
+                    this.result = DOMPurify.sanitize(marked.parse(rawText));
+
+                } catch (e) {
+                    this.result = `<p class='text-risk'>Simulation Failed: ${e.message}. Please check your API Key and internet connection.</p>`;
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+
+        // ------------------------------------------------------------------
         //  WHAT-IF SCENARIO PLANNER
         // ------------------------------------------------------------------
         whatIf: {
@@ -696,6 +770,7 @@ document.addEventListener('alpine:init', () => {
             { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
+            { id: 'whatif', label: 'Scenario Planner', icon: 'fa-solid fa-chess-rook' },
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } 
         ],
         
@@ -712,6 +787,7 @@ document.addEventListener('alpine:init', () => {
             { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
+            { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
         ],
 
