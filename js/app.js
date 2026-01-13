@@ -12,15 +12,19 @@ document.addEventListener('alpine:init', () => {
             // PWA & Install Logic
             const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
 
-            // 1. Capture the event for Android/Chrome
+            // 1. Capture the event for Android/Chrome (so we can trigger it later)
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 this.deferredPrompt = e;
             });
 
             // 2. Show the banner for EVERYONE on mobile (iOS & Android)
+            // We moved this OUTSIDE the event listener so it works on iPhones too
             if (this.isMobile && !isPWA) {
+                // Check if they dismissed it previously
                 const dismissed = localStorage.getItem('pwaPromptDismissed');
+                
+                // If not dismissed, show it after 2 seconds
                 if (!dismissed) {
                     setTimeout(() => { this.showPwaPrompt = true; }, 2000);
                 }
@@ -62,9 +66,9 @@ document.addEventListener('alpine:init', () => {
                 if (value) document.body.classList.add('mobile-menu-open');
                 else document.body.classList.remove('mobile-menu-open');
             });
+          
+            this.culturalMonitor.init(); 
 
-            // Initialize Culture Monitor
-            this.culturalMonitor.init();
         },
 
         // ------------------------------------------------------------------
@@ -106,7 +110,7 @@ document.addEventListener('alpine:init', () => {
         gapChartInstance: null,
 
         // ------------------------------------------------------------------
-        // FEATURE 1: CASE STUDY SIMULATOR
+        // NEW FEATURE: CASE STUDY SIMULATOR
         // ------------------------------------------------------------------
         caseStudy: {
             active: false,
@@ -217,21 +221,62 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
-        // FEATURE 3: FLASHCARD QUIZ
+        // BILINGUAL FLASHCARD QUIZ
         // ------------------------------------------------------------------
         quiz: {
             active: false,
             finished: false,
             currentQuestion: 0,
             score: 0,
-            feedback: null, 
+            feedback: null, // 'correct' or 'incorrect'
             
+            // The Question Bank
             questions: [
-                { term: "Technical Debt", options: [ { text: "Money we owe to technology vendors.", correct: false }, { text: "The implied cost of future rework.", correct: true }, { text: "A bug in the code.", correct: false } ] },
-                { term: "API", options: [ { text: "Universal Adapter for systems.", correct: true }, { text: "A high-speed database.", correct: false }, { text: "A mobile interface.", correct: false } ] },
-                { term: "The Monolith", options: [ { text: "A successful bank.", correct: false }, { text: "A unified, hard-to-change legacy system.", correct: true }, { text: "A physical server.", correct: false } ] },
-                { term: "Zero Trust", options: [ { text: "Toxic culture.", correct: false }, { text: "Verify every request, even internal.", correct: true }, { text: "No consultants allowed.", correct: false } ] },
-                { term: "Microservices", options: [ { text: "Retail banking services.", correct: false }, { text: "Small teams.", correct: false }, { text: "Lego blocks architecture.", correct: true } ] }
+                {
+                    term: "Technical Debt",
+                    type: "Tech -> Business",
+                    options: [
+                        { text: "Money we owe to technology vendors for cloud servers.", correct: false },
+                        { text: "The implied cost of future rework caused by choosing an easy solution now.", correct: true }, // The Business Impact
+                        { text: "A bug in the code that causes the app to crash.", correct: false }
+                    ]
+                },
+                {
+                    term: "API (Application Programming Interface)",
+                    type: "Tech -> Business",
+                    options: [
+                        { text: "The 'Universal Adapter' that allows our systems to talk to partners like Fintechs.", correct: true },
+                        { text: "A specific type of database used for high-speed trading.", correct: false },
+                        { text: "A graphical user interface for the mobile app.", correct: false }
+                    ]
+                },
+                {
+                    term: "The Monolith",
+                    type: "Tech -> Business",
+                    options: [
+                        { text: "A large, successful bank with a dominant market share.", correct: false },
+                        { text: "The 'Anchor' system. A unified legacy codebase that is stable but very hard to change.", correct: true },
+                        { text: "A physical server located in the basement.", correct: false }
+                    ]
+                },
+                {
+                    term: "Zero Trust",
+                    type: "Security -> Business",
+                    options: [
+                        { text: "A culture where employees do not trust management.", correct: false },
+                        { text: "A security model that assumes the breach has already occurred and verifies every request.", correct: true },
+                        { text: "A policy that stops us from hiring external consultants.", correct: false }
+                    ]
+                },
+                {
+                    term: "Microservices",
+                    type: "Architecture -> Business",
+                    options: [
+                        { text: "Small banking services offered to retail customers.", correct: false },
+                        { text: "A department with fewer than 10 employees.", correct: false },
+                        { text: "Lego Blocks. Breaking a system into small parts so we can update one without breaking the others.", correct: true }
+                    ]
+                }
             ],
 
             start() {
@@ -244,11 +289,12 @@ document.addEventListener('alpine:init', () => {
             },
 
             shuffleQuestions() {
+                // Simple shuffle to keep it fresh
                 this.questions.sort(() => Math.random() - 0.5);
             },
 
             submitAnswer(isCorrect) {
-                if (this.feedback) return; 
+                if (this.feedback) return; // Prevent double clicks
 
                 if (isCorrect) {
                     this.score++;
@@ -257,6 +303,7 @@ document.addEventListener('alpine:init', () => {
                     this.feedback = 'incorrect';
                 }
 
+                // Auto-advance after 1.5 seconds
                 setTimeout(() => {
                     if (this.currentQuestion < this.questions.length - 1) {
                         this.currentQuestion++;
@@ -269,7 +316,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
-        // FEATURE 4: ROLE-PLAY SIMULATOR
+        // ROLE-PLAY SIMULATOR
         // ------------------------------------------------------------------
         rolePlay: {
             active: false,
@@ -278,16 +325,40 @@ document.addEventListener('alpine:init', () => {
             input: '',
             loading: false,
             
+            // The Scenarios
             scenarios: [
-                { id: 'cloud', title: 'The Cloud Skeptic', myRole: 'Chief Digital Officer', opponent: 'CFO', topic: 'Cloud Migration Cost', intro: 'I see a $10M request for AWS. Why should I approve this massive OpEx spike?' },
-                { id: 'mvp', title: 'The Scope Creeper', myRole: 'Product Owner', opponent: 'Head of Sales', topic: 'Minimum Viable Product', intro: 'I saw the prototype. It looks basic. We cannot launch without the "Gold Tier" features.' },
-                { id: 'risk', title: 'The Gatekeeper', myRole: 'Tech Lead', opponent: 'Chief Risk Officer', topic: 'Automated Compliance', intro: 'You want to deploy code daily? Absolutely not. I need 2 weeks to review every release manually.' }
+                {
+                    id: 'cloud',
+                    title: 'The Cloud Skeptic',
+                    myRole: 'Chief Digital Officer',
+                    opponent: 'CFO',
+                    topic: 'Cloud Migration Cost',
+                    intro: 'I see a $10M request for AWS. Our physical data centers are fully paid for. Why should I approve this massive OpEx spike just to rent computers?'
+                },
+                {
+                    id: 'mvp',
+                    title: 'The Scope Creeper',
+                    myRole: 'Product Owner',
+                    opponent: 'Head of Sales',
+                    topic: 'Minimum Viable Product',
+                    intro: 'I saw the prototype. It looks basic. We cannot launch without the "Gold Tier" features. My clients expect perfection, not an experiment.'
+                },
+                {
+                    id: 'risk',
+                    title: 'The Gatekeeper',
+                    myRole: 'Tech Lead',
+                    opponent: 'Chief Risk Officer',
+                    topic: 'Automated Compliance',
+                    intro: 'You want to deploy code daily? Absolutely not. I need 2 weeks to review every release manually. How can a script be safer than my signature?'
+                }
             ],
 
             start(index) {
                 this.active = true;
                 this.scenario = this.scenarios[index];
-                this.messages = [ { role: 'opponent', text: this.scenario.intro } ];
+                this.messages = [
+                    { role: 'opponent', text: this.scenario.intro }
+                ];
                 this.input = '';
             },
 
@@ -299,10 +370,13 @@ document.addEventListener('alpine:init', () => {
             async send() {
                 if (!this.input.trim()) return;
                 
+                // 1. Add User Message
                 this.messages.push({ role: 'user', text: this.input });
+                const userText = this.input;
                 this.input = '';
                 this.loading = true;
 
+                // 2. Check API Key
                 const API_KEY = localStorage.getItem('bilingual_api_key');
                 if (!API_KEY) {
                     this.messages.push({ role: 'system', text: 'Error: Please set API Key in settings.' });
@@ -310,20 +384,38 @@ document.addEventListener('alpine:init', () => {
                     return;
                 }
 
-                const systemPrompt = `ACT AS: ${this.scenario.opponent} at a traditional bank. USER IS: ${this.scenario.myRole}. TOPIC: ${this.scenario.topic}. GOAL: Skeptical opponent. User must convince using Business Value. Short responses.`;
+                // 3. Construct the "Roleplay" Prompt
+                // We trick the AI into playing a character
+                const systemPrompt = `
+                    ACT AS: ${this.scenario.opponent} at a traditional bank.
+                    USER IS: ${this.scenario.myRole}.
+                    TOPIC: ${this.scenario.topic}.
+                    GOAL: You are skeptical and resistant to change. The user must convince you using "Business Value" (ROI, Speed, Risk Reduction).
+                    RULES: 
+                    1. If the user uses tech jargon (Kubernetes, APIs) without explaining the business value, push back hard.
+                    2. If the user explains the value well (e.g., "Speed to market," "Cost of delay"), start to agree.
+                    3. Keep responses short (under 50 words). Conversational style.
+                    4. If they convince you, say "You have a deal."
+                    
+                    HISTORY: ${JSON.stringify(this.messages)}
+                `;
 
+                // 4. Call Gemini
                 try {
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
+                    // Try Flash model first
+                    let model = "gemini-3-flash-preview";
+                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
                         method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nUser: " + this.messages[this.messages.length - 1].text }] }] })
+                        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
                     });
                     
                     if (!response.ok) throw new Error("API Error");
                     let json = await response.json();
                     let reply = json.candidates[0].content.parts[0].text;
+
                     this.messages.push({ role: 'opponent', text: reply });
                 } catch (e) {
-                    this.messages.push({ role: 'system', text: "Connection error." });
+                    this.messages.push({ role: 'system', text: "Connection error. The simulation has ended." });
                 } finally {
                     this.loading = false;
                 }
@@ -331,7 +423,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
-        // FEATURE 5: CULTURAL DEBT MONITOR
+        // CULTURAL DEBT MONITOR
         // ------------------------------------------------------------------
         culturalMonitor: {
             history: [],
@@ -339,6 +431,7 @@ document.addEventListener('alpine:init', () => {
             answers: { q1: null, q2: null, q3: null },
             chartInstance: null,
 
+            // Initialize: Load history from LocalStorage
             init() {
                 try {
                     const saved = localStorage.getItem('bilingual_culture_history');
@@ -346,40 +439,60 @@ document.addEventListener('alpine:init', () => {
                 } catch (e) { console.error("Load Error", e); }
             },
 
+            // The Check-In Logic
             submitCheckin() {
+                // Calculate Debt Score (0-100, Higher is worse)
                 let debt = 0;
+                
+                // Q1: Bad News Shared? (If Yes, Debt decreases. If No, Fear exists.)
                 if (this.answers.q1 === 'no') debt += 40; 
+                
+                // Q2: HiPPO Override? (If Yes, Debt increases.)
                 if (this.answers.q2 === 'yes') debt += 30;
+
+                // Q3: Shipped Value? (If No, Stagnation adds debt.)
                 if (this.answers.q3 === 'no') debt += 30;
 
-                const entry = { date: new Date().toLocaleDateString(), score: debt, timestamp: Date.now() };
+                const entry = {
+                    date: new Date().toLocaleDateString(),
+                    score: debt,
+                    timestamp: Date.now()
+                };
+
                 this.history.push(entry);
+                // Keep last 10 entries
                 if (this.history.length > 10) this.history.shift();
                 
                 localStorage.setItem('bilingual_culture_history', JSON.stringify(this.history));
+                
                 this.isCheckinOpen = false;
                 this.answers = { q1: null, q2: null, q3: null };
+                
+                // Refresh Chart
                 this.renderChart();
             },
 
-            get currentScore() { return this.history.length === 0 ? 0 : this.history[this.history.length - 1].score; },
+            get currentScore() {
+                if (this.history.length === 0) return 0;
+                return this.history[this.history.length - 1].score;
+            },
 
             get status() {
                 const s = this.currentScore;
                 if (s < 30) return { label: "HEALTHY", color: "text-primary", desc: "High safety. Fast flow." };
-                if (s < 70) return { label: "AT RISK", color: "text-warn", desc: "Friction is building." };
-                return { label: "TOXIC", color: "text-risk", desc: "Culture of fear." };
+                if (s < 70) return { label: "AT RISK", color: "text-warn", desc: "Friction is building. Intervene now." };
+                return { label: "TOXIC", color: "text-risk", desc: "Culture of fear. Transformation stalled." };
             },
 
             get recommendation() {
                 const s = this.currentScore;
                 if (s < 30) return "Keep reinforcing the 'No Jargon' rule.";
-                if (s < 70) return "Run a 'Bad News' Audit.";
-                return "Emergency: Kill a 'Zombie Project' publicly.";
+                if (s < 70) return "Run a 'Bad News' Audit. Ask teams what they are hiding.";
+                return "Emergency: Kill a 'Zombie Project' publicly to restore trust.";
             },
 
             reset() {
-                if(confirm("Clear history?")) {
+                if(confirm("Clear all history?")) {
                     this.history = [];
                     localStorage.removeItem('bilingual_culture_history');
                     if(this.chartInstance) this.chartInstance.destroy();
@@ -387,55 +500,185 @@ document.addEventListener('alpine:init', () => {
             },
 
             renderChart() {
+                // Wait for DOM
                 setTimeout(() => {
                     const ctx = document.getElementById('debtChart');
                     if (!ctx) return;
-                    if (this.chartInstance) this.chartInstance.destroy();
                     
+                    if (this.chartInstance) this.chartInstance.destroy();
+
+                    const labels = this.history.map(h => h.date);
+                    const data = this.history.map(h => h.score);
                     const color = this.currentScore > 50 ? '#f87171' : '#4ade80';
+
                     this.chartInstance = new Chart(ctx, {
                         type: 'line',
                         data: {
-                            labels: this.history.map(h => h.date),
-                            datasets: [{ label: 'Debt %', data: this.history.map(h => h.score), borderColor: color, backgroundColor: color + '20', fill: true }]
+                            labels: labels,
+                            datasets: [{
+                                label: 'Cultural Debt %',
+                                data: data,
+                                borderColor: color,
+                                backgroundColor: color + '20', // transparent
+                                tension: 0.4,
+                                fill: true
+                            }]
                         },
-                        options: { scales: { y: { min: 0, max: 100, grid: { color: '#334155' } }, x: { display: false } }, plugins: { legend: { display: false } } }
+                        options: {
+                            scales: { y: { min: 0, max: 100, grid: { color: '#334155' } }, x: { display: false } },
+                            plugins: { legend: { display: false } },
+                            animation: false
+                        }
                     });
                 }, 100);
             }
         },
 
-        // ------------------------------------------------------------------
-        // FEATURE 6: API SANDBOX
+        
+// ------------------------------------------------------------------
+        //  API SANDBOX
         // ------------------------------------------------------------------
         apiSandbox: {
-            pipeline: [],
+            pipeline: [], // Stores selected components
             isRunning: false,
-            result: null,
+            result: null, // Holds the simulation result
+            
+            // The Menu of Components
             catalog: [
-                { id: 'mainframe', label: 'Legacy Core', latency: 2000, icon: 'fa-server', color: 'text-risk border-risk' },
-                { id: 'esb', label: 'Enterprise Bus', latency: 800, icon: 'fa-network-wired', color: 'text-warn border-warn' },
-                { id: 'api', label: 'REST API', latency: 100, icon: 'fa-cloud', color: 'text-blue-400 border-blue-400' },
-                { id: 'cache', label: 'Redis Cache', latency: 10, icon: 'fa-bolt', color: 'text-yellow-400 border-yellow-400' },
-                { id: 'firewall', label: 'Legacy Firewall', latency: 500, icon: 'fa-shield-halved', color: 'text-slate-400 border-slate-400' }
+                { id: 'mainframe', label: 'Legacy Core (COBOL)', latency: 2000, risk: 'High', icon: 'fa-server', color: 'text-risk border-risk' },
+                { id: 'esb', label: 'Enterprise Bus', latency: 800, risk: 'Med', icon: 'fa-network-wired', color: 'text-warn border-warn' },
+                { id: 'api', label: 'Modern REST API', latency: 100, risk: 'Low', icon: 'fa-cloud', color: 'text-blue-400 border-blue-400' },
+                { id: 'cache', label: 'Redis Cache', latency: 10, risk: 'Low', icon: 'fa-bolt', color: 'text-yellow-400 border-yellow-400' },
+                { id: 'firewall', label: 'Legacy Firewall', latency: 500, risk: 'Low', icon: 'fa-shield-halved', color: 'text-slate-400 border-slate-400' }
             ],
 
-            addComponent(item) { if (this.pipeline.length < 5) { this.pipeline.push({ ...item, uid: Date.now() }); this.result = null; } },
-            removeComponent(index) { this.pipeline.splice(index, 1); this.result = null; },
-            reset() { this.pipeline = []; this.result = null; this.isRunning = false; },
+            addComponent(item) {
+                if (this.pipeline.length < 5) {
+                    // Create a copy of the item
+                    this.pipeline.push({ ...item, uid: Date.now() });
+                    this.result = null; // Reset results on change
+                }
+            },
+
+            removeComponent(index) {
+                this.pipeline.splice(index, 1);
+                this.result = null;
+            },
+
+            reset() {
+                this.pipeline = [];
+                this.result = null;
+                this.isRunning = false;
+            },
+
             async runSimulation() {
                 if (this.pipeline.length === 0) return;
+                
                 this.isRunning = true;
                 this.result = null;
+
+                // Calculate total theoretical latency
                 const totalLatency = this.pipeline.reduce((sum, item) => sum + item.latency, 0);
-                await new Promise(r => setTimeout(r, Math.min(totalLatency, 3000)));
+                
+                // Visualize the "Flow" (Artificial delay for effect)
+                // We cap the animation at 3 seconds max for UX, but show real numbers
+                const animationTime = Math.min(totalLatency, 3000); 
+
+                await new Promise(r => setTimeout(r, animationTime));
+
                 this.isRunning = false;
-                let message = totalLatency < 300 ? "🚀 BILINGUAL SPEED!" : (totalLatency < 1500 ? "⚠️ AVERAGE." : "🐢 LEGACY CRAWL.");
-                this.result = { time: totalLatency, message: message };
+                
+                // Generate Insight
+                let message = "";
+                if (totalLatency < 300) message = "🚀 BILINGUAL SPEED! You built a modern, cached architecture.";
+                else if (totalLatency < 1500) message = "⚠️ AVERAGE. Typical hybrid bank. Functional but sluggish.";
+                else message = "🐢 LEGACY CRAWL. This request timed out. The customer went to a Fintech.";
+
+                this.result = {
+                    time: totalLatency,
+                    message: message
+                };
             }
         },
 
         // ------------------------------------------------------------------
+        // WHAT-IF SCENARIO PLANNER
+        // ------------------------------------------------------------------
+        whatIf: {
+            input: '',
+            loading: false,
+            result: null,
+            
+            // Quick-start prompts for the user
+            examples: [
+                "What if we outsource our Core Banking maintenance to a vendor?",
+                "What if we delay the mobile app rewrite by 6 months to save cash?",
+                "What if we use Generative AI to automate loan approvals?"
+            ],
+
+            setInput(text) {
+                this.input = text;
+            },
+
+            async analyze() {
+                if (!this.input.trim()) return;
+                
+                this.loading = true;
+                this.result = null;
+
+                const API_KEY = localStorage.getItem('bilingual_api_key');
+                if (!API_KEY) {
+                    this.result = "<p class='text-risk font-bold'>Error: API Key missing. Please click the 'Key' icon in the top right to set your Google Gemini API Key.</p>";
+                    this.loading = false;
+                    return;
+                }
+
+                // The "Consultant" System Prompt
+                const systemPrompt = `
+                    ACT AS: A top-tier Strategy Consultant advising a Bank Board.
+                    TASK: Analyze the following strategic hypothesis: "${this.input}"
+                    
+                    OUTPUT FORMAT: A structured 'Board Briefing Note'.
+                    Use Markdown formatting (## for headers, ** for bold).
+                    
+                    SECTIONS REQUIRED:
+                    1. **Executive Verdict**: Start with a clear "GREEN LIGHT", "YELLOW LIGHT", or "RED LIGHT" status and a 1-sentence summary.
+                    2. **The Technical Reality** (Speak to the CTO): Architecture impact, legacy integration risks, complexity.
+                    3. **The Financial Lens** (Speak to the CFO): CapEx vs OpEx implications, ROI timeline, hidden costs.
+                    4. **Risk & Governance** (Speak to the CRO): Regulatory hurdles, data privacy, brand risk.
+                    5. **The Bilingual Recommendation**: A final decisive paragraph on how to proceed safely.
+                    
+                    TONE: Professional, concise, brutal honesty. No corporate fluff.
+                `;
+
+                try {
+                    // Failover logic for models
+                    let model = "gemini-1.5-flash-latest";
+                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
+                    });
+                    
+                    if (!response.ok) throw new Error("API Error");
+                    let json = await response.json();
+                    let rawText = json.candidates[0].content.parts[0].text;
+                    
+                    // Convert Markdown to HTML using the 'marked' library (loaded in index.html)
+                    // Then sanitize it for security
+                    this.result = DOMPurify.sanitize(marked.parse(rawText));
+
+                } catch (e) {
+                    this.result = `<p class='text-risk'>Simulation Failed: ${e.message}. Please check your API Key and internet connection.</p>`;
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+
+        // ------------------------------------------------------------------
+        //  WHAT-IF SCENARIO PLANNER
+        // ------------------------------------------------------------------
+// ------------------------------------------------------------------
         // FEATURE 7: WHAT-IF SCENARIO PLANNER
         // ------------------------------------------------------------------
         whatIf: {
@@ -458,10 +701,13 @@ document.addEventListener('alpine:init', () => {
                     this.loading = false;
                     return;
                 }
+                // The "Consultant" System Prompt
                 const systemPrompt = `
-                    ACT AS: A Strategy Consultant. TASK: Analyze: "${this.input}"
-                    OUTPUT: Board Memo. Sections: Verdict, Tech Reality, Financial Lens, Risk, Recommendation.
-                    TONE: Brutal honesty. No fluff.
+                    ACT AS: A top-tier Strategy Consultant advising a Bank Board.
+                    TASK: Analyze the following strategic hypothesis: "${this.input}"
+                    OUTPUT FORMAT: A structured 'Board Briefing Note'. Use Markdown.
+                    SECTIONS: 1. Executive Verdict (Green/Yellow/Red). 2. Technical Reality. 3. Financial Lens. 4. Risk & Governance. 5. Recommendation.
+                    TONE: Professional, concise, brutal honesty.
                 `;
                 try {
                     let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${API_KEY}`, {
@@ -478,15 +724,15 @@ document.addEventListener('alpine:init', () => {
                     this.loading = false;
                 }
             }
-        },
-
+        }, 
+        
         // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
         // ------------------------------------------------------------------
         navItems: [ 
-            { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, 
+            { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' },
             { id: 'whatif', label: 'Scenario Planner', icon: 'fa-solid fa-chess-rook' },
-            { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' }, 
+            { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' },
             { id: 'sandbox', label: 'Architecture Sim', icon: 'fa-solid fa-shapes' },
             { id: 'roleplay', label: 'Role-Play Dojo', icon: 'fa-solid fa-user-tie' },
             { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse' },
@@ -503,27 +749,29 @@ document.addEventListener('alpine:init', () => {
             { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
+            { id: 'whatif', label: 'Scenario Planner', icon: 'fa-solid fa-chess-rook' },
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } 
         ],
         
         dashboardTools: [ 
             { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
-            { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
-            { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture & speed.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
+            { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.',icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
             { id: 'roleplay', label: 'Role-Play Dojo', desc: 'Simulate high-stakes conversations.', icon: 'fa-solid fa-user-tie', color: 'text-warn' },
-            { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational health.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
+            { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture & speed.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
             { id: 'quiz', label: 'Flashcards', desc: 'Test your fluency in tech jargon.', icon: 'fa-solid fa-graduation-cap', color: 'text-cyan-400' },
             { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
             { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, 
             { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, 
+            { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational health.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
             { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
+            { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
         ],
 
         // ------------------------------------------------------------------
-        // HELPER METHODS
+        // METHODS
         // ------------------------------------------------------------------
         triggerVipSequence() {
             this.isVipMode = true;
@@ -560,6 +808,7 @@ document.addEventListener('alpine:init', () => {
                 if (tab === 'talent') this.updateTalentChart();
                 if (tab === 'assessment' && this.assessmentSubmitted) this.updateGapChart();
                 if (tab === 'culture') this.culturalMonitor.renderChart();
+
             });
         },
 
@@ -600,10 +849,15 @@ document.addEventListener('alpine:init', () => {
                 return response.json();
             };
 
-            try {
-                let data;
-                try { data = await tryFetch("gemini-1.5-flash-latest", "v1beta"); } 
-                catch (e) { data = await tryFetch("gemini-2.0-flash-exp", "v1beta"); }
+           try {
+    let data;
+    // First, try the new Gemini 3 Flash model
+    try { 
+        data = await tryFetch("gemini-3-flash-preview", "v1beta"); 
+    } catch (e) { 
+        // Fallback to the stable Gemini 2.5 Flash model
+        data = await tryFetch("gemini-2.5-flash", "v1beta"); 
+    }
 
                 let botText = "I couldn't process that.";
                 if (data.candidates && data.candidates[0].content) botText = data.candidates[0].content.parts[0].text;
@@ -634,7 +888,9 @@ document.addEventListener('alpine:init', () => {
 
         copyToClipboard(text, type) {
             if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text).then(() => alert(`${type} copied!`)).catch(() => this.fallbackCopy(text, type));
+                navigator.clipboard.writeText(text)
+                    .then(() => alert(`${type} copied!`))
+                    .catch(() => this.fallbackCopy(text, type));
             } else {
                 this.fallbackCopy(text, type);
             }
@@ -646,7 +902,12 @@ document.addEventListener('alpine:init', () => {
             document.body.appendChild(textArea);
             textArea.focus();
             textArea.select();
-            try { document.execCommand('copy'); alert(`${type} copied!`); } catch (err) { alert("Copy failed. Please copy manually."); }
+            try {
+                document.execCommand('copy');
+                alert(`${type} copied!`);
+            } catch (err) {
+                alert("Copy failed. Please copy manually.");
+            }
             document.body.removeChild(textArea);
         },
 
@@ -657,49 +918,114 @@ document.addEventListener('alpine:init', () => {
             this.copyToClipboard(url, "Challenge Link");
         },
 
-        async generatePDF() {
-            if (!window.jspdf) { alert("PDF library not loaded."); return; }
-            try {
-                const { jsPDF } = window.jspdf; const doc = new jsPDF();
-                const s = this.calculateScore.total;
-                doc.setFillColor(15,23,42); doc.rect(0,0,210,297,"F");
-                doc.setTextColor(s<=40?248:74, s<=40?113:222, s<=40?113:128);
-                doc.setFontSize(14); doc.text("BILINGUAL EXECUTIVE AUDIT", 20,20);
-                doc.setFontSize(60); doc.text(`${s}/75`, 20,50);
-                doc.save("Audit.pdf");
-            } catch (e) { alert("PDF Error"); }
-        },
-
+       // ------------------------------------------------------------------
         // FEATURE 2: ROADMAP GENERATOR
+        // ------------------------------------------------------------------
+        
         async generateRoadmap() {
             if (!window.jspdf) { alert("PDF library loading..."); return; }
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
+            
+            // 1. GET SCORES
             const dataScore = this.assessmentData[0].questions.reduce((a,b)=>a+b.score,0);
             const deliveryScore = this.assessmentData[1].questions.reduce((a,b)=>a+b.score,0);
             const cultureScore = this.assessmentData[2].questions.reduce((a,b)=>a+b.score,0);
             const total = this.calculateScore.total;
+            
+            // 2. DIAGNOSE THE "BURNING PLATFORM" (Weakest Link)
             let focusArea = "General Optimization";
             let chapterRef = "Chapter 7: The Playbook";
             let specificTask = "Launch a Lighthouse Pilot";
-            if (cultureScore <= 8) { focusArea = "Toxic Culture"; chapterRef = "Chapter 3: Cultural Debt & Chapter 8: Leadership"; specificTask = "Run a 'Bad News' Audit (kill the Green Light lies)."; } 
-            else if (dataScore <= 8) { focusArea = "Data Swamp"; chapterRef = "Chapter 2: Data Millstone & Chapter 5: Governance"; specificTask = "Map the 'Horror Path' of a single report."; } 
-            else if (deliveryScore <= 8) { focusArea = "Waterfall Process"; chapterRef = "Chapter 4: Agile Mindset & Chapter 6: Project to Product"; specificTask = "Automate one compliance check in the CI/CD pipeline."; }
-            doc.setFillColor(21, 34, 56); doc.rect(0, 0, 210, 40, "F");
-            doc.setTextColor(255, 255, 255); doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.text("TRANSFORMATION PLAYBOOK", 105, 20, null, "center");
-            doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.text("Generated by The Bilingual Executive App", 105, 30, null, "center");
-            doc.setTextColor(0, 0, 0); doc.setFontSize(14); doc.text(`Total Maturity Score: ${total}/75`, 20, 55);
-            doc.setFontSize(12); doc.setTextColor(100, 100, 100); doc.text("PRIMARY BOTTLENECK DETECTED:", 20, 70);
-            doc.setTextColor(239, 68, 68); doc.setFont("helvetica", "bold"); doc.setFontSize(16); doc.text(focusArea.toUpperCase(), 20, 80);
-            doc.setDrawColor(46, 139, 131); doc.setLineWidth(1); doc.rect(15, 90, 180, 130);
-            doc.setTextColor(46, 139, 131); doc.setFontSize(14); doc.text("YOUR 90-DAY ACTION PLAN", 105, 100, null, "center");
-            doc.setTextColor(0,0,0); doc.setFontSize(12); doc.text("DAYS 1-30: DIAGNOSE & PROTECT", 25, 115);
-            doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.text(`- Read ${chapterRef}.`, 30, 122); doc.text(`- ACTION: ${specificTask}`, 30, 128); doc.text("- Identify your 'Lighthouse' pilot team.", 30, 134);
-            doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.text("DAYS 31-60: THE LIGHTHOUSE", 25, 150);
-            doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.text("- Establish the 'Regulatory Sandbox' (Waiver).", 30, 157); doc.text("- Deploy first MVP to internal users.", 30, 163); doc.text("- Kill one 'Zombie Project' to free up budget.", 30, 169);
-            doc.setFont("helvetica", "bold"); doc.setFontSize(12); doc.text("DAYS 61-90: SHOW & SCALE", 25, 185);
-            doc.setFontSize(10); doc.setFont("helvetica", "normal"); doc.text("- Conduct the 'Live Demo' in the Boardroom.", 30, 192); doc.text("- Measure 'Time to Value' vs old process.", 30, 198); doc.text("- Recruit first 'Bilingual' Product Owner.", 30, 204);
-            doc.setFont("helvetica", "italic"); doc.setTextColor(150, 150, 150); doc.text("This plan is automated. Execution is human. Good luck.", 105, 280, null, "center");
+            
+            if (cultureScore <= 8) {
+                focusArea = "Toxic Culture";
+                chapterRef = "Chapter 3: Cultural Debt & Chapter 8: Leadership";
+                specificTask = "Run a 'Bad News' Audit (kill the Green Light lies).";
+            } else if (dataScore <= 8) {
+                focusArea = "Data Swamp";
+                chapterRef = "Chapter 2: Data Millstone & Chapter 5: Governance";
+                specificTask = "Map the 'Horror Path' of a single report.";
+            } else if (deliveryScore <= 8) {
+                focusArea = "Waterfall Process";
+                chapterRef = "Chapter 4: Agile Mindset & Chapter 6: Project to Product";
+                specificTask = "Automate one compliance check in the CI/CD pipeline.";
+            }
+
+            // 3. GENERATE PDF DESIGN
+            
+            // Header / Navy Background
+            doc.setFillColor(21, 34, 56); // #152238 (Navy)
+            doc.rect(0, 0, 210, 40, "F");
+            
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.text("TRANSFORMATION PLAYBOOK", 105, 20, null, "center");
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("Generated by The Bilingual Executive App", 105, 30, null, "center");
+
+            // Score Summary
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(14);
+            doc.text(`Total Maturity Score: ${total}/75`, 20, 55);
+            
+            // The Diagnosis
+            doc.setFontSize(12);
+            doc.setTextColor(100, 100, 100);
+            doc.text("PRIMARY BOTTLENECK DETECTED:", 20, 70);
+            
+            doc.setTextColor(239, 68, 68); // Red for risk
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.text(focusArea.toUpperCase(), 20, 80);
+
+            // 90-Day Plan Box
+            doc.setDrawColor(46, 139, 131); // Teal
+            doc.setLineWidth(1);
+            doc.rect(15, 90, 180, 130);
+
+            doc.setTextColor(46, 139, 131); // Teal
+            doc.setFontSize(14);
+            doc.text("YOUR 90-DAY ACTION PLAN", 105, 100, null, "center");
+
+            // Days 1-30
+            doc.setTextColor(0,0,0);
+            doc.setFontSize(12);
+            doc.text("DAYS 1-30: DIAGNOSE & PROTECT", 25, 115);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text(`- Read ${chapterRef}.`, 30, 122);
+            doc.text(`- ACTION: ${specificTask}`, 30, 128);
+            doc.text("- Identify your 'Lighthouse' pilot team.", 30, 134);
+
+            // Days 31-60
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.text("DAYS 31-60: THE LIGHTHOUSE", 25, 150);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("- Establish the 'Regulatory Sandbox' (Waiver).", 30, 157);
+            doc.text("- Deploy first MVP to internal users.", 30, 163);
+            doc.text("- Kill one 'Zombie Project' to free up budget.", 30, 169);
+
+            // Days 61-90
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.text("DAYS 61-90: SHOW & SCALE", 25, 185);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            doc.text("- Conduct the 'Live Demo' in the Boardroom.", 30, 192);
+            doc.text("- Measure 'Time to Value' vs old process.", 30, 198);
+            doc.text("- Recruit first 'Bilingual' Product Owner.", 30, 204);
+
+            // Footer
+            doc.setFont("helvetica", "italic");
+            doc.setTextColor(150, 150, 150);
+            doc.text("This plan is automated. Execution is human. Good luck.", 105, 280, null, "center");
+
             doc.save("Bilingual_Transformation_Map.pdf");
         },
 
@@ -708,8 +1034,32 @@ document.addEventListener('alpine:init', () => {
                 const ctx = document.getElementById('talentChart');
                 if (!ctx || !ctx.getContext) return;
                 if (this.talentChartInstance) this.talentChartInstance.destroy();
+                
                 Chart.defaults.font.family = '"JetBrains Mono", monospace';
-                this.talentChartInstance = new Chart(ctx, { type: 'radar', data: { labels: this.talentSkills.map(s => s.label), datasets: [{ data: this.talentSkills.map(s => s.val), backgroundColor: 'rgba(244, 114, 182, 0.2)', borderColor: '#f472b6', pointBackgroundColor: '#fff' }] }, options: { plugins: { legend: { display: false } }, scales: { r: { min: 0, max: 5, ticks: { display: false }, grid: { color: '#334155' }, angleLines: { color: '#334155' } } } } });
+                this.talentChartInstance = new Chart(ctx, { 
+                    type: 'radar', 
+                    data: { 
+                        labels: this.talentSkills.map(s => s.label), 
+                        datasets: [{ 
+                            data: this.talentSkills.map(s => s.val), 
+                            backgroundColor: 'rgba(244, 114, 182, 0.2)', 
+                            borderColor: '#f472b6', 
+                            pointBackgroundColor: '#fff' 
+                        }] 
+                    }, 
+                    options: { 
+                        plugins: { legend: { display: false } }, 
+                        scales: { 
+                            r: { 
+                                min: 0, 
+                                max: 5, 
+                                ticks: { display: false }, 
+                                grid: { color: '#334155' }, 
+                                angleLines: { color: '#334155' } 
+                            } 
+                        } 
+                    } 
+                });
             });
         },
 
@@ -718,10 +1068,35 @@ document.addEventListener('alpine:init', () => {
                 const ctx = document.getElementById('gapChart');
                 if (!ctx || !ctx.getContext) return;
                 if (this.gapChartInstance) this.gapChartInstance.destroy();
-                const my = [this.assessmentData[0].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[1].questions.reduce((a,b)=>a+b.score,0), this.assessmentData[2].questions.reduce((a,b)=>a+b.score,0)];
+                
+                const my = [
+                    this.assessmentData[0].questions.reduce((a,b)=>a+b.score,0), 
+                    this.assessmentData[1].questions.reduce((a,b)=>a+b.score,0), 
+                    this.assessmentData[2].questions.reduce((a,b)=>a+b.score,0)
+                ];
+                
                 const cs = this.challengerData.scores;
-                const ch = [cs.slice(0,5).reduce((a,b)=>a+b,0), cs.slice(5,10).reduce((a,b)=>a+b,0), cs.slice(10,15).reduce((a,b)=>a+b,0)];
-                this.gapChartInstance = new Chart(ctx, { type: 'radar', data: { labels: ['Data', 'Delivery', 'Culture'], datasets: [{ label: 'You', data: my, borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.2)' }, { label: 'Challenger', data: ch, borderColor: '#f472b6', backgroundColor: 'rgba(244, 114, 182, 0.2)' }] }, options: { scales: { r: { min: 0, max: 25, grid: { color: '#334155' }, angleLines: { color: '#334155' } } } } });
+                const ch = [
+                    cs.slice(0,5).reduce((a,b)=>a+b,0), 
+                    cs.slice(5,10).reduce((a,b)=>a+b,0), 
+                    cs.slice(10,15).reduce((a,b)=>a+b,0)
+                ];
+
+                this.gapChartInstance = new Chart(ctx, { 
+                    type: 'radar', 
+                    data: { 
+                        labels: ['Data', 'Delivery', 'Culture'], 
+                        datasets: [
+                            { label: 'You', data: my, borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.2)' }, 
+                            { label: 'Challenger', data: ch, borderColor: '#f472b6', backgroundColor: 'rgba(244, 114, 182, 0.2)' }
+                        ] 
+                    }, 
+                    options: { 
+                        scales: { 
+                            r: { min: 0, max: 25, grid: { color: '#334155' }, angleLines: { color: '#334155' } } 
+                        } 
+                    } 
+                });
             });
         },
 
