@@ -678,7 +678,7 @@ document.addEventListener('alpine:init', () => {
         // ------------------------------------------------------------------
         navItems: [ 
             { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' },
-            { id: 'whatif', label: 'Scenario Planner', icon: 'fa-solid fa-crystal-ball' },
+            { id: 'whatif', label: 'Scenario Planner', icon: 'fa-solid fa-chess-rook' },
             { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' },
             { id: 'sandbox', label: 'Architecture Sim', icon: 'fa-solid fa-shapes' },
             { id: 'roleplay', label: 'Role-Play Dojo', icon: 'fa-solid fa-user-tie' },
@@ -701,7 +701,7 @@ document.addEventListener('alpine:init', () => {
         
         dashboardTools: [ 
             { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
-            { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.', icon: 'fa-solid fa-crystal-ball', color: 'text-purple-400' },
+            { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.',icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
             { id: 'roleplay', label: 'Role-Play Dojo', desc: 'Simulate high-stakes conversations.', icon: 'fa-solid fa-user-tie', color: 'text-warn' },
             { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture & speed.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
             { id: 'quiz', label: 'Flashcards', desc: 'Test your fluency in tech jargon.', icon: 'fa-solid fa-graduation-cap', color: 'text-cyan-400' },
