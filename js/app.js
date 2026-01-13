@@ -717,10 +717,8 @@ document.addEventListener('alpine:init', () => {
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
-        ]
-    })); // END of Toolkit Data
-}); // END of Event Listener
-
+        ],
+        
         // ------------------------------------------------------------------
         // METHODS
         // ------------------------------------------------------------------
