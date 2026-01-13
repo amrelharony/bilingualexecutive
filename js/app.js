@@ -609,6 +609,8 @@ document.addEventListener('alpine:init', () => {
             this.$nextTick(() => {
                 if (tab === 'talent') this.updateTalentChart();
                 if (tab === 'assessment' && this.assessmentSubmitted) this.updateGapChart();
+                if (tab === 'culture') this.culturalMonitor.renderChart();
+
             });
         },
 
