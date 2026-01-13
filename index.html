@@ -427,7 +427,109 @@
                 </div>
             </div>
 
-            
+            <!-- CULTURAL DEBT MONITOR TAB -->
+            <div x-show="currentTab === 'culture'" x-cloak class="max-w-4xl mx-auto">
+                
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-3xl font-mono font-bold text-white">Cultural Debt Monitor</h2>
+                        <p class="text-textMuted text-sm mt-1">Intangible friction, measured.</p>
+                    </div>
+                    <button @click="culturalMonitor.isCheckinOpen = true" class="bg-primary hover:bg-green-400 text-dark font-bold py-2 px-6 rounded-full shadow-glow transition-all">
+                        <i class="fa-solid fa-plus mr-2"></i>Log Check-In
+                    </button>
+                </div>
+
+                <!-- EMPTY STATE -->
+                <div x-show="culturalMonitor.history.length === 0" class="text-center py-12 bg-card border border-slate-700 rounded-xl border-dashed">
+                    <i class="fa-solid fa-chart-line text-4xl text-slate-500 mb-4"></i>
+                    <p class="text-slate-400">No data points yet. Log your first weekly check-in.</p>
+                </div>
+
+                <!-- DASHBOARD (Visible if history exists) -->
+                <div x-show="culturalMonitor.history.length > 0">
+                    
+                    <!-- The Meter -->
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden">
+                            <h3 class="font-mono text-xs text-slate-400 uppercase mb-2">Current Debt Level</h3>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-6xl font-bold font-mono" :class="culturalMonitor.status.color" x-text="culturalMonitor.currentScore + '%'"></span>
+                                <span class="text-sm font-bold uppercase tracking-widest" :class="culturalMonitor.status.color" x-text="culturalMonitor.status.label"></span>
+                            </div>
+                            <p class="text-xs text-slate-300 mt-2" x-text="culturalMonitor.status.desc"></p>
+                            
+                            <!-- Background Pulse -->
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-white opacity-5 rounded-full blur-2xl"></div>
+                        </div>
+
+                        <div class="bg-card border border-slate-700 p-6 rounded-xl flex flex-col justify-center">
+                            <h3 class="font-mono text-xs text-slate-400 uppercase mb-2"><i class="fa-solid fa-user-doctor mr-2"></i>Prescription</h3>
+                            <p class="text-white text-sm leading-relaxed font-medium">"<span x-text="culturalMonitor.recommendation"></span>"</p>
+                        </div>
+                    </div>
+
+                    <!-- The Chart -->
+                    <div class="bg-card border border-slate-700 p-6 rounded-xl shadow-lg mb-8">
+                        <h3 class="font-mono text-xs text-slate-400 uppercase mb-4">Trend Analysis (Last 10 Check-ins)</h3>
+                        <div class="h-64 w-full">
+                            <canvas id="debtChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button @click="culturalMonitor.reset()" class="text-xs text-red-400 hover:text-red-300 underline">Reset History</button>
+                    </div>
+                </div>
+
+                <!-- CHECK-IN MODAL -->
+                <div x-show="culturalMonitor.isCheckinOpen" x-transition.opacity 
+                     class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div class="bg-card border border-slate-600 p-8 rounded-2xl max-w-md w-full shadow-2xl relative">
+                        <button @click="culturalMonitor.isCheckinOpen = false" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        
+                        <h3 class="text-2xl font-bold text-white mb-1">Weekly Pulse</h3>
+                        <p class="text-xs text-textMuted mb-6 uppercase tracking-widest">Honesty required</p>
+
+                        <div class="space-y-6">
+                            <!-- Q1 -->
+                            <div>
+                                <p class="text-sm text-white mb-2 font-bold">1. Did anyone share "Bad News" openly this week?</p>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button @click="culturalMonitor.answers.q1 = 'yes'" :class="culturalMonitor.answers.q1 === 'yes' ? 'bg-primary text-dark ring-2 ring-primary' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">Yes (Safety)</button>
+                                    <button @click="culturalMonitor.answers.q1 = 'no'" :class="culturalMonitor.answers.q1 === 'no' ? 'bg-risk text-dark ring-2 ring-risk' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">No (Fear)</button>
+                                </div>
+                            </div>
+
+                            <!-- Q2 -->
+                            <div>
+                                <p class="text-sm text-white mb-2 font-bold">2. Did a senior opinion override data?</p>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button @click="culturalMonitor.answers.q2 = 'yes'" :class="culturalMonitor.answers.q2 === 'yes' ? 'bg-risk text-dark ring-2 ring-risk' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">Yes (HiPPO)</button>
+                                    <button @click="culturalMonitor.answers.q2 = 'no'" :class="culturalMonitor.answers.q2 === 'no' ? 'bg-primary text-dark ring-2 ring-primary' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">No (Data)</button>
+                                </div>
+                            </div>
+
+                            <!-- Q3 -->
+                            <div>
+                                <p class="text-sm text-white mb-2 font-bold">3. Did your team ship value to a customer?</p>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button @click="culturalMonitor.answers.q3 = 'yes'" :class="culturalMonitor.answers.q3 === 'yes' ? 'bg-primary text-dark ring-2 ring-primary' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">Yes (Flow)</button>
+                                    <button @click="culturalMonitor.answers.q3 = 'no'" :class="culturalMonitor.answers.q3 === 'no' ? 'bg-risk text-dark ring-2 ring-risk' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">No (Stuck)</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button @click="culturalMonitor.submitCheckin()" 
+                                :disabled="!culturalMonitor.answers.q1 || !culturalMonitor.answers.q2 || !culturalMonitor.answers.q3"
+                                class="w-full mt-8 bg-white hover:bg-slate-200 text-dark font-bold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                            CALCULATE DEBT
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
             <!-- ARCHITECT CONSOLE (VIP ONLY) -->
             <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
                 <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
