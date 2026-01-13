@@ -423,7 +423,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
-        // FEATURE 5: CULTURAL DEBT MONITOR
+        // CULTURAL DEBT MONITOR
         // ------------------------------------------------------------------
         culturalMonitor: {
             history: [],
@@ -534,12 +534,80 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        
+// ------------------------------------------------------------------
+        //  API SANDBOX
+        // ------------------------------------------------------------------
+        apiSandbox: {
+            pipeline: [], // Stores selected components
+            isRunning: false,
+            result: null, // Holds the simulation result
+            
+            // The Menu of Components
+            catalog: [
+                { id: 'mainframe', label: 'Legacy Core (COBOL)', latency: 2000, risk: 'High', icon: 'fa-server', color: 'text-risk border-risk' },
+                { id: 'esb', label: 'Enterprise Bus', latency: 800, risk: 'Med', icon: 'fa-network-wired', color: 'text-warn border-warn' },
+                { id: 'api', label: 'Modern REST API', latency: 100, risk: 'Low', icon: 'fa-cloud', color: 'text-blue-400 border-blue-400' },
+                { id: 'cache', label: 'Redis Cache', latency: 10, risk: 'Low', icon: 'fa-bolt', color: 'text-yellow-400 border-yellow-400' },
+                { id: 'firewall', label: 'Legacy Firewall', latency: 500, risk: 'Low', icon: 'fa-shield-halved', color: 'text-slate-400 border-slate-400' }
+            ],
+
+            addComponent(item) {
+                if (this.pipeline.length < 5) {
+                    // Create a copy of the item
+                    this.pipeline.push({ ...item, uid: Date.now() });
+                    this.result = null; // Reset results on change
+                }
+            },
+
+            removeComponent(index) {
+                this.pipeline.splice(index, 1);
+                this.result = null;
+            },
+
+            reset() {
+                this.pipeline = [];
+                this.result = null;
+                this.isRunning = false;
+            },
+
+            async runSimulation() {
+                if (this.pipeline.length === 0) return;
+                
+                this.isRunning = true;
+                this.result = null;
+
+                // Calculate total theoretical latency
+                const totalLatency = this.pipeline.reduce((sum, item) => sum + item.latency, 0);
+                
+                // Visualize the "Flow" (Artificial delay for effect)
+                // We cap the animation at 3 seconds max for UX, but show real numbers
+                const animationTime = Math.min(totalLatency, 3000); 
+
+                await new Promise(r => setTimeout(r, animationTime));
+
+                this.isRunning = false;
+                
+                // Generate Insight
+                let message = "";
+                if (totalLatency < 300) message = "🚀 BILINGUAL SPEED! You built a modern, cached architecture.";
+                else if (totalLatency < 1500) message = "⚠️ AVERAGE. Typical hybrid bank. Functional but sluggish.";
+                else message = "🐢 LEGACY CRAWL. This request timed out. The customer went to a Fintech.";
+
+                this.result = {
+                    time: totalLatency,
+                    message: message
+                };
+            }
+        },
+
         // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
         // ------------------------------------------------------------------
         navItems: [ 
             { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, 
             { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' },
+            { id: 'sandbox', label: 'Architecture Sim', icon: 'fa-solid fa-shapes' },
              { id: 'roleplay', label: 'Role-Play Dojo', icon: 'fa-solid fa-user-tie' },
              { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse' },
             { id: 'quiz', label: 'Flashcards', icon: 'fa-solid fa-graduation-cap' },
@@ -561,6 +629,7 @@ document.addEventListener('alpine:init', () => {
         dashboardTools: [ 
             { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
             { id: 'roleplay', label: 'Role-Play Dojo', desc: 'Simulate high-stakes conversations.', icon: 'fa-solid fa-user-tie', color: 'text-warn' },
+            { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture & speed.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
             { id: 'quiz', label: 'Flashcards', desc: 'Test your fluency in tech jargon.', icon: 'fa-solid fa-graduation-cap', color: 'text-cyan-400' },
             { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
             { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, 
