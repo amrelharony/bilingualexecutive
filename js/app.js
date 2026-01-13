@@ -602,14 +602,87 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
+        //  WHAT-IF SCENARIO PLANNER
+        // ------------------------------------------------------------------
+        whatIf: {
+            input: '',
+            loading: false,
+            result: null, // Stores the HTML memo
+            
+            // Pre-canned examples for easy testing
+            examples: [
+                "What if we outsource our Core Banking to a SaaS provider?",
+                "What if we delay the cloud migration by 12 months?",
+                "What if we use AI to automate loan approvals?"
+            ],
+
+            setInput(text) {
+                this.input = text;
+            },
+
+            async analyze() {
+                if (!this.input.trim()) return;
+                
+                this.loading = true;
+                this.result = null;
+
+                const API_KEY = localStorage.getItem('bilingual_api_key');
+                if (!API_KEY) {
+                    this.result = "<p class='text-risk'>Error: Please set your API Key in the settings menu first.</p>";
+                    this.loading = false;
+                    return;
+                }
+
+                // The "Bilingual" System Prompt
+                const systemPrompt = `
+                    ACT AS: A top-tier Strategy Consultant advising a Bank Board.
+                    TASK: Analyze the following strategic hypothesis: "${this.input}"
+                    
+                    OUTPUT FORMAT: A structured 'Board Briefing Note'.
+                    Use Markdown.
+                    
+                    SECTIONS REQUIRED:
+                    1. **Executive Verdict**: Start with a clear "Green Light", "Yellow Light", or "Red Light" status and a 1-sentence summary.
+                    2. **The Technical Reality** (Speak to the CTO): Architecture impact, legacy integration risks, complexity.
+                    3. **The Financial Lens** (Speak to the CFO): CapEx vs OpEx implications, likely ROI timeline, hidden costs.
+                    4. **Risk & Governance** (Speak to the CRO): Regulatory hurdles, data privacy, brand risk.
+                    5. **The Bilingual Recommendation**: A final decisive paragraph on how to proceed safely.
+                    
+                    TONE: Professional, concise, brutal honesty. No corporate fluff.
+                `;
+
+                try {
+                    let model = "gemini-1.5-flash-latest";
+                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
+                    });
+                    
+                    if (!response.ok) throw new Error("API Error");
+                    let json = await response.json();
+                    let rawText = json.candidates[0].content.parts[0].text;
+                    
+                    // Convert Markdown to HTML using the 'marked' library
+                    this.result = DOMPurify.sanitize(marked.parse(rawText));
+
+                } catch (e) {
+                    this.result = `<p class='text-risk'>Simulation Failed: ${e.message}. Check your internet connection or API quota.</p>`;
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+
+        // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
         // ------------------------------------------------------------------
         navItems: [ 
-            { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, 
+            { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' },
+            { id: 'whatif', label: 'Scenario Planner', icon: 'fa-solid fa-crystal-ball' },
             { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' },
             { id: 'sandbox', label: 'Architecture Sim', icon: 'fa-solid fa-shapes' },
-             { id: 'roleplay', label: 'Role-Play Dojo', icon: 'fa-solid fa-user-tie' },
-             { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse' },
+            { id: 'roleplay', label: 'Role-Play Dojo', icon: 'fa-solid fa-user-tie' },
+            { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse' },
             { id: 'quiz', label: 'Flashcards', icon: 'fa-solid fa-graduation-cap' },
             { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check' }, 
             { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language' }, 
@@ -628,6 +701,7 @@ document.addEventListener('alpine:init', () => {
         
         dashboardTools: [ 
             { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
+            { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.', icon: 'fa-solid fa-crystal-ball', color: 'text-purple-400' },
             { id: 'roleplay', label: 'Role-Play Dojo', desc: 'Simulate high-stakes conversations.', icon: 'fa-solid fa-user-tie', color: 'text-warn' },
             { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture & speed.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
             { id: 'quiz', label: 'Flashcards', desc: 'Test your fluency in tech jargon.', icon: 'fa-solid fa-graduation-cap', color: 'text-cyan-400' },
