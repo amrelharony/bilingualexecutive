@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>The Bilingual Executive Toolkit v22.1</title>
+    <title>The Bilingual Executive Toolkit v0.1</title>
     
     <!-- PWA Manifest & Meta -->
     <meta name="theme-color" content="#0f172a">
@@ -16,20 +16,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     
-    <!-- Libraries -->
-    <script src="https://cdn.tailwindcss.com/3.4.0"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
-
-    <!-- YOUR LOCAL FILES -->
-    <link rel="stylesheet" href="css/styles.css">
-    <script src="js/app.js"></script>
-
     <script>
         tailwind.config = {
             theme: {
@@ -731,44 +717,6 @@
 
             </div>
 
-            <!-- WHAT-IF SCENARIO PLANNER TAB -->
-            <div x-show="currentTab === 'whatif'" x-cloak class="max-w-4xl mx-auto">
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-mono font-bold text-white">Strategic Scenario Simulator</h2>
-                    <p class="text-textMuted text-sm mt-2">Test your hypothesis before spending the budget.</p>
-                </div>
-
-                <!-- Input Console -->
-                <div class="bg-card border border-slate-700 p-6 rounded-xl shadow-lg mb-8">
-                    <label class="block font-mono text-xs text-primary uppercase mb-2">Enter Strategic Hypothesis</label>
-                    <div class="relative">
-                        <textarea x-model="whatIf.input" placeholder="e.g., What if we shut down branches?" class="w-full bg-dark text-white rounded-lg p-4 font-mono text-sm border border-slate-600 focus:border-primary focus:outline-none h-32"></textarea>
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            <template x-for="example in whatIf.examples">
-                                <button @click="whatIf.setInput(example)" class="text-[10px] bg-slate-800 text-slate-300 px-2 py-1 rounded hover:bg-slate-700 hover:text-white transition-colors"><span x-text="example"></span></button>
-                            </template>
-                        </div>
-                    </div>
-                    <div class="mt-6 flex justify-end">
-                        <button @click="whatIf.analyze()" :disabled="whatIf.loading || !whatIf.input" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-lg shadow-glow transition-all flex items-center gap-2 disabled:opacity-50">
-                            <span x-show="!whatIf.loading"><i class="fa-solid fa-microchip"></i> SIMULATE</span>
-                            <span x-show="whatIf.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> THINKING...</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Results Memo -->
-                <div x-show="whatIf.result" x-transition.opacity class="bg-white text-slate-900 p-8 rounded-lg shadow-2xl relative min-h-[400px]">
-                    <div class="border-b-2 border-slate-900 pb-4 mb-6">
-                        <h3 class="font-bold text-2xl uppercase">Board Briefing Note</h3>
-                        <p class="text-xs font-mono text-slate-500">CONFIDENTIAL // SIMULATION RESULTS</p>
-                    </div>
-                    <div class="prose prose-slate max-w-none text-sm" x-html="whatIf.result"></div>
-                    <button @click="whatIf.result = null" class="mt-8 text-red-600 text-xs font-bold uppercase hover:underline">Clear Memo</button>
-                </div>
-            </div>
-
-
             <!-- ARCHITECT CONSOLE (VIP ONLY) -->
             <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
                 <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
@@ -1071,6 +1019,40 @@
         </div>
 
     </div>
+
+     <!-- ALL SCRIPTS MOVED TO BOTTOM -->
+    <script src="https://cdn.tailwindcss.com/3.4.0"></script>
+    
+    <!-- Configure Tailwind BEFORE loading more scripts -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        dark: '#0f172a', card: '#1e293b', primary: '#4ade80', risk: '#f87171', warn: '#fbbf24', hotpink: '#f472b6', textMain: '#f1f5f9', textMuted: '#94a3b8',
+                    },
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'], sans: ['"Inter"', 'sans-serif'], },
+                    boxShadow: { 'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 'glow-vip': '0 0 20px rgba(244, 114, 182, 0.2)' },
+                    animation: { 'glitch': 'glitch 1s linear infinite' }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Alpine.js and plugins -->
+    <script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    
+    <!-- Other libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
+    
+    <!-- YOUR APP - CRITICAL: Load AFTER Alpine.js -->
+    <script src="js/app.js"></script>
+
+    <!-- Service Worker -->
 
     <script>
         if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
