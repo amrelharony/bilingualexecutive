@@ -887,7 +887,76 @@ document.addEventListener('alpine:init', () => {
             const url = `${window.location.origin}${window.location.pathname}?challenger=${payload}`;
             this.copyToClipboard(url, "Challenge Link");
         },
-        
+
+        // ------------------------------------------------------------------
+        // STANDARD PDF REPORT GENERATOR
+        // ------------------------------------------------------------------
+        async generatePDF() {
+            if (!window.jspdf) { alert("PDF library not loaded. Please refresh."); return; }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // 1. Get Scores
+            const score = this.calculateScore.total;
+            const result = this.getAssessmentResult();
+            
+            // 2. Define Colors
+            const darkBg = [15, 23, 42]; 
+            const offWhite = [241, 245, 249]; 
+            const grey = [148, 163, 184];
+            let accentColor;
+            
+            // Match color to score bucket
+            if (score <= 40) accentColor = [248, 113, 113]; // Red
+            else if (score <= 60) accentColor = [251, 191, 36]; // Yellow
+            else accentColor = [74, 222, 128]; // Green
+
+            // 3. Draw PDF
+            // Background
+            doc.setFillColor(...darkBg); 
+            doc.rect(0, 0, 210, 297, "F");
+            
+            // Header
+            doc.setTextColor(...accentColor); 
+            doc.setFont("helvetica", "bold"); 
+            doc.setFontSize(14); 
+            doc.text("THE BILINGUAL EXECUTIVE TOOLKIT // AUDIT REPORT", 20, 20);
+            
+            doc.setTextColor(...grey); 
+            doc.setFont("helvetica", "normal"); 
+            doc.setFontSize(10); 
+            doc.text(`GENERATED: ${new Date().toLocaleString().toUpperCase()}`, 20, 28);
+            
+            doc.setDrawColor(...grey); 
+            doc.line(20, 35, 190, 35);
+            
+            // Score
+            doc.setFontSize(60); 
+            doc.setTextColor(...accentColor); 
+            doc.text(`${score} / 75`, 20, 60);
+            
+            // Title & Description
+            doc.setFontSize(22); 
+            doc.setTextColor(...offWhite); 
+            doc.text(result.title, 20, 75);
+            
+            doc.setFontSize(12); 
+            doc.setTextColor(...grey); 
+            doc.text(doc.splitTextToSize(result.desc, 170), 20, 85);
+            
+            // Veto Warnings
+            if(this.calculateScore.isSafetyVeto) {
+                doc.setTextColor(248, 113, 113);
+                doc.text("!!! SAFETY VETO APPLIED: SCORE CAPPED AT 40", 20, 110);
+                doc.setFontSize(10);
+                doc.text("Reason: Low Psychological Safety detected.", 20, 116);
+            }
+            
+            // 4. Save
+            doc.save("Executive_Audit_Report.pdf");
+        },
+
         // ------------------------------------------------------------------
         // ROADMAP GENERATOR
         // ------------------------------------------------------------------
