@@ -888,61 +888,8 @@ document.addEventListener('alpine:init', () => {
             this.copyToClipboard(url, "Challenge Link");
         },
         
-async submitAndBenchmark() {
-    if (!this.selectedIndustry || !this.selectedTitle) {
-        alert("Please select your Organization Type and Role at the top of the Assessment before benchmarking.");
-        return;
-    }
-
-    this.benchmarkLoading = true;
-    const score = this.calculateScore.total; // Assumes calculateScore getter exists
-
-    try {
-        // 1. Insert the current user's score
-        await this.supabase.from('benchmarks').insert({ 
-            score: score, 
-            industry: this.selectedIndustry 
-        });
-
-        // 2. Get total number of benchmarks
-        const { count: total } = await this.supabase
-            .from('benchmarks')
-            .select('*', { count: 'exact', head: true });
-
-        // 3. Get number of people with a score LOWER than yours
-        const { count: lower } = await this.supabase
-            .from('benchmarks')
-            .select('*', { count: 'exact', head: true })
-            .lt('score', score);
-
-        this.totalBenchmarks = total;
-
-        // 4. Calculate Percentile
-        let percentile = 0;
-        if (total > 0) {
-            const betterThanPercentage = (lower / total) * 100;
-            // Invert it: Top X%
-            percentile = Math.max(1, Math.round(100 - betterThanPercentage));
-        }
-
-        // 5. Generate Message
-        let msg = "";
-        if (percentile <= 20) msg = "You are leading the market. Your architecture is an asset.";
-        else if (percentile >= 50) msg = "You are lagging behind the Fintech Tsunami. Immediate intervention required.";
-        else msg = "You are in the pack. Transformation is critical to survive.";
-
-        this.percentileResult = { rank: `Top ${percentile}%`, msg: msg };
-
-    } catch (err) {
-        console.error("Benchmark Error:", err);
-        alert("Connection failed. Please check your internet.");
-    } finally {
-        this.benchmarkLoading = false;
-    }
-},
-
         // ------------------------------------------------------------------
-        // FEATURE 2: ROADMAP GENERATOR
+        // ROADMAP GENERATOR
         // ------------------------------------------------------------------
         async generateRoadmap() {
             if (!window.jspdf) { alert("PDF library loading..."); return; }
@@ -1164,6 +1111,60 @@ async submitAndBenchmark() {
             try { localStorage.removeItem('bilingual_scores'); } catch(e){} 
             this.assessmentData.forEach(s => s.questions.forEach(q => q.score = 3)); 
         },
+
+                async submitAndBenchmark() {
+            if (!this.selectedIndustry || !this.selectedTitle) {
+                alert("Please select your Organization Type and Role at the top of the Assessment before benchmarking.");
+                return;
+            }
+
+            this.benchmarkLoading = true;
+            const score = this.calculateScore.total; 
+
+            try {
+                // 1. Insert the current user's score
+                await this.supabase.from('benchmarks').insert({ 
+                    score: score, 
+                    industry: this.selectedIndustry 
+                });
+
+                // 2. Get total number of benchmarks
+                const { count: total } = await this.supabase
+                    .from('benchmarks')
+                    .select('*', { count: 'exact', head: true });
+
+                // 3. Get number of people with a score LOWER than yours
+                const { count: lower } = await this.supabase
+                    .from('benchmarks')
+                    .select('*', { count: 'exact', head: true })
+                    .lt('score', score);
+
+                this.totalBenchmarks = total;
+
+                // 4. Calculate Percentile
+                let percentile = 0;
+                if (total > 0) {
+                    const betterThanPercentage = (lower / total) * 100;
+                    // Invert it: Top X%
+                    percentile = Math.max(1, Math.round(100 - betterThanPercentage));
+                }
+
+                // 5. Generate Message
+                let msg = "";
+                if (percentile <= 20) msg = "You are leading the market. Your architecture is an asset.";
+                else if (percentile >= 50) msg = "You are lagging behind the Fintech Tsunami. Immediate intervention required.";
+                else msg = "You are in the pack. Transformation is critical to survive.";
+
+                this.percentileResult = { rank: `Top ${percentile}%`, msg: msg };
+
+            } catch (err) {
+                console.error("Benchmark Error:", err);
+                alert("Connection failed. Please check your internet.");
+            } finally {
+                this.benchmarkLoading = false;
+            }
+        },
+
         
         getMatrixResult() {
             const { x, y } = this.matrixCoords;
