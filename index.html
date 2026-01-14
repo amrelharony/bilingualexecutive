@@ -841,6 +841,33 @@
             <div x-show="currentTab === 'assessment'" x-cloak class="max-w-4xl mx-auto">
                 <div x-show="!assessmentSubmitted">
                     <div class="flex justify-between items-center mb-6"><h2 class="font-mono text-2xl font-bold text-primary flex items-center"><i class="fa-solid fa-clipboard-check mr-3"></i>Agile Readiness Assessment</h2><button @click="resetAssessment()" class="text-xs text-textMuted underline hover:text-white"><i class="fa-solid fa-rotate-left mr-1"></i>Reset</button></div>
+                      <div class="bg-card border border-slate-700 rounded-xl p-6 mb-6 border-l-4 border-blue-400">
+        <label class="block text-sm font-mono text-white font-bold mb-4 uppercase">Step 0: Profile & Context</label>
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-xs font-mono text-textMuted mb-2">ORGANIZATION TYPE</label>
+                <select x-model="selectedIndustry" class="w-full bg-dark border border-slate-600 rounded p-3 text-white font-mono focus:border-primary focus:outline-none">
+                    <option value="" disabled selected>Select Organization...</option>
+                    <option value="Tier-1 Bank">Tier-1 Bank (Global)</option>
+                    <option value="Regional Bank">Regional Bank</option>
+                    <option value="Fintech">Fintech / Scale-up</option>
+                    <option value="Neobank">Neobank</option>
+                    <option value="Regulator">Regulator / Central Bank</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-mono text-textMuted mb-2">YOUR ROLE</label>
+                <select x-model="selectedTitle" class="w-full bg-dark border border-slate-600 rounded p-3 text-white font-mono focus:border-primary focus:outline-none">
+                    <option value="" disabled selected>Select Your Role...</option>
+                    <option value="C-Suite / Executive">C-Suite / Executive</option>
+                    <option value="Head of Business / Product">Head of Business / Product</option>
+                    <option value="Head of Technology">Head of Technology</option>
+                    <option value="Architecture / Data">Architecture / Data</option>
+                    <option value="Risk / Compliance">Risk / Compliance</option>
+                </select>
+            </div>
+        </div>
+    </div>
                     <div class="space-y-12 mb-20">
                         <template x-for="(section, sIdx) in assessmentData" :key="sIdx">
                             <div class="bg-card/50 p-6 rounded-xl border border-slate-800"><h3 class="font-mono text-xl text-white mb-6 border-l-4 border-primary pl-3" x-text="section.title"></h3><div class="space-y-8"><template x-for="(q, qIdx) in section.questions" :key="qIdx"><div class="bg-dark/50 p-5 rounded border border-slate-700"><div class="flex justify-between items-start mb-2"><label class="font-mono font-bold text-slate-200 text-sm uppercase tracking-wide" x-text="q.text"></label><span class="font-mono text-primary font-bold text-lg" x-text="q.score"></span></div><p class="text-xs text-textMuted mb-2" x-text="q.desc"></p><input type="range" min="1" max="5" step="1" x-model.number="q.score" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"></div></template></div></div>
@@ -878,6 +905,43 @@
                                 </div>
                             </button>
                         </div>
+
+                    <div class="mt-8 bg-card border border-slate-700 rounded-xl p-6 shadow-glow border-l-4 border-blue-400">
+        <div class="flex justify-between items-start">
+            <div>
+                <h3 class="font-mono text-xl font-bold text-white mb-2 flex items-center">
+                    <i class="fa-solid fa-globe mr-2 text-blue-400"></i>THE INDUSTRY INDEX
+                </h3>
+                
+                <!-- State 1: Ready to Benchmark -->
+                <div x-show="!percentileResult && !benchmarkLoading">
+                    <p class="text-sm text-textMuted mb-3">Compare your score against the global database.</p>
+                    <button @click="submitAndBenchmark()" class="px-6 py-2 bg-blue-500 hover:bg-blue-400 text-white font-mono text-sm font-bold rounded shadow-glow transition-all">
+                        CALCULATE BENCHMARK
+                    </button>
+                </div>
+
+                <!-- State 2: Loading -->
+                <div x-show="benchmarkLoading" class="flex items-center gap-2 text-blue-400 font-mono text-sm py-2">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> CONNECTING TO SATELLITE...
+                </div>
+
+                <!-- State 3: Result -->
+                <div x-show="percentileResult" x-transition>
+                    <div class="mt-2">
+                        <span class="text-xs font-mono text-slate-400 uppercase tracking-widest">MARKET POSITION</span>
+                        <div class="text-4xl font-mono font-bold text-blue-400 my-1" x-text="percentileResult.rank"></div>
+                        <p class="text-sm text-white font-medium" x-text="percentileResult.msg"></p>
+                        <p class="text-xs text-slate-500 mt-2 font-mono">Based on <span x-text="totalBenchmarks"></span> verified audits.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="hidden md:block opacity-30">
+                <i class="fa-solid fa-ranking-star text-6xl"></i>
+            </div>
+        </div>
+    </div>
 
                         <div class="mt-6">
                             <button @click="copyChallengeLink()" class="text-xs text-textMuted hover:text-white underline"><i class="fa-solid fa-link mr-2"></i><span x-text="copyBtnText"></span></button>
