@@ -1112,59 +1112,89 @@ document.addEventListener('alpine:init', () => {
             this.assessmentData.forEach(s => s.questions.forEach(q => q.score = 3)); 
         },
 
-                async submitAndBenchmark() {
+async submitAndBenchmark() {
+            // 1. Validation
             if (!this.selectedIndustry || !this.selectedTitle) {
                 alert("Please select your Organization Type and Role at the top of the Assessment before benchmarking.");
                 return;
             }
 
             this.benchmarkLoading = true;
-            const score = this.calculateScore.total; 
+            const myScore = this.calculateScore.total;
+            let total = 0;
+            let lower = 0;
+            let source = "Live Satellite"; // Default source
 
             try {
-                // 1. Insert the current user's score
-                await this.supabase.from('benchmarks').insert({ 
-                    score: score, 
-                    industry: this.selectedIndustry 
-                });
+                // 2. Try Supabase (Online Mode)
+                if (this.supabase) {
+                    // A. Upload your score
+                    await this.supabase.from('benchmarks').insert({ 
+                        score: myScore, 
+                        industry: this.selectedIndustry 
+                    });
 
-                // 2. Get total number of benchmarks
-                const { count: total } = await this.supabase
-                    .from('benchmarks')
-                    .select('*', { count: 'exact', head: true });
+                    // B. Get counts from DB
+                    const { count: dbTotal } = await this.supabase
+                        .from('benchmarks')
+                        .select('*', { count: 'exact', head: true });
+                    
+                    const { count: dbLower } = await this.supabase
+                        .from('benchmarks')
+                        .select('*', { count: 'exact', head: true })
+                        .lt('score', myScore);
 
-                // 3. Get number of people with a score LOWER than yours
-                const { count: lower } = await this.supabase
-                    .from('benchmarks')
-                    .select('*', { count: 'exact', head: true })
-                    .lt('score', score);
-
-                this.totalBenchmarks = total;
-
-                // 4. Calculate Percentile
-                let percentile = 0;
-                if (total > 0) {
-                    const betterThanPercentage = (lower / total) * 100;
-                    // Invert it: Top X%
-                    percentile = Math.max(1, Math.round(100 - betterThanPercentage));
+                    if (dbTotal !== null) {
+                        total = dbTotal;
+                        lower = dbLower;
+                    } else {
+                        throw new Error("Database returned null");
+                    }
+                } else {
+                    throw new Error("Supabase not initialized");
                 }
 
-                // 5. Generate Message
-                let msg = "";
-                if (percentile <= 20) msg = "You are leading the market. Your architecture is an asset.";
-                else if (percentile >= 50) msg = "You are lagging behind the Fintech Tsunami. Immediate intervention required.";
-                else msg = "You are in the pack. Transformation is critical to survive.";
-
-                this.percentileResult = { rank: `Top ${percentile}%`, msg: msg };
-
             } catch (err) {
-                console.error("Benchmark Error:", err);
-                alert("Connection failed. Please check your internet.");
-            } finally {
-                this.benchmarkLoading = false;
-            }
-        },
+                // 3. Fallback to Offline Mode (If DB fails or is blocked)
+                console.warn("Switching to Offline Benchmarks:", err);
+                source = "Offline Database";
 
+                // Use the variable we created at the bottom of the file
+                if (typeof offlineBenchmarks !== 'undefined') {
+                    total = offlineBenchmarks.length;
+                    // Count how many people in the list have a lower score than you
+                    lower = offlineBenchmarks.filter(b => b.score < myScore).length;
+                } else {
+                    alert("Could not connect to benchmark database.");
+                    this.benchmarkLoading = false;
+                    return;
+                }
+            }
+
+            // 4. Calculate Percentile (Same math for both Online & Offline)
+            this.totalBenchmarks = total;
+            let percentile = 0;
+            if (total > 0) {
+                const betterThanPercentage = (lower / total) * 100;
+                percentile = Math.max(1, Math.round(100 - betterThanPercentage));
+            }
+
+            // 5. Generate Message based on Percentile
+            let msg = "";
+            if (percentile <= 20) msg = "You are leading the market. Your architecture is an asset.";
+            else if (percentile >= 50) msg = "You are lagging behind the Fintech Tsunami. Immediate intervention required.";
+            else msg = "You are in the pack. Transformation is critical to survive.";
+
+            // 6. Display Result
+            this.percentileResult = { rank: `Top ${percentile}%`, msg: msg };
+            
+            // Optional: Small toast to show if we used offline data
+            if (source === "Offline Database") {
+                console.log("Benchmark calculated using offline dataset.");
+            }
+            
+            this.benchmarkLoading = false;
+        },
         
         getMatrixResult() {
             const { x, y } = this.matrixCoords;
@@ -1246,4 +1276,16 @@ document.addEventListener('alpine:init', () => {
         }
 
     })); // <-- This closes the Alpine.data object
+
 }); // <-- This closes the event listener
+
+    // ------------------------------------------------------------------
+// OFFLINE BENCHMARK DATA (Fallback if Database fails)
+// ------------------------------------------------------------------
+const offlineBenchmarks = [
+    {"score":18,"industry":"Traditional Bank"}, 
+    {"score":25,"industry":"Traditional Bank"}, 
+    // ... PASTE THE REST OF YOUR 1000 ROWS HERE ...
+    {"score":75,"industry":"Neobank"}
+];
+
