@@ -8,6 +8,16 @@ document.addEventListener('alpine:init', () => {
         init() {
             this.isMobile = window.innerWidth < 768;
             window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
+
+                        // Initialize Supabase Client
+            if (window.supabase) {
+                const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
+                this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+            } else {
+                console.error("Supabase library not loaded.");
+            }
+
             
             // PWA & Install Logic
             const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
@@ -74,7 +84,15 @@ document.addEventListener('alpine:init', () => {
         // ------------------------------------------------------------------
         // STATE VARIABLES
         // ------------------------------------------------------------------
+        
+        
         currentTab: 'dashboard',
+        supabase: null,
+        selectedIndustry: "",
+        selectedTitle: "",
+       percentileResult: null,
+       benchmarkLoading: false,
+        totalBenchmarks: 0,
         mobileMenuOpen: false,
         isMobile: false,
         showPwaPrompt: false, 
@@ -869,6 +887,59 @@ document.addEventListener('alpine:init', () => {
             const url = `${window.location.origin}${window.location.pathname}?challenger=${payload}`;
             this.copyToClipboard(url, "Challenge Link");
         },
+        
+async submitAndBenchmark() {
+    if (!this.selectedIndustry || !this.selectedTitle) {
+        alert("Please select your Organization Type and Role at the top of the Assessment before benchmarking.");
+        return;
+    }
+
+    this.benchmarkLoading = true;
+    const score = this.calculateScore.total; // Assumes calculateScore getter exists
+
+    try {
+        // 1. Insert the current user's score
+        await this.supabase.from('benchmarks').insert({ 
+            score: score, 
+            industry: this.selectedIndustry 
+        });
+
+        // 2. Get total number of benchmarks
+        const { count: total } = await this.supabase
+            .from('benchmarks')
+            .select('*', { count: 'exact', head: true });
+
+        // 3. Get number of people with a score LOWER than yours
+        const { count: lower } = await this.supabase
+            .from('benchmarks')
+            .select('*', { count: 'exact', head: true })
+            .lt('score', score);
+
+        this.totalBenchmarks = total;
+
+        // 4. Calculate Percentile
+        let percentile = 0;
+        if (total > 0) {
+            const betterThanPercentage = (lower / total) * 100;
+            // Invert it: Top X%
+            percentile = Math.max(1, Math.round(100 - betterThanPercentage));
+        }
+
+        // 5. Generate Message
+        let msg = "";
+        if (percentile <= 20) msg = "You are leading the market. Your architecture is an asset.";
+        else if (percentile >= 50) msg = "You are lagging behind the Fintech Tsunami. Immediate intervention required.";
+        else msg = "You are in the pack. Transformation is critical to survive.";
+
+        this.percentileResult = { rank: `Top ${percentile}%`, msg: msg };
+
+    } catch (err) {
+        console.error("Benchmark Error:", err);
+        alert("Connection failed. Please check your internet.");
+    } finally {
+        this.benchmarkLoading = false;
+    }
+},
 
         // ------------------------------------------------------------------
         // FEATURE 2: ROADMAP GENERATOR
