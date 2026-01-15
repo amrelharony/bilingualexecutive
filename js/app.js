@@ -1898,7 +1898,7 @@ async submitAndBenchmark() {
                 if (avg > 40) return 'text-warn';
                 return 'text-risk';
             }
-        }
+        },
 
     })); // <-- This closes the Alpine.data object
 
