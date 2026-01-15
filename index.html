@@ -1331,7 +1331,114 @@
 
             </div>
 
+<!-- RISK SIMULATOR TAB -->
+            <div x-show="currentTab === 'risksim'" x-cloak class="max-w-5xl mx-auto h-full flex flex-col">
+                
+                <!-- Header / Intro -->
+                <div x-show="!riskSim.active" class="text-center py-12">
+                    <div class="inline-block p-6 rounded-full bg-risk/10 border border-risk mb-6">
+                        <i class="fa-solid fa-gavel text-5xl text-risk"></i>
+                    </div>
+                    <h2 class="text-4xl font-mono font-bold text-white mb-4">The Boardroom Battle</h2>
+                    <p class="text-textMuted max-w-xl mx-auto mb-8">
+                        Can you launch a product without getting fired? 
+                        <br>You play the <strong>Product Owner</strong>. The AI plays <strong>Marcus (Chief Risk Officer)</strong>.
+                        <br>Your goal: Maintain high <strong>Speed</strong> (don't delay launch) AND high <strong>Safety</strong> (don't break the law).
+                    </p>
+                    <button @click="riskSim.start()" class="bg-white text-dark hover:bg-gray-200 font-bold py-4 px-10 rounded-lg shadow-glow transition-all">
+                        ENTER THE ROOM
+                    </button>
+                </div>
 
+                <!-- Active Interface -->
+                <div x-show="riskSim.active" class="flex-1 grid md:grid-cols-3 gap-6 h-full pb-20">
+                    
+                    <!-- Left: The Live Scoreboard -->
+                    <div class="md:col-span-1 space-y-6">
+                        <!-- Bilingual Score -->
+                        <div class="bg-card border border-slate-700 p-6 rounded-xl text-center">
+                            <h3 class="font-mono text-xs text-slate-500 uppercase mb-2">Bilingual Score</h3>
+                            <div class="text-5xl font-bold font-mono transition-all duration-500" :class="riskSim.statusColor">
+                                <span x-text="Math.round((riskSim.scores.safety + riskSim.scores.speed) / 2)"></span>/100
+                            </div>
+                        </div>
+
+                        <!-- The Balance Meters -->
+                        <div class="bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-2">
+                                    <span class="text-risk"><i class="fa-solid fa-shield-halved mr-1"></i> SAFETY</span>
+                                    <span class="text-white" x-text="riskSim.scores.safety"></span>
+                                </div>
+                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
+                                    <div class="h-full bg-risk transition-all duration-700" :style="`width: ${riskSim.scores.safety}%`"></div>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1" x-show="riskSim.scores.safety < 30">⚠️ You are scaring the bank.</p>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-xs font-bold mb-2">
+                                    <span class="text-primary"><i class="fa-solid fa-bolt mr-1"></i> SPEED</span>
+                                    <span class="text-white" x-text="riskSim.scores.speed"></span>
+                                </div>
+                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
+                                    <div class="h-full bg-primary transition-all duration-700" :style="`width: ${riskSim.scores.speed}%`"></div>
+                                </div>
+                                <p class="text-[10px] text-slate-500 mt-1" x-show="riskSim.scores.speed < 30">⚠️ You are stalling innovation.</p>
+                            </div>
+                        </div>
+
+                        <!-- Turn Counter -->
+                        <div class="text-center">
+                            <span class="text-xs font-mono text-slate-500">Turn <span x-text="riskSim.turn"></span> / <span x-text="riskSim.maxTurns"></span></span>
+                        </div>
+                        
+                        <button @click="riskSim.active = false" class="w-full border border-slate-600 text-slate-400 py-2 rounded text-xs hover:text-white">Exit Simulation</button>
+                    </div>
+
+                    <!-- Right: The Negotiation Chat -->
+                    <div class="md:col-span-2 bg-dark border border-slate-700 rounded-xl flex flex-col overflow-hidden relative">
+                        
+                        <!-- Chat History -->
+                        <div class="flex-1 overflow-y-auto p-6 space-y-4" id="risk-chat-box">
+                            <template x-for="msg in riskSim.messages">
+                                <div class="flex flex-col" :class="msg.role === 'user' ? 'items-end' : 'items-start'">
+                                    <span class="text-[10px] text-slate-500 mb-1 uppercase font-mono" x-text="msg.role === 'user' ? 'You' : (msg.role === 'system' ? 'System' : 'Marcus (CRO)')"></span>
+                                    <div class="max-w-[85%] p-4 rounded-xl text-sm leading-relaxed"
+                                         :class="msg.role === 'user' ? 'bg-primary text-dark rounded-tr-none' : (msg.role === 'system' ? 'bg-slate-800 text-slate-400 w-full text-center border border-dashed border-slate-600' : 'bg-card border border-risk text-white rounded-tl-none')">
+                                        <span x-text="msg.text"></span>
+                                    </div>
+                                </div>
+                            </template>
+                             <div x-show="riskSim.loading" class="flex items-center gap-2 text-slate-500 text-xs ml-2 mt-4">
+                                <i class="fa-solid fa-circle-notch fa-spin text-risk"></i> Marcus is analyzing your response...
+                            </div>
+                        </div>
+
+                        <!-- Input -->
+                        <div class="p-4 bg-card border-t border-slate-700">
+                            <div class="relative">
+                                <input type="text" 
+                                       x-model="riskSim.input" 
+                                       @keydown.enter="riskSim.sendReply()"
+                                       :disabled="riskSim.loading || riskSim.turn >= riskSim.maxTurns"
+                                       placeholder="Type your response... (e.g., 'We can automate the compliance check...')" 
+                                       class="w-full bg-dark text-white rounded-lg pl-4 pr-12 py-4 focus:outline-none focus:border-primary border border-slate-600 font-mono text-sm disabled:opacity-50">
+                                
+                                <button @click="riskSim.sendReply()" 
+                                        :disabled="riskSim.loading || riskSim.turn >= riskSim.maxTurns"
+                                        class="absolute right-2 top-2 bottom-2 bg-primary text-dark w-10 rounded flex items-center justify-center hover:bg-green-400 transition-colors disabled:opacity-50">
+                                    <i class="fa-solid fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+            
             <!-- COMMUNITY -->
             <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
                 <div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl relative overflow-hidden">
