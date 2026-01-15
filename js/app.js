@@ -893,7 +893,6 @@ teamManager: {
             { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
-            
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
         
@@ -912,7 +911,7 @@ teamManager: {
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'builder', label: 'Charter Builder', desc: 'Generate a 90-day pilot contract.', icon: 'fa-solid fa-hammer', color: 'text-primary' },
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
-            { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true }
+            { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
         ],
