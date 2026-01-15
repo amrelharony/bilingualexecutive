@@ -666,10 +666,18 @@ teamManager: {
     },
 
     // 5. Generate Share Link
-    copyInvite() {
+        copyInvite() {
         const url = `${window.location.origin}${window.location.pathname}?team_code=${this.activeTeam.join_code}`;
-        // Use the existing copy helper
-        this.copyToClipboard(url, "Team Invite Link"); 
+        
+        // Direct clipboard logic to fix scope issue
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(url)
+                .then(() => alert("Team Invite Link copied to clipboard!"))
+                .catch(() => prompt("Copy this link:", url));
+        } else {
+            // Fallback for non-secure contexts (some dev environments)
+            prompt("Copy this link:", url);
+        }
     },
 
     // 6. Metrics Calculation
