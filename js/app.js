@@ -1070,22 +1070,33 @@ document.addEventListener('alpine:init', () => {
         updateTalentChart() {
             this.$nextTick(() => {
                 const ctx = document.getElementById('talentChart');
-                if (!ctx || !ctx.getContext) return;
-                if (this.talentChartInstance) this.talentChartInstance.destroy();
+                if (!ctx) return;
                 
+                // 1. Destroy existing global instance to prevent memory leaks
+                if (window.myTalentChart) {
+                    window.myTalentChart.destroy();
+                }
+                
+                // 2. Configure Font
                 Chart.defaults.font.family = '"JetBrains Mono", monospace';
-                this.talentChartInstance = new Chart(ctx, { 
+                Chart.defaults.color = '#94a3b8';
+
+                // 3. Create new instance attached to Window (bypassing Alpine Proxy)
+                window.myTalentChart = new Chart(ctx, { 
                     type: 'radar', 
                     data: { 
                         labels: this.talentSkills.map(s => s.label), 
                         datasets: [{ 
+                            label: 'Candidate Shape',
                             data: this.talentSkills.map(s => s.val), 
                             backgroundColor: 'rgba(244, 114, 182, 0.2)', 
                             borderColor: '#f472b6', 
-                            pointBackgroundColor: '#fff' 
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#f472b6'
                         }] 
                     }, 
                     options: { 
+                        animation: false, // Disable animation for instant slider feedback
                         plugins: { legend: { display: false } }, 
                         scales: { 
                             r: { 
@@ -1093,7 +1104,8 @@ document.addEventListener('alpine:init', () => {
                                 max: 5, 
                                 ticks: { display: false }, 
                                 grid: { color: '#334155' }, 
-                                angleLines: { color: '#334155' } 
+                                angleLines: { color: '#334155' },
+                                pointLabels: { color: '#f1f5f9', font: { size: 11 } }
                             } 
                         } 
                     } 
