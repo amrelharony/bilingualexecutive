@@ -1144,7 +1144,13 @@ teamManager: {
             doc.setTextColor(255, 255, 255);
             doc.setFont("helvetica", "bold");
             doc.setFontSize(22);
-            doc.text("TRANSFORMATION PLAYBOOK", 105, 20, null, "center");
+        
+            // Dynamic Title Logic
+            const title = this.teamManager && this.teamManager.activeTeam 
+                ? `TEAM PLAYBOOK: ${this.teamManager.activeTeam.name.toUpperCase()}` 
+                : "TRANSFORMATION PLAYBOOK";
+            
+            doc.text(title, 105, 20, null, "center");
             
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
@@ -1154,6 +1160,13 @@ teamManager: {
             doc.setTextColor(0, 0, 0);
             doc.setFontSize(14);
             doc.text(`Total Maturity Score: ${total}/75`, 20, 55);
+
+                        if (this.teamManager && this.teamManager.activeTeam) {
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`Team Alignment: ${this.teamManager.alignmentScore}%`, 20, 62);
+            }
+
             
             // The Diagnosis
             doc.setFontSize(12);
