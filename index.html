@@ -839,6 +839,88 @@
 
             <!-- ASSESSMENT -->
             <div x-show="currentTab === 'assessment'" x-cloak class="max-w-4xl mx-auto">
+
+                                <!-- TEAM COLLABORATION INTERFACE -->
+                <div class="mb-8 border-b border-slate-700 pb-8">
+                    
+                    <!-- State 0: Intro (Join or Create) -->
+                    <div x-show="!teamManager.activeTeam" class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-xl border border-slate-700 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div class="flex-1">
+                            <h3 class="font-mono text-xl font-bold text-white mb-2"><i class="fa-solid fa-users mr-2 text-hotpink"></i>Team Mode</h3>
+                            <p class="text-sm text-textMuted">Align your Board. Compare scores with your colleagues to find the "Reality Gap."</p>
+                        </div>
+                        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                            <div class="flex">
+                                <input type="text" x-model="teamManager.joinInput" placeholder="Enter Code" class="bg-dark border border-slate-600 rounded-l px-3 py-2 w-28 text-sm focus:outline-none uppercase font-mono">
+                                <button @click="teamManager.joinTeam()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-r text-sm font-bold border border-l-0 border-slate-600">JOIN</button>
+                            </div>
+                            <div class="text-xs text-slate-500 flex items-center font-mono">OR</div>
+                            <div class="flex">
+                                <input type="text" x-model="teamManager.createInput" placeholder="New Team Name" class="bg-dark border border-slate-600 rounded-l px-3 py-2 w-32 text-sm focus:outline-none">
+                                <button @click="teamManager.createTeam()" class="bg-hotpink hover:bg-pink-600 text-white px-4 py-2 rounded-r text-sm font-bold shadow-glow-vip">CREATE</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- State 1: Active Team Dashboard -->
+                    <div x-show="teamManager.activeTeam" class="bg-card border border-hotpink/30 p-6 rounded-xl relative overflow-hidden">
+                        <!-- Header -->
+                        <div class="flex justify-between items-start mb-6 relative z-10">
+                            <div>
+                                <span class="text-[10px] font-mono text-hotpink uppercase tracking-widest">ACTIVE SESSION</span>
+                                <h3 class="text-2xl font-bold text-white flex items-center gap-3">
+                                    <span x-text="teamManager.activeTeam?.name"></span>
+                                    <span class="bg-slate-800 text-xs px-2 py-1 rounded font-mono text-slate-300" x-text="teamManager.activeTeam?.join_code"></span>
+                                </h3>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="teamManager.copyInvite()" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded transition-colors"><i class="fa-solid fa-share-nodes mr-2"></i>Invite</button>
+                                <button @click="teamManager.logout()" class="text-xs bg-slate-800 hover:bg-red-900/50 text-slate-400 hover:text-red-400 px-3 py-2 rounded transition-colors"><i class="fa-solid fa-power-off"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Stats Grid -->
+                        <div x-show="teamManager.memberResults.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 relative z-10">
+                            <div class="bg-dark/50 p-4 rounded-lg border border-slate-700">
+                                <div class="text-xs text-slate-400 font-mono uppercase mb-1">Respondents</div>
+                                <div class="text-2xl font-bold text-white" x-text="teamManager.memberResults.length"></div>
+                            </div>
+                            <div class="bg-dark/50 p-4 rounded-lg border border-slate-700">
+                                <div class="text-xs text-slate-400 font-mono uppercase mb-1">Avg Score</div>
+                                <div class="text-2xl font-bold text-primary">
+                                    <span x-text="Math.round(teamManager.memberResults.reduce((a,b)=>a+b.total_score,0)/teamManager.memberResults.length)"></span>/75
+                                </div>
+                            </div>
+                            <div class="bg-dark/50 p-4 rounded-lg border border-slate-700">
+                                <div class="text-xs text-slate-400 font-mono uppercase mb-1">Alignment</div>
+                                <div class="text-2xl font-bold" :class="teamManager.alignmentScore > 80 ? 'text-primary' : 'text-warn'" x-text="teamManager.alignmentScore + '%'"></div>
+                            </div>
+                        </div>
+
+                        <div x-show="teamManager.memberResults.length === 0" class="text-center py-6 text-slate-500 font-mono text-sm relative z-10">
+                            Waiting for team members to submit...
+                        </div>
+
+                        <!-- Team List -->
+                        <div x-show="teamManager.memberResults.length > 0" class="relative z-10">
+                            <h4 class="font-mono text-xs text-slate-400 uppercase mb-3">Submission Log</h4>
+                            <div class="space-y-2 max-h-40 overflow-y-auto pr-2">
+                                <template x-for="member in teamManager.memberResults" :key="member.id">
+                                    <div class="flex justify-between items-center text-sm p-2 rounded bg-slate-800/50">
+                                        <span x-text="member.role" class="font-bold text-white"></span>
+                                        <span class="font-mono" :class="member.total_score < 40 ? 'text-risk' : 'text-primary'" x-text="member.total_score"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Background Decoration -->
+                        <div class="absolute -right-10 -bottom-10 opacity-10">
+                            <i class="fa-solid fa-people-group text-9xl text-hotpink"></i>
+                        </div>
+                    </div>
+                </div>
+
                 <div x-show="!assessmentSubmitted">
                     <div class="flex justify-between items-center mb-6"><h2 class="font-mono text-2xl font-bold text-primary flex items-center"><i class="fa-solid fa-clipboard-check mr-3"></i>Agile Readiness Assessment</h2><button @click="resetAssessment()" class="text-xs text-textMuted underline hover:text-white"><i class="fa-solid fa-rotate-left mr-1"></i>Reset</button></div>
                       <div class="bg-card border border-slate-700 rounded-xl p-6 mb-6 border-l-4 border-blue-400">
