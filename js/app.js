@@ -45,14 +45,15 @@ document.addEventListener('alpine:init', () => {
             // VIP & Challenger Logic
             const params = new URLSearchParams(window.location.search);
             if (params.get('access') === 'vip_nfc_001') this.triggerVipSequence();
-                                   const teamCode = params.get('team_code');
+            
+            const teamCode = params.get('team_code');
             if (teamCode) {
-                // 1. Switch to the assessment tab immediately
+                console.log("Team Invite Detected:", teamCode); // Debugging line
                 this.currentTab = 'assessment';
-                
-                // 2. Wait for Alpine to render, then trigger the join
                 this.$nextTick(() => {
-                    this.teamManager.joinByLink(teamCode);
+                    if(this.teamManager) {
+                        this.teamManager.joinByLink(teamCode);
+                    }
                 });
             }
 
