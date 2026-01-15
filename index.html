@@ -1255,6 +1255,83 @@
             <!-- RESOURCES -->
             <div x-show="currentTab === 'resources'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-green-300 flex items-center"><i class="fa-solid fa-book-bookmark mr-3"></i>Recommended Resources</h2><div class="bg-card border border-slate-700 rounded-xl p-6"><ul class="space-y-4"><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Project to Product (Mik Kersten)</h4><p class="text-sm text-textMuted">Definitive guide to the "Flow Framework".</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Team Topologies (Skelton & Pais)</h4><p class="text-sm text-textMuted">Blueprint for structuring squads.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Sooner Safer Happier (Jonathan Smart)</h4><p class="text-sm text-textMuted">Agile for regulated banks.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Data Mesh (Zhamak Dehghani)</h4><p class="text-sm text-textMuted">Data as a Product.</p></li></ul></div></div>
 
+                        <!-- DAILY FEED TAB -->
+            <div x-show="currentTab === 'feed'" x-cloak class="max-w-2xl mx-auto" x-init="dailyFeed.init()">
+                
+                <!-- Streak Header -->
+                <div class="flex justify-between items-center mb-8 bg-card border border-slate-700 p-4 rounded-xl">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-orange-500/20 text-orange-500 rounded-full flex items-center justify-center text-xl">
+                            <i class="fa-solid fa-fire"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-textMuted uppercase font-mono">Current Streak</p>
+                            <h3 class="text-2xl font-bold text-white"><span x-text="dailyFeed.streak"></span> Days</h3>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <button x-show="dailyFeed.notificationPermission === 'default'" 
+                                @click="dailyFeed.requestNotify()" 
+                                class="text-xs bg-slate-700 hover:bg-slate-600 text-white px-3 py-1 rounded-full transition-colors">
+                            Enable Reminders
+                        </button>
+                        <p x-show="dailyFeed.notificationPermission === 'granted'" class="text-xs text-green-400">
+                            <i class="fa-solid fa-bell-slash"></i> Active
+                        </p>
+                    </div>
+                </div>
+
+                <!-- The Daily Card -->
+                <div class="bg-gradient-to-b from-slate-800 to-dark border border-slate-600 rounded-2xl shadow-2xl overflow-hidden relative">
+                    
+                    <!-- Status Banner -->
+                    <div class="h-2 w-full" :class="dailyFeed.completedToday ? 'bg-green-500' : 'bg-orange-500'"></div>
+                    
+                    <div class="p-8">
+                        <div class="flex justify-between items-start mb-6">
+                            <span class="bg-slate-700 text-white text-[10px] font-mono px-2 py-1 rounded uppercase tracking-widest">
+                                <i class="fa-solid fa-calendar-day mr-1"></i> Today's Term
+                            </span>
+                            <i x-show="dailyFeed.completedToday" class="fa-solid fa-circle-check text-green-500 text-2xl animate-pulse"></i>
+                        </div>
+
+                        <!-- Content -->
+                        <h2 class="text-4xl font-bold text-white mb-1" x-text="dailyFeed.currentLesson.term"></h2>
+                        <p class="text-slate-500 font-mono text-sm mb-6 italic" x-text="dailyFeed.currentLesson.pronounce"></p>
+                        
+                        <p class="text-lg text-slate-300 leading-relaxed mb-6" x-text="dailyFeed.currentLesson.def"></p>
+                        
+                        <div class="bg-blue-900/20 border-l-4 border-blue-500 p-4 mb-8">
+                            <p class="text-xs text-blue-400 font-bold uppercase mb-1">THE BUSINESS IMPACT</p>
+                            <p class="text-sm text-blue-100" x-text="dailyFeed.currentLesson.impact"></p>
+                        </div>
+
+                        <!-- Interactive Quiz -->
+                        <div x-show="!dailyFeed.completedToday" class="border-t border-slate-700 pt-6">
+                            <p class="font-mono text-xs text-orange-400 uppercase mb-4">Quick Check: <span x-text="dailyFeed.currentLesson.quiz.q"></span></p>
+                            <div class="space-y-2">
+                                <template x-for="(opt, idx) in dailyFeed.currentLesson.quiz.options">
+                                    <button @click="idx === dailyFeed.currentLesson.quiz.correct ? dailyFeed.completeLesson() : alert('Try again!')" 
+                                            class="w-full text-left p-3 rounded hover:bg-slate-700 border border-slate-600 text-sm transition-colors flex justify-between group">
+                                        <span x-text="opt"></span>
+                                        <i class="fa-solid fa-chevron-right opacity-0 group-hover:opacity-100"></i>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Completed State -->
+                        <div x-show="dailyFeed.completedToday" class="text-center py-6 border-t border-slate-700">
+                            <p class="text-green-400 font-bold mb-2">You're all set for today!</p>
+                            <p class="text-xs text-slate-500">Come back tomorrow to keep your streak alive.</p>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+
             <!-- COMMUNITY -->
             <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
                 <div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl relative overflow-hidden">
