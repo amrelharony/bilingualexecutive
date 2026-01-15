@@ -666,7 +666,7 @@ teamManager: {
     },
 
     // 5. Generate Share Link
-        copyIcopyInvite() {
+        copyInvite() {
         // 1. Get the clean Base URL (removes any existing ?params)
         // If you want to force your production domain, replace 'baseUrl' string below with:
         // const baseUrl = "https://bilingualexecutive.amrelharony.com/";
