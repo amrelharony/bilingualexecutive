@@ -947,12 +947,81 @@
                             <button @click="copyChallengeLink()" class="text-xs text-textMuted hover:text-white underline"><i class="fa-solid fa-link mr-2"></i><span x-text="copyBtnText"></span></button>
                         </div>
                     </div>
+            
+<!-- TRANSLATOR TAB -->
+            <div x-show="currentTab === 'translator'" x-cloak class="max-w-5xl mx-auto h-full flex flex-col">
+                
+                <!-- Header with Toggles -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                    <h2 class="font-mono text-2xl font-bold text-blue-400 flex items-center">
+                        <i class="fa-solid fa-language mr-3"></i>The Translator
+                    </h2>
+                    <div class="flex space-x-4 mt-4 md:mt-0 font-mono text-sm border-b border-slate-700 pb-2 md:border-0 md:pb-0">
+                        <button @click="translatorView = 'dict'" 
+                                :class="translatorView === 'dict' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500 hover:text-white transition-colors'">
+                            Dictionary
+                        </button>
+                        <button @click="translatorView = 'reporting'" 
+                                :class="translatorView === 'reporting' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500 hover:text-white transition-colors'">
+                            Reporting Guide
+                        </button>
+                    </div>
+                </div>
 
-            <!-- TRANSLATOR (Search) -->
-            <div x-show="currentTab === 'translator'" x-cloak class="max-w-5xl mx-auto">
-                <h2 class="font-mono text-2xl font-bold text-blue-400 mb-6 flex items-center"><i class="fa-solid fa-language mr-3"></i>The Translator Dictionary</h2>
-                <div class="mb-6 relative"><input type="text" x-model="searchQuery" placeholder="Search technical or business terms..." class="w-full bg-card border border-slate-700 rounded-lg py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-400 font-mono"><i class="fa-solid fa-search absolute left-4 top-5 text-slate-500"></i></div>
-                <div class="grid gap-4 pb-20"><template x-for="row in filteredDictionary" :key="row.banker"><div class="bg-card border border-slate-800 p-5 rounded-lg hover:border-blue-400/50 transition-colors"><div class="grid md:grid-cols-3 gap-4"><div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Banker Says</span><p class="font-bold text-white" x-text="row.banker"></p></div><div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Engineer Says</span><p class="font-mono text-blue-300 text-sm" x-text="row.tech"></p></div><div class="md:border-l border-slate-700 md:pl-4"><span class="text-[10px] text-primary font-mono block uppercase mb-1">True Meaning</span><p class="text-sm text-slate-300 italic" x-text="row.translation"></p></div></div></div></template></div>
+                <!-- VIEW 1: DICTIONARY -->
+                <div x-show="translatorView === 'dict'" class="flex-1 flex flex-col">
+                    <div class="mb-6 relative">
+                        <input type="text" x-model="searchQuery" placeholder="Search technical or business terms..." class="w-full bg-card border border-slate-700 rounded-lg py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-400 font-mono">
+                        <i class="fa-solid fa-search absolute left-4 top-5 text-slate-500"></i>
+                    </div>
+                    <div class="grid gap-4 pb-20">
+                        <template x-for="row in filteredDictionary" :key="row.banker">
+                            <div class="bg-card border border-slate-800 p-5 rounded-lg hover:border-blue-400/50 transition-colors">
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Banker Says</span><p class="font-bold text-white" x-text="row.banker"></p></div>
+                                    <div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Engineer Says</span><p class="font-mono text-blue-300 text-sm" x-text="row.tech"></p></div>
+                                    <div class="md:border-l border-slate-700 md:pl-4"><span class="text-[10px] text-primary font-mono block uppercase mb-1">True Meaning</span><p class="text-sm text-slate-300 italic" x-text="row.translation"></p></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- VIEW 2: REPORTING GUIDE -->
+                <div x-show="translatorView === 'reporting'" class="pb-20 space-y-8">
+                    <div class="bg-card border border-slate-700 rounded-xl p-6 border-l-4 border-blue-400">
+                        <h3 class="font-mono text-lg font-bold text-white mb-2">The Rosetta Stone for Board Reporting</h3>
+                        <p class="text-sm text-textMuted">Never present a raw technical metric to the Board. Always translate it into a financial outcome.</p>
+                    </div>
+
+                    <div class="grid gap-6">
+                        <template x-for="item in reportingData" :key="item.metric">
+                            <div class="bg-dark p-5 rounded-lg border border-slate-700 hover:border-blue-400 transition-colors">
+                                <div class="grid md:grid-cols-12 gap-4 items-start">
+                                    <div class="md:col-span-3">
+                                        <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">IF YOU MEASURE...</span>
+                                        <span class="font-mono text-sm font-bold text-blue-300" x-text="item.metric"></span>
+                                    </div>
+                                    <div class="hidden md:flex md:col-span-1 justify-center items-center pt-3">
+                                        <i class="fa-solid fa-arrow-right text-slate-600"></i>
+                                    </div>
+                                    <div class="md:col-span-3">
+                                        <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">TRANSLATE TO...</span>
+                                        <span class="font-mono text-sm font-bold text-primary" x-text="item.financial"></span>
+                                    </div>
+                                    <div class="md:col-span-5 bg-slate-800/50 p-3 rounded border border-slate-700/50">
+                                        <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">THE SCRIPT</span>
+                                        <p class="text-sm italic text-slate-300 leading-relaxed">
+                                            <i class="fa-solid fa-quote-left text-slate-600 text-xs mr-1"></i>
+                                            <span x-text="item.script"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
             </div>
 
             <!-- MATRIX -->
