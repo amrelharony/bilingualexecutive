@@ -1570,6 +1570,7 @@ async submitAndBenchmark() {
         },
 
                 // ------------------------------------------------------------------
+        // ------------------------------------------------------------------
         // LIGHTHOUSE PROJECT BUILDER
         // ------------------------------------------------------------------
         lighthouseBuilder: {
@@ -1577,14 +1578,14 @@ async submitAndBenchmark() {
             // The Data Model
             form: {
                 name: '',
-                problem: '', // "The Burning Platform"
-                solution: '', // "The Hypothesis"
-                customer: '', // Who is it for?
-                po: '', // Mini-CEO
-                tech: '', // Tech Lead
-                risk_cap: '', // The Sandbox constraint (e.g. 50 loans)
-                anti_scope: '', // What we are NOT doing
-                success_metric: '' // The Outcome
+                problem: '', 
+                solution: '', 
+                customer: '', 
+                po: '', 
+                tech: '', 
+                risk_cap: '', 
+                anti_scope: '', 
+                success_metric: '' 
             },
             
             // Navigation logic
@@ -1596,7 +1597,6 @@ async submitAndBenchmark() {
             },
             
             validateStep() {
-                // Simple validation
                 const f = this.form;
                 if (this.step === 1 && (!f.name || !f.problem)) { alert("Define the problem first."); return false; }
                 if (this.step === 2 && (!f.po || !f.tech)) { alert("You need a Squad Leader."); return false; }
@@ -1636,19 +1636,18 @@ async submitAndBenchmark() {
                 // Helper function for sections
                 const addSection = (title, content, yPos) => {
                     doc.setFontSize(10);
-                    doc.setTextColor(100, 100, 100); // Grey Label
+                    doc.setTextColor(100, 100, 100); 
                     doc.setFont("helvetica", "bold");
                     doc.text(title.toUpperCase(), 20, yPos);
                     
                     doc.setFontSize(11);
-                    doc.setTextColor(0, 0, 0); // Black Text
+                    doc.setTextColor(0, 0, 0); 
                     doc.setFont("helvetica", "normal");
                     
-                    // Text Wrap
                     const lines = doc.splitTextToSize(content, 170);
                     doc.text(lines, 20, yPos + 6);
                     
-                    return yPos + 6 + (lines.length * 6) + 10; // Return new Y position
+                    return yPos + 6 + (lines.length * 6) + 10; 
                 };
 
                 y = addSection("1. The Burning Problem", f.problem, y);
@@ -1664,10 +1663,10 @@ async submitAndBenchmark() {
 
                 y = addSection("3. The 'Anti-Scope' (What we are NOT doing)", f.anti_scope, y);
                 
-                // The Governance Box (Critical)
-                doc.setFillColor(254, 242, 242); // Light Red background
+                // The Governance Box
+                doc.setFillColor(254, 242, 242); 
                 doc.rect(15, y, 180, 30, "F");
-                doc.setTextColor(185, 28, 28); // Dark Red Text
+                doc.setTextColor(185, 28, 28); 
                 doc.setFont("helvetica", "bold");
                 doc.text("4. THE REGULATORY SANDBOX (License to Operate)", 20, y + 8);
                 doc.setTextColor(0, 0, 0);
@@ -1687,7 +1686,9 @@ async submitAndBenchmark() {
                 doc.text("EXECUTIVE SPONSOR SIGNATURE", 110, 265);
 
                 doc.save(`${f.name}_Lighthouse_Charter.pdf`);
-            },
+            }
+        }, // <--- THIS COMMA WAS LIKELY MISSING OR BROKEN
+
         // ------------------------------------------------------------------
         // DAILY FEED & HABIT TRACKER
         // ------------------------------------------------------------------
@@ -1711,16 +1712,14 @@ async submitAndBenchmark() {
                     const yesterday = new Date();
                     yesterday.setDate(yesterday.getDate() - 1);
                     if (lastCompleted !== yesterday.toDateString()) {
-                        // Streak broken
                         this.streak = 0; 
                     }
                 }
 
-                // 3. Select Content based on Day of Year
+                // 3. Select Content
                 const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
                 this.currentLesson = this.content[dayOfYear % this.content.length];
                 
-                // 4. Check Notifications
                 if ("Notification" in window) {
                     this.notificationPermission = Notification.permission;
                 }
@@ -1728,17 +1727,12 @@ async submitAndBenchmark() {
 
             completeLesson() {
                 if (this.completedToday) return;
-                
                 this.streak++;
                 this.completedToday = true;
-                
-                // Save
                 localStorage.setItem('bilingual_feed_state', JSON.stringify({
                     streak: this.streak,
                     lastDate: new Date().toDateString()
                 }));
-
-                // Trigger confetti or feedback
                 alert(`Lesson Complete! Streak: ${this.streak} Days 🔥`);
             },
 
@@ -1760,45 +1754,42 @@ async submitAndBenchmark() {
                     term: "Idempotency",
                     pronounce: "eye-dem-po-ten-see",
                     def: "A property where an operation can be applied multiple times without changing the result beyond the initial application.",
-                    impact: "Why the CEO cares: It prevents double-charging a customer if they click 'Pay' twice on a slow connection. It is the bedrock of payment reliability.",
+                    impact: "Why the CEO cares: It prevents double-charging a customer if they click 'Pay' twice on a slow connection.",
                     quiz: { q: "If a user clicks 'Pay' 5 times, how many times are they charged?", options: ["5 times", "1 time", "0 times"], correct: 1 }
                 },
                 {
                     term: "Eventual Consistency",
                     pronounce: "e-ven-tual con-sis-ten-cy",
-                    def: "A model where the system doesn't update everywhere instantly, but guarantees it will be correct 'eventually' (usually milliseconds).",
-                    impact: "Why the CEO cares: It allows us to scale globally (Netflix/Uber model) but makes 'Real-Time Balance' checks tricky. We trade strict accuracy for massive speed.",
+                    def: "A model where the system doesn't update everywhere instantly, but guarantees it will be correct 'eventually'.",
+                    impact: "Why the CEO cares: It allows us to scale globally (Netflix/Uber model) but makes 'Real-Time Balance' checks tricky.",
                     quiz: { q: "Which system prioritizes Speed over Instant Accuracy?", options: ["Strong Consistency", "Eventual Consistency", "ACID Transaction"], correct: 1 }
                 },
                 {
                     term: "Circuit Breaker",
                     pronounce: "sir-kit bray-ker",
-                    def: "design pattern that detects failures and encapsulates the logic of preventing a failure from constantly recurring.",
-                    impact: "Why the CEO cares: If the Credit Bureau API goes down, the app doesn't crash; it just stops asking for credit scores temporarily. It keeps the shop open during a fire.",
+                    def: "A design pattern that detects failures and encapsulates the logic of preventing a failure from constantly recurring.",
+                    impact: "Why the CEO cares: If the Credit Bureau API goes down, the app doesn't crash; it just stops asking for credit scores temporarily.",
                     quiz: { q: "What does a Circuit Breaker prevent?", options: ["Hackers", "Cascading Failure", "High Costs"], correct: 1 }
                 },
                  {
                     term: "Containerization",
                     pronounce: "con-tain-er-i-za-shun",
                     def: "Bundling code with all its dependencies so it runs exactly the same on a laptop, a server, or the cloud.",
-                    impact: "Why the CEO cares: It ends the excuse 'It worked on my machine.' It creates the portability needed to move from Data Center to Cloud without rewriting code.",
+                    impact: "Why the CEO cares: It ends the excuse 'It worked on my machine.' It creates the portability needed to move to Cloud.",
                     quiz: { q: "What is the most popular container tool?", options: ["Kubernetes", "Docker", "Jenkins"], correct: 1 }
                 }
             ]
-        },
-        
+        }
 
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
 
-    // ------------------------------------------------------------------
+// ------------------------------------------------------------------
 // OFFLINE BENCHMARK DATA (Fallback if Database fails)
 // ------------------------------------------------------------------
 const offlineBenchmarks = [
     {"score":18,"industry":"Traditional Bank"}, 
     {"score":25,"industry":"Traditional Bank"}, 
-    // ... PASTE THE REST OF YOUR 1000 ROWS HERE ...
     {"score":75,"industry":"Neobank"}
 ];
-
