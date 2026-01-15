@@ -894,7 +894,7 @@ teamManager: {
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             
-            { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } 
+            { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
         
         dashboardTools: [ 
