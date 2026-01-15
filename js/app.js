@@ -1562,6 +1562,127 @@ async submitAndBenchmark() {
         get filteredGlossary() { 
             const q = this.glossarySearch.toLowerCase(); 
             return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); 
+        },
+
+                // ------------------------------------------------------------------
+        // LIGHTHOUSE PROJECT BUILDER
+        // ------------------------------------------------------------------
+        lighthouseBuilder: {
+            step: 1,
+            // The Data Model
+            form: {
+                name: '',
+                problem: '', // "The Burning Platform"
+                solution: '', // "The Hypothesis"
+                customer: '', // Who is it for?
+                po: '', // Mini-CEO
+                tech: '', // Tech Lead
+                risk_cap: '', // The Sandbox constraint (e.g. 50 loans)
+                anti_scope: '', // What we are NOT doing
+                success_metric: '' // The Outcome
+            },
+            
+            // Navigation logic
+            nextStep() {
+                if (this.validateStep()) this.step++;
+            },
+            prevStep() {
+                this.step--;
+            },
+            
+            validateStep() {
+                // Simple validation
+                const f = this.form;
+                if (this.step === 1 && (!f.name || !f.problem)) { alert("Define the problem first."); return false; }
+                if (this.step === 2 && (!f.po || !f.tech)) { alert("You need a Squad Leader."); return false; }
+                if (this.step === 3 && (!f.risk_cap || !f.anti_scope)) { alert("Define the boundaries."); return false; }
+                return true;
+            },
+
+            // PDF Generator
+            generateCharter() {
+                if (!window.jspdf) { alert("PDF Lib missing"); return; }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const f = this.form;
+
+                // 1. Branding / Header
+                doc.setFillColor(15, 23, 42); // Dark Blue
+                doc.rect(0, 0, 210, 40, "F");
+                doc.setTextColor(74, 222, 128); // Neon Green
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(22);
+                doc.text("LIGHTHOUSE CHARTER", 20, 20);
+                
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                doc.text("90-DAY EXECUTION CONTRACT", 20, 30);
+
+                // 2. Project Name & Core
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(16);
+                doc.setFont("helvetica", "bold");
+                doc.text(`PROJECT: ${f.name.toUpperCase()}`, 20, 55);
+
+                // 3. The Grid Layout
+                let y = 70;
+                
+                // Helper function for sections
+                const addSection = (title, content, yPos) => {
+                    doc.setFontSize(10);
+                    doc.setTextColor(100, 100, 100); // Grey Label
+                    doc.setFont("helvetica", "bold");
+                    doc.text(title.toUpperCase(), 20, yPos);
+                    
+                    doc.setFontSize(11);
+                    doc.setTextColor(0, 0, 0); // Black Text
+                    doc.setFont("helvetica", "normal");
+                    
+                    // Text Wrap
+                    const lines = doc.splitTextToSize(content, 170);
+                    doc.text(lines, 20, yPos + 6);
+                    
+                    return yPos + 6 + (lines.length * 6) + 10; // Return new Y position
+                };
+
+                y = addSection("1. The Burning Problem", f.problem, y);
+                y = addSection("2. The Hypothesis (Solution)", f.solution, y);
+                
+                // The Squad Box
+                doc.setDrawColor(200, 200, 200);
+                doc.rect(15, y, 180, 25);
+                doc.setFontSize(10);
+                doc.text(`PRODUCT OWNER (Mini-CEO): ${f.po}`, 20, y + 10);
+                doc.text(`TECH LEAD (Architect): ${f.tech}`, 20, y + 20);
+                y += 35;
+
+                y = addSection("3. The 'Anti-Scope' (What we are NOT doing)", f.anti_scope, y);
+                
+                // The Governance Box (Critical)
+                doc.setFillColor(254, 242, 242); // Light Red background
+                doc.rect(15, y, 180, 30, "F");
+                doc.setTextColor(185, 28, 28); // Dark Red Text
+                doc.setFont("helvetica", "bold");
+                doc.text("4. THE REGULATORY SANDBOX (License to Operate)", 20, y + 8);
+                doc.setTextColor(0, 0, 0);
+                doc.setFont("helvetica", "normal");
+                doc.text(`Risk Cap / Volume Limit: ${f.risk_cap}`, 20, y + 18);
+                doc.setFontSize(9);
+                doc.text("NOTE: This project is exempt from standard architectural review for 90 days.", 20, y + 26);
+                y += 40;
+
+                y = addSection("5. Success Metric (Outcome)", f.success_metric, y);
+
+                // Signatures
+                doc.line(20, 260, 90, 260);
+                doc.line(110, 260, 190, 260);
+                doc.setFontSize(8);
+                doc.text("PRODUCT OWNER SIGNATURE", 20, 265);
+                doc.text("EXECUTIVE SPONSOR SIGNATURE", 110, 265);
+
+                doc.save(`${f.name}_Lighthouse_Charter.pdf`);
+            }
         }
 
     })); // <-- This closes the Alpine.data object
