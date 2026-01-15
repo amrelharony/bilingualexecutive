@@ -118,6 +118,9 @@ document.addEventListener('alpine:init', () => {
         challengerData: null,
         copyBtnText: "Copy Challenge Link",
         activeRepair: null,
+
+        translatorView: 'dict',
+
         
         matrixCoords: { x: 50, y: 50 },
         compassCoords: { x: 50, y: 50 },
@@ -1343,7 +1346,16 @@ async submitAndBenchmark() {
             {title:"2. Regulatory Risk", subtitle:"The Data Swamp", lie:"'Data is centralized.'", truth:"We are drowning. We have petabytes with no governance.", question:"Can we generate a liquidity report in 10 minutes?"}, 
             {title:"3. Talent Risk", subtitle:"The Missing Bench", lie:"'Hiring top talent.'", truth:"Hiring mercenaries. Missionaries are leaving.", question:"% of Change budget spent on vendors?"}
         ],
-        
+
+                reportingData: [
+            { metric: "Velocity", financial: "Time-to-Revenue", script: "We reduced 'Time-to-Revenue' from 6 months to 2 weeks. We start earning interest 170 days earlier." },
+            { metric: "Cycle Time", financial: "Cost of Delay", script: "By cutting cycle time, we avoided the $2M 'Cost of Delay' associated with missing the Q4 window." },
+            { metric: "Tech Debt", financial: "Risk Exposure", script: "We retired a legacy liability. We reduced the probability of a 24-hour outage (valued at $10M) to near zero." },
+            { metric: "Stability", financial: "Brand Reputation", script: "We improved system uptime by 40%, directly correlating to a 15% drop in Support costs." },
+            { metric: "Flow Efficiency", financial: "OpEx Ratio", script: "We identified that 80% of labor cost was wasted on 'Waiting'. We increased the ROI of every dev hour by 4x." }
+        ],
+
+
         glossaryData: [
             {term:"Agentic AI",def:"AI that takes action (moves funds), not just generates text."}, 
             {term:"API",def:"Digital glue allowing systems to talk. Enables Open Banking."}, 
