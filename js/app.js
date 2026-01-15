@@ -64,6 +64,17 @@ document.addEventListener('alpine:init', () => {
                         section.questions.forEach((q, qIdx) => { if(parsed[sIdx] && parsed[sIdx][qIdx]) q.score = parsed[sIdx][qIdx]; });
                     });
                 }
+                
+             const savedTeam = localStorage.getItem('bilingual_active_team');
+                if (savedTeam) {
+                    this.teamManager.activeTeam = JSON.parse(savedTeam);
+                    this.teamManager.view = 'dashboard';
+                    // We use $nextTick to ensure Supabase client is ready
+                    this.$nextTick(() => {
+                        this.teamManager.fetchResults();
+                    });
+                }
+   
             } catch(e) {}
 
             // Watchers
@@ -555,6 +566,137 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        // ------------------------------------------------------------------
+// TEAM COLLABORATION MANAGER
+// ------------------------------------------------------------------
+teamManager: {
+    activeTeam: null, // { id, name, code }
+    memberResults: [], // Array of results from DB
+    isLoading: false,
+    view: 'intro', // intro, dashboard
+    joinInput: '',
+    createInput: '',
+    
+    // 1. Create a Team
+    async createTeam() {
+        if (!this.createInput) return alert("Please enter a team name.");
+        this.isLoading = true;
+        
+        // Generate a simple 6-char code
+        const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+        
+        const { data, error } = await this.supabase
+            .from('teams')
+            .insert({ name: this.createInput, join_code: code })
+            .select()
+            .single();
+
+        this.isLoading = false;
+
+        if (error) {
+            console.error(error);
+            alert("Error creating team.");
+        } else {
+            this.activeTeam = data;
+            this.view = 'dashboard';
+            this.createInput = '';
+            // Save to local storage so they stay logged in on refresh
+            localStorage.setItem('bilingual_active_team', JSON.stringify(data));
+        }
+    },
+
+    // 2. Join a Team
+    async joinByLink(code) {
+        this.joinInput = code;
+        await this.joinTeam();
+    },
+
+    async joinTeam() {
+        if (!this.joinInput) return alert("Enter a code.");
+        this.isLoading = true;
+
+        const { data, error } = await this.supabase
+            .from('teams')
+            .select('*')
+            .eq('join_code', this.joinInput.toUpperCase())
+            .single();
+
+        this.isLoading = false;
+
+        if (error || !data) {
+            alert("Team not found. Check the code.");
+        } else {
+            this.activeTeam = data;
+            this.view = 'dashboard';
+            localStorage.setItem('bilingual_active_team', JSON.stringify(data));
+            this.fetchResults(); // Get existing members
+        }
+    },
+
+    // 3. Fetch Team Data
+    async fetchResults() {
+        if (!this.activeTeam) return;
+        
+        const { data, error } = await this.supabase
+            .from('team_results')
+            .select('*')
+            .eq('team_id', this.activeTeam.id);
+
+        if (data) {
+            this.memberResults = data;
+            this.updateTeamCharts();
+        }
+    },
+
+    // 4. Submit My Score to the Team
+    async submitScore(scores, role, total) {
+        if (!this.activeTeam) return;
+
+        await this.supabase.from('team_results').insert({
+            team_id: this.activeTeam.id,
+            role: role || 'Anonymous',
+            scores: scores,
+            total_score: total
+        });
+        
+        // Refresh view
+        this.fetchResults();
+    },
+
+    // 5. Generate Share Link
+    copyInvite() {
+        const url = `${window.location.origin}${window.location.pathname}?team_code=${this.activeTeam.join_code}`;
+        // Use the existing copy helper
+        this.copyToClipboard(url, "Team Invite Link"); 
+    },
+
+    // 6. Metrics Calculation
+    get alignmentScore() {
+        if (this.memberResults.length < 2) return 100;
+        // Calculate standard deviation of total scores
+        const scores = this.memberResults.map(m => m.total_score);
+        const mean = scores.reduce((a, b) => a + b) / scores.length;
+        const variance = scores.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / scores.length;
+        const stdDev = Math.sqrt(variance);
+        
+        // Heuristic: Low deviation = High alignment
+        // 100 - (StdDev * 2) clamped to 0-100
+        return Math.max(0, Math.round(100 - (stdDev * 2)));
+    },
+
+    logout() {
+        this.activeTeam = null;
+        this.memberResults = [];
+        this.view = 'intro';
+        localStorage.removeItem('bilingual_active_team');
+    },
+
+    // Helper for Chart.js
+    updateTeamCharts() {
+        // Find the radar chart and update datasets
+        // (Implementation depends on where we render the team chart, addressed in HTML)
+    }
+},
         
         // ------------------------------------------------------------------
         //  API SANDBOX
@@ -1185,10 +1327,21 @@ document.addEventListener('alpine:init', () => {
             return s<=40?'text-risk':s<=60?'text-warn':'text-primary'; 
         },
         
-        finishAssessment() { 
+        async finishAssessment() { 
             this.assessmentSubmitted = true; 
             window.scrollTo({ top: 0, behavior: 'smooth' }); 
-            if (this.challengerData) this.$nextTick(() => this.updateGapChart()); 
+
+            // 1. NEW: Sync with Team Dashboard (if active)
+            if (this.teamManager && this.teamManager.activeTeam) {
+                const simpleScores = this.assessmentData.flatMap(s => s.questions.map(q => q.score));
+                // We use await here to ensure data is sent before potentially navigating away
+                await this.teamManager.submitScore(simpleScores, this.selectedTitle, this.calculateScore.total);
+            }
+
+            // 2. EXISTING: Update Gap Chart (if in Challenger Mode)
+            if (this.challengerData) {
+                this.$nextTick(() => this.updateGapChart()); 
+            }
         },
         
         resetAssessment() { 
