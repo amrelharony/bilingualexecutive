@@ -875,6 +875,7 @@ teamManager: {
             { id: 'feed', label: 'Daily Feed', icon: 'fa-solid fa-mug-hot' },
             { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' }, 
             { id: 'whatif', label: 'Scenario Planner', icon: 'fa-solid fa-chess-rook' },
+            { id: 'risksim', label: 'Risk Simulator', icon: 'fa-solid fa-scale-balanced' },
             { id: 'roleplay', label: 'Role-Play Dojo', icon: 'fa-solid fa-user-tie' },
             { id: 'sandbox', label: 'Architecture Sim', icon: 'fa-solid fa-shapes' },
             { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse' },
@@ -911,7 +912,9 @@ teamManager: {
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'builder', label: 'Charter Builder', desc: 'Generate a 90-day pilot contract.', icon: 'fa-solid fa-hammer', color: 'text-primary' },
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
-            { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
+            { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true }
+            { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
+
         ],
         
         // ------------------------------------------------------------------
@@ -1779,7 +1782,123 @@ async submitAndBenchmark() {
                     quiz: { q: "What is the most popular container tool?", options: ["Kubernetes", "Docker", "Jenkins"], correct: 1 }
                 }
             ]
-        }
+        },
+
+        // ------------------------------------------------------------------
+        // RISK VS SPEED NEGOTIATION SIMULATOR
+        // ------------------------------------------------------------------
+        riskSim: {
+            active: false,
+            loading: false,
+            input: '',
+            messages: [],
+            // The "Bilingual Balance" Scores (0-100)
+            scores: { safety: 50, speed: 50 }, 
+            turn: 0,
+            maxTurns: 5,
+
+            // The Scenario
+            context: {
+                role: "Risk Officer (Marcus)",
+                mission: "You want to launch an AI Loan Assistant in 2 weeks. Marcus thinks it's reckless.",
+                history: [] // Keeps track of conversation context
+            },
+
+            start() {
+                this.active = true;
+                this.messages = [];
+                this.scores = { safety: 50, speed: 50 };
+                this.turn = 0;
+                this.history = [];
+                
+                // Initial Challenge from the AI
+                this.addMessage('bot', "So, I hear you want to let a 'Black Box' algorithm approve loans without human review. Do you have any idea what the regulator will do to us if this hallucinates?");
+            },
+
+            addMessage(role, text) {
+                this.messages.push({ role, text, timestamp: new Date().toLocaleTimeString() });
+                this.context.history.push(`${role === 'user' ? 'Product Owner' : 'Risk Officer'}: ${text}`);
+            },
+
+            async sendReply() {
+                if (!this.input.trim()) return;
+                
+                // 1. Add User Message
+                const userText = this.input;
+                this.addMessage('user', userText);
+                this.input = '';
+                this.loading = true;
+                this.turn++;
+
+                // 2. Check API Key
+                const API_KEY = localStorage.getItem('bilingual_api_key');
+                if (!API_KEY) {
+                    this.addMessage('system', "Error: API Key missing. Please check settings.");
+                    this.loading = false;
+                    return;
+                }
+
+                // 3. The "Judge & Actor" Prompt
+                const systemPrompt = `
+                    ACT AS: Marcus, a cynical, veteran Chief Risk Officer at a bank.
+                    SCENARIO: The user (Product Owner) wants to launch an AI Loan Tool in 2 weeks.
+                    
+                    YOUR TASK:
+                    1. Analyze the user's latest response.
+                    2. SCORE them on "Safety" (0-100): Did they address compliance/risk concerns?
+                    3. SCORE them on "Speed" (0-100): Did they maintain business velocity/value?
+                    4. REPLY as Marcus. Be tough. Challenge them.
+                    
+                    OUTPUT FORMAT (Strict JSON only):
+                    {
+                        "safety_score": number,
+                        "speed_score": number,
+                        "reply": "string"
+                    }
+                    
+                    CONVERSATION HISTORY:
+                    ${this.context.history.join('\n')}
+                `;
+
+                // 4. API Call
+                try {
+                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ 
+                            contents: [{ parts: [{ text: systemPrompt }] }],
+                            generationConfig: { responseMimeType: "application/json" } // Force JSON
+                        })
+                    });
+
+                    if (!response.ok) throw new Error("API Error");
+                    let json = await response.json();
+                    let content = JSON.parse(json.candidates[0].content.parts[0].text);
+
+                    // 5. Update State
+                    this.scores.safety = content.safety_score;
+                    this.scores.speed = content.speed_score;
+                    this.addMessage('bot', content.reply);
+
+                    // Check Game Over conditions
+                    if (this.turn >= this.maxTurns) {
+                        this.addMessage('system', "SIMULATION ENDED. Check your final Bilingual Score above.");
+                    }
+
+                } catch (e) {
+                    console.error(e);
+                    this.addMessage('system', "Connection Error. Ensure you are using a valid Gemini API Key.");
+                } finally {
+                    this.loading = false;
+                }
+            },
+            
+            get statusColor() {
+                const avg = (this.scores.safety + this.scores.speed) / 2;
+                if (avg > 75) return 'text-primary';
+                if (avg > 40) return 'text-warn';
+                return 'text-risk';
+            }
+        },
 
     })); // <-- This closes the Alpine.data object
 
