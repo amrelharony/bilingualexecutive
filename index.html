@@ -1010,16 +1010,15 @@
                 </div>
 
                 <!-- State 3: Result -->
-                <div x-show="percentileResult" x-transition>
-                    <div class="mt-2">
-                        <span class="text-xs font-mono text-slate-400 uppercase tracking-widest">MARKET POSITION</span>
-                        <div class="text-4xl font-mono font-bold text-blue-400 my-1" x-text="percentileResult.rank"></div>
-                        <p class="text-sm text-white font-medium" x-text="percentileResult.msg"></p>
-                        <p class="text-xs text-slate-500 mt-2 font-mono">Based on <span x-text="totalBenchmarks"></span> verified audits.</p>
-                    </div>
-                </div>
-            </div>
-            
+<template x-if="percentileResult">
+    <div class="mt-2" x-transition>
+        <span class="text-xs font-mono text-slate-400 uppercase tracking-widest">MARKET POSITION</span>
+        <div class="text-4xl font-mono font-bold text-blue-400 my-1" x-text="percentileResult.rank"></div>
+        <p class="text-sm text-white font-medium" x-text="percentileResult.msg"></p>
+        <p class="text-xs text-slate-500 mt-2 font-mono">Based on <span x-text="totalBenchmarks"></span> verified audits.</p>
+    </div>
+</template>        
+                
             <div class="hidden md:block opacity-30">
                 <i class="fa-solid fa-ranking-star text-6xl"></i>
             </div>
