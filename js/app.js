@@ -872,6 +872,7 @@ teamManager: {
         // ------------------------------------------------------------------
         navItems: [ 
             { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, 
+            { id: 'feed', label: 'Daily Feed', icon: 'fa-solid fa-mug-hot' },
             { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' }, 
             { id: 'whatif', label: 'Scenario Planner', icon: 'fa-solid fa-chess-rook' },
             { id: 'roleplay', label: 'Role-Play Dojo', icon: 'fa-solid fa-user-tie' },
@@ -896,6 +897,7 @@ teamManager: {
         ],
         
         dashboardTools: [ 
+            { id: 'feed', label: 'Daily Insight', desc: 'Micro-lessons to build your streak.', icon: 'fa-solid fa-mug-hot', color: 'text-orange-400' },
             { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
             { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
             { id: 'roleplay', label: 'Role-Play Dojo', desc: 'Simulate high-stakes conversations.', icon: 'fa-solid fa-user-tie', color: 'text-warn' },
@@ -1685,8 +1687,106 @@ async submitAndBenchmark() {
                 doc.text("EXECUTIVE SPONSOR SIGNATURE", 110, 265);
 
                 doc.save(`${f.name}_Lighthouse_Charter.pdf`);
-            }
-        }
+            },
+        // ------------------------------------------------------------------
+        // DAILY FEED & HABIT TRACKER
+        // ------------------------------------------------------------------
+        dailyFeed: {
+            currentLesson: null,
+            streak: 0,
+            completedToday: false,
+            notificationPermission: 'default',
+
+            init() {
+                // 1. Load State
+                const savedState = JSON.parse(localStorage.getItem('bilingual_feed_state') || '{}');
+                this.streak = savedState.streak || 0;
+                const lastCompleted = savedState.lastDate;
+
+                // 2. Check Streak Logic
+                const today = new Date().toDateString();
+                if (lastCompleted === today) {
+                    this.completedToday = true;
+                } else if (lastCompleted) {
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    if (lastCompleted !== yesterday.toDateString()) {
+                        // Streak broken
+                        this.streak = 0; 
+                    }
+                }
+
+                // 3. Select Content based on Day of Year
+                const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 1000 / 60 / 60 / 24);
+                this.currentLesson = this.content[dayOfYear % this.content.length];
+                
+                // 4. Check Notifications
+                if ("Notification" in window) {
+                    this.notificationPermission = Notification.permission;
+                }
+            },
+
+            completeLesson() {
+                if (this.completedToday) return;
+                
+                this.streak++;
+                this.completedToday = true;
+                
+                // Save
+                localStorage.setItem('bilingual_feed_state', JSON.stringify({
+                    streak: this.streak,
+                    lastDate: new Date().toDateString()
+                }));
+
+                // Trigger confetti or feedback
+                alert(`Lesson Complete! Streak: ${this.streak} Days 🔥`);
+            },
+
+            requestNotify() {
+                if (!("Notification" in window)) {
+                    alert("This browser does not support desktop notifications");
+                } else {
+                    Notification.requestPermission().then(permission => {
+                        this.notificationPermission = permission;
+                        if (permission === "granted") {
+                            new Notification("Bilingual Exec", { body: "Daily notifications enabled!" });
+                        }
+                    });
+                }
+            },
+
+            content: [
+                {
+                    term: "Idempotency",
+                    pronounce: "eye-dem-po-ten-see",
+                    def: "A property where an operation can be applied multiple times without changing the result beyond the initial application.",
+                    impact: "Why the CEO cares: It prevents double-charging a customer if they click 'Pay' twice on a slow connection. It is the bedrock of payment reliability.",
+                    quiz: { q: "If a user clicks 'Pay' 5 times, how many times are they charged?", options: ["5 times", "1 time", "0 times"], correct: 1 }
+                },
+                {
+                    term: "Eventual Consistency",
+                    pronounce: "e-ven-tual con-sis-ten-cy",
+                    def: "A model where the system doesn't update everywhere instantly, but guarantees it will be correct 'eventually' (usually milliseconds).",
+                    impact: "Why the CEO cares: It allows us to scale globally (Netflix/Uber model) but makes 'Real-Time Balance' checks tricky. We trade strict accuracy for massive speed.",
+                    quiz: { q: "Which system prioritizes Speed over Instant Accuracy?", options: ["Strong Consistency", "Eventual Consistency", "ACID Transaction"], correct: 1 }
+                },
+                {
+                    term: "Circuit Breaker",
+                    pronounce: "sir-kit bray-ker",
+                    def: "design pattern that detects failures and encapsulates the logic of preventing a failure from constantly recurring.",
+                    impact: "Why the CEO cares: If the Credit Bureau API goes down, the app doesn't crash; it just stops asking for credit scores temporarily. It keeps the shop open during a fire.",
+                    quiz: { q: "What does a Circuit Breaker prevent?", options: ["Hackers", "Cascading Failure", "High Costs"], correct: 1 }
+                },
+                 {
+                    term: "Containerization",
+                    pronounce: "con-tain-er-i-za-shun",
+                    def: "Bundling code with all its dependencies so it runs exactly the same on a laptop, a server, or the cloud.",
+                    impact: "Why the CEO cares: It ends the excuse 'It worked on my machine.' It creates the portability needed to move from Data Center to Cloud without rewriting code.",
+                    quiz: { q: "What is the most popular container tool?", options: ["Kubernetes", "Docker", "Jenkins"], correct: 1 }
+                }
+            ]
+        },
+        
 
     })); // <-- This closes the Alpine.data object
 
