@@ -666,19 +666,25 @@ teamManager: {
     },
 
     // 5. Generate Share Link
-        copyInvite() {
-        const url = `${window.location.origin}${window.location.pathname}?team_code=${this.activeTeam.join_code}`;
+        copyIcopyInvite() {
+        // 1. Get the clean Base URL (removes any existing ?params)
+        // If you want to force your production domain, replace 'baseUrl' string below with:
+        // const baseUrl = "https://bilingualexecutive.amrelharony.com/";
+        const baseUrl = window.location.href.split('?')[0];
         
-        // Direct clipboard logic to fix scope issue
+        // 2. Append the team code
+        const url = `${baseUrl}?team_code=${this.activeTeam.join_code}`;
+        
+        // 3. Copy to clipboard
         if (navigator.clipboard && window.isSecureContext) {
             navigator.clipboard.writeText(url)
-                .then(() => alert("Team Invite Link copied to clipboard!"))
+                .then(() => alert("Team Invite Link copied! Sending this link will auto-open the Agile Audit tab."))
                 .catch(() => prompt("Copy this link:", url));
         } else {
-            // Fallback for non-secure contexts (some dev environments)
             prompt("Copy this link:", url);
         }
     },
+
 
     // 6. Metrics Calculation
     get alignmentScore() {
