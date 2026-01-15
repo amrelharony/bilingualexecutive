@@ -45,6 +45,14 @@ document.addEventListener('alpine:init', () => {
             // VIP & Challenger Logic
             const params = new URLSearchParams(window.location.search);
             if (params.get('access') === 'vip_nfc_001') this.triggerVipSequence();
+                        const teamCode = params.get('team_code');
+            if (teamCode) {
+                this.currentTab = 'assessment';
+                this.$nextTick(() => {
+                    this.teamManager.joinByLink(teamCode);
+                });
+            }
+
 
             const challenger = params.get('challenger');
             if (challenger) {
