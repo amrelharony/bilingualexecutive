@@ -2201,6 +2201,133 @@
 
                 </div>
             </div>
+
+            <!-- SQUAD BUILDER TAB -->
+            <div x-show="currentTab === 'squad'" x-cloak class="max-w-6xl mx-auto">
+                
+                <div class="text-center mb-8">
+                    <h2 class="font-mono text-3xl font-bold text-white mb-2">Bilingual Squad Builder</h2>
+                    <p class="text-textMuted text-sm">Design the machine. Balance Speed, Safety, and Value.</p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-6 items-start">
+                    
+                    <!-- LEFT: THE BENCH (Catalog) -->
+                    <div class="lg:col-span-1 bg-card border border-slate-700 p-4 rounded-xl h-fit">
+                        <h3 class="font-mono text-xs text-slate-400 uppercase mb-4 pl-2">Available Talent</h3>
+                        <div class="space-y-2">
+                            <template x-for="role in squadBuilder.catalog" :key="role.id">
+                                <button @click="squadBuilder.addRole(role)" class="w-full flex items-center p-3 rounded-lg border border-slate-600 hover:border-indigo-400 hover:bg-slate-700 transition-all text-left group">
+                                    <div class="w-8 h-8 rounded bg-slate-800 flex items-center justify-center text-slate-300 group-hover:text-white mr-3">
+                                        <i :class="'fa-solid ' + role.icon"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-bold text-white" x-text="role.title"></div>
+                                        <div class="text-[10px] text-slate-400" x-text="role.desc"></div>
+                                    </div>
+                                    <i class="fa-solid fa-plus ml-auto text-slate-500 group-hover:text-indigo-400"></i>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- CENTER: THE SQUAD (Drop Zone) -->
+                    <div class="lg:col-span-1">
+                        <div class="bg-dark border-2 border-dashed border-slate-700 rounded-xl p-4 min-h-[500px] relative">
+                            
+                            <!-- Header -->
+                            <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-700">
+                                <h3 class="font-mono text-xs text-indigo-400 uppercase">Active Roster</h3>
+                                <span class="text-xs font-mono" :class="squadBuilder.roster.length > 8 ? 'text-red-400' : 'text-slate-400'">
+                                    <span x-text="squadBuilder.roster.length"></span>/10
+                                </span>
+                            </div>
+
+                            <!-- Empty State -->
+                            <div x-show="squadBuilder.roster.length === 0" class="absolute inset-0 flex flex-col items-center justify-center text-slate-600 pointer-events-none">
+                                <i class="fa-solid fa-users text-4xl mb-2"></i>
+                                <p class="text-xs">Tap roles to add them</p>
+                            </div>
+
+                            <!-- Roster List -->
+                            <div class="space-y-2">
+                                <template x-for="member in squadBuilder.roster" :key="member.uid">
+                                    <div class="flex items-center p-3 rounded-lg bg-slate-800 border border-slate-600 animate-pulse-once">
+                                        <i :class="'fa-solid ' + member.icon + ' mr-3 text-slate-400'"></i>
+                                        <span class="text-sm text-white font-medium" x-text="member.title"></span>
+                                        <button @click="squadBuilder.removeRole(member.uid)" class="ml-auto text-slate-500 hover:text-red-400 px-2">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <button x-show="squadBuilder.roster.length > 0" @click="squadBuilder.reset()" class="absolute bottom-4 left-0 right-0 mx-auto w-fit text-xs text-red-400 hover:text-red-300 underline">
+                                Disband Squad
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: DIAGNOSTICS -->
+                    <div class="lg:col-span-1 space-y-6">
+                        
+                        <!-- Main Status -->
+                        <div class="bg-card border border-slate-700 p-6 rounded-xl text-center">
+                            <p class="text-[10px] font-mono text-slate-500 uppercase tracking-widest mb-1">SQUAD STATUS</p>
+                            <h3 class="text-xl font-bold font-mono uppercase mb-2" :class="squadBuilder.metrics.color" x-text="squadBuilder.metrics.status"></h3>
+                            
+                            <!-- Stats Bars -->
+                            <div class="space-y-3 mt-4 text-left">
+                                <div>
+                                    <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                                        <span>Velocity (Delivery Speed)</span>
+                                        <span x-text="squadBuilder.metrics.velocity"></span>
+                                    </div>
+                                    <div class="w-full bg-dark h-1.5 rounded-full overflow-hidden">
+                                        <div class="bg-indigo-400 h-full transition-all duration-500" :style="`width: ${Math.min(100, squadBuilder.metrics.velocity)}%`"></div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                                        <span>Translation (Biz/Tech Balance)</span>
+                                        <span x-text="squadBuilder.metrics.translation + '%'"></span>
+                                    </div>
+                                    <div class="w-full bg-dark h-1.5 rounded-full overflow-hidden">
+                                        <div class="h-full transition-all duration-500" :class="squadBuilder.metrics.translation > 60 ? 'bg-green-400' : 'bg-yellow-500'" :style="`width: ${squadBuilder.metrics.translation}%`"></div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                                        <span>Safety (Risk/Compliance)</span>
+                                        <span x-text="squadBuilder.metrics.safety + '%'"></span>
+                                    </div>
+                                    <div class="w-full bg-dark h-1.5 rounded-full overflow-hidden">
+                                        <div class="h-full transition-all duration-500" :class="squadBuilder.metrics.safety > 40 ? 'bg-blue-400' : 'bg-red-500'" :style="`width: ${squadBuilder.metrics.safety}%`"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Recommendations -->
+                        <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-xl">
+                            <h4 class="font-mono text-xs text-white font-bold mb-3"><i class="fa-solid fa-clipboard-list mr-2 text-indigo-400"></i>Coach's Notes</h4>
+                            
+                            <ul class="space-y-2">
+                                <template x-for="gap in squadBuilder.gaps">
+                                    <li class="text-xs text-slate-300 flex items-start gap-2">
+                                        <i class="fa-solid fa-caret-right text-indigo-500 mt-0.5"></i>
+                                        <span x-text="gap"></span>
+                                    </li>
+                                </template>
+                                <li x-show="squadBuilder.gaps.length === 0 && squadBuilder.roster.length === 0" class="text-xs text-slate-500 italic">Add members to see analysis.</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
             
             <!-- COMMUNITY -->
             <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
