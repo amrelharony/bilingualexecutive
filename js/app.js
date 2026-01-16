@@ -892,8 +892,8 @@ teamManager: {
             { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox' }, 
             { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
-            { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'excel', label: 'Excel Calculator', icon: 'fa-solid fa-file-excel' },
+            { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
         
