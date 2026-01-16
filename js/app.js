@@ -110,6 +110,18 @@ document.addEventListener('alpine:init', () => {
           
             this.culturalMonitor.init(); 
 
+                        const secureBind = this.askSecureAI.bind(this);
+            
+            this.rolePlay.askSecureAI = secureBind;
+            this.whatIf.askSecureAI = secureBind;
+            this.riskSim.askSecureAI = secureBind;
+            this.shadowAudit.askSecureAI = secureBind;
+            this.hallucinationDetector.askSecureAI = secureBind;
+            this.kpiDesigner.askSecureAI = secureBind;
+            this.vendorCoach.askSecureAI = secureBind;
+            
+
+
         },
 
                 // ==================================================================
