@@ -1540,6 +1540,144 @@
 
             </div>
 
+            <!-- STRANGLER VISUALIZER TAB -->
+            <div x-show="currentTab === 'strangler'" x-cloak class="max-w-5xl mx-auto">
+                
+                <div class="text-center mb-8">
+                    <h2 class="font-mono text-3xl font-bold text-white mb-2">Legacy Modernization Simulator</h2>
+                    <p class="text-textMuted text-sm">Don't rewrite. Strangle. Follow the 7-step pattern to kill the Monolith safely.</p>
+                </div>
+
+                <!-- MAIN INTERFACE -->
+                <div class="grid lg:grid-cols-3 gap-6">
+                    
+                    <!-- LEFT: THE ARCHITECTURE CANVAS -->
+                    <div class="lg:col-span-2 bg-dark border-2 border-dashed border-slate-700 rounded-xl p-8 relative min-h-[400px] flex flex-col items-center justify-center overflow-hidden">
+                        
+                        <!-- TRAFFIC FLOW (User) -->
+                        <div class="absolute top-4 left-1/2 transform -translate-x-1/2 text-center z-20">
+                            <i class="fa-solid fa-users text-3xl text-white mb-2"></i>
+                            <div class="text-xs font-mono text-slate-400">CUSTOMER TRAFFIC</div>
+                            
+                            <!-- Traffic Splitter -->
+                            <div class="flex gap-4 mt-2 text-[10px] font-bold">
+                                <span class="text-slate-400" x-show="stranglerSim.traffic.legacy > 0" x-text="stranglerSim.traffic.legacy + '% Legacy'"></span>
+                                <span class="text-primary" x-show="stranglerSim.traffic.modern > 0" x-text="stranglerSim.traffic.modern + '% Modern'"></span>
+                            </div>
+                        </div>
+
+                        <!-- THE ARCHITECTURE DIAGRAM -->
+                        <div class="relative w-full max-w-lg mt-16 flex justify-between items-stretch gap-4 h-64">
+                            
+                            <!-- 1. THE MONOLITH (Legacy) -->
+                            <div class="flex-1 bg-slate-800 border-2 border-slate-600 rounded-lg flex flex-col items-center justify-center p-4 relative transition-all duration-1000"
+                                 :class="{'opacity-50 grayscale': stranglerSim.step === 6, 'scale-95': stranglerSim.step === 6}">
+                                <div class="absolute -top-3 bg-slate-700 text-slate-300 text-[10px] px-2 py-1 rounded">LEGACY CORE</div>
+                                <i class="fa-solid fa-server text-4xl text-slate-500 mb-2"></i>
+                                <div class="w-full space-y-2">
+                                    <div class="h-2 bg-slate-600 rounded w-full"></div>
+                                    <div class="h-2 bg-slate-600 rounded w-3/4"></div>
+                                    <div class="h-2 rounded w-5/6 transition-colors duration-500" 
+                                         :class="stranglerSim.step >= 6 ? 'bg-slate-900' : 'bg-red-900/50'"></div> <!-- Payments Module -->
+                                </div>
+                                <div class="mt-4 text-xs text-red-400 font-bold" x-show="stranglerSim.step < 6">PAYMENTS MODULE</div>
+                                <div class="mt-4 text-xs text-slate-600 font-bold line-through" x-show="stranglerSim.step === 6">DECOMMISSIONED</div>
+                            </div>
+
+                            <!-- 2. THE PROXY (ACL) - Appears Step 1 -->
+                            <div class="absolute -top-6 left-0 w-full h-4 border-t-4 transition-colors duration-500 z-10"
+                                 x-show="stranglerSim.step >= 1"
+                                 :class="stranglerSim.connectionColor">
+                                 <!-- Arrows -->
+                                 <div class="absolute -top-3 left-1/4 text-yellow-500" x-show="stranglerSim.step >= 1 && stranglerSim.traffic.legacy > 0"><i class="fa-solid fa-arrow-down"></i></div>
+                                 <div class="absolute -top-3 right-1/4 text-primary" x-show="stranglerSim.step >= 4"><i class="fa-solid fa-arrow-down"></i></div>
+                            </div>
+
+                            <!-- 3. THE MICROSERVICE (Modern) - Appears Step 2 -->
+                            <div class="flex-1 border-2 border-dashed border-slate-700 rounded-lg flex flex-col items-center justify-center p-4 transition-all duration-700"
+                                 :class="stranglerSim.step >= 2 ? 'bg-green-900/20 border-primary border-solid' : 'opacity-30'">
+                                <div class="absolute -top-3 bg-dark border border-primary text-primary text-[10px] px-2 py-1 rounded" x-show="stranglerSim.step >= 2">NEW SERVICE</div>
+                                <i class="fa-solid fa-cubes text-4xl mb-2 transition-colors" :class="stranglerSim.step >= 2 ? 'text-primary' : 'text-slate-700'"></i>
+                                <div class="text-xs font-bold transition-colors" :class="stranglerSim.step >= 2 ? 'text-white' : 'text-slate-700'">PAYMENTS API</div>
+                                
+                                <div class="mt-4 text-[10px] text-primary animate-pulse" x-show="stranglerSim.step === 3">
+                                    <i class="fa-solid fa-rotate mr-1"></i> SYNCING DATA...
+                                </div>
+                                <div class="mt-4 text-[10px] text-white" x-show="stranglerSim.step >= 4">
+                                    <i class="fa-solid fa-check-circle mr-1"></i> LIVE TRAFFIC
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: CONTROL PANEL -->
+                    <div class="space-y-6">
+                        
+                        <!-- Current Phase Card -->
+                        <div class="bg-card border-l-4 border-purple-500 p-6 rounded-r-xl shadow-lg">
+                            <span class="text-[10px] font-mono text-purple-400 uppercase tracking-widest block mb-2">
+                                PHASE <span x-text="stranglerSim.step"></span>: <span x-text="stranglerSim.currentPhaseData.title"></span>
+                            </span>
+                            <p class="text-sm text-slate-300 mb-6 min-h-[60px]" x-text="stranglerSim.currentPhaseData.desc"></p>
+                            
+                            <div class="flex gap-3">
+                                <button @click="stranglerSim.nextPhase()" 
+                                        x-show="stranglerSim.step < 6"
+                                        class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
+                                    <span x-text="stranglerSim.currentPhaseData.action"></span> <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                                <button @click="stranglerSim.reset()" 
+                                        x-show="stranglerSim.step === 6"
+                                        class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg transition-all">
+                                    <i class="fa-solid fa-rotate-left mr-2"></i> Reset Sim
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Metrics Dashboard -->
+                        <div class="bg-card border border-slate-700 p-6 rounded-xl">
+                            <h3 class="font-mono text-xs text-slate-400 uppercase mb-4">Project Telemetry</h3>
+                            
+                            <!-- Cost -->
+                            <div class="mb-4">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-slate-400">Budget Spent</span>
+                                    <span class="text-white font-mono" x-text="'$' + stranglerSim.metrics.cost.toLocaleString()"></span>
+                                </div>
+                                <div class="w-full bg-dark h-1.5 rounded-full overflow-hidden">
+                                    <div class="bg-yellow-500 h-full transition-all" :style="`width: ${Math.min(100, stranglerSim.metrics.cost / 2000)}%`"></div>
+                                </div>
+                            </div>
+
+                            <!-- Risk -->
+                            <div class="mb-4">
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-slate-400">System Risk</span>
+                                    <span class="text-white font-mono" x-text="stranglerSim.metrics.risk + '%'"></span>
+                                </div>
+                                <div class="w-full bg-dark h-1.5 rounded-full overflow-hidden">
+                                    <div class="h-full transition-all" 
+                                         :class="stranglerSim.metrics.risk > 50 ? 'bg-risk' : 'bg-blue-400'"
+                                         :style="`width: ${stranglerSim.metrics.risk}%`"></div>
+                                </div>
+                            </div>
+
+                            <!-- Velocity -->
+                            <div>
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-slate-400">Dev Velocity</span>
+                                    <span class="text-white font-mono" x-text="stranglerSim.metrics.velocity + '%'"></span>
+                                </div>
+                                <div class="w-full bg-dark h-1.5 rounded-full overflow-hidden">
+                                    <div class="bg-primary h-full transition-all" :style="`width: ${stranglerSim.metrics.velocity}%`"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
             
             <!-- COMMUNITY -->
             <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
