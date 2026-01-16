@@ -2326,56 +2326,34 @@ async submitAndBenchmark() {
             },
 
             // 1. THE AI SCANNER
-            async scanTool() {
+           async scanTool() {
                 if(!this.inputs.name) return alert("Enter a tool name first.");
                 
                 this.loading = true;
                 this.aiAnalysis = null;
-                const API_KEY = localStorage.getItem('bilingual_api_key');
 
-                // Offline Fallback (if no key)
-                if (!API_KEY) {
-                    await new Promise(r => setTimeout(r, 1000));
-                    // Simple heuristic for demo
-                    const name = this.inputs.name.toLowerCase();
-                    const isRisky = name.includes('gpt') || name.includes('cloud') || name.includes('data');
-                    
-                    this.inputs.hasPII = isRisky;
-                    this.aiAnalysis = {
-                        category: "Productivity / SaaS",
-                        risks: isRisky ? ["Unstructured Data Leakage", "Data Residency Unknown"] : ["Shadow Cost", "Access Control"],
-                        justification: `This tool (${this.inputs.name}) provides unique features not available in the enterprise stack, reducing cycle time by ~20%.`
-                    };
-                    this.loading = false;
-                    return;
-                }
-
-                // Real AI Analysis
                 const prompt = `
-                    ACT AS: Bank CISO & Architecture Review Board.
+                    ACT AS: Bank CISO.
                     TASK: Analyze this SaaS tool: "${this.inputs.name}".
-                    CONTEXT: A department wants to use this tool instead of the approved enterprise standard.
                     
-                    OUTPUT JSON ONLY:
+                    OUTPUT JSON ONLY (No markdown):
                     {
-                        "category": "string (e.g. Project Mgmt, AI, Dev Tool)",
-                        "likely_has_pii": boolean (Does this tool typically store names/emails/data?),
-                        "criticality": boolean (Is this typically business critical?),
-                        "top_risks": ["string", "string", "string"] (Max 3 specific banking risks e.g. 'Data Residency', 'Model Training on Data'),
-                        "velocity_justification": "string" (1 sentence argument why a team would choose this over a legacy bank tool like SharePoint/Jira. Focus on UX/Speed.)
+                        "category": "string (e.g. Project Mgmt, AI)",
+                        "likely_has_pii": boolean,
+                        "criticality": boolean,
+                        "top_risks": ["string", "string"],
+                        "velocity_justification": "string (1 sentence business case)"
                     }
                 `;
 
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } })
-                    });
+                    let rawText = await this.askSecureAI(prompt, this.inputs.name);
+                    // Clean up potential markdown code blocks from AI response
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
                     
-                    const json = await response.json();
-                    const data = JSON.parse(json.candidates[0].content.parts[0].text);
+                    const data = JSON.parse(rawText);
                     
-                    // Auto-fill the form based on AI findings
+                    // Auto-fill form
                     this.inputs.hasPII = data.likely_has_pii;
                     this.inputs.isCritical = data.criticality;
                     
@@ -2387,12 +2365,11 @@ async submitAndBenchmark() {
 
                 } catch (e) {
                     console.error(e);
-                    alert("AI Analysis failed. Using manual mode.");
+                    alert("Analysis failed. Please fill manually.");
                 } finally {
                     this.loading = false;
                 }
             },
-
             // 2. FINANCIAL CALCULATIONS
             get analysis() {
                 const i = this.inputs;
