@@ -895,7 +895,7 @@ teamManager: {
             { id: 'excel', label: 'Excel Calculator', icon: 'fa-solid fa-file-excel' },
             { id: 'strangler', label: 'Strangler Visualizer', icon: 'fa-solid fa-network-wired' },
             { id: 'hippo', label: 'HIPPO Tracker', icon: 'fa-solid fa-crown' },
-            { id: 'threat', label: 'Threat Monitor', icon: 'fa-solid fa-radar' },
+            { id: 'threat', label: 'Threat Monitor', icon: 'fa-solid fa-satellite-dish' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -918,7 +918,7 @@ teamManager: {
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true },
             { id: 'excel', label: 'Excel Exposure', desc: 'Calculate the cost & risk of manual spreadsheets.', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
             { id: 'hippo', label: 'HIPPO Tracker', desc: 'Log decisions where Opinion overruled Data.', icon: 'fa-solid fa-crown', color: 'text-yellow-500' },
-            { id: 'threat', label: 'Open Banking Radar', desc: 'Real-time monitor of competitor API drain.', icon: 'fa-solid fa-radar', color: 'text-red-500' },
+            { id: 'threat', label: 'Open Banking Radar', desc: 'Real-time monitor of competitor API drain.', icon: 'fa-solid fa-satellite-dish', color: 'text-red-500' },
             { id: 'strangler', label: 'Strangler Pattern', desc: 'Visualize legacy modernization strategy.', icon: 'fa-solid fa-network-wired', color: 'text-purple-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
