@@ -1871,35 +1871,14 @@
                         <div class="relative h-64 w-64">
                             <!-- CSS Donut Chart Container -->
                             <div class="relative w-full h-full">
+
                                 <!-- The Donut Chart -->
-                                <div class="absolute inset-0 rounded-full overflow-hidden">
-                                    <!-- Retained (Bank) Segment -->
-                                    <div class="absolute inset-0" 
-                                         :style="`background: conic-gradient(#1e293b 0% ${threatMonitor.shareOfWallet}%, transparent ${threatMonitor.shareOfWallet}% 100%)`">
-                                    </div>
-                                    
-                                    <!-- Revolut Segment -->
-                                    <div class="absolute inset-0" 
-                                         x-show="threatMonitor.competitors[0].share > 0"
-                                         :style="`background: conic-gradient(#3b82f6 ${threatMonitor.shareOfWallet}% ${parseFloat(threatMonitor.shareOfWallet) + parseFloat(threatMonitor.competitors[0].share)}%, transparent ${parseFloat(threatMonitor.shareOfWallet) + parseFloat(threatMonitor.competitors[0].share)}% 100%)`">
-                                    </div>
-                                    
-                                    <!-- Wise Segment -->
-                                    <div class="absolute inset-0" 
-                                         x-show="threatMonitor.competitors[1].share > 0"
-                                         :style="`background: conic-gradient(#22c55e ${parseFloat(threatMonitor.shareOfWallet) + parseFloat(threatMonitor.competitors[0].share)}% ${parseFloat(threatMonitor.shareOfWallet) + parseFloat(threatMonitor.competitors[0].share) + parseFloat(threatMonitor.competitors[1].share)}%, transparent ${parseFloat(threatMonitor.shareOfWallet) + parseFloat(threatMonitor.competitors[0].share) + parseFloat(threatMonitor.competitors[1].share)}% 100%)`">
-                                    </div>
-                                    
-                                    <!-- Klarna Segment -->
-                                    <div class="absolute inset-0" 
-                                         x-show="threatMonitor.competitors[2].share > 0"
-                                         :style="`background: conic-gradient(#ef4444 ${parseFloat(threatMonitor.shareOfWallet) + parseFloat(threatMonitor.competitors[0].share) + parseFloat(threatMonitor.competitors[1].share)}% 100%, transparent 0% 0%)`">
-                                    </div>
-                                    
-                                    <!-- Inner circle (hole) -->
-                                    <div class="absolute inset-8 bg-dark rounded-full"></div>
-                                </div>
-                                
+<div class="absolute inset-0 rounded-full overflow-hidden" 
+     :style="`background: ${threatMonitor.chartGradient}`">
+    
+    <!-- Inner circle (hole) -->
+    <div class="absolute inset-8 bg-dark rounded-full"></div>
+</div>
                                 <!-- Center Text -->
                                 <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                     <span class="text-4xl font-bold font-mono" :class="threatMonitor.healthColor" x-text="threatMonitor.shareOfWallet + '%'"></span>
