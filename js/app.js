@@ -2159,8 +2159,20 @@ async submitAndBenchmark() {
                 if (this.active) {
                     clearInterval(this.interval);
                     this.active = false;
+                    this.logEvent("⏸️ Simulation paused.", "neutral");
                 } else {
                     this.active = true;
+                    
+                    // 1. Immediate feedback that the system is running
+                    this.logEvent("⚡ RADAR ACTIVE. Scanning for threats...", "neutral");
+
+                    // 2. The Nudge: Tell them to interact after a short delay
+                    setTimeout(() => {
+                         if(this.active) {
+                             this.logEvent("👉 ACTION REQUIRED: Increase Latency or Fees to stress-test retention.", "risk");
+                         }
+                    }, 800);
+
                     this.interval = setInterval(() => this.tick(), 1000);
                 }
             },
