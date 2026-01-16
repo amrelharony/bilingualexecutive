@@ -2246,51 +2246,79 @@ async submitAndBenchmark() {
                 this.updateChartData();
             },
 
-            renderChart() {
-                const ctx = document.getElementById('threatChart');
-                if (!ctx) return;
-                if (this.chart) this.chart.destroy();
+           renderChart() {
+    const ctx = document.getElementById('threatChart');
+    if (!ctx) {
+        console.warn('threatChart canvas not found');
+        return;
+    }
+    
+    // Clear any existing chart
+    if (this.chart) {
+        try {
+            this.chart.destroy();
+        } catch (e) {
+            console.warn('Error destroying chart:', e);
+        }
+        this.chart = null;
+    }
 
-                this.chart = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Retained', ...this.competitors.map(c => c.name)],
-                        datasets: [{
-                            data: [100, 0, 0, 0],
-                            backgroundColor: ['#1e293b', ...this.competitors.map(c => c.color)],
-                            borderColor: '#0f172a',
-                            borderWidth: 2
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        cutout: '70%',
-                        plugins: { legend: { display: false } },
-                        animation: { animateScale: true }
-                    }
-                });
+    try {
+        this.chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Retained', ...this.competitors.map(c => c.name)],
+                datasets: [{
+                    data: [100, 0, 0, 0],
+                    backgroundColor: ['#1e293b', ...this.competitors.map(c => c.color)],
+                    borderColor: '#0f172a',
+                    borderWidth: 2
+                }]
             },
-
-updateChartData() {
-                // SAFETY CHECK: Ensure chart instance and its internal state exist
-                if (!this.chart || !this.chart.data || !this.chart.data.datasets) {
-                    // If chart isn't ready, try to render it again
-                    this.renderChart();
-                    return;
+            options: {
+                responsive: true,
+                cutout: '70%',
+                plugins: { 
+                    legend: { display: false },
+                    // Add this to prevent potential plugin issues
+                    tooltip: { enabled: true }
+                },
+                animation: { 
+                    animateScale: true,
+                    duration: 300 // Shorter animation to prevent conflicts
                 }
+            }
+        });
+    } catch (error) {
+        console.error('Error creating chart:', error);
+    }
+},
+            
+updateChartData() {
+    // SAFETY CHECK: Ensure chart instance and its internal state exist
+    if (!this.chart || !this.chart.data || !this.chart.data.datasets) {
+        // If chart isn't ready, try to render it again
+        this.renderChart();
+        return;
+    }
 
-                // Update data safely
-                this.chart.data.datasets[0].data = [
-                    this.shareOfWallet, 
-                    ...this.competitors.map(c => c.share)
-                ];
+    // Update data safely
+    this.chart.data.datasets[0].data = [
+        this.shareOfWallet, 
+        ...this.competitors.map(c => c.share)
+    ];
 
-                // FIX: Wrap update in a requestAnimationFrame to sync with browser repaint cycle
-                // This prevents the 'fullSize' race condition
-                requestAnimationFrame(() => {
-                    this.chart.update(); 
-                });
-            },
+    // FIX: Add a check to ensure chart is still valid before updating
+    if (this.chart && this.chart.update && typeof this.chart.update === 'function') {
+        // Wrap update in a try-catch to prevent errors from breaking the simulation
+        try {
+            this.chart.update(); 
+        } catch (error) {
+            console.warn('Chart update failed, re-rendering:', error);
+            this.renderChart();
+        }
+    }
+},
 
             get healthColor() {
                 if (this.shareOfWallet > 80) return 'text-primary';
