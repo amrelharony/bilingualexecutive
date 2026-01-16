@@ -903,6 +903,7 @@ teamManager: {
             { id: 'threat', label: 'Threat Monitor', icon: 'fa-solid fa-satellite-dish' },
             { id: 'shadow', label: 'Shadow IT Audit', icon: 'fa-solid fa-ghost' },
             { id: 'detector', label: 'Hallucination Check', icon: 'fa-solid fa-user-secret' },
+            { id: 'squad', label: 'Squad Builder', icon: 'fa-solid fa-people-group' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -928,6 +929,7 @@ teamManager: {
             { id: 'threat', label: 'Open Banking Radar', desc: 'Real-time monitor of competitor API drain.', icon: 'fa-solid fa-satellite-dish', color: 'text-red-500' },
             { id: 'strangler', label: 'Strangler Pattern', desc: 'Visualize legacy modernization strategy.', icon: 'fa-solid fa-network-wired', color: 'text-purple-400' },
             { id: 'detector', label: 'AI Hallucination Detector', desc: 'Verify GenAI outputs against your Credit & Risk policies.', icon: 'fa-solid fa-shield-cat', color: 'text-risk' },
+            { id: 'squad', label: 'Bilingual Squad Builder', desc: 'Design the perfect cross-functional team and test its velocity.', icon: 'fa-solid fa-puzzle-piece', color: 'text-indigo-400' },
             { id: 'shadow', label: 'Shadow IT Discovery', desc: 'Audit SaaS tools and calculate the Integration Tax.', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
@@ -2554,6 +2556,113 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 }
             }
         },
+
+        // ------------------------------------------------------------------
+        // BILINGUAL SQUAD BUILDER
+        // ------------------------------------------------------------------
+        squadBuilder: {
+            // The available roles to pick from
+            catalog: [
+                { id: 'po', title: 'Product Owner', icon: 'fa-briefcase', type: 'biz', biz: 10, tech: 3, risk: 2, desc: 'Mini-CEO. Owns Value.' },
+                { id: 'tech_lead', title: 'Tech Lead', icon: 'fa-code-branch', type: 'tech', biz: 4, tech: 10, risk: 4, desc: 'Architect. Owns Feasibility.' },
+                { id: 'scrum', title: 'Scrum Master', icon: 'fa-stopwatch', type: 'ops', biz: 5, tech: 5, risk: 3, desc: 'Flow Mechanic. Removes blockers.' },
+                { id: 'data', title: 'Data Steward', icon: 'fa-database', type: 'tech', biz: 3, tech: 8, risk: 8, desc: 'Quality Gatekeeper.' },
+                { id: 'risk', title: 'Risk Embed', icon: 'fa-shield-cat', type: 'risk', biz: 2, tech: 2, risk: 10, desc: 'The Guardrail Builder.' },
+                { id: 'dev', title: 'Developer', icon: 'fa-laptop-code', type: 'tech', biz: 1, tech: 9, risk: 1, desc: 'The Engine.' },
+                { id: 'ux', title: 'UX Designer', icon: 'fa-pen-nib', type: 'design', biz: 6, tech: 4, risk: 1, desc: 'Customer Advocate.' }
+            ],
+            
+            // The current squad roster
+            roster: [],
+            
+            // Actions
+            addRole(role) {
+                if (this.roster.length >= 10) return alert("Two-Pizza Rule Violation: Squad is getting too big (>10).");
+                // Create a unique instance
+                this.roster.push({ ...role, uid: Date.now() });
+            },
+
+            removeRole(uid) {
+                this.roster = this.roster.filter(r => r.uid !== uid);
+            },
+
+            reset() {
+                this.roster = [];
+            },
+
+            // Computed Metrics
+            get metrics() {
+                const r = this.roster;
+                if (r.length === 0) return { velocity: 0, translation: 0, safety: 0, status: 'EMPTY' };
+
+                // 1. Calculate Base Capabilities
+                let totalBiz = r.reduce((a,b) => a + b.biz, 0);
+                let totalTech = r.reduce((a,b) => a + b.tech, 0);
+                let totalRisk = r.reduce((a,b) => a + b.risk, 0);
+
+                // 2. Velocity Calculation (The Engine)
+                // Base speed comes from Devs + Tech Lead
+                let velocity = (totalTech * 1.5);
+                
+                // Friction: If Risk score is low relative to Tech, velocity is dangerous (potential rework/shutdown)
+                // However, in the "Bilingual" model, Lack of Risk doesn't slow you down immediately, it creates "Fragility".
+                // But Lack of Biz (PO) definitely slows you down (building wrong thing).
+                
+                if (totalBiz < 5) velocity *= 0.5; // No direction
+                if (totalRisk < 5) velocity *= 1.2; // Reckless speed (Danger!)
+
+                // 3. Translation Efficiency (The Bilingual Score)
+                // How well balanced are Tech and Biz?
+                // 100% means perfect 50/50 balance.
+                const balance = Math.min(totalBiz, totalTech) / Math.max(totalBiz, totalTech);
+                const translation = Math.round(balance * 100) || 0;
+
+                // 4. Safety Score
+                let safety = Math.min(100, totalRisk * 3);
+
+                // 5. Diagnostics / Status
+                let status = "OPTIMIZED";
+                let color = "text-primary";
+                
+                const hasPO = r.find(x => x.id === 'po');
+                const hasTL = r.find(x => x.id === 'tech_lead');
+                const hasRisk = r.find(x => x.id === 'risk' || x.id === 'data');
+
+                if (!hasPO) { status = "HEADLESS (No PO)"; color = "text-risk"; }
+                else if (!hasTL) { status = "THEORETICAL (No Tech Lead)"; color = "text-warn"; }
+                else if (translation < 30) { status = "SILOED (Imbalanced)"; color = "text-warn"; }
+                else if (safety < 20) { status = "FRAGILE FINTECH (High Risk)"; color = "text-risk"; }
+                else if (safety > 80 && velocity < 50) { status = "BUREAUCRATIC"; color = "text-warn"; }
+
+                return {
+                    velocity: Math.round(velocity),
+                    translation: translation,
+                    safety: safety,
+                    status: status,
+                    color: color,
+                    hasPO: !!hasPO,
+                    hasTL: !!hasTL,
+                    hasRisk: !!hasRisk
+                };
+            },
+
+            // Generate Recommendations based on composition
+            get gaps() {
+                const m = this.metrics;
+                const g = [];
+                
+                if (!m.hasPO) g.push("CRITICAL: Recruit a 'Bilingual' Product Owner to define value.");
+                if (!m.hasTL) g.push("CRITICAL: Assign a Tech Lead to own architecture.");
+                if (!m.hasRisk && m.velocity > 50) g.push("DANGER: High speed with no brakes. Embed a Risk Officer or Data Steward.");
+                if (m.translation < 40 && m.hasPO && m.hasTL) g.push("GAP: Business and Tech are disconnected. Schedule 'Translation' workshops or 'Gemba Walks'.");
+                if (this.roster.length > 8) g.push("WARNING: Squad size approaching inefficiency. Consider splitting.");
+                
+                if (g.length === 0 && this.roster.length > 3) g.push("READY TO LAUNCH. This squad has high Bilingual potential.");
+                
+                return g;
+            }
+        },
+        
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
