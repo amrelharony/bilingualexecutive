@@ -2885,64 +2885,36 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 this.currentTerms = "We pay $85/hour per developer. The scope is defined in SOWs every 3 months. If they miss a deadline, we just pay for more hours to fix it.";
             },
 
-            async analyze() {
-                if (!this.currentTerms) return alert("Please describe your current contract.");
+           async analyze() {
+                if (!this.currentTerms) return alert("Please describe your contract.");
                 
                 this.loading = true;
-                const API_KEY = localStorage.getItem('bilingual_api_key');
-                
-                if (!API_KEY) {
-                    // Offline Fallback
-                    await new Promise(r => setTimeout(r, 1000));
-                    this.analysis = {
-                        level: "Level 2: Capacity (Body Shop)",
-                        danger: "You are incentivizing them to be slow. They make more profit if the project is delayed.",
-                        upgrade_clause: "THE UPSIDE BONUS: Vendor base rate reduced to $75/hr. 20% Bonus Pool unlocked if 'Code Defect Ratio' < 1% and 'Time-to-Market' < 2 weeks.",
-                        objection: "We can't accept risk. We don't control your legacy environment.",
-                        rebuttal: "We are moving to Cloud. You claim to be experts. If you don't trust your own code quality, why should we pay a premium?"
-                    };
-                    this.step = 'analysis';
-                    this.loading = false;
-                    return;
-                }
 
                 const prompt = `
-                    ACT AS: Expert IT Procurement Strategist & Agile Coach.
-                    FRAMEWORK: The Vendor Partnership Pyramid (Level 1: Commodity, Level 2: Capacity/T&M, Level 3: Co-Creator/Outcome).
+                    ACT AS: IT Procurement Strategist.
+                    FRAMEWORK: Vendor Partnership Pyramid.
+                    INPUT: Vendor: ${this.vendorName}, Type: ${this.contractType}, Terms: "${this.currentTerms}"
                     
-                    USER INPUT:
-                    Vendor: ${this.vendorName}
-                    Type: ${this.contractType}
-                    Current Terms: "${this.currentTerms}"
-                    
-                    TASK: Analyze this contract.
-                    1. Identify the current Level (1 or 2).
-                    2. Draft a specific "Level 3" Clause to replace the current bad incentive.
-                    3. Predict the Vendor's Account Manager's objection.
-                    4. Draft a "Bilingual" rebuttal (Business + Tech logic).
-                    
-                    OUTPUT JSON ONLY:
+                    OUTPUT JSON ONLY (No markdown):
                     {
-                        "level": "String (e.g. Level 2: Capacity)",
-                        "danger": "One sentence on why the current model fails.",
-                        "upgrade_clause": "Legal-sounding text for the new outcome-based clause.",
-                        "objection": "What the vendor will say to block this.",
-                        "rebuttal": "What I should say back."
+                        "level": "string (e.g. Level 2)",
+                        "danger": "string (Why it fails)",
+                        "upgrade_clause": "string (New contract text)",
+                        "objection": "string (Vendor response)",
+                        "rebuttal": "string (Your comeback)"
                     }
                 `;
 
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } })
-                    });
+                    let rawText = await this.askSecureAI(prompt, "Analyze Contract");
+                    // Clean up potential markdown code blocks
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
                     
-                    const json = await response.json();
-                    this.analysis = JSON.parse(json.candidates[0].content.parts[0].text);
+                    this.analysis = JSON.parse(rawText);
                     this.step = 'analysis';
 
                 } catch (e) {
-                    alert("AI Error. Please check API Key.");
+                    alert("Analysis Failed. Please try again.");
                 } finally {
                     this.loading = false;
                 }
@@ -2963,45 +2935,25 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 this.simInput = '';
                 this.simLoading = true;
 
-                const API_KEY = localStorage.getItem('bilingual_api_key');
-                // Use fallback if no key (simple rigid response)
-                if(!API_KEY) {
-                    setTimeout(() => {
-                        this.simMessages.push({ role: 'bot', text: "Without an API key, I can't improvise. But in real life, hold the line on 'Outcome over Output'." });
-                        this.simLoading = false;
-                    }, 1000);
-                    return;
-                }
-
                 const prompt = `
-                    ACT AS: A stubborn Vendor Account Manager negotiating with a Bank CIO.
-                    GOAL: Protect your "Time & Materials" revenue. Avoid "Risk Sharing".
-                    CONTEXT: The bank wants to move to Level 3 (Shared Outcome).
-                    LAST USER REPLY: "${userText}"
-                    
-                    INSTRUCTIONS:
-                    1. If the user is weak, push back hard ("We can't do that").
-                    2. If the user uses strong leverage (threatens to cut budget, offers huge upside), grudgingly agree to a pilot.
-                    3. Keep response short (under 50 words).
+                    ACT AS: A stubborn Vendor Account Manager.
+                    GOAL: Protect your T&M revenue. Resist "Risk Sharing".
+                    CONTEXT: Bank wants to move to Outcome-based pricing.
+                    LAST REPLY: "${userText}"
+                    INSTRUCTION: Keep response short (under 50 words). If user is weak, push back. If strong, agree.
                 `;
 
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
-                    
-                    const json = await response.json();
-                    const reply = json.candidates[0].content.parts[0].text;
+                    const reply = await this.askSecureAI(prompt, userText);
                     this.simMessages.push({ role: 'bot', text: reply });
                 } catch(e) {
                     this.simMessages.push({ role: 'system', text: "Simulation Error." });
                 } finally {
                     this.simLoading = false;
                 }
-            }
+            } 
         },
-        
+
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
