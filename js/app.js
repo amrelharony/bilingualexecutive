@@ -841,54 +841,36 @@ teamManager: {
                 this.loading = true;
                 this.result = null;
 
-                const API_KEY = localStorage.getItem('bilingual_api_key');
-                if (!API_KEY) {
-                    this.result = "<p class='text-risk font-bold'>Error: API Key missing. Please click the 'Key' icon in the top right to set your Google Gemini API Key.</p>";
-                    this.loading = false;
-                    return;
-                }
-
-                // The "Consultant" System Prompt
+                // 1. Construct the Prompt
                 const systemPrompt = `
                     ACT AS: A top-tier Strategy Consultant advising a Bank Board.
                     TASK: Analyze the following strategic hypothesis: "${this.input}"
                     
-                    OUTPUT FORMAT: A structured 'Board Briefing Note'.
-                    Use Markdown formatting (## for headers, ** for bold).
-                    
+                    OUTPUT FORMAT: A structured 'Board Briefing Note' in Markdown.
                     SECTIONS REQUIRED:
-                    1. **Executive Verdict**: Start with a clear "GREEN LIGHT", "YELLOW LIGHT", or "RED LIGHT" status and a 1-sentence summary.
-                    2. **The Technical Reality** (Speak to the CTO): Architecture impact, legacy integration risks, complexity.
-                    3. **The Financial Lens** (Speak to the CFO): CapEx vs OpEx implications, ROI timeline, hidden costs.
-                    4. **Risk & Governance** (Speak to the CRO): Regulatory hurdles, data privacy, brand risk.
-                    5. **The Bilingual Recommendation**: A final decisive paragraph on how to proceed safely.
-                    
-                    TONE: Professional, concise, brutal honesty. No corporate fluff.
+                    1. **Executive Verdict**: "GREEN LIGHT", "YELLOW LIGHT", or "RED LIGHT".
+                    2. **The Technical Reality**: Architecture impact & complexity.
+                    3. **The Financial Lens**: CapEx vs OpEx & ROI.
+                    4. **Risk & Governance**: Regulatory hurdles.
+                    5. **The Bilingual Recommendation**: Decisive advice.
+                    TONE: Professional, concise, brutal honesty.
                 `;
 
                 try {
-                    // Failover logic for models
-                    let model = "gemini-3-flash-preview";
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
-                    });
+                    // 2. Call Secure Backend
+                    const aiResponse = await this.askSecureAI(systemPrompt, this.input);
                     
-                    if (!response.ok) throw new Error("API Error");
-                    let json = await response.json();
-                    let rawText = json.candidates[0].content.parts[0].text;
-                    
-                    // Convert Markdown to HTML using the 'marked' library (loaded in index.html)
-                    // Then sanitize it for security
-                    this.result = DOMPurify.sanitize(marked.parse(rawText));
+                    // 3. Render Result
+                    // Use 'marked' if available to convert Markdown to HTML, otherwise plain text
+                    let html = (typeof marked !== 'undefined') ? marked.parse(aiResponse) : aiResponse;
+                    this.result = DOMPurify.sanitize(html);
 
                 } catch (e) {
-                    this.result = `<p class='text-risk'>Simulation Failed: ${e.message}. Please check your API Key and internet connection.</p>`;
+                    this.result = `<p class='text-risk'>Simulation Failed: ${e.message}</p>`;
                 } finally {
                     this.loading = false;
                 }
-            }
-        },
+            },
 
         // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
