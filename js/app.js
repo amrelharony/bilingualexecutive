@@ -2251,7 +2251,6 @@ threatMonitor: {
         return 'text-risk';
     }
 },
-        
 
     })); // <-- This closes the Alpine.data object
 
