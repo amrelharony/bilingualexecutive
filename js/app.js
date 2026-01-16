@@ -2126,24 +2126,22 @@ async submitAndBenchmark() {
         },
 
         // ------------------------------------------------------------------
-// ADVANCED OPEN BANKING RADAR
+// ADVANCED OPEN BANKING RADAR (CSS-based version)
 // ------------------------------------------------------------------
 threatMonitor: {
     active: false,
     interval: null,
-    chart: null,
-    isUpdating: false, // Flag to prevent overlapping updates
     
     // Simulation State
     totalOutflow: 0,
     shareOfWallet: 100,
-    customerMood: 100, // Starts happy
+    customerMood: 100,
     
     // The "Friction Levers" (User Controls)
     config: {
-        latency: 800, // ms (Lower is better)
-        fees: 2.5,    // % (Lower is better)
-        blockMode: false // The "Defense" switch
+        latency: 800,
+        fees: 2.5,
+        blockMode: false
     },
 
     // Competitors with specific "Attack Vectors"
@@ -2157,33 +2155,26 @@ threatMonitor: {
     events: [],
 
     init() {
-        // Wait a bit longer for DOM to be ready
-        setTimeout(() => {
-            this.renderChart();
-        }, 1000);
+        // No Chart.js initialization needed
     },
 
     toggleSim() {
         if (this.active) {
             clearInterval(this.interval);
             this.active = false;
-            this.isUpdating = false;
         } else {
             this.active = true;
-            this.isUpdating = false;
             this.interval = setInterval(() => this.tick(), 1000);
         }
     },
 
     tick() {
-        if (this.isUpdating) return; // Skip if already updating
-        
         // 1. Calculate Churn Probability based on Levers
         let churnRisk = 0;
         
         // Latency Penalty (Legacy Tax)
-        if (this.config.latency > 1500) churnRisk += 0.4; // High lag = High churn
-        else if (this.config.latency < 200) churnRisk -= 0.1; // Fast = Retention
+        if (this.config.latency > 1500) churnRisk += 0.4;
+        else if (this.config.latency < 200) churnRisk -= 0.1;
 
         // Fee Penalty (Greed Tax)
         if (this.config.fees > 3.0) churnRisk += 0.3;
@@ -2191,12 +2182,12 @@ threatMonitor: {
 
         // 2. Handle "Block Mode" (The Compliance Wall)
         if (this.config.blockMode) {
-            churnRisk = 0; // Outflows stop!
-            this.customerMood -= 5; // But customers get angry
+            churnRisk = 0;
+            this.customerMood -= 5;
             
             if (this.customerMood < 50 && Math.random() > 0.8) {
                 this.logEvent("⚠️ REGULATOR WARNING: Unfair blocking detected.", "risk");
-                this.shareOfWallet -= 5; // Massive fine penalty
+                this.shareOfWallet -= 5;
             }
         } else {
             // Mood recovers if data flows
@@ -2207,34 +2198,30 @@ threatMonitor: {
         if (!this.config.blockMode && Math.random() < churnRisk) {
             this.processLoss();
         }
-
-        // 4. Update UI - Use setTimeout to avoid race conditions
-        this.isUpdating = true;
-        setTimeout(() => {
-            this.safeUpdateChartData();
-            this.isUpdating = false;
-        }, 50);
         
         // Game Over Check
         if (this.shareOfWallet <= 0) {
             this.active = false;
             clearInterval(this.interval);
-            this.isUpdating = false;
             alert("GAME OVER: You became a 'Dumb Pipe'. Zero relationship retained.");
         }
     },
 
     processLoss() {
         // Determine WHO steals the customer based on the weakness
-        let winner = this.competitors[2]; // Default to Klarna (Convenience)
+        let winner = this.competitors[2];
         
-        if (this.config.latency > 1000) winner = this.competitors[0]; // Revolut wins on speed
-        else if (this.config.fees > 2.0) winner = this.competitors[1]; // Wise wins on price
+        if (this.config.latency > 1000) winner = this.competitors[0];
+        else if (this.config.fees > 2.0) winner = this.competitors[1];
 
         // Update Stats
-        const lossAmount = 0.5; // % lost per tick
-        this.shareOfWallet = (this.shareOfWallet - lossAmount).toFixed(1);
-        winner.share = (winner.share + lossAmount);
+        const lossAmount = 0.5;
+        this.shareOfWallet = (parseFloat(this.shareOfWallet) - lossAmount).toFixed(1);
+        winner.share = (parseFloat(winner.share) + lossAmount);
+        
+        // Ensure shares don't go negative
+        this.shareOfWallet = Math.max(0, this.shareOfWallet);
+        winner.share = Math.max(0, winner.share);
         
         // Simulate Money Movement
         const amount = Math.floor(Math.random() * 200) + 20;
@@ -2250,107 +2237,12 @@ threatMonitor: {
 
     reset() {
         this.active = false;
-        this.isUpdating = false;
         clearInterval(this.interval);
         this.shareOfWallet = 100;
         this.totalOutflow = 0;
         this.customerMood = 100;
         this.competitors.forEach(c => c.share = 0);
         this.events = [];
-        this.safeUpdateChartData();
-    },
-
-    renderChart() {
-        const ctx = document.getElementById('threatChart');
-        if (!ctx) {
-            console.warn('Chart canvas not found');
-            return;
-        }
-        
-        // Clear any existing chart
-        if (this.chart) {
-            try {
-                this.chart.destroy();
-            } catch (e) {
-                console.warn('Error destroying chart:', e);
-            }
-            this.chart = null;
-        }
-
-        // Wait a bit for DOM
-        setTimeout(() => {
-            try {
-                this.chart = new Chart(ctx.getContext('2d'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Retained', ...this.competitors.map(c => c.name)],
-                        datasets: [{
-                            data: [this.shareOfWallet, ...this.competitors.map(c => c.share)],
-                            backgroundColor: ['#1e293b', ...this.competitors.map(c => c.color)],
-                            borderColor: '#0f172a',
-                            borderWidth: 2,
-                            borderRadius: 5
-                        }]
-                    },
-                    options: {
-                        responsive: false, // Set to false to prevent automatic resizing issues
-                        maintainAspectRatio: false,
-                        cutout: '70%',
-                        plugins: { 
-                            legend: { display: false },
-                            tooltip: { enabled: false } // Disable tooltips to reduce complexity
-                        },
-                        animation: false // Disable animations completely
-                    }
-                });
-                
-                // Force a redraw
-                setTimeout(() => {
-                    if (this.chart && this.chart.canvas) {
-                        this.chart.canvas.style.width = '100%';
-                        this.chart.canvas.style.height = '100%';
-                    }
-                }, 100);
-            } catch (error) {
-                console.error('Error creating chart:', error);
-            }
-        }, 100);
-    },
-
-    safeUpdateChartData() {
-        // Skip if chart doesn't exist
-        if (!this.chart) {
-            this.renderChart();
-            return;
-        }
-        
-        // Skip if chart is in a bad state
-        if (!this.chart.data || !this.chart.data.datasets || !this.chart.data.datasets[0]) {
-            this.renderChart();
-            return;
-        }
-        
-        // Update data
-        this.chart.data.datasets[0].data = [
-            this.shareOfWallet, 
-            ...this.competitors.map(c => c.share)
-        ];
-        
-        // Update labels if needed
-        this.chart.data.labels = ['Retained', ...this.competitors.map(c => c.name)];
-        
-        // Try to update with a small delay
-        setTimeout(() => {
-            try {
-                if (this.chart && typeof this.chart.update === 'function') {
-                    // Use 'none' mode to skip animations
-                    this.chart.update('none');
-                }
-            } catch (error) {
-                console.warn('Chart update failed, will retry on next tick');
-                // Don't re-render here, just let it try again next time
-            }
-        }, 10);
     },
 
     get healthColor() {
@@ -2359,6 +2251,8 @@ threatMonitor: {
         return 'text-risk';
     }
 },
+        
+
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
