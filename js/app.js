@@ -905,6 +905,7 @@ teamManager: {
             { id: 'detector', label: 'Hallucination Check', icon: 'fa-solid fa-user-secret' },
             { id: 'squad', label: 'Squad Builder', icon: 'fa-solid fa-people-group' },
             { id: 'kpi', label: 'KPI Designer', icon: 'fa-solid fa-bullseye' },
+            { id: 'proposal', label: 'Sandbox Gen', icon: 'fa-solid fa-file-signature' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -933,6 +934,7 @@ teamManager: {
             { id: 'squad', label: 'Bilingual Squad Builder', desc: 'Design the perfect cross-functional team and test its velocity.', icon: 'fa-solid fa-puzzle-piece', color: 'text-indigo-400' },
             { id: 'kpi', label: 'Outcome vs. Output', desc: 'Convert vague "Project" goals into measurable "Product" value.', icon: 'fa-solid fa-chart-line', color: 'text-green-400' },
             { id: 'shadow', label: 'Shadow IT Discovery', desc: 'Audit SaaS tools and calculate the Integration Tax.', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
+            { id: 'proposal', label: 'Regulatory Sandbox Generator', desc: 'Create a compliant waiver request for your Risk Committee.', icon: 'fa-solid fa-scale-unbalanced', color: 'text-blue-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
         ],
@@ -2770,6 +2772,107 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 } finally {
                     this.loading = false;
                 }
+            }
+        },
+        // ------------------------------------------------------------------
+        // REGULATORY SANDBOX PROPOSAL GENERATOR (The Legal Shield)
+        // ------------------------------------------------------------------
+        sandboxGenerator: {
+            step: 1,
+            form: {
+                project: '',
+                owner: '',
+                hypothesis: '',
+                consumer_benefit: '',
+                vol_cap_users: '100',
+                vol_cap_money: '10,000',
+                duration: '90',
+                fallback: '',
+                kpi_success: '',
+                kpi_risk: ''
+            },
+
+            nextStep() { if(this.validate()) this.step++; },
+            prevStep() { this.step--; },
+
+            validate() {
+                const f = this.form;
+                if (this.step === 1 && (!f.project || !f.hypothesis)) return alert("Define the innovation first.");
+                if (this.step === 2 && (!f.vol_cap_users || !f.fallback)) return alert("Define the safety net.");
+                return true;
+            },
+
+            generatePDF() {
+                if (!window.jspdf) { alert("PDF Lib missing"); return; }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                const f = this.form;
+
+                // 1. Header (Formal Memo Style)
+                doc.setFont("times", "bold");
+                doc.setFontSize(18);
+                doc.text("INTERNAL MEMORANDUM: REGULATORY SANDBOX REQUEST", 20, 20);
+                
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "normal");
+                doc.text(`TO: Risk & Compliance Committee`, 20, 30);
+                doc.text(`FROM: ${f.owner || '[Product Owner]'}`, 20, 36);
+                doc.text(`DATE: ${new Date().toLocaleDateString()}`, 20, 42);
+                doc.text(`SUBJECT: Waiver Request for "${f.project.toUpperCase()}"`, 20, 48);
+
+                doc.setLineWidth(0.5);
+                doc.line(20, 52, 190, 52);
+
+                // 2. Executive Summary
+                let y = 65;
+                doc.setFont("helvetica", "bold");
+                doc.text("1. THE INNOVATION PROPOSAL", 20, y);
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                const text1 = doc.splitTextToSize(`We request a limited "License to Operate" to test a new capability: ${f.hypothesis}. Current legacy processes prevent us from testing this hypothesis efficiently. This experiment aims to demonstrate: ${f.consumer_benefit}.`, 170);
+                doc.text(text1, 20, y);
+                y += (text1.length * 6) + 10;
+
+                // 3. The "Box" (Constraints)
+                doc.setFont("helvetica", "bold");
+                doc.text("2. THE CONTAINMENT PARAMETERS (THE BOX)", 20, y);
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                doc.text(`To ensure zero systemic risk to the Bank, we agree to the following hard limits:`, 20, y);
+                y += 8;
+                doc.text(`• USER CAP: Maximum ${f.vol_cap_users} customers (Invitation Only).`, 25, y); y+=6;
+                doc.text(`• EXPOSURE CAP: Maximum $${f.vol_cap_money} total aggregate risk.`, 25, y); y+=6;
+                doc.text(`• DURATION: Test concludes automatically in ${f.duration} days.`, 25, y);
+                y += 12;
+
+                // 4. The Safety Net
+                doc.setFont("helvetica", "bold");
+                doc.text("3. CONSUMER PROTECTION & FALLBACKS", 20, y);
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                const text2 = doc.splitTextToSize(`We acknowledge that this is experimental code. To protect customers, we have established the following manual fallback: "${f.fallback}". If the system fails, this human intervention ensures compliance standards are met.`, 170);
+                doc.text(text2, 20, y);
+                y += (text2.length * 6) + 10;
+
+                // 5. Success & Kill Criteria
+                doc.setFont("helvetica", "bold");
+                doc.text("4. EXIT CRITERIA", 20, y);
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                doc.text(`We will deem the experiment successful if: ${f.kpi_success}.`, 20, y); y+=6;
+                doc.setTextColor(200, 0, 0); // Red text for kill switch
+                doc.text(`KILL SWITCH: We will immediately halt if: ${f.kpi_risk}.`, 20, y);
+                doc.setTextColor(0, 0, 0);
+                
+                // 6. Signatures
+                y = 250;
+                doc.line(20, y, 90, y);
+                doc.line(110, y, 190, y);
+                doc.setFontSize(8);
+                doc.text("REQUESTOR SIGNATURE", 20, y+5);
+                doc.text("CHIEF RISK OFFICER APPROVAL", 110, y+5);
+
+                doc.save(`Sandbox_Request_${f.project}.pdf`);
             }
         },
         
