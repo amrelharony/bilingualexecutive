@@ -479,18 +479,6 @@ async send() {
 
         }, 
                     
-                    if (!response.ok) throw new Error("API Error");
-                    let json = await response.json();
-                    let reply = json.candidates[0].content.parts[0].text;
-
-                    this.messages.push({ role: 'opponent', text: reply });
-                } catch (e) {
-                    this.messages.push({ role: 'system', text: "Connection error. The simulation has ended." });
-                } finally {
-                    this.loading = false;
-                }
-            }
-        },
 
         // ------------------------------------------------------------------
         // CULTURAL DEBT MONITOR
