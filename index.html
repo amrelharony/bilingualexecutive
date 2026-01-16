@@ -1438,6 +1438,108 @@
 
             </div>
 
+            <!-- EXCEL CALCULATOR TAB -->
+            <div x-show="currentTab === 'excel'" x-cloak class="max-w-4xl mx-auto">
+                
+                <div class="text-center mb-10">
+                    <h2 class="font-mono text-3xl font-bold text-white mb-2">The "Excel Factory" Audit</h2>
+                    <p class="text-textMuted text-sm">Turn qualitative fear into a quantitative business case.</p>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    
+                    <!-- INPUTS -->
+                    <div class="bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+                        <h3 class="font-mono text-xs text-primary uppercase border-b border-slate-700 pb-2">Process Inputs</h3>
+                        
+                        <div>
+                            <label class="block text-xs font-mono text-white mb-2">Manual Steps per Run (Copy-Pastes)</label>
+                            <div class="flex items-center gap-4">
+                                <input type="range" min="1" max="200" x-model="excelCalc.inputs.steps" class="flex-1">
+                                <span class="font-bold text-primary w-12 text-right" x-text="excelCalc.inputs.steps"></span>
+                            </div>
+                            <p class="text-[10px] text-slate-500 mt-1">Every manual touchpoint is a potential failure mode.</p>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-mono text-white mb-2">Frequency (Runs per Year)</label>
+                            <select x-model="excelCalc.inputs.frequency" class="w-full bg-dark border border-slate-600 rounded p-2 text-sm text-white">
+                                <option value="1">Annual (1)</option>
+                                <option value="4">Quarterly (4)</option>
+                                <option value="12">Monthly (12)</option>
+                                <option value="52">Weekly (52)</option>
+                                <option value="250">Daily (250)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-mono text-white mb-2">Process Criticality</label>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button @click="excelCalc.inputs.criticality = 1" :class="excelCalc.inputs.criticality === 1 ? 'bg-blue-500 text-white' : 'bg-slate-800 text-slate-400'" class="p-2 rounded text-xs font-bold border border-slate-600">Internal</button>
+                                <button @click="excelCalc.inputs.criticality = 2" :class="excelCalc.inputs.criticality === 2 ? 'bg-yellow-500 text-dark' : 'bg-slate-800 text-slate-400'" class="p-2 rounded text-xs font-bold border border-slate-600">Regulator</button>
+                                <button @click="excelCalc.inputs.criticality = 3" :class="excelCalc.inputs.criticality === 3 ? 'bg-red-500 text-white' : 'bg-slate-800 text-slate-400'" class="p-2 rounded text-xs font-bold border border-slate-600">Customer</button>
+                            </div>
+                        </div>
+
+                        <button @click="excelCalc.calculate()" class="w-full bg-white hover:bg-slate-200 text-dark font-bold py-3 rounded-lg shadow-glow transition-all mt-4">
+                            CALCULATE EXPOSURE
+                        </button>
+                    </div>
+
+                    <!-- RESULTS -->
+                    <div class="relative">
+                        <!-- Placeholder State -->
+                        <div x-show="!excelCalc.result" class="h-full flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl p-8 text-slate-500">
+                            <i class="fa-solid fa-calculator text-4xl mb-4"></i>
+                            <p class="text-sm">Enter parameters to quantify risk.</p>
+                        </div>
+
+                        <!-- Result State -->
+                        <div x-show="excelCalc.result" x-transition class="bg-card border border-slate-700 p-6 rounded-xl h-full flex flex-col justify-between">
+                            
+                            <!-- Header -->
+                            <div>
+                                <h3 class="font-mono text-xs text-slate-400 uppercase mb-4">Audit Results</h3>
+                                <div class="p-4 rounded-lg border mb-6 text-center" 
+                                     :class="excelCalc.result?.score > 80 ? 'bg-red-900/20 border-red-500 text-red-400' : (excelCalc.result?.score > 50 ? 'bg-yellow-900/20 border-yellow-500 text-yellow-400' : 'bg-green-900/20 border-green-500 text-green-400')">
+                                    <i class="fa-solid text-2xl mb-2" :class="excelCalc.result?.score > 80 ? 'fa-fire' : 'fa-triangle-exclamation'"></i>
+                                    <p class="font-bold text-lg leading-tight" x-text="excelCalc.result?.message"></p>
+                                </div>
+                            </div>
+
+                            <!-- Metrics -->
+                            <div class="space-y-6">
+                                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                                    <span class="text-sm text-slate-300">Probability of Human Error</span>
+                                    <span class="font-mono text-xl font-bold text-white" x-text="excelCalc.result?.errorProb + '%'"></span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                                    <span class="text-sm text-slate-300">OpEx Waste (Annual)</span>
+                                    <span class="font-mono text-xl font-bold text-white" x-text="'$' + excelCalc.result?.annualCost"></span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm text-slate-300">Risk Exposure (Liability)</span>
+                                    <span class="font-mono text-3xl font-bold text-risk" x-text="excelCalc.result?.riskExposure"></span>
+                                </div>
+                            </div>
+
+                            <!-- Action -->
+                            <div class="mt-8 pt-4 border-t border-slate-700">
+                                <p class="text-[10px] text-slate-500 font-mono mb-2">RECOMMENDATION</p>
+                                <p class="text-sm text-white" x-show="excelCalc.result?.score > 50">
+                                    Replace this manual process with a <strong>Level 3 Data Product</strong> (See Tool C). The cost of automation is likely lower than your annual OpEx waste.
+                                </p>
+                                <p class="text-sm text-white" x-show="excelCalc.result?.score <= 50">
+                                    Monitor via <strong>Data Quality Checks</strong>. Consider low-code automation if frequency increases.
+                                </p>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
             
             <!-- COMMUNITY -->
             <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
