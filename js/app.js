@@ -2273,8 +2273,11 @@ async submitAndBenchmark() {
 
             updateChartData() {
                 if (!this.chart) return;
-                this.chart.data.datasets[0].data = [this.shareOfWallet, ...this.competitors.map(c => c.share)];
-                this.chart.update('none');
+                this.chart.data.datasets[0].data = [
+                    this.shareOfWallet, 
+                    ...this.competitors.map(c => c.share)
+                ];
+                this.chart.update(); 
             },
 
             get healthColor() {
