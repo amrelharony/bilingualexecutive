@@ -1942,6 +1942,154 @@
 
                 </div>
             </div>
+
+            <!-- SHADOW IT AUDIT TAB -->
+            <div x-show="currentTab === 'shadow'" x-cloak class="max-w-5xl mx-auto">
+                
+                <div class="text-center mb-10">
+                    <div class="inline-block p-4 rounded-full bg-purple-500/10 border border-purple-500 mb-4">
+                        <i class="fa-solid fa-ghost text-4xl text-purple-400"></i>
+                    </div>
+                    <h2 class="font-mono text-3xl font-bold text-white mb-2">Shadow IT Discovery</h2>
+                    <p class="text-textMuted text-sm">Don't ban it. Tax it. Reveal the true cost of "Credit Card Software."</p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8">
+                    
+                    <!-- LEFT: THE CALCULATOR -->
+                    <div class="space-y-6">
+                        <div class="bg-card border border-slate-700 p-6 rounded-xl shadow-lg">
+                            <h3 class="font-mono text-xs text-purple-400 uppercase mb-4 border-b border-slate-700 pb-2">Tool Assessment</h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-white mb-1">Tool Name</label>
+                                    <input type="text" x-model="shadowAudit.inputs.name" placeholder="e.g. Monday.com, Trello, Zapier" class="w-full bg-dark border border-slate-600 rounded p-3 text-white focus:border-purple-400 focus:outline-none">
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-bold text-white mb-1">Monthly Cost ($)</label>
+                                        <input type="number" x-model="shadowAudit.inputs.cost" class="w-full bg-dark border border-slate-600 rounded p-3 text-white focus:border-purple-400 focus:outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-bold text-white mb-1">User Count</label>
+                                        <input type="number" x-model="shadowAudit.inputs.users" class="w-full bg-dark border border-slate-600 rounded p-3 text-white focus:border-purple-400 focus:outline-none">
+                                    </div>
+                                </div>
+
+                                <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700 space-y-3">
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" x-model="shadowAudit.inputs.hasPII" class="w-5 h-5 rounded bg-dark border-slate-500 text-purple-500">
+                                        <div>
+                                            <span class="block text-sm font-bold text-white">Contains PII?</span>
+                                            <span class="block text-[10px] text-slate-400">Customer Names, Emails, Account #s</span>
+                                        </div>
+                                    </label>
+                                    
+                                    <label class="flex items-center gap-3 cursor-pointer">
+                                        <input type="checkbox" x-model="shadowAudit.inputs.isCritical" class="w-5 h-5 rounded bg-dark border-slate-500 text-purple-500">
+                                        <div>
+                                            <span class="block text-sm font-bold text-white">Business Critical?</span>
+                                            <span class="block text-[10px] text-slate-400">If this tool goes down, we stop working.</span>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- THE REAL COST REVEAL -->
+                        <div class="bg-gradient-to-br from-purple-900/20 to-slate-900 border border-purple-500/30 p-6 rounded-xl">
+                            <h3 class="font-mono text-xs text-slate-400 uppercase mb-4">True Cost Analysis</h3>
+                            
+                            <div class="space-y-3 mb-6">
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-slate-400">Annual License (Sticker Price)</span>
+                                    <span class="text-white font-mono" x-text="'$' + shadowAudit.analysis.annualLicense.toLocaleString()"></span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-purple-300 font-bold"><i class="fa-solid fa-bolt mr-1"></i> Integration Tax</span>
+                                    <span class="text-purple-300 font-mono font-bold" x-text="'+$' + shadowAudit.analysis.integrationTax.toLocaleString()"></span>
+                                </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-slate-400">Governance Overhead</span>
+                                    <span class="text-slate-300 font-mono" x-text="'+$' + shadowAudit.analysis.recurringOverhead.toLocaleString()"></span>
+                                </div>
+                                <div class="h-px bg-slate-600 my-2"></div>
+                                <div class="flex justify-between text-lg">
+                                    <span class="text-white font-bold">Total Year 1 Cost</span>
+                                    <span class="text-white font-mono font-bold" x-text="'$' + shadowAudit.analysis.trueCost.toLocaleString()"></span>
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3">
+                                <button @click="shadowAudit.addTool()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg font-bold text-xs transition-colors">
+                                    ADD TO INVENTORY
+                                </button>
+                                <button @click="shadowAudit.generateAgreement()" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white py-3 rounded-lg font-bold text-xs shadow-glow transition-all">
+                                    <i class="fa-solid fa-file-contract mr-2"></i>COPY AGREEMENT
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: RISK & INVENTORY -->
+                    <div class="space-y-6">
+                        
+                        <!-- Risk Score Card -->
+                        <div class="bg-card border p-6 rounded-xl text-center transition-colors duration-500"
+                             :class="shadowAudit.analysis.riskScore > 7 ? 'border-red-500 bg-red-900/10' : (shadowAudit.analysis.riskScore > 4 ? 'border-yellow-500 bg-yellow-900/10' : 'border-green-500 bg-green-900/10')">
+                            <span class="text-[10px] font-mono uppercase tracking-widest block mb-2" 
+                                  :class="shadowAudit.analysis.riskScore > 7 ? 'text-red-400' : (shadowAudit.analysis.riskScore > 4 ? 'text-yellow-400' : 'text-green-400')">
+                                Risk Assessment
+                            </span>
+                            <h3 class="text-5xl font-bold font-mono text-white mb-2" x-text="shadowAudit.analysis.riskScore + '/10'"></h3>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold bg-dark border"
+                                  :class="shadowAudit.analysis.riskScore > 7 ? 'text-red-400 border-red-500' : (shadowAudit.analysis.riskScore > 4 ? 'text-yellow-400 border-yellow-500' : 'text-green-400 border-green-500')"
+                                  x-text="shadowAudit.analysis.riskLabel"></span>
+                            
+                            <p class="text-xs text-slate-300 mt-4 leading-relaxed" x-show="shadowAudit.analysis.riskScore > 7">
+                                <strong>STOP.</strong> This tool contains PII or critical functions but lacks governance. Do not pay the tax; block the tool or migrate to Enterprise standard.
+                            </p>
+                            <p class="text-xs text-slate-300 mt-4 leading-relaxed" x-show="shadowAudit.analysis.riskScore <= 7">
+                                <strong>PROCEED WITH TAX.</strong> The risk is manageable if the department pays the integration cost to IT.
+                            </p>
+                        </div>
+
+                        <!-- Inventory List -->
+                        <div class="bg-card border border-slate-700 rounded-xl overflow-hidden min-h-[300px]">
+                            <div class="p-4 border-b border-slate-700 bg-slate-800/50 flex justify-between items-center">
+                                <h3 class="font-mono text-xs text-white uppercase">Department Inventory</h3>
+                                <span class="text-[10px] text-slate-500" x-text="shadowAudit.inventory.length + ' Tools'"></span>
+                            </div>
+                            
+                            <div class="p-4 space-y-3">
+                                <template x-if="shadowAudit.inventory.length === 0">
+                                    <div class="text-center text-slate-500 py-8 text-xs font-mono">
+                                        No tools audited yet.
+                                    </div>
+                                </template>
+
+                                <template x-for="tool in shadowAudit.inventory" :key="tool.id">
+                                    <div class="bg-dark p-3 rounded border border-slate-700 flex justify-between items-center group">
+                                        <div>
+                                            <div class="font-bold text-white text-sm" x-text="tool.name"></div>
+                                            <div class="text-[10px] text-slate-500">
+                                                Risk: <span :class="tool.stats.riskScore > 7 ? 'text-red-400' : 'text-green-400'" x-text="tool.stats.riskScore"></span>
+                                                | Tax: <span class="text-purple-400" x-text="'$' + tool.stats.integrationTax.toLocaleString()"></span>
+                                            </div>
+                                        </div>
+                                        <button @click="shadowAudit.removeTool(tool.id)" class="text-slate-600 hover:text-red-400 transition-colors">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
             
             <!-- COMMUNITY -->
             <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
