@@ -112,6 +112,36 @@ document.addEventListener('alpine:init', () => {
 
         },
 
+                // ==================================================================
+        // PASTE THE NEW HELPER FUNCTION HERE
+        // ==================================================================
+        async askSecureAI(systemPrompt, userInput, model = "gemini-3-flash-preview") {
+            // Check if Supabase is initialized
+            if (!this.supabase) {
+                console.error("Supabase not initialized");
+                return "System Error: Database connection missing.";
+            }
+
+            try {
+                // Calls the Edge Function named 'bilingual-ai'
+                const { data, error } = await this.supabase.functions.invoke('bilingual-ai', {
+                    body: { 
+                        system: systemPrompt, 
+                        input: userInput,
+                        model: model 
+                    }
+                });
+
+                if (error) throw error;
+                return data.text;
+
+            } catch (err) {
+                console.error("AI Error:", err);
+                return "I apologize, but I cannot connect to the neural core right now.";
+            }
+        },
+
+
         // ------------------------------------------------------------------
         // STATE VARIABLES
         // ------------------------------------------------------------------
@@ -418,48 +448,36 @@ document.addEventListener('alpine:init', () => {
                 this.active = false;
                 this.messages = [];
             },
-
-            async send() {
+async send() {
                 if (!this.input.trim()) return;
                 
-                // 1. Add User Message
+                // 1. Add User Message locally
                 this.messages.push({ role: 'user', text: this.input });
                 const userText = this.input;
                 this.input = '';
                 this.loading = true;
 
-                // 2. Check API Key
-                const API_KEY = localStorage.getItem('bilingual_api_key');
-                if (!API_KEY) {
-                    this.messages.push({ role: 'system', text: 'Error: Please set API Key in settings.' });
-                    this.loading = false;
-                    return;
-                }
-
-                // 3. Construct the "Roleplay" Prompt
-                // We trick the AI into playing a character
+                // 2. Construct the Persona Context
+                // We access the current scenario's details using 'this.scenario'
                 const systemPrompt = `
                     ACT AS: ${this.scenario.opponent} at a traditional bank.
                     USER IS: ${this.scenario.myRole}.
                     TOPIC: ${this.scenario.topic}.
-                    GOAL: You are skeptical and resistant to change. The user must convince you using "Business Value" (ROI, Speed, Risk Reduction).
-                    RULES: 
-                    1. If the user uses tech jargon (Kubernetes, APIs) without explaining the business value, push back hard.
-                    2. If the user explains the value well (e.g., "Speed to market," "Cost of delay"), start to agree.
-                    3. Keep responses short (under 50 words). Conversational style.
-                    4. If they convince you, say "You have a deal."
-                    
+                    GOAL: You are skeptical and resistant to change. The user must convince you using "Business Value".
                     HISTORY: ${JSON.stringify(this.messages)}
+                    INSTRUCTION: Keep response under 50 words.
                 `;
 
-                // 4. Call Gemini
-                try {
-                    // Try Flash model first
-                    let model = "gemini-3-flash-preview";
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
-                    });
+                // 3. Call Secure Backend
+                // Note: We access the main toolkit function via 'this'
+                const reply = await this.askSecureAI(systemPrompt, userText);
+
+                // 4. Update UI
+                this.messages.push({ role: 'opponent', text: reply });
+                this.loading = false;
+            }
+
+        }, 
                     
                     if (!response.ok) throw new Error("API Error");
                     let json = await response.json();
@@ -993,67 +1011,45 @@ teamManager: {
 
         async sendMessage() {
             if (!this.chatInput.trim()) return;
-            if (typeof DOMPurify === 'undefined') { this.chatMessages.push({ role: 'bot', text: "Error: Security module missing." }); return; }
-
-            const API_KEY = this.userApiKey; 
-            if (!API_KEY) { 
-                this.chatMessages.push({ role: 'bot', text: "Please set your Gemini API key in settings (Key icon)." }); 
-                this.showKeyModal = true; 
+            
+            // Security check for DOMPurify
+            if (typeof DOMPurify === 'undefined') { 
+                this.chatMessages.push({ role: 'bot', text: "Error: Security module missing." }); 
                 return; 
             }
 
+            // 1. Prepare UI
             const userText = DOMPurify.sanitize(this.chatInput);
             this.chatMessages.push({ role: 'user', text: userText });
+            const currentInput = this.chatInput; // Capture input
             this.chatInput = '';
             this.isTyping = true;
             this.scrollToBottom();
 
+            // 2. Define Persona
             const systemPrompt = "You are 'The Translator', a Bilingual Executive Assistant. Translate technical jargon into business impact (P&L, Risk, Speed). Rules: Technical Debt->Financial leverage; Refactoring->Renovation; Microservices->Legos; API->Universal Adapter. Tone: Concise, executive.";
+
+            // 3. Call Secure Backend (No local keys!)
+            // Note: This uses the helper function we added in Step A
+            const aiResponse = await this.askSecureAI(systemPrompt, currentInput);
+
+            // 4. Render Response
+            this.isTyping = false;
+            let parsedText = aiResponse;
             
-            const tryFetch = async (model, version) => {
-                const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${API_KEY}`, {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nInput: " + userText }] }] })
-                });
-                if (!response.ok) throw new Error(`${response.status}`);
-                return response.json();
-            };
-
-           try {
-                let data;
-                // First, try the new Gemini 3 Flash model
-                try { 
-                    data = await tryFetch("gemini-3-flash-preview", "v1beta"); 
-                } catch (e) { 
-                    // Fallback to the stable Gemini 3 Flash model
-                    data = await tryFetch("gemini-3-flash-preview", "v1beta"); 
-                }
-
-                let botText = "I couldn't process that.";
-                if (data.candidates && data.candidates[0].content) botText = data.candidates[0].content.parts[0].text;
-                
-                this.isTyping = false;
-                
-                let parsedText = botText;
-                try {
-                    if (typeof marked !== 'undefined') parsedText = marked.parse(botText);
-                } catch (e) {
-                    console.warn("Markdown Parse Error", e);
-                    parsedText = botText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                }
-                
-                const cleanHtml = DOMPurify.sanitize(parsedText);
-                this.chatMessages.push({ role: 'bot', text: cleanHtml });
-                this.scrollToBottom();
-            } catch (error) {
-                this.isTyping = false;
-                let msg = "Connection Error.";
-                if (error.message.includes("403")) msg = "Invalid API Key. Please check settings.";
-                if (error.message.includes("429")) msg = "Quota exceeded. Try again later.";
-                this.chatMessages.push({ role: 'bot', text: msg });
+            // Simple Markdown parsing if marked.js isn't loaded
+            if (typeof marked !== 'undefined') {
+                parsedText = marked.parse(aiResponse);
+            } else {
+                parsedText = aiResponse.replace(/\n/g, "<br>");
             }
+
+            const cleanHtml = DOMPurify.sanitize(parsedText);
+            this.chatMessages.push({ role: 'bot', text: cleanHtml });
+            this.scrollToBottom();
         },
 
+        
         scrollToBottom() { 
             this.$nextTick(() => { 
                 const c = document.getElementById('chat-messages-container'); 
