@@ -2125,162 +2125,166 @@ async submitAndBenchmark() {
             }
         },
 
-        // ------------------------------------------------------------------
-// ADVANCED OPEN BANKING RADAR (CSS-based version)
 // ------------------------------------------------------------------
-threatMonitor: {
-    active: false,
-    interval: null,
-    
-    // Simulation State
-    totalOutflow: 0,
-    shareOfWallet: 100,
-    customerMood: 100,
-    
-    // The "Friction Levers" (User Controls)
-    config: {
-        latency: 800,
-        fees: 2.5,
-        blockMode: false
-    },
-
-    // Competitors with specific "Attack Vectors"
-    competitors: [
-        { id: 'rev', name: "Revolut", share: 0, color: '#3b82f6', vector: 'latency', msg: "Winning on Speed" },
-        { id: 'wise', name: "Wise", share: 0, color: '#22c55e', vector: 'fees', msg: "Winning on Price" },
-        { id: 'klarna', name: "Klarna", share: 0, color: '#ef4444', vector: 'convenience', msg: "Winning on Flow" }
-    ],
-
-    // Event Log
-    events: [],
-
-    init() {
-        // No Chart.js initialization needed
-    },
-
-    toggleSim() {
-        if (this.active) {
-            clearInterval(this.interval);
-            this.active = false;
-        } else {
-            this.active = true;
-            this.interval = setInterval(() => this.tick(), 1000);
-        }
-    },
-
-    tick() {
-        // 1. Calculate Churn Probability based on Levers
-        let churnRisk = 0;
-        
-        // Latency Penalty (Legacy Tax)
-        if (this.config.latency > 1500) churnRisk += 0.4;
-        else if (this.config.latency < 200) churnRisk -= 0.1;
-
-        // Fee Penalty (Greed Tax)
-        if (this.config.fees > 3.0) churnRisk += 0.3;
-        else if (this.config.fees < 1.0) churnRisk -= 0.1;
-
-        // 2. Handle "Block Mode" (The Compliance Wall)
-        if (this.config.blockMode) {
-            churnRisk = 0;
-            this.customerMood -= 5;
+        // ADVANCED OPEN BANKING RADAR (Fixed Logic)
+        // ------------------------------------------------------------------
+        threatMonitor: {
+            active: false,
+            interval: null,
             
-            if (this.customerMood < 50 && Math.random() > 0.8) {
-                this.logEvent("⚠️ REGULATOR WARNING: Unfair blocking detected.", "risk");
-                this.shareOfWallet -= 5;
+            // Simulation State
+            totalOutflow: 0,
+            shareOfWallet: 100,
+            customerMood: 100,
+            
+            // The "Friction Levers" (User Controls)
+            config: {
+                latency: 800,
+                fees: 2.5,
+                blockMode: false
+            },
+
+            // Competitors
+            competitors: [
+                { id: 'rev', name: "Revolut", share: 0, color: '#3b82f6', vector: 'latency', msg: "Winning on Speed" },
+                { id: 'wise', name: "Wise", share: 0, color: '#22c55e', vector: 'fees', msg: "Winning on Price" },
+                { id: 'klarna', name: "Klarna", share: 0, color: '#ef4444', vector: 'convenience', msg: "Winning on Flow" }
+            ],
+
+            events: [],
+
+            init() {},
+
+            toggleSim() {
+                if (this.active) {
+                    clearInterval(this.interval);
+                    this.active = false;
+                } else {
+                    this.active = true;
+                    this.interval = setInterval(() => this.tick(), 1000);
+                }
+            },
+
+            tick() {
+                let churnRisk = 0;
+                
+                // 1. Calculate Risk based on Levers
+                if (this.config.latency > 1500) churnRisk += 0.4;
+                else if (this.config.latency < 200) churnRisk -= 0.1;
+
+                if (this.config.fees > 3.0) churnRisk += 0.3;
+                else if (this.config.fees < 1.0) churnRisk -= 0.1;
+
+                // 2. Handle "Block Mode" (Compliance Wall)
+                if (this.config.blockMode) {
+                    churnRisk = 0; // Can't churn if blocked (initially)
+                    // Fix 1: Clamp mood at 0
+                    this.customerMood = Math.max(0, this.customerMood - 5);
+                    
+                    if (this.customerMood < 50 && Math.random() > 0.8) {
+                        this.logEvent("⚠️ REGULATOR WARNING: Unfair blocking detected.", "risk");
+                        
+                        // Fix 2: Conservation of Mass
+                        // If bank loses 5%, distribute it to competitors so chart stays full
+                        const penalty = 5;
+                        if (this.shareOfWallet >= penalty) {
+                            this.shareOfWallet -= penalty;
+                            const sharePerComp = penalty / this.competitors.length;
+                            this.competitors.forEach(c => c.share += sharePerComp);
+                        }
+                    }
+                } else {
+                    // Mood recovers if not blocked
+                    if (this.customerMood < 100) this.customerMood += 2;
+                }
+
+                // 3. Execute Standard Churn
+                if (!this.config.blockMode && Math.random() < churnRisk && this.shareOfWallet > 0.5) {
+                    this.processLoss();
+                }
+                
+                // Game Over Check
+                if (this.shareOfWallet <= 0) {
+                    this.active = false;
+                    clearInterval(this.interval);
+                    alert("GAME OVER: Zero relationship retained.");
+                }
+            },
+
+            processLoss() {
+                let winner = this.competitors[2]; // Default Klarna
+                if (this.config.latency > 1000) winner = this.competitors[0]; // Revolut
+                else if (this.config.fees > 2.0) winner = this.competitors[1]; // Wise
+
+                const lossAmount = 0.5;
+                
+                if (this.shareOfWallet >= lossAmount) {
+                    this.shareOfWallet = (parseFloat(this.shareOfWallet) - lossAmount).toFixed(1);
+                    winner.share = (parseFloat(winner.share) + lossAmount);
+                    
+                    const amount = Math.floor(Math.random() * 200) + 20;
+                    this.totalOutflow += amount;
+                    this.logEvent(`${winner.name} stole transaction ($${amount}) due to ${winner.vector}.`, "neutral");
+                }
+            },
+
+            logEvent(text, type) {
+                this.events.unshift({ text, type, time: new Date().toLocaleTimeString() });
+                if (this.events.length > 5) this.events.pop();
+            },
+
+            reset() {
+                this.active = false;
+                clearInterval(this.interval);
+                this.shareOfWallet = 100;
+                this.totalOutflow = 0;
+                this.customerMood = 100;
+                this.competitors.forEach(c => c.share = 0);
+                this.events = [];
+            },
+
+            get healthColor() {
+                if (this.shareOfWallet > 80) return 'text-primary';
+                if (this.shareOfWallet > 50) return 'text-warn';
+                return 'text-risk';
+            },
+
+            get chartGradient() {
+                let stops = [];
+                let currentPos = 0;
+                
+                // 1. Bank Share
+                let bankShare = parseFloat(this.shareOfWallet);
+                stops.push(`#1e293b 0% ${bankShare}%`);
+                currentPos += bankShare;
+
+                // 2. Competitors
+                this.competitors.forEach(c => {
+                    let share = parseFloat(c.share);
+                    if (share > 0) {
+                         let end = currentPos + share;
+                         stops.push(`${c.color} ${currentPos}% ${end}%`);
+                         currentPos = end;
+                    }
+                });
+
+                // 3. Safety filler
+                if (currentPos < 100) {
+                    stops.push(`transparent ${currentPos}% 100%`);
+                }
+
+                return `conic-gradient(${stops.join(', ')})`;
+            },
+            
+            get strategicAdvice() {
+                const topThreat = this.competitors.reduce((prev, current) => (prev.share > current.share) ? prev : current);
+                if (topThreat.share < 1) return { action: "MONITOR", msg: "Keep watching the API logs." };
+                if (topThreat.name.includes("Revolut")) return { action: "BUILD", msg: "Fix App UX immediately." };
+                if (topThreat.name.includes("Wise")) return { action: "PARTNER", msg: "Integrate their FX API." };
+                return { action: "IGNORE", msg: "Niche threat." };
             }
-        } else {
-            // Mood recovers if data flows
-            if (this.customerMood < 100) this.customerMood += 1;
-        }
-
-        // 3. Execute Churn (If risk > random threshold)
-        if (!this.config.blockMode && Math.random() < churnRisk) {
-            this.processLoss();
-        }
+        },
         
-        // Game Over Check
-        if (this.shareOfWallet <= 0) {
-            this.active = false;
-            clearInterval(this.interval);
-            alert("GAME OVER: You became a 'Dumb Pipe'. Zero relationship retained.");
-        }
-    },
-
-    processLoss() {
-        // Determine WHO steals the customer based on the weakness
-        let winner = this.competitors[2];
-        
-        if (this.config.latency > 1000) winner = this.competitors[0];
-        else if (this.config.fees > 2.0) winner = this.competitors[1];
-
-        // Update Stats
-        const lossAmount = 0.5;
-        this.shareOfWallet = (parseFloat(this.shareOfWallet) - lossAmount).toFixed(1);
-        winner.share = (parseFloat(winner.share) + lossAmount);
-        
-        // Ensure shares don't go negative
-        this.shareOfWallet = Math.max(0, this.shareOfWallet);
-        winner.share = Math.max(0, winner.share);
-        
-        // Simulate Money Movement
-        const amount = Math.floor(Math.random() * 200) + 20;
-        this.totalOutflow += amount;
-
-        this.logEvent(`${winner.name} stole transaction ($${amount}) due to ${winner.vector}.`, "neutral");
-    },
-
-    logEvent(text, type) {
-        this.events.unshift({ text, type, time: new Date().toLocaleTimeString() });
-        if (this.events.length > 5) this.events.pop();
-    },
-
-    reset() {
-        this.active = false;
-        clearInterval(this.interval);
-        this.shareOfWallet = 100;
-        this.totalOutflow = 0;
-        this.customerMood = 100;
-        this.competitors.forEach(c => c.share = 0);
-        this.events = [];
-    },
-
-        get chartGradient() {
-        let stops = [];
-        let currentPos = 0;
-        
-        // 1. Bank Share (Dark Blue)
-        let bankShare = parseFloat(this.shareOfWallet);
-        // Syntax: color start% end%
-        stops.push(`#1e293b 0% ${bankShare}%`);
-        currentPos += bankShare;
-
-        // 2. Competitors
-        this.competitors.forEach(c => {
-            let share = parseFloat(c.share);
-            if (share > 0) {
-                 let end = currentPos + share;
-                 stops.push(`${c.color} ${currentPos}% ${end}%`);
-                 currentPos = end;
-            }
-        });
-
-        // 3. Safety filler (if math is slightly off due to float precision)
-        if (currentPos < 100) {
-            stops.push(`transparent ${currentPos}% 100%`);
-        }
-
-        return `conic-gradient(${stops.join(', ')})`;
-    },
-
-    
-    get healthColor() {
-        if (this.shareOfWallet > 80) return 'text-primary';
-        if (this.shareOfWallet > 50) return 'text-warn';
-        return 'text-risk';
-    }
-},
-
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
