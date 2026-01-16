@@ -79,7 +79,12 @@ document.addEventListener('alpine:init', () => {
                         section.questions.forEach((q, qIdx) => { if(parsed[sIdx] && parsed[sIdx][qIdx]) q.score = parsed[sIdx][qIdx]; });
                     });
                 }
-                
+
+                                const savedShadow = localStorage.getItem('bilingual_shadow_inventory');
+                if (savedShadow) {
+                    this.shadowAudit.inventory = JSON.parse(savedShadow);
+                }
+
              const savedTeam = localStorage.getItem('bilingual_active_team');
                 if (savedTeam) {
                     this.teamManager.activeTeam = JSON.parse(savedTeam);
