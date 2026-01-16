@@ -1899,6 +1899,67 @@ async submitAndBenchmark() {
             }
         },
 
+                // ------------------------------------------------------------------
+        // EXCEL FACTORY EXPOSURE CALCULATOR
+        // ------------------------------------------------------------------
+        excelCalc: {
+            inputs: {
+                sheets: 3,
+                steps: 50,      // Manual copy-pastes per run
+                frequency: 12,  // Times per year (monthly = 12)
+                salary: 75,     // Hourly rate of analyst ($)
+                criticality: 2  // 1=Internal, 2=Regulatory, 3=Customer Impact
+            },
+            result: null,
+
+            calculate() {
+                const i = this.inputs;
+                
+                // 1. Calculate OpEx Waste (The "Hidden Tax")
+                // Assumption: Each manual step takes ~2 mins (finding, copying, checking)
+                const hoursPerRun = (i.steps * 2) / 60;
+                const annualCost = Math.round(hoursPerRun * i.frequency * i.salary);
+
+                // 2. Calculate Error Probability (The "Swiss Cheese Model")
+                // Industry standard: Human error rate is ~1% per manual action
+                // Probability of at least one error = 1 - (0.99 ^ steps)
+                const errorProb = Math.round((1 - Math.pow(0.99, i.steps)) * 100);
+
+                // 3. Calculate Risk Exposure (The "Bomb")
+                // Base impact * Criticality Multiplier
+                let baseImpact = 10000; // Base cost of fixing a minor error
+                if (i.criticality == 2) baseImpact = 150000; // Regulatory fine/rework
+                if (i.criticality == 3) baseImpact = 2000000; // Reputational damage/Customer loss
+                
+                // Risk = Probability * Impact
+                const riskExposure = Math.round((errorProb / 100) * baseImpact);
+
+                // 4. Urgency Score (0-100)
+                let score = (errorProb / 2) + (i.criticality * 15);
+                if (score > 100) score = 100;
+
+                this.result = {
+                    annualCost: annualCost.toLocaleString(),
+                    errorProb: errorProb,
+                    riskExposure: this.formatMoney(riskExposure),
+                    score: Math.round(score),
+                    message: this.getMsg(score)
+                };
+            },
+
+            formatMoney(num) {
+                if (num > 1000000) return "$" + (num / 1000000).toFixed(1) + "M";
+                return "$" + (num / 1000).toFixed(0) + "k";
+            },
+
+            getMsg(score) {
+                if (score > 80) return "🔥 BURN IT NOW. This process is a ticking time bomb.";
+                if (score > 50) return "⚠️ HIGH RISK. Migrate to a governed data pipeline immediately.";
+                return "ℹ️ TOLERABLE. Monitor closely, but prioritize higher risks.";
+            }
+        },
+
+
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
