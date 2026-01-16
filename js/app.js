@@ -2271,13 +2271,25 @@ async submitAndBenchmark() {
                 });
             },
 
-            updateChartData() {
-                if (!this.chart) return;
+updateChartData() {
+                // SAFETY CHECK: Ensure chart instance and its internal state exist
+                if (!this.chart || !this.chart.data || !this.chart.data.datasets) {
+                    // If chart isn't ready, try to render it again
+                    this.renderChart();
+                    return;
+                }
+
+                // Update data safely
                 this.chart.data.datasets[0].data = [
                     this.shareOfWallet, 
                     ...this.competitors.map(c => c.share)
                 ];
-                this.chart.update(); 
+
+                // FIX: Wrap update in a requestAnimationFrame to sync with browser repaint cycle
+                // This prevents the 'fullSize' race condition
+                requestAnimationFrame(() => {
+                    this.chart.update(); 
+                });
             },
 
             get healthColor() {
