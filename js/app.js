@@ -893,6 +893,7 @@ teamManager: {
             { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
             { id: 'excel', label: 'Excel Calculator', icon: 'fa-solid fa-file-excel' },
+            { id: 'strangler', label: 'Strangler Visualizer', icon: 'fa-solid fa-network-wired' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -914,6 +915,7 @@ teamManager: {
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true },
             { id: 'excel', label: 'Excel Exposure', desc: 'Calculate the cost & risk of manual spreadsheets.', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
+            { id: 'strangler', label: 'Strangler Pattern', desc: 'Visualize legacy modernization strategy.', icon: 'fa-solid fa-network-wired', color: 'text-purple-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
         ],
@@ -1960,6 +1962,105 @@ async submitAndBenchmark() {
                 return "ℹ️ TOLERABLE. Monitor closely, but prioritize higher risks.";
             }
         },
+
+           // ------------------------------------------------------------------
+        // STRANGLER PATTERN VISUALIZER
+        // ------------------------------------------------------------------
+        stranglerSim: {
+            step: 0,
+            traffic: { legacy: 100, modern: 0 },
+            metrics: { cost: 0, risk: 10, velocity: 10 },
+            
+            // The steps of the Strangler Pattern
+            phases: [
+                {
+                    id: 0,
+                    title: "The Monolith",
+                    desc: "Current State. All functionality (Accounts, Payments, Users) lives in one fragile codebase.",
+                    action: "Identify the Seam",
+                    impact: { cost: 0, risk: 0, velocity: 0 }
+                },
+                {
+                    id: 1,
+                    title: "The Anti-Corruption Layer (ACL)",
+                    desc: "We place an API Gateway (Proxy) in front. It intercepts traffic but still sends it to the Monolith.",
+                    action: "Install Proxy",
+                    impact: { cost: 50000, risk: 5, velocity: 0 } // Cost up, No value yet
+                },
+                {
+                    id: 2,
+                    title: "Build the Sidecar",
+                    desc: "We build the 'Payments' microservice on the side. It is empty but modern.",
+                    action: "Deploy Service",
+                    impact: { cost: 150000, risk: 0, velocity: 5 }
+                },
+                {
+                    id: 3,
+                    title: "Data Sync (Backfill)",
+                    desc: "We sync data from the Monolith to the new Service. Both systems now have the data.",
+                    action: "Start Sync",
+                    impact: { cost: 50000, risk: 10, velocity: 0 } // High risk moment
+                },
+                {
+                    id: 4,
+                    title: "The Strangler Switch (10%)",
+                    desc: "We route 10% of traffic to the new service. We test with staff/low-risk users.",
+                    action: "Route 10%",
+                    trafficChange: { legacy: 90, modern: 10 },
+                    impact: { cost: 0, risk: -5, velocity: 20 }
+                },
+                {
+                    id: 5,
+                    title: "Full Migration",
+                    desc: "The new service works. We route 100% of Payments traffic to it.",
+                    action: "Route 100%",
+                    trafficChange: { legacy: 60, modern: 40 }, // Payments is 40% of the monolith
+                    impact: { cost: -20000, risk: -20, velocity: 50 } // OpEx drops
+                },
+                {
+                    id: 6,
+                    title: "Kill the Zombie Code",
+                    desc: "We delete the old Payments code from the Monolith. The system is lighter.",
+                    action: "Decommission",
+                    impact: { cost: -50000, risk: -40, velocity: 80 }
+                }
+            ],
+
+            nextPhase() {
+                if (this.step < this.phases.length - 1) {
+                    this.step++;
+                    const phase = this.phases[this.step];
+                    
+                    // Update Metrics
+                    this.metrics.cost += phase.impact.cost;
+                    this.metrics.risk = Math.max(0, Math.min(100, this.metrics.risk + phase.impact.risk));
+                    this.metrics.velocity = Math.max(0, Math.min(100, this.metrics.velocity + phase.impact.velocity));
+
+                    // Update Traffic Visualization
+                    if (phase.trafficChange) {
+                        this.traffic = phase.trafficChange;
+                    }
+                }
+            },
+
+            reset() {
+                this.step = 0;
+                this.traffic = { legacy: 100, modern: 0 };
+                this.metrics = { cost: 0, risk: 10, velocity: 10 };
+            },
+
+            get currentPhaseData() {
+                return this.phases[this.step];
+            },
+
+            // Helper for visual connection lines
+            get connectionColor() {
+                if (this.step >= 4) return 'border-green-500'; // Modern
+                if (this.step >= 1) return 'border-yellow-500'; // Proxy
+                return 'border-slate-600'; // Legacy
+            }
+        },
+     
 
 
     })); // <-- This closes the Alpine.data object
