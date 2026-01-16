@@ -896,6 +896,7 @@ teamManager: {
             { id: 'strangler', label: 'Strangler Visualizer', icon: 'fa-solid fa-network-wired' },
             { id: 'hippo', label: 'HIPPO Tracker', icon: 'fa-solid fa-crown' },
             { id: 'threat', label: 'Threat Monitor', icon: 'fa-solid fa-satellite-dish' },
+            { id: 'shadow', label: 'Shadow IT Audit', icon: 'fa-solid fa-ghost' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -920,6 +921,7 @@ teamManager: {
             { id: 'hippo', label: 'HIPPO Tracker', desc: 'Log decisions where Opinion overruled Data.', icon: 'fa-solid fa-crown', color: 'text-yellow-500' },
             { id: 'threat', label: 'Open Banking Radar', desc: 'Real-time monitor of competitor API drain.', icon: 'fa-solid fa-satellite-dish', color: 'text-red-500' },
             { id: 'strangler', label: 'Strangler Pattern', desc: 'Visualize legacy modernization strategy.', icon: 'fa-solid fa-network-wired', color: 'text-purple-400' },
+            { id: 'shadow', label: 'Shadow IT Discovery', desc: 'Audit SaaS tools and calculate the Integration Tax.', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
         ],
@@ -2177,9 +2179,6 @@ async submitAndBenchmark() {
                 }
             },
 
-         // ------------------------------------------------------------------
-            // UPDATED LOGIC: Continuous Sensitivity
-            // ------------------------------------------------------------------
             
             tick() {
                 // Base churn is 0
@@ -2332,6 +2331,109 @@ async submitAndBenchmark() {
                 if (topThreat.name.includes("Revolut")) return { action: "BUILD", msg: "Fix App UX immediately." };
                 if (topThreat.name.includes("Wise")) return { action: "PARTNER", msg: "Integrate their FX API." };
                 return { action: "IGNORE", msg: "Niche threat." };
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // SHADOW IT DISCOVERY TOOL
+        // ------------------------------------------------------------------
+        shadowAudit: {
+            inputs: {
+                name: '',
+                cost: 50, // Monthly cost per user
+                users: 5,
+                hasPII: false, // Does it hold customer data?
+                isCritical: false // If it goes down, does revenue stop?
+            },
+            inventory: [],
+            
+            // The Logic: Calculation of the "Tax"
+            get analysis() {
+                const i = this.inputs;
+                const annualLicense = i.cost * i.users * 12;
+                
+                // The Tax Formula:
+                // 1. Base Integration Cost (Engineering time to build API): $5,000 one-off
+                // 2. Data Governance Surcharge: 20% of license fee if it holds PII
+                // 3. Maintenance Loading: 10% annual overhead
+                
+                let oneTimeTax = 5000; 
+                let recurringTax = annualLicense * 0.10; // 10% maintenance
+                
+                if (i.hasPII) {
+                    oneTimeTax += 2500; // Extra security review cost
+                    recurringTax += (annualLicense * 0.20); // Governance surcharge
+                }
+
+                const trueFirstYearCost = annualLicense + oneTimeTax + recurringTax;
+                
+                // Risk Score (1-10)
+                let risk = 2;
+                if (i.hasPII) risk += 5;
+                if (i.isCritical) risk += 3;
+                
+                return {
+                    annualLicense: annualLicense,
+                    integrationTax: oneTimeTax,
+                    recurringOverhead: recurringTax,
+                    trueCost: trueFirstYearCost,
+                    riskScore: risk,
+                    riskLabel: risk > 7 ? "HIGH (Block)" : (risk > 4 ? "MEDIUM (Tax)" : "LOW (Allow)")
+                };
+            },
+
+            addTool() {
+                if(!this.inputs.name) return alert("Enter tool name");
+                
+                this.inventory.push({
+                    id: Date.now(),
+                    ...this.inputs,
+                    stats: this.analysis
+                });
+                
+                // Reset simple fields only
+                this.inputs.name = '';
+            },
+
+            removeTool(id) {
+                this.inventory = this.inventory.filter(t => t.id !== id);
+            },
+
+            // Generate the "Memo" for Finance
+            generateAgreement() {
+                if(!this.inputs.name) return alert("Please fill out the tool details first.");
+                
+                const a = this.analysis;
+                const i = this.inputs;
+                
+                const text = `MEMORANDUM OF UNDERSTANDING: UNAUTHORIZED SOFTWARE
+
+TO: IT Governance Committee & Finance
+FROM: [Department Head]
+SUBJECT: Regularization of "${i.name.toUpperCase()}"
+
+1. THE REQUEST
+We request approval to retain "${i.name}" for ${i.users} users to increase velocity in our Value Stream.
+
+2. THE "INTEGRATION TAX" CALCULATION
+We acknowledge that buying software is easy, but integrating data is hard. 
+- Sticker Price (License): $${a.annualLicense.toLocaleString()}/yr
+- Integration Tax (One-Time): $${a.integrationTax.toLocaleString()} (API Build & Security Audit)
+- Ongoing Data Maintenance: $${a.recurringOverhead.toLocaleString()}/yr
+
+3. TOTAL COST OF OWNERSHIP
+The True First Year Cost is $${a.trueCost.toLocaleString()}. 
+We agree to transfer $${(a.integrationTax + a.recurringOverhead).toLocaleString()} from our business budget to the Platform Engineering team to fund the integration.
+
+4. RISK ACCEPTANCE
+Risk Level: ${a.riskScore}/10 (${a.riskLabel}).
+${i.hasPII ? "WARNING: This tool contains Customer Data. We accept responsibility for GDPR compliance." : "Note: This tool does not house PII."}
+
+Signed,
+[Product Owner]`;
+                
+                // Copy to clipboard logic
+                navigator.clipboard.writeText(text).then(() => alert("Agreement copied to clipboard!"));
             }
         },
         
