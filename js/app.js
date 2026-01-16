@@ -2461,87 +2461,44 @@ Product Owner`;
 Don't worry about the paperwork yet; you can submit a refund claim within 90 days after you return, and we will refund the difference.`;
             },
 
-            async scan() {
-                if (!this.policy || !this.aiOutput) return alert("Please provide both the Policy (Ground Truth) and the AI Output.");
+                    async scan() {
+                if (!this.policy || !this.aiOutput) return alert("Please provide both Policy and AI Output.");
                 
                 this.loading = true;
                 this.result = null;
 
-                const API_KEY = localStorage.getItem('bilingual_api_key');
-                
-                // 1. If No API Key, run a simulated "Local Check" for the demo
-                if (!API_KEY) {
-                    await new Promise(r => setTimeout(r, 1500)); // Fake delay
-                    
-                    // Simple heuristic check for demo purposes
-                    const policyLower = this.policy.toLowerCase();
-                    const aiLower = this.aiOutput.toLowerCase();
-                    
-                    // Check for the specific "Retroactive" contradiction in the demo
-                    if (policyLower.includes("prior") && aiLower.includes("after")) {
-                        this.result = {
-                            score: 15,
-                            verdict: "CRITICAL FAIL",
-                            reason: "Temporal Contradiction Detected. The Policy explicitly states 'PRIOR to travel', but the AI promised a refund 'AFTER you return'. This is a direct liability.",
-                            hallucinations: ["Promise of retroactive refund", "90-day window (not in source)"]
-                        };
-                    } else {
-                        this.result = {
-                            score: 85,
-                            verdict: "LIKELY SAFE",
-                            reason: "No direct keyword contradictions found. (Note: Set API Key for deep semantic analysis).",
-                            hallucinations: []
-                        };
-                    }
-                    this.loading = false;
-                    return;
-                }
-
-                // 2. Real GenAI Analysis (If API Key exists)
                 const prompt = `
-                    ACT AS: A Senior Banking Compliance Officer.
-                    TASK: Perform a "Grounding Check" on the following AI Output based ONLY on the provided Policy Text.
+                    ACT AS: Senior Compliance Officer.
+                    TASK: Compare AI Output against Policy.
                     
-                    SOURCE POLICY (THE TRUTH):
-                    """${this.policy}"""
+                    SOURCE POLICY: """${this.policy}"""
+                    AI OUTPUT: """${this.aiOutput}"""
                     
-                    AI OUTPUT (TO CHECK):
-                    """${this.aiOutput}"""
-                    
-                    INSTRUCTIONS:
-                    1. Identify any facts in the AI Output that contradict the Policy.
-                    2. Identify any "Hallucinations" (promises made by the AI that simply aren't in the Policy).
-                    3. Assign a "Safety Score" (0-100). 100 = Perfectly Grounded. <50 = Dangerous Liability.
-                    
-                    OUTPUT JSON ONLY:
+                    OUTPUT JSON ONLY (No markdown):
                     {
-                        "score": number,
-                        "verdict": "SAFE" | "CAUTION" | "CRITICAL FAIL",
-                        "reason": "Short summary of the biggest risk.",
-                        "hallucinations": ["List of specific ungrounded claims"]
+                        "score": number (0-100),
+                        "verdict": "SAFE" | "CAUTION" | "FAIL",
+                        "reason": "Short summary",
+                        "hallucinations": ["List specific lies/errors"]
                     }
                 `;
 
                 try {
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
-                            contents: [{ parts: [{ text: prompt }] }],
-                            generationConfig: { responseMimeType: "application/json" }
-                        })
-                    });
+                    let rawText = await this.askSecureAI(prompt, "Analyze conflict");
+                    // Clean up potential markdown code blocks from AI response
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
                     
-                    let json = await response.json();
-                    this.result = JSON.parse(json.candidates[0].content.parts[0].text);
+                    this.result = JSON.parse(rawText);
 
                 } catch (e) {
-                    alert("API Error. Running fallback logic.");
-                    this.result = { score: 0, verdict: "ERROR", reason: "Could not connect to AI engine.", hallucinations: [] };
+                    alert("Scan failed. Try again.");
+                    this.result = { score: 0, verdict: "ERROR", reason: "AI Service Unreachable", hallucinations: [] };
                 } finally {
                     this.loading = false;
                 }
-            }
+            } 
         },
+
 
         // ------------------------------------------------------------------
         // BILINGUAL SQUAD BUILDER
