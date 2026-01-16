@@ -1877,6 +1877,7 @@ async submitAndBenchmark() {
                     this.loading = false;
                 }
             },
+             },
 
                 // ------------------------------------------------------------------
         // EXCEL FACTORY EXPOSURE CALCULATOR
