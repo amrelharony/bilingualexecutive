@@ -871,7 +871,7 @@ teamManager: {
                     this.loading = false;
                 }
             },
-},
+        },
         // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
         // ------------------------------------------------------------------
@@ -1293,7 +1293,25 @@ teamManager: {
                         }] 
                     }, 
 
-                            async analyzeGap() {
+                    options: { 
+                        animation: false, // Disable animation for instant slider feedback
+                        plugins: { legend: { display: false } }, 
+                        scales: { 
+                            r: { 
+                                min: 0, 
+                                max: 5, 
+                                ticks: { display: false }, 
+                                grid: { color: '#334155' }, 
+                                angleLines: { color: '#334155' },
+                                pointLabels: { color: '#f1f5f9', font: { size: 11 } }
+                            } 
+                        } 
+                    } 
+                });
+            });
+        },
+
+         async analyzeGap() {
             const scores = this.talentSkills.map(s => `${s.label}: ${s.val}/5`);
             const prompt = `
                 ACT AS: An Executive Coach for a Bank CIO.
@@ -1311,24 +1329,6 @@ teamManager: {
             } catch (e) {
                 alert("Could not connect to Coach.");
             }
-        },
-
-                    options: { 
-                        animation: false, // Disable animation for instant slider feedback
-                        plugins: { legend: { display: false } }, 
-                        scales: { 
-                            r: { 
-                                min: 0, 
-                                max: 5, 
-                                ticks: { display: false }, 
-                                grid: { color: '#334155' }, 
-                                angleLines: { color: '#334155' },
-                                pointLabels: { color: '#f1f5f9', font: { size: 11 } }
-                            } 
-                        } 
-                    } 
-                });
-            });
         },
 
 
