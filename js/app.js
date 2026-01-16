@@ -1292,6 +1292,27 @@ teamManager: {
                             pointBorderColor: '#f472b6'
                         }] 
                     }, 
+
+                            async analyzeGap() {
+            const scores = this.talentSkills.map(s => `${s.label}: ${s.val}/5`);
+            const prompt = `
+                ACT AS: An Executive Coach for a Bank CIO.
+                DATA: My talent profile is ${scores.join(', ')}.
+                TASK: Identify the single biggest risk in my profile based on these gaps.
+                OUTPUT: 1 sentence punchy warning. No fluff.
+            `;
+            
+            // Show a loading state
+            alert("Analyzing your profile with AI...");
+            
+            try {
+                const insight = await this.askSecureAI(prompt, "Analyze Profile");
+                alert("COACH SAYS:\n\n" + insight);
+            } catch (e) {
+                alert("Could not connect to Coach.");
+            }
+        },
+
                     options: { 
                         animation: false, // Disable animation for instant slider feedback
                         plugins: { legend: { display: false } }, 
