@@ -2177,40 +2177,61 @@ async submitAndBenchmark() {
                 }
             },
 
+         // ------------------------------------------------------------------
+            // UPDATED LOGIC: Continuous Sensitivity
+            // ------------------------------------------------------------------
+            
             tick() {
+                // Base churn is 0
                 let churnRisk = 0;
                 
-                // 1. Calculate Risk based on Levers
-                if (this.config.latency > 1500) churnRisk += 0.4;
-                else if (this.config.latency < 200) churnRisk -= 0.1;
+                // 1. LATENCY RISK (Linear Scale)
+                // Every ms above 200 adds a tiny bit of risk. 
+                // Example: 800ms = ~15% risk. 3000ms = ~80% risk.
+                if (this.config.latency > 200) {
+                    churnRisk += (this.config.latency - 200) / 4000;
+                } else {
+                    // Bonus: If super fast (<200ms), reduce overall risk
+                    churnRisk -= 0.05; 
+                }
 
-                if (this.config.fees > 3.0) churnRisk += 0.3;
-                else if (this.config.fees < 1.0) churnRisk -= 0.1;
+                // 2. FEE RISK (Linear Scale)
+                // Every 0.1% above 0.5% adds risk.
+                // Example: 2.5% = ~20% risk. 5.0% = ~50% risk.
+                if (this.config.fees > 0.5) {
+                    churnRisk += (this.config.fees - 0.5) / 10;
+                } else {
+                    // Bonus: If cheap (<0.5%), reduce overall risk
+                    churnRisk -= 0.05;
+                }
 
-                // 2. Handle "Block Mode" (Compliance Wall)
+                // 3. BLOCKING LOGIC (The Trap)
                 if (this.config.blockMode) {
-                    churnRisk = 0; // Can't churn if blocked (initially)
-                    // Fix 1: Clamp mood at 0
-                    this.customerMood = Math.max(0, this.customerMood - 5);
+                    churnRisk = 0; // Money stops leaving immediately
                     
-                    if (this.customerMood < 50 && Math.random() > 0.8) {
-                        this.logEvent("⚠️ REGULATOR WARNING: Unfair blocking detected.", "risk");
+                    // But Trust drops fast
+                    this.customerMood = Math.max(0, this.customerMood - 2); // -2 NPS per second
+                    
+                    // Regulator Penalty Risk
+                    if (this.customerMood < 50 && Math.random() > 0.90) {
+                        this.logEvent("⚠️ REGULATOR FINE: Anti-competitive behavior detected.", "risk");
                         
-                        // Fix 2: Conservation of Mass
-                        // If bank loses 5%, distribute it to competitors so chart stays full
-                        const penalty = 5;
+                        // Hard penalty on market share
+                        const penalty = 3; 
                         if (this.shareOfWallet >= penalty) {
                             this.shareOfWallet -= penalty;
+                            // Competitors eat the fine
                             const sharePerComp = penalty / this.competitors.length;
                             this.competitors.forEach(c => c.share += sharePerComp);
                         }
                     }
                 } else {
-                    // Mood recovers if not blocked
-                    if (this.customerMood < 100) this.customerMood += 2;
+                    // Trust recovers slowly if unblocked
+                    if (this.customerMood < 100) this.customerMood += 0.5;
                 }
 
-                // 3. Execute Standard Churn
+                // 4. EXECUTE CHURN
+                // Math.random() returns 0.0 to 1.0. If our Risk > Random, we lose a customer.
                 if (!this.config.blockMode && Math.random() < churnRisk && this.shareOfWallet > 0.5) {
                     this.processLoss();
                 }
@@ -2219,26 +2240,43 @@ async submitAndBenchmark() {
                 if (this.shareOfWallet <= 0) {
                     this.active = false;
                     clearInterval(this.interval);
-                    alert("GAME OVER: Zero relationship retained.");
+                    alert("GAME OVER: You became the 'Dumb Pipe'.");
                 }
             },
 
             processLoss() {
-                let winner = this.competitors[2]; // Default Klarna
-                if (this.config.latency > 1000) winner = this.competitors[0]; // Revolut
-                else if (this.config.fees > 2.0) winner = this.competitors[1]; // Wise
+                // Determine who wins based on which metric is worse
+                // Calculate relative pain points
+                const latencyPain = (this.config.latency - 200) / 3000;
+                const feePain = (this.config.fees - 0.5) / 10;
 
-                const lossAmount = 0.5;
+                let winner = this.competitors[2]; // Default: Klarna (Convenience)
+
+                if (latencyPain > feePain && latencyPain > 0.1) {
+                    winner = this.competitors[0]; // Revolut wins on Speed
+                } else if (feePain > latencyPain && feePain > 0.1) {
+                    winner = this.competitors[1]; // Wise wins on Price
+                }
+
+                // Churn Amount
+                const lossAmount = 0.2; // Lose 0.2% share per tick (smooth decline)
                 
                 if (this.shareOfWallet >= lossAmount) {
                     this.shareOfWallet = (parseFloat(this.shareOfWallet) - lossAmount).toFixed(1);
                     winner.share = (parseFloat(winner.share) + lossAmount);
                     
-                    const amount = Math.floor(Math.random() * 200) + 20;
-                    this.totalOutflow += amount;
-                    this.logEvent(`${winner.name} stole transaction ($${amount}) due to ${winner.vector}.`, "neutral");
+                    // Only log meaningful events to avoid spamming the list
+                    if (Math.random() > 0.7) { 
+                        const amount = Math.floor(Math.random() * 500) + 50;
+                        this.totalOutflow += amount;
+                        this.logEvent(`${winner.name} captured transaction ($${amount}). Reason: ${winner.vector}`, "neutral");
+                    } else {
+                        // Still add money even if we don't log text
+                        this.totalOutflow += Math.floor(Math.random() * 100);
+                    }
                 }
             },
+            
 
             logEvent(text, type) {
                 this.events.unshift({ text, type, time: new Date().toLocaleTimeString() });
