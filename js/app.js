@@ -2126,7 +2126,7 @@ async submitAndBenchmark() {
         },
 
         // ------------------------------------------------------------------
-        // OPEN BANKING THREAT MONITOR
+        // ADVANCED OPEN BANKING RADAR
         // ------------------------------------------------------------------
         threatMonitor: {
             active: false,
@@ -2134,26 +2134,28 @@ async submitAndBenchmark() {
             chart: null,
             
             // Simulation State
-            totalOutflow: 1245000, // Starting $
-            shareOfWallet: 78, // % retained by bank
+            totalOutflow: 0,
+            shareOfWallet: 100,
+            customerMood: 100, // Starts happy
             
-            // Competitors eating the lunch
+            // The "Friction Levers" (User Controls)
+            config: {
+                latency: 800, // ms (Lower is better)
+                fees: 2.5,    // % (Lower is better)
+                blockMode: false // The "Defense" switch
+            },
+
+            // Competitors with specific "Attack Vectors"
             competitors: [
-                { name: "Revolut (Daily Spend)", share: 8, color: '#3b82f6', trend: 'up' }, // Blue
-                { name: "Wise (FX/Transfers)", share: 6, color: '#22c55e', trend: 'up' },   // Green
-                { name: "Robinhood (Wealth)", share: 5, color: '#eab308', trend: 'flat' },   // Yellow
-                { name: "Klarna (Lending)", share: 3, color: '#ef4444', trend: 'up' }       // Red
+                { id: 'rev', name: "Revolut", share: 0, color: '#3b82f6', vector: 'latency', msg: "Winning on Speed" },
+                { id: 'wise', name: "Wise", share: 0, color: '#22c55e', vector: 'fees', msg: "Winning on Price" },
+                { id: 'klarna', name: "Klarna", share: 0, color: '#ef4444', vector: 'convenience', msg: "Winning on Flow" }
             ],
 
-            // Live Feed of API Calls
-            feed: [
-                { time: "10:00:01", app: "Revolut", action: "Account Funding", amount: "$500.00" },
-                { time: "10:00:05", app: "Wise", action: "Intl Transfer", amount: "$1,200.00" },
-                { time: "10:00:12", app: "Klarna", action: "Loan Repayment", amount: "$45.00" }
-            ],
+            // Event Log
+            events: [],
 
             init() {
-                // Wait for DOM to render the canvas
                 setTimeout(() => this.renderChart(), 500);
             },
 
@@ -2163,50 +2165,99 @@ async submitAndBenchmark() {
                     this.active = false;
                 } else {
                     this.active = true;
-                    this.interval = setInterval(() => this.tick(), 1500); // Update every 1.5s
+                    this.interval = setInterval(() => this.tick(), 1000);
                 }
             },
 
             tick() {
-                // 1. Simulate Outflow
-                const randomComp = this.competitors[Math.floor(Math.random() * this.competitors.length)];
-                const amount = Math.floor(Math.random() * 500) + 50;
+                // 1. Calculate Churn Probability based on Levers
+                let churnRisk = 0;
                 
-                this.totalOutflow += amount;
-                
-                // 2. Adjust Market Share (Slowly bleed)
-                if (Math.random() > 0.7) {
-                    this.shareOfWallet = (this.shareOfWallet - 0.1).toFixed(1);
-                    randomComp.share = (randomComp.share + 0.1); // JS float math approximation
+                // Latency Penalty (Legacy Tax)
+                if (this.config.latency > 1500) churnRisk += 0.4; // High lag = High churn
+                else if (this.config.latency < 200) churnRisk -= 0.1; // Fast = Retention
+
+                // Fee Penalty (Greed Tax)
+                if (this.config.fees > 3.0) churnRisk += 0.3;
+                else if (this.config.fees < 1.0) churnRisk -= 0.1;
+
+                // 2. Handle "Block Mode" (The Compliance Wall)
+                if (this.config.blockMode) {
+                    churnRisk = 0; // Outflows stop!
+                    this.customerMood -= 5; // But customers get angry
+                    
+                    if (this.customerMood < 50 && Math.random() > 0.8) {
+                        this.logEvent("⚠️ REGULATOR WARNING: Unfair blocking detected.", "risk");
+                        this.shareOfWallet -= 5; // Massive fine penalty
+                    }
+                } else {
+                    // Mood recovers if data flows
+                    if (this.customerMood < 100) this.customerMood += 1;
                 }
 
-                // 3. Update Feed
-                const newLog = {
-                    time: new Date().toLocaleTimeString(),
-                    app: randomComp.name.split(' ')[0],
-                    action: "API Pull: " + (Math.random() > 0.5 ? "Funding" : "Balance Check"),
-                    amount: "$" + amount.toFixed(2)
-                };
-                this.feed.unshift(newLog);
-                if (this.feed.length > 6) this.feed.pop();
+                // 3. Execute Churn (If risk > random threshold)
+                if (!this.config.blockMode && Math.random() < churnRisk) {
+                    this.processLoss();
+                }
 
-                // 4. Update Chart
+                // 4. Update UI
+                this.updateChartData();
+                
+                // Game Over Check
+                if (this.shareOfWallet <= 0) {
+                    this.active = false;
+                    clearInterval(this.interval);
+                    alert("GAME OVER: You became a 'Dumb Pipe'. Zero relationship retained.");
+                }
+            },
+
+            processLoss() {
+                // Determine WHO steals the customer based on the weakness
+                let winner = this.competitors[2]; // Default to Klarna (Convenience)
+                
+                if (this.config.latency > 1000) winner = this.competitors[0]; // Revolut wins on speed
+                else if (this.config.fees > 2.0) winner = this.competitors[1]; // Wise wins on price
+
+                // Update Stats
+                const lossAmount = 0.5; // % lost per tick
+                this.shareOfWallet = (this.shareOfWallet - lossAmount).toFixed(1);
+                winner.share = (winner.share + lossAmount);
+                
+                // Simulate Money Movement
+                const amount = Math.floor(Math.random() * 200) + 20;
+                this.totalOutflow += amount;
+
+                this.logEvent(`${winner.name} stole transaction ($${amount}) due to ${winner.vector}.`, "neutral");
+            },
+
+            logEvent(text, type) {
+                this.events.unshift({ text, type, time: new Date().toLocaleTimeString() });
+                if (this.events.length > 5) this.events.pop();
+            },
+
+            reset() {
+                this.active = false;
+                clearInterval(this.interval);
+                this.shareOfWallet = 100;
+                this.totalOutflow = 0;
+                this.customerMood = 100;
+                this.competitors.forEach(c => c.share = 0);
+                this.events = [];
                 this.updateChartData();
             },
 
             renderChart() {
                 const ctx = document.getElementById('threatChart');
                 if (!ctx) return;
-                
                 if (this.chart) this.chart.destroy();
 
                 this.chart = new Chart(ctx, {
                     type: 'doughnut',
                     data: {
-                        labels: ['Retained by Us', ...this.competitors.map(c => c.name)],
+                        labels: ['Retained', ...this.competitors.map(c => c.name)],
                         datasets: [{
-                            data: [this.shareOfWallet, ...this.competitors.map(c => c.share)],
-                            backgroundColor: ['#1e293b', ...this.competitors.map(c => c.color)], // Bank is Dark
+                            data: [100, 0, 0, 0],
+                            backgroundColor: ['#1e293b', ...this.competitors.map(c => c.color)],
                             borderColor: '#0f172a',
                             borderWidth: 2
                         }]
@@ -2215,7 +2266,7 @@ async submitAndBenchmark() {
                         responsive: true,
                         cutout: '70%',
                         plugins: { legend: { display: false } },
-                        animation: { animateScale: true, animateRotate: true }
+                        animation: { animateScale: true }
                     }
                 });
             },
@@ -2223,21 +2274,16 @@ async submitAndBenchmark() {
             updateChartData() {
                 if (!this.chart) return;
                 this.chart.data.datasets[0].data = [this.shareOfWallet, ...this.competitors.map(c => c.share)];
-                this.chart.update('none'); // 'none' prevents full re-animation glitch
+                this.chart.update('none');
             },
 
-            get strategicAdvice() {
-                // The Immune Response Matrix Logic (Chapter 1)
-                const topThreat = this.competitors.reduce((prev, current) => (prev.share > current.share) ? prev : current);
-                
-                if (topThreat.name.includes("Revolut")) return { action: "BUILD", msg: "They are winning on Daily Spend UX. We must improve our App Interface immediately (High Importance, Low Complexity)." };
-                if (topThreat.name.includes("Wise")) return { action: "PARTNER", msg: "They won the FX war on price. Stop fighting. Integrate their API white-label solution (Low Importance, High Complexity)." };
-                if (topThreat.name.includes("Robinhood")) return { action: "IGNORE", msg: "Niche trading behavior. Don't distract the core team yet." };
-                return { action: "MONITOR", msg: "Keep watching the API logs." };
+            get healthColor() {
+                if (this.shareOfWallet > 80) return 'text-primary';
+                if (this.shareOfWallet > 50) return 'text-warn';
+                return 'text-risk';
             }
         },
-
-
+        
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
