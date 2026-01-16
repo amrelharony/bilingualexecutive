@@ -2245,6 +2245,35 @@ threatMonitor: {
         this.events = [];
     },
 
+        get chartGradient() {
+        let stops = [];
+        let currentPos = 0;
+        
+        // 1. Bank Share (Dark Blue)
+        let bankShare = parseFloat(this.shareOfWallet);
+        // Syntax: color start% end%
+        stops.push(`#1e293b 0% ${bankShare}%`);
+        currentPos += bankShare;
+
+        // 2. Competitors
+        this.competitors.forEach(c => {
+            let share = parseFloat(c.share);
+            if (share > 0) {
+                 let end = currentPos + share;
+                 stops.push(`${c.color} ${currentPos}% ${end}%`);
+                 currentPos = end;
+            }
+        });
+
+        // 3. Safety filler (if math is slightly off due to float precision)
+        if (currentPos < 100) {
+            stops.push(`transparent ${currentPos}% 100%`);
+        }
+
+        return `conic-gradient(${stops.join(', ')})`;
+    },
+
+    
     get healthColor() {
         if (this.shareOfWallet > 80) return 'text-primary';
         if (this.shareOfWallet > 50) return 'text-warn';
