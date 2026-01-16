@@ -2807,73 +2807,160 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 const { jsPDF } = window.jspdf;
                 const doc = new jsPDF();
                 const f = this.form;
+                const pageWidth = doc.internal.pageSize.width;
+                const margin = 20;
+                const contentWidth = pageWidth - (margin * 2);
 
-                // 1. Header (Formal Memo Style)
-                doc.setFont("times", "bold");
-                doc.setFontSize(18);
-                doc.text("INTERNAL MEMORANDUM: REGULATORY SANDBOX REQUEST", 20, 20);
+                // --- DESIGN CONFIG ---
+                const colors = {
+                    primary: '#0f172a', // Navy (Slate-900)
+                    accent: '#3b82f6',  // Blue
+                    risk: '#ef4444',    // Red
+                    light: '#f8fafc',   // Light Gray
+                    text: '#334155'     // Slate-700
+                };
+
+                // --- 1. HEADER BRANDING ---
+                // Navy Header Bar
+                doc.setFillColor(colors.primary);
+                doc.rect(0, 0, pageWidth, 50, 'F');
+
+                // Title
+                doc.setTextColor(255, 255, 255);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(22);
+                doc.text("REGULATORY SANDBOX", margin, 25);
                 
-                doc.setFontSize(11);
+                doc.setFontSize(12);
                 doc.setFont("helvetica", "normal");
-                doc.text(`TO: Risk & Compliance Committee`, 20, 30);
-                doc.text(`FROM: ${f.owner || '[Product Owner]'}`, 20, 36);
-                doc.text(`DATE: ${new Date().toLocaleDateString()}`, 20, 42);
-                doc.text(`SUBJECT: Waiver Request for "${f.project.toUpperCase()}"`, 20, 48);
+                doc.setTextColor(148, 163, 184); // Slate-400
+                doc.text("INTERNAL INNOVATION WAIVER // FORM 10-A", margin, 32);
 
-                doc.setLineWidth(0.5);
-                doc.line(20, 52, 190, 52);
+                // Confidential Stamp
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(10);
+                doc.text("CONFIDENTIAL", pageWidth - margin - 25, 25);
 
-                // 2. Executive Summary
+                // --- 2. METADATA GRID ---
                 let y = 65;
-                doc.setFont("helvetica", "bold");
-                doc.text("1. THE INNOVATION PROPOSAL", 20, y);
-                y += 6;
-                doc.setFont("helvetica", "normal");
-                const text1 = doc.splitTextToSize(`We request a limited "License to Operate" to test a new capability: ${f.hypothesis}. Current legacy processes prevent us from testing this hypothesis efficiently. This experiment aims to demonstrate: ${f.consumer_benefit}.`, 170);
-                doc.text(text1, 20, y);
-                y += (text1.length * 6) + 10;
-
-                // 3. The "Box" (Constraints)
-                doc.setFont("helvetica", "bold");
-                doc.text("2. THE CONTAINMENT PARAMETERS (THE BOX)", 20, y);
-                y += 6;
-                doc.setFont("helvetica", "normal");
-                doc.text(`To ensure zero systemic risk to the Bank, we agree to the following hard limits:`, 20, y);
-                y += 8;
-                doc.text(`• USER CAP: Maximum ${f.vol_cap_users} customers (Invitation Only).`, 25, y); y+=6;
-                doc.text(`• EXPOSURE CAP: Maximum $${f.vol_cap_money} total aggregate risk.`, 25, y); y+=6;
-                doc.text(`• DURATION: Test concludes automatically in ${f.duration} days.`, 25, y);
-                y += 12;
-
-                // 4. The Safety Net
-                doc.setFont("helvetica", "bold");
-                doc.text("3. CONSUMER PROTECTION & FALLBACKS", 20, y);
-                y += 6;
-                doc.setFont("helvetica", "normal");
-                const text2 = doc.splitTextToSize(`We acknowledge that this is experimental code. To protect customers, we have established the following manual fallback: "${f.fallback}". If the system fails, this human intervention ensures compliance standards are met.`, 170);
-                doc.text(text2, 20, y);
-                y += (text2.length * 6) + 10;
-
-                // 5. Success & Kill Criteria
-                doc.setFont("helvetica", "bold");
-                doc.text("4. EXIT CRITERIA", 20, y);
-                y += 6;
-                doc.setFont("helvetica", "normal");
-                doc.text(`We will deem the experiment successful if: ${f.kpi_success}.`, 20, y); y+=6;
-                doc.setTextColor(200, 0, 0); // Red text for kill switch
-                doc.text(`KILL SWITCH: We will immediately halt if: ${f.kpi_risk}.`, 20, y);
-                doc.setTextColor(0, 0, 0);
                 
-                // 6. Signatures
-                y = 250;
-                doc.line(20, y, 90, y);
-                doc.line(110, y, 190, y);
-                doc.setFontSize(8);
-                doc.text("REQUESTOR SIGNATURE", 20, y+5);
-                doc.text("CHIEF RISK OFFICER APPROVAL", 110, y+5);
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                
+                // Left Column
+                doc.text("REQUESTOR:", margin, y);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(0, 0, 0);
+                doc.text(f.owner || "[Name]", margin, y + 6);
 
-                doc.save(`Sandbox_Request_${f.project}.pdf`);
+                // Middle Column
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(100, 100, 100);
+                doc.text("PROJECT:", margin + 60, y);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(0, 0, 0);
+                doc.text(f.project.toUpperCase() || "UNTITLED", margin + 60, y + 6);
+
+                // Right Column
+                doc.setFont("helvetica", "normal");
+                doc.setTextColor(100, 100, 100);
+                doc.text("DATE:", margin + 120, y);
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(0, 0, 0);
+                doc.text(new Date().toLocaleDateString(), margin + 120, y + 6);
+
+                // Divider Line
+                y += 15;
+                doc.setDrawColor(200, 200, 200);
+                doc.line(margin, y, pageWidth - margin, y);
+                y += 10;
+
+                // --- HELPER FOR SECTIONS ---
+                const addSection = (title, icon) => {
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(12);
+                    doc.setTextColor(colors.accent);
+                    doc.text(title.toUpperCase(), margin, y);
+                    y += 8;
+                };
+
+                const addBodyText = (text) => {
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(10);
+                    doc.setTextColor(colors.text);
+                    const lines = doc.splitTextToSize(text, contentWidth);
+                    doc.text(lines, margin, y);
+                    y += (lines.length * 5) + 8;
+                };
+
+                // --- 3. THE INNOVATION ---
+                addSection("1. Innovation & Hypothesis");
+                addBodyText(`We request a "License to Operate" for the following capability: ${f.hypothesis}. \n\nExpected Consumer Benefit: ${f.consumer_benefit}`);
+
+                // --- 4. THE CONTAINMENT BOX (Highlighted) ---
+                y += 5;
+                // Gray Background Box
+                doc.setFillColor(colors.light);
+                doc.setDrawColor(200, 200, 200);
+                doc.roundedRect(margin, y, contentWidth, 45, 3, 3, 'FD');
+                
+                const boxStart = y + 10;
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(11);
+                doc.setFont("helvetica", "bold");
+                doc.text("2. THE CONTAINMENT PARAMETERS (THE BOX)", margin + 10, boxStart);
+                
+                doc.setFontSize(10);
+                doc.setFont("helvetica", "normal");
+                doc.text(`• USER CAP:  ${f.vol_cap_users} Customers (Invitation Only)`, margin + 10, boxStart + 10);
+                doc.text(`• RISK CAP:  $${f.vol_cap_money} Total Aggregate Exposure`, margin + 10, boxStart + 18);
+                doc.text(`• DURATION:  ${f.duration} Days (Auto-Termination)`, margin + 10, boxStart + 26);
+                
+                y += 55; // Move past the box
+
+                // --- 5. SAFETY NET ---
+                addSection("3. The Manual Safety Net");
+                addBodyText(`To mitigate risk during this sprint, we have established the following manual fallback:\n"${f.fallback}"\nIf the automated system fails, this human intervention ensures compliance.`);
+
+                // --- 6. EXIT CRITERIA (Red for Risk) ---
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                doc.setTextColor(colors.risk);
+                doc.text("4. KILL SWITCH & SUCCESS METRICS", margin, y);
+                y += 8;
+                
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+                doc.setTextColor(0,0,0);
+                const kpiText = doc.splitTextToSize(`SUCCESS: ${f.kpi_success}`, contentWidth);
+                doc.text(kpiText, margin, y);
+                y += (kpiText.length * 5) + 5;
+
+                doc.setTextColor(colors.risk); // Red text for kill switch
+                doc.setFont("helvetica", "bold");
+                const killText = doc.splitTextToSize(`MANDATORY KILL SWITCH: ${f.kpi_risk}`, contentWidth);
+                doc.text(killText, margin, y);
+                y += (killText.length * 5) + 20;
+
+                // --- 7. SIGNATURES ---
+                // Ensure we are at the bottom of the page
+                if (y < 240) y = 240;
+
+                doc.setDrawColor(0, 0, 0);
+                doc.setLineWidth(0.5);
+                
+                doc.line(margin, y, margin + 80, y);
+                doc.line(margin + 90, y, pageWidth - margin, y);
+                
+                doc.setFontSize(8);
+                doc.setTextColor(150, 150, 150);
+                doc.setFont("helvetica", "bold");
+                doc.text("PRODUCT OWNER SIGNATURE", margin, y + 5);
+                doc.text("CHIEF RISK OFFICER APPROVAL", margin + 90, y + 5);
+
+                doc.save(`Waiver_${f.project.replace(/\s/g, '_')}.pdf`);
             }
+
         },
         
     })); // <-- This closes the Alpine.data object
