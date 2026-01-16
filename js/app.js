@@ -906,6 +906,7 @@ teamManager: {
             { id: 'squad', label: 'Squad Builder', icon: 'fa-solid fa-people-group' },
             { id: 'kpi', label: 'KPI Designer', icon: 'fa-solid fa-bullseye' },
             { id: 'proposal', label: 'Sandbox Gen', icon: 'fa-solid fa-file-signature' },
+            { id: 'vendor', label: 'Vendor Coach', icon: 'fa-solid fa-handshake' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -935,6 +936,7 @@ teamManager: {
             { id: 'kpi', label: 'Outcome vs. Output', desc: 'Convert vague "Project" goals into measurable "Product" value.', icon: 'fa-solid fa-chart-line', color: 'text-green-400' },
             { id: 'shadow', label: 'Shadow IT Discovery', desc: 'Audit SaaS tools and calculate the Integration Tax.', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
             { id: 'proposal', label: 'Regulatory Sandbox Generator', desc: 'Create a compliant waiver request for your Risk Committee.', icon: 'fa-solid fa-scale-unbalanced', color: 'text-blue-400' },
+            { id: 'vendor', label: 'Vendor Partnership Pyramid', desc: 'AI Coach to renegotiate contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-contract', color: 'text-yellow-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
         ],
@@ -2961,6 +2963,145 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 doc.save(`Waiver_${f.project.replace(/\s/g, '_')}.pdf`);
             }
 
+        },
+
+        // ------------------------------------------------------------------
+        // VENDOR PARTNERSHIP COACH (Chapter 6)
+        // ------------------------------------------------------------------
+        vendorCoach: {
+            step: 'input', // input, analysis, sim
+            vendorName: '',
+            contractType: 'tm', // tm (Time & Materials), fixed (Fixed Price)
+            currentTerms: '',
+            loading: false,
+            analysis: null,
+            
+            // Simulation State
+            simMessages: [],
+            simInput: '',
+            simLoading: false,
+
+            fillDemo() {
+                this.vendorName = "Infosys / Accenture";
+                this.contractType = "tm";
+                this.currentTerms = "We pay $85/hour per developer. The scope is defined in SOWs every 3 months. If they miss a deadline, we just pay for more hours to fix it.";
+            },
+
+            async analyze() {
+                if (!this.currentTerms) return alert("Please describe your current contract.");
+                
+                this.loading = true;
+                const API_KEY = localStorage.getItem('bilingual_api_key');
+                
+                if (!API_KEY) {
+                    // Offline Fallback
+                    await new Promise(r => setTimeout(r, 1000));
+                    this.analysis = {
+                        level: "Level 2: Capacity (Body Shop)",
+                        danger: "You are incentivizing them to be slow. They make more profit if the project is delayed.",
+                        upgrade_clause: "THE UPSIDE BONUS: Vendor base rate reduced to $75/hr. 20% Bonus Pool unlocked if 'Code Defect Ratio' < 1% and 'Time-to-Market' < 2 weeks.",
+                        objection: "We can't accept risk. We don't control your legacy environment.",
+                        rebuttal: "We are moving to Cloud. You claim to be experts. If you don't trust your own code quality, why should we pay a premium?"
+                    };
+                    this.step = 'analysis';
+                    this.loading = false;
+                    return;
+                }
+
+                const prompt = `
+                    ACT AS: Expert IT Procurement Strategist & Agile Coach.
+                    FRAMEWORK: The Vendor Partnership Pyramid (Level 1: Commodity, Level 2: Capacity/T&M, Level 3: Co-Creator/Outcome).
+                    
+                    USER INPUT:
+                    Vendor: ${this.vendorName}
+                    Type: ${this.contractType}
+                    Current Terms: "${this.currentTerms}"
+                    
+                    TASK: Analyze this contract.
+                    1. Identify the current Level (1 or 2).
+                    2. Draft a specific "Level 3" Clause to replace the current bad incentive.
+                    3. Predict the Vendor's Account Manager's objection.
+                    4. Draft a "Bilingual" rebuttal (Business + Tech logic).
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "level": "String (e.g. Level 2: Capacity)",
+                        "danger": "One sentence on why the current model fails.",
+                        "upgrade_clause": "Legal-sounding text for the new outcome-based clause.",
+                        "objection": "What the vendor will say to block this.",
+                        "rebuttal": "What I should say back."
+                    }
+                `;
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } })
+                    });
+                    
+                    const json = await response.json();
+                    this.analysis = JSON.parse(json.candidates[0].content.parts[0].text);
+                    this.step = 'analysis';
+
+                } catch (e) {
+                    alert("AI Error. Please check API Key.");
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            startSim() {
+                this.step = 'sim';
+                this.simMessages = [
+                    { role: 'bot', text: `(Playing as ${this.vendorName} Account Manager): \n\nLook, I appreciate the "Partnership" idea, but we can't sign a Risk-Reward deal. We need guaranteed revenue to allocate staff. T&M is standard industry practice.` }
+                ];
+            },
+
+            async sendSim() {
+                if (!this.simInput) return;
+                
+                this.simMessages.push({ role: 'user', text: this.simInput });
+                const userText = this.simInput;
+                this.simInput = '';
+                this.simLoading = true;
+
+                const API_KEY = localStorage.getItem('bilingual_api_key');
+                // Use fallback if no key (simple rigid response)
+                if(!API_KEY) {
+                    setTimeout(() => {
+                        this.simMessages.push({ role: 'bot', text: "Without an API key, I can't improvise. But in real life, hold the line on 'Outcome over Output'." });
+                        this.simLoading = false;
+                    }, 1000);
+                    return;
+                }
+
+                const prompt = `
+                    ACT AS: A stubborn Vendor Account Manager negotiating with a Bank CIO.
+                    GOAL: Protect your "Time & Materials" revenue. Avoid "Risk Sharing".
+                    CONTEXT: The bank wants to move to Level 3 (Shared Outcome).
+                    LAST USER REPLY: "${userText}"
+                    
+                    INSTRUCTIONS:
+                    1. If the user is weak, push back hard ("We can't do that").
+                    2. If the user uses strong leverage (threatens to cut budget, offers huge upside), grudgingly agree to a pilot.
+                    3. Keep response short (under 50 words).
+                `;
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    
+                    const json = await response.json();
+                    const reply = json.candidates[0].content.parts[0].text;
+                    this.simMessages.push({ role: 'bot', text: reply });
+                } catch(e) {
+                    this.simMessages.push({ role: 'system', text: "Simulation Error." });
+                } finally {
+                    this.simLoading = false;
+                }
+            }
         },
         
     })); // <-- This closes the Alpine.data object
