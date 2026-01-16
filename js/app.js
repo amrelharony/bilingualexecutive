@@ -894,6 +894,7 @@ teamManager: {
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
             { id: 'excel', label: 'Excel Calculator', icon: 'fa-solid fa-file-excel' },
             { id: 'strangler', label: 'Strangler Visualizer', icon: 'fa-solid fa-network-wired' },
+            { id: 'hippo', label: 'HIPPO Tracker', icon: 'fa-solid fa-crown' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -915,6 +916,7 @@ teamManager: {
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true },
             { id: 'excel', label: 'Excel Exposure', desc: 'Calculate the cost & risk of manual spreadsheets.', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
+            { id: 'hippo', label: 'HIPPO Tracker', desc: 'Log decisions where Opinion overruled Data.', icon: 'fa-solid fa-crown', color: 'text-yellow-500' },
             { id: 'strangler', label: 'Strangler Pattern', desc: 'Visualize legacy modernization strategy.', icon: 'fa-solid fa-network-wired', color: 'text-purple-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
@@ -2060,7 +2062,67 @@ async submitAndBenchmark() {
                 return 'border-slate-600'; // Legacy
             }
         },
-     
+             // ------------------------------------------------------------------
+        // HIPPO DECISION TRACKER
+        // ------------------------------------------------------------------
+        hippoTracker: {
+            incidents: [],
+            form: {
+                topic: '',
+                data_evidence: '',
+                hippo_opinion: '',
+                rank: 'SVP/Director',
+                impact: 'Medium'
+            },
+            
+            init() {
+                const saved = localStorage.getItem('bilingual_hippo_log');
+                if (saved) this.incidents = JSON.parse(saved);
+            },
+
+            logIncident() {
+                if (!this.form.topic || !this.form.data_evidence) return alert("Please fill in the details.");
+                
+                this.incidents.unshift({
+                    id: Date.now(),
+                    date: new Date().toLocaleDateString(),
+                    ...this.form
+                });
+
+                localStorage.setItem('bilingual_hippo_log', JSON.stringify(this.incidents));
+                
+                // Reset Form
+                this.form = { topic: '', data_evidence: '', hippo_opinion: '', rank: 'SVP/Director', impact: 'Medium' };
+            },
+
+            deleteLog(id) {
+                this.incidents = this.incidents.filter(i => i.id !== id);
+                localStorage.setItem('bilingual_hippo_log', JSON.stringify(this.incidents));
+            },
+
+            get hippoScore() {
+                // 0 = Pure Data, 100 = Pure Dictatorship
+                // Base score + 10 points per incident
+                if (this.incidents.length === 0) return 0;
+                let score = this.incidents.length * 15; 
+                return Math.min(100, score);
+            },
+
+            get status() {
+                const s = this.hippoScore;
+                if (s < 30) return { label: "Data-Informed", color: "text-primary", msg: "Healthy. Opinions are challenged." };
+                if (s < 70) return { label: "Political Drift", color: "text-warn", msg: "Warning. Rank is starting to outweigh facts." };
+                return { label: "Dictatorship", color: "text-risk", msg: "Critical. Data is being ignored. (See Chapter 3)." };
+            },
+
+            get intervention() {
+                const s = this.hippoScore;
+                if (s > 70) return "Tactics from Chapter 3: Use the 'Disagree and Commit' Ultimatum. Stop bringing slides; bring raw customer logs (Gemba). Force the 'Red Screen' moment.";
+                if (s > 30) return "Tactics from Chapter 3: Implement the 'No Jargon' rule. Ask the HIPPO: 'What specific data point led to your conclusion?'";
+                return "Keep reinforcing the 'Psychological Safety' audit. Celebrate the first person who challenges you.";
+            }
+        },
+
 
 
     })); // <-- This closes the Alpine.data object
