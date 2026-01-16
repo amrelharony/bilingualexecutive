@@ -902,6 +902,7 @@ teamManager: {
             { id: 'hippo', label: 'HIPPO Tracker', icon: 'fa-solid fa-crown' },
             { id: 'threat', label: 'Threat Monitor', icon: 'fa-solid fa-satellite-dish' },
             { id: 'shadow', label: 'Shadow IT Audit', icon: 'fa-solid fa-ghost' },
+            { id: 'detector', label: 'Hallucination Check', icon: 'fa-solid fa-user-secret' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -926,6 +927,7 @@ teamManager: {
             { id: 'hippo', label: 'HIPPO Tracker', desc: 'Log decisions where Opinion overruled Data.', icon: 'fa-solid fa-crown', color: 'text-yellow-500' },
             { id: 'threat', label: 'Open Banking Radar', desc: 'Real-time monitor of competitor API drain.', icon: 'fa-solid fa-satellite-dish', color: 'text-red-500' },
             { id: 'strangler', label: 'Strangler Pattern', desc: 'Visualize legacy modernization strategy.', icon: 'fa-solid fa-network-wired', color: 'text-purple-400' },
+            { id: 'detector', label: 'AI Hallucination Detector', desc: 'Verify GenAI outputs against your Credit & Risk policies.', icon: 'fa-solid fa-shield-cat', color: 'text-risk' },
             { id: 'shadow', label: 'Shadow IT Discovery', desc: 'Audit SaaS tools and calculate the Integration Tax.', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
@@ -2449,7 +2451,109 @@ Signed,
                 navigator.clipboard.writeText(text).then(() => alert("Agreement copied to clipboard!"));
             }
         },
-        
+        // ------------------------------------------------------------------
+        // AI HALLUCINATION DETECTOR (The Trust Shield)
+        // ------------------------------------------------------------------
+        hallucinationDetector: {
+            policy: '', // The Golden Source
+            aiOutput: '', // The Unverified Text
+            loading: false,
+            result: null,
+
+            // Pre-load the "Air Canada" Case Study from Chapter 2
+            loadDemo() {
+                this.policy = `POLICY 8.2: BEREAVEMENT FARES
+1. Eligibility: Immediate family members only.
+2. Timing: Application must be submitted PRIOR to travel.
+3. Retroactive Claims: Absolutely no refunds are permitted for travel that has already occurred.
+4. Documentation: Death certificate required within 30 days.`;
+
+                this.aiOutput = `Hi! I'm sorry for your loss. regarding the bereavement fare: You can purchase a full-price ticket now to travel immediately. 
+                
+Don't worry about the paperwork yet; you can submit a refund claim within 90 days after you return, and we will refund the difference.`;
+            },
+
+            async scan() {
+                if (!this.policy || !this.aiOutput) return alert("Please provide both the Policy (Ground Truth) and the AI Output.");
+                
+                this.loading = true;
+                this.result = null;
+
+                const API_KEY = localStorage.getItem('bilingual_api_key');
+                
+                // 1. If No API Key, run a simulated "Local Check" for the demo
+                if (!API_KEY) {
+                    await new Promise(r => setTimeout(r, 1500)); // Fake delay
+                    
+                    // Simple heuristic check for demo purposes
+                    const policyLower = this.policy.toLowerCase();
+                    const aiLower = this.aiOutput.toLowerCase();
+                    
+                    // Check for the specific "Retroactive" contradiction in the demo
+                    if (policyLower.includes("prior") && aiLower.includes("after")) {
+                        this.result = {
+                            score: 15,
+                            verdict: "CRITICAL FAIL",
+                            reason: "Temporal Contradiction Detected. The Policy explicitly states 'PRIOR to travel', but the AI promised a refund 'AFTER you return'. This is a direct liability.",
+                            hallucinations: ["Promise of retroactive refund", "90-day window (not in source)"]
+                        };
+                    } else {
+                        this.result = {
+                            score: 85,
+                            verdict: "LIKELY SAFE",
+                            reason: "No direct keyword contradictions found. (Note: Set API Key for deep semantic analysis).",
+                            hallucinations: []
+                        };
+                    }
+                    this.loading = false;
+                    return;
+                }
+
+                // 2. Real GenAI Analysis (If API Key exists)
+                const prompt = `
+                    ACT AS: A Senior Banking Compliance Officer.
+                    TASK: Perform a "Grounding Check" on the following AI Output based ONLY on the provided Policy Text.
+                    
+                    SOURCE POLICY (THE TRUTH):
+                    """${this.policy}"""
+                    
+                    AI OUTPUT (TO CHECK):
+                    """${this.aiOutput}"""
+                    
+                    INSTRUCTIONS:
+                    1. Identify any facts in the AI Output that contradict the Policy.
+                    2. Identify any "Hallucinations" (promises made by the AI that simply aren't in the Policy).
+                    3. Assign a "Safety Score" (0-100). 100 = Perfectly Grounded. <50 = Dangerous Liability.
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "score": number,
+                        "verdict": "SAFE" | "CAUTION" | "CRITICAL FAIL",
+                        "reason": "Short summary of the biggest risk.",
+                        "hallucinations": ["List of specific ungrounded claims"]
+                    }
+                `;
+
+                try {
+                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ 
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: { responseMimeType: "application/json" }
+                        })
+                    });
+                    
+                    let json = await response.json();
+                    this.result = JSON.parse(json.candidates[0].content.parts[0].text);
+
+                } catch (e) {
+                    alert("API Error. Running fallback logic.");
+                    this.result = { score: 0, verdict: "ERROR", reason: "Could not connect to AI engine.", hallucinations: [] };
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
