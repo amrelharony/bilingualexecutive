@@ -1822,7 +1822,7 @@ async submitAndBenchmark() {
                 this.context.history.push(`${role === 'user' ? 'Product Owner' : 'Risk Officer'}: ${text}`);
             },
 
-            async sendReply() {
+           async sendReply() {
                 if (!this.input.trim()) return;
                 
                 // 1. Add User Message
@@ -1832,75 +1832,51 @@ async submitAndBenchmark() {
                 this.loading = true;
                 this.turn++;
 
-                // 2. Check API Key
-                const API_KEY = localStorage.getItem('bilingual_api_key');
-                if (!API_KEY) {
-                    this.addMessage('system', "Error: API Key missing. Please check settings.");
-                    this.loading = false;
-                    return;
-                }
-
-                // 3. The "Judge & Actor" Prompt
+                // 2. Construct Prompt (Strict JSON)
                 const systemPrompt = `
-                    ACT AS: Marcus, a cynical, veteran Chief Risk Officer at a bank.
-                    SCENARIO: The user (Product Owner) wants to launch an AI Loan Tool in 2 weeks.
+                    ACT AS: Marcus, a cynical Chief Risk Officer.
+                    SCENARIO: User wants to launch a product. You must judge them.
                     
-                    YOUR TASK:
-                    1. Analyze the user's latest response.
-                    2. SCORE them on "Safety" (0-100): Did they address compliance/risk concerns?
-                    3. SCORE them on "Speed" (0-100): Did they maintain business velocity/value?
-                    4. REPLY as Marcus. Be tough. Challenge them.
+                    TASK:
+                    1. Score "safety_score" (0-100) on compliance.
+                    2. Score "speed_score" (0-100) on business value.
+                    3. Reply as Marcus (cynical, tough).
                     
-                    OUTPUT FORMAT (Strict JSON only):
+                    OUTPUT JSON ONLY (No markdown formatting, just raw JSON):
                     {
                         "safety_score": number,
                         "speed_score": number,
                         "reply": "string"
                     }
                     
-                    CONVERSATION HISTORY:
-                    ${this.context.history.join('\n')}
+                    HISTORY: ${this.context.history.join('\n')}
                 `;
 
-                // 4. API Call
                 try {
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ 
-                            contents: [{ parts: [{ text: systemPrompt }] }],
-                            generationConfig: { responseMimeType: "application/json" } // Force JSON
-                        })
-                    });
+                    // 3. Call Secure Backend
+                    let rawText = await this.askSecureAI(systemPrompt, userText);
+                    
+                    // Clean up potential markdown code blocks from AI response
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    
+                    let content = JSON.parse(rawText);
 
-                    if (!response.ok) throw new Error("API Error");
-                    let json = await response.json();
-                    let content = JSON.parse(json.candidates[0].content.parts[0].text);
-
-                    // 5. Update State
+                    // 4. Update State
                     this.scores.safety = content.safety_score;
                     this.scores.speed = content.speed_score;
                     this.addMessage('bot', content.reply);
 
-                    // Check Game Over conditions
                     if (this.turn >= this.maxTurns) {
                         this.addMessage('system', "SIMULATION ENDED. Check your final Bilingual Score above.");
                     }
 
                 } catch (e) {
                     console.error(e);
-                    this.addMessage('system', "Connection Error. Ensure you are using a valid Gemini API Key.");
+                    this.addMessage('system', "Connection Error. Logic core unavailable.");
                 } finally {
                     this.loading = false;
                 }
             },
-            
-            get statusColor() {
-                const avg = (this.scores.safety + this.scores.speed) / 2;
-                if (avg > 75) return 'text-primary';
-                if (avg > 40) return 'text-warn';
-                return 'text-risk';
-            }
-        },
 
                 // ------------------------------------------------------------------
         // EXCEL FACTORY EXPOSURE CALCULATOR
