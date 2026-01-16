@@ -1800,6 +1800,112 @@
                     </div>
                 </div>
             </div>
+
+            <!-- THREAT MONITOR TAB -->
+            <div x-show="currentTab === 'threat'" x-cloak class="max-w-6xl mx-auto" x-init="threatMonitor.init()">
+                
+                <div class="flex justify-between items-end mb-8">
+                    <div>
+                        <h2 class="font-mono text-3xl font-bold text-white mb-2"><i class="fa-solid fa-radar mr-2 text-red-500"></i>Open Banking Radar</h2>
+                        <p class="text-textMuted text-sm">Real-time visualization of the "Unbundling" effect (Chapter 1).</p>
+                    </div>
+                    <button @click="threatMonitor.toggleSim()" 
+                            class="font-bold py-2 px-6 rounded-full shadow-glow transition-all flex items-center gap-2"
+                            :class="threatMonitor.active ? 'bg-red-500/20 text-red-400 border border-red-500' : 'bg-primary text-dark'">
+                        <i class="fa-solid" :class="threatMonitor.active ? 'fa-pause' : 'fa-play'"></i>
+                        <span x-text="threatMonitor.active ? 'PAUSE SIMULATION' : 'START MONITOR'"></span>
+                    </button>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-6">
+                    
+                    <!-- LEFT: THE CHART -->
+                    <div class="bg-card border border-slate-700 p-6 rounded-xl flex flex-col items-center justify-center relative min-h-[300px]">
+                        <h3 class="absolute top-6 left-6 font-mono text-xs text-slate-500 uppercase">Share of Wallet</h3>
+                        
+                        <div class="relative h-64 w-64">
+                            <canvas id="threatChart"></canvas>
+                            <!-- Center Text -->
+                            <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                                <span class="text-3xl font-bold text-white" x-text="threatMonitor.shareOfWallet + '%'"></span>
+                                <span class="text-[10px] text-slate-500 uppercase">Retained</span>
+                            </div>
+                        </div>
+
+                        <!-- Legend -->
+                        <div class="grid grid-cols-2 gap-x-8 gap-y-2 mt-6 w-full px-4">
+                            <template x-for="comp in threatMonitor.competitors">
+                                <div class="flex items-center justify-between text-xs">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-2 h-2 rounded-full" :style="`background-color: ${comp.color}`"></div>
+                                        <span class="text-slate-300" x-text="comp.name.split(' ')[0]"></span>
+                                    </div>
+                                    <span class="font-mono text-white font-bold" x-text="Math.round(comp.share) + '%'"></span>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- MIDDLE: LIVE FEED -->
+                    <div class="bg-dark border border-slate-800 p-0 rounded-xl overflow-hidden flex flex-col">
+                        <div class="p-4 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+                            <h3 class="font-mono text-xs text-red-400 uppercase flex items-center gap-2">
+                                <span class="relative flex h-2 w-2">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75" x-show="threatMonitor.active"></span>
+                                  <span class="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                                </span>
+                                Live Outflow (API)
+                            </h3>
+                            <span class="font-mono text-xs text-white" x-text="'Total: $' + threatMonitor.totalOutflow.toLocaleString()"></span>
+                        </div>
+                        
+                        <div class="flex-1 p-4 space-y-3 overflow-hidden">
+                            <template x-for="log in threatMonitor.feed" :key="log.time">
+                                <div class="flex justify-between items-center text-sm p-3 rounded bg-card border-l-2 border-slate-600 animate-pulse-once">
+                                    <div class="flex items-center gap-3">
+                                        <i class="fa-solid fa-arrow-right-from-bracket text-red-500 text-xs"></i>
+                                        <div>
+                                            <div class="font-bold text-white" x-text="log.app"></div>
+                                            <div class="text-[10px] text-slate-500 font-mono" x-text="log.action"></div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="font-mono text-white" x-text="log.amount"></div>
+                                        <div class="text-[10px] text-slate-500" x-text="log.time"></div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: STRATEGIC RESPONSE -->
+                    <div class="bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 p-6 rounded-xl flex flex-col">
+                        <h3 class="font-mono text-xs text-slate-400 uppercase mb-4">Immune Response Matrix</h3>
+                        
+                        <div class="flex-1 flex flex-col justify-center items-center text-center space-y-4">
+                            <div class="w-16 h-16 rounded-full bg-dark border-2 border-slate-600 flex items-center justify-center text-2xl shadow-glow">
+                                <i class="fa-solid" :class="threatMonitor.strategicAdvice.action === 'BUILD' ? 'fa-hammer text-primary' : (threatMonitor.strategicAdvice.action === 'PARTNER' ? 'fa-handshake text-purple-400' : 'fa-eye text-slate-400')"></i>
+                            </div>
+                            
+                            <div>
+                                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">RECOMMENDED STRATEGY</p>
+                                <h2 class="text-3xl font-bold text-white mb-2" x-text="threatMonitor.strategicAdvice.action"></h2>
+                            </div>
+                            
+                            <div class="bg-black/30 p-4 rounded-lg border border-slate-700/50">
+                                <p class="text-sm text-slate-300 italic" x-text="threatMonitor.strategicAdvice.msg"></p>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 pt-4 border-t border-slate-700 text-center">
+                            <p class="text-[10px] text-textMuted">
+                                Based on <span class="text-white">Competitor Velocity</span> vs <span class="text-white">Internal Complexity</span>.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
             
             <!-- COMMUNITY -->
             <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
