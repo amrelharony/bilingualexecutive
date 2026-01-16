@@ -904,6 +904,7 @@ teamManager: {
             { id: 'shadow', label: 'Shadow IT Audit', icon: 'fa-solid fa-ghost' },
             { id: 'detector', label: 'Hallucination Check', icon: 'fa-solid fa-user-secret' },
             { id: 'squad', label: 'Squad Builder', icon: 'fa-solid fa-people-group' },
+            { id: 'kpi', label: 'KPI Designer', icon: 'fa-solid fa-bullseye' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -930,6 +931,7 @@ teamManager: {
             { id: 'strangler', label: 'Strangler Pattern', desc: 'Visualize legacy modernization strategy.', icon: 'fa-solid fa-network-wired', color: 'text-purple-400' },
             { id: 'detector', label: 'AI Hallucination Detector', desc: 'Verify GenAI outputs against your Credit & Risk policies.', icon: 'fa-solid fa-shield-cat', color: 'text-risk' },
             { id: 'squad', label: 'Bilingual Squad Builder', desc: 'Design the perfect cross-functional team and test its velocity.', icon: 'fa-solid fa-puzzle-piece', color: 'text-indigo-400' },
+            { id: 'kpi', label: 'Outcome vs. Output', desc: 'Convert vague "Project" goals into measurable "Product" value.', icon: 'fa-solid fa-chart-line', color: 'text-green-400' },
             { id: 'shadow', label: 'Shadow IT Discovery', desc: 'Audit SaaS tools and calculate the Integration Tax.', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
@@ -2660,6 +2662,97 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 if (g.length === 0 && this.roster.length > 3) g.push("READY TO LAUNCH. This squad has high Bilingual potential.");
                 
                 return g;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // KPI DESIGNER (Outcome vs Output)
+        // ------------------------------------------------------------------
+        kpiDesigner: {
+            input: '',
+            loading: false,
+            result: null,
+
+            // "Cheat Sheet" for common banking projects (Offline Mode)
+            presets: [
+                { keyword: 'app', output: 'Launch Mobile App v2', outcome: 'Reduce Call Center Volume by 15%', leading: '% of Logins using Biometrics', lagging: 'Cost to Serve per Customer' },
+                { keyword: 'cloud', output: 'Migrate to AWS', outcome: 'Reduce Infrastructure Spend by 20%', leading: '% of Non-Prod Servers Auto-Shutdown', lagging: 'Monthly Hosting Bill' },
+                { keyword: 'data', output: 'Build Data Lake', outcome: 'Reduce "Time-to-Insight" for Risk Reports', leading: 'Data Freshness (SLO)', lagging: 'Regulatory Fines / Audit Issues' },
+                { keyword: 'crm', output: 'Implement Salesforce', outcome: 'Increase Cross-Sell Ratio', leading: 'Sales Activity / Logins', lagging: 'Products per Customer' },
+                { keyword: 'loan', output: 'Automate Lending', outcome: 'Decrease "Time-to-Cash"', leading: '% of Loans Auto-Decisioned', lagging: 'Conversion Rate' }
+            ],
+
+            async generate() {
+                if (!this.input) return alert("Enter a project goal first.");
+                
+                this.loading = true;
+                this.result = null;
+
+                // 1. Try Offline Match first (Instant)
+                const match = this.presets.find(p => this.input.toLowerCase().includes(p.keyword));
+                if (match && !localStorage.getItem('bilingual_api_key')) {
+                    // Simulate "thinking"
+                    await new Promise(r => setTimeout(r, 800));
+                    this.result = {
+                        output: this.input,
+                        outcome: match.outcome,
+                        leading: match.leading,
+                        lagging: match.lagging,
+                        explanation: "We shifted focus from 'Did we build it?' to 'Did it change behavior?'"
+                    };
+                    this.loading = false;
+                    return;
+                }
+
+                // 2. Try AI Generation (If Key exists or no offline match)
+                const API_KEY = localStorage.getItem('bilingual_api_key');
+                
+                if (!API_KEY) {
+                    // Fallback if no key and no match
+                    this.result = {
+                        output: this.input,
+                        outcome: "Increase Customer Retention by [X]%",
+                        leading: "Daily Active Users (DAU)",
+                        lagging: "Net Promoter Score (NPS)",
+                        explanation: "Generic fallback. Add your API Key for custom analysis."
+                    };
+                    this.loading = false;
+                    return;
+                }
+
+                const prompt = `
+                    ACT AS: A Product Management Coach (Marty Cagan style).
+                    TASK: Convert this "Project Output" into a "Business Outcome".
+                    INPUT: "${this.input}"
+                    
+                    RETURN JSON ONLY:
+                    {
+                        "outcome": "The measurable business value (e.g. Reduce Cost, Increase Revenue)",
+                        "leading": "An early signal metric (e.g. Adoption, Usage)",
+                        "lagging": "The final success metric (e.g. P&L, NPS)",
+                        "explanation": "1 sentence on why this shift matters."
+                    }
+                `;
+
+                try {
+                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    });
+                    
+                    let json = await response.json();
+                    let data = JSON.parse(json.candidates[0].content.parts[0].text);
+                    
+                    this.result = {
+                        output: this.input,
+                        ...data
+                    };
+
+                } catch (e) {
+                    alert("AI Error. Using fallback.");
+                } finally {
+                    this.loading = false;
+                }
             }
         },
         
