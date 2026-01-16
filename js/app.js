@@ -895,6 +895,7 @@ teamManager: {
             { id: 'excel', label: 'Excel Calculator', icon: 'fa-solid fa-file-excel' },
             { id: 'strangler', label: 'Strangler Visualizer', icon: 'fa-solid fa-network-wired' },
             { id: 'hippo', label: 'HIPPO Tracker', icon: 'fa-solid fa-crown' },
+            { id: 'threat', label: 'Threat Monitor', icon: 'fa-solid fa-radar' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -917,6 +918,7 @@ teamManager: {
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true },
             { id: 'excel', label: 'Excel Exposure', desc: 'Calculate the cost & risk of manual spreadsheets.', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
             { id: 'hippo', label: 'HIPPO Tracker', desc: 'Log decisions where Opinion overruled Data.', icon: 'fa-solid fa-crown', color: 'text-yellow-500' },
+            { id: 'threat', label: 'Open Banking Radar', desc: 'Real-time monitor of competitor API drain.', icon: 'fa-solid fa-radar', color: 'text-red-500' },
             { id: 'strangler', label: 'Strangler Pattern', desc: 'Visualize legacy modernization strategy.', icon: 'fa-solid fa-network-wired', color: 'text-purple-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
@@ -1006,8 +1008,8 @@ teamManager: {
                 try { 
                     data = await tryFetch("gemini-3-flash-preview", "v1beta"); 
                 } catch (e) { 
-                    // Fallback to the stable Gemini 2.5 Flash model
-                    data = await tryFetch("gemini-2.5-flash", "v1beta"); 
+                    // Fallback to the stable Gemini 3 Flash model
+                    data = await tryFetch("gemini-3-flash-preview", "v1beta"); 
                 }
 
                 let botText = "I couldn't process that.";
@@ -2123,6 +2125,117 @@ async submitAndBenchmark() {
             }
         },
 
+        // ------------------------------------------------------------------
+        // OPEN BANKING THREAT MONITOR
+        // ------------------------------------------------------------------
+        threatMonitor: {
+            active: false,
+            interval: null,
+            chart: null,
+            
+            // Simulation State
+            totalOutflow: 1245000, // Starting $
+            shareOfWallet: 78, // % retained by bank
+            
+            // Competitors eating the lunch
+            competitors: [
+                { name: "Revolut (Daily Spend)", share: 8, color: '#3b82f6', trend: 'up' }, // Blue
+                { name: "Wise (FX/Transfers)", share: 6, color: '#22c55e', trend: 'up' },   // Green
+                { name: "Robinhood (Wealth)", share: 5, color: '#eab308', trend: 'flat' },   // Yellow
+                { name: "Klarna (Lending)", share: 3, color: '#ef4444', trend: 'up' }       // Red
+            ],
+
+            // Live Feed of API Calls
+            feed: [
+                { time: "10:00:01", app: "Revolut", action: "Account Funding", amount: "$500.00" },
+                { time: "10:00:05", app: "Wise", action: "Intl Transfer", amount: "$1,200.00" },
+                { time: "10:00:12", app: "Klarna", action: "Loan Repayment", amount: "$45.00" }
+            ],
+
+            init() {
+                // Wait for DOM to render the canvas
+                setTimeout(() => this.renderChart(), 500);
+            },
+
+            toggleSim() {
+                if (this.active) {
+                    clearInterval(this.interval);
+                    this.active = false;
+                } else {
+                    this.active = true;
+                    this.interval = setInterval(() => this.tick(), 1500); // Update every 1.5s
+                }
+            },
+
+            tick() {
+                // 1. Simulate Outflow
+                const randomComp = this.competitors[Math.floor(Math.random() * this.competitors.length)];
+                const amount = Math.floor(Math.random() * 500) + 50;
+                
+                this.totalOutflow += amount;
+                
+                // 2. Adjust Market Share (Slowly bleed)
+                if (Math.random() > 0.7) {
+                    this.shareOfWallet = (this.shareOfWallet - 0.1).toFixed(1);
+                    randomComp.share = (randomComp.share + 0.1); // JS float math approximation
+                }
+
+                // 3. Update Feed
+                const newLog = {
+                    time: new Date().toLocaleTimeString(),
+                    app: randomComp.name.split(' ')[0],
+                    action: "API Pull: " + (Math.random() > 0.5 ? "Funding" : "Balance Check"),
+                    amount: "$" + amount.toFixed(2)
+                };
+                this.feed.unshift(newLog);
+                if (this.feed.length > 6) this.feed.pop();
+
+                // 4. Update Chart
+                this.updateChartData();
+            },
+
+            renderChart() {
+                const ctx = document.getElementById('threatChart');
+                if (!ctx) return;
+                
+                if (this.chart) this.chart.destroy();
+
+                this.chart = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Retained by Us', ...this.competitors.map(c => c.name)],
+                        datasets: [{
+                            data: [this.shareOfWallet, ...this.competitors.map(c => c.share)],
+                            backgroundColor: ['#1e293b', ...this.competitors.map(c => c.color)], // Bank is Dark
+                            borderColor: '#0f172a',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        cutout: '70%',
+                        plugins: { legend: { display: false } },
+                        animation: { animateScale: true, animateRotate: true }
+                    }
+                });
+            },
+
+            updateChartData() {
+                if (!this.chart) return;
+                this.chart.data.datasets[0].data = [this.shareOfWallet, ...this.competitors.map(c => c.share)];
+                this.chart.update('none'); // 'none' prevents full re-animation glitch
+            },
+
+            get strategicAdvice() {
+                // The Immune Response Matrix Logic (Chapter 1)
+                const topThreat = this.competitors.reduce((prev, current) => (prev.share > current.share) ? prev : current);
+                
+                if (topThreat.name.includes("Revolut")) return { action: "BUILD", msg: "They are winning on Daily Spend UX. We must improve our App Interface immediately (High Importance, Low Complexity)." };
+                if (topThreat.name.includes("Wise")) return { action: "PARTNER", msg: "They won the FX war on price. Stop fighting. Integrate their API white-label solution (Low Importance, High Complexity)." };
+                if (topThreat.name.includes("Robinhood")) return { action: "IGNORE", msg: "Niche trading behavior. Don't distract the core team yet." };
+                return { action: "MONITOR", msg: "Keep watching the API logs." };
+            }
+        },
 
 
     })); // <-- This closes the Alpine.data object
