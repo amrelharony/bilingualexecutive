@@ -2623,75 +2623,42 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 { keyword: 'lending', output: 'Automate Lending', outcome: 'Decrease "Time-to-Cash"', leading: '% of Loans Auto-Decisioned', lagging: 'Conversion Rate' }
             ],
 
-            async generate() {
+                        async generate() {
                 if (!this.input.trim()) return alert("Please enter a project goal first.");
                 
                 this.loading = true;
                 this.result = null;
 
-                // 1. Try Offline Match First (Instant Speed)
-                // We check if the user input matches a known keyword
+                // 1. Try Offline Match First (Fast)
                 const match = this.presets.find(p => this.input.toLowerCase().includes(p.keyword));
-                
-                // 2. Setup AI Context
-                const API_KEY = localStorage.getItem('bilingual_api_key');
-
-                // If we have a match OR no API key, use the preset (or generic fallback if no match)
-                if (match && !API_KEY) {
-                    await new Promise(r => setTimeout(r, 600)); // UI polish delay
-                    this.result = {
-                        output: this.input,
-                        outcome: match.outcome,
-                        leading: match.leading,
-                        lagging: match.lagging,
-                        explanation: "Standard banking pattern matched (Offline Mode)."
-                    };
+                if (match) {
+                    await new Promise(r => setTimeout(r, 500)); // Small UI delay
+                    this.result = { output: this.input, ...match, explanation: "Standard pattern matched (Offline)." };
                     this.loading = false;
                     return;
                 }
 
-                // 3. AI Execution (Gemini 3.0 Flash)
-                if (!API_KEY) {
-                    alert("To analyze custom inputs, please click the Key icon (top right) and save your Gemini API Key.");
-                    this.loading = false;
-                    return;
-                }
-
+                // 2. AI Generation
                 const prompt = `
-                    ACT AS: A Product Management Executive Coach (Specializing in FinTech).
-                    CONTEXT: A bank executive has defined a project by its "Output" (what they want to build). You must reframe it as an "Outcome" (the business value).
+                    ACT AS: Product Coach.
+                    TASK: Convert this "Project Output" into a "Business Outcome".
+                    INPUT: "${this.input}"
                     
-                    USER INPUT: "${this.input}"
-                    
-                    TASK: Generate a KPI Metric Tree.
-                    1. Outcome: What is the hard business value? (Revenue, Cost, Risk, or Efficiency).
-                    2. Leading Indicator: An early behavioral metric (e.g. Adoption, Latency, Usage) that predicts success.
-                    3. Lagging Indicator: The final P&L metric.
-                    4. Explanation: 1 short sentence on why this mindset shift saves money.
-                    
-                    OUTPUT JSON FORMAT ONLY:
+                    OUTPUT JSON ONLY (No markdown):
                     {
-                        "outcome": "string",
-                        "leading": "string",
-                        "lagging": "string",
-                        "explanation": "string"
+                        "outcome": "string (Business Value)",
+                        "leading": "string (Behavioral Metric)",
+                        "lagging": "string (P&L Metric)",
+                        "explanation": "1 sentence logic"
                     }
                 `;
 
                 try {
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: prompt }] }],
-                            generationConfig: { responseMimeType: "application/json" }
-                        })
-                    });
-
-                    if (!response.ok) throw new Error("AI Service Error");
-
-                    const json = await response.json();
-                    const aiContent = JSON.parse(json.candidates[0].content.parts[0].text);
+                    let rawText = await this.askSecureAI(prompt, this.input);
+                    // Clean up potential markdown code blocks from AI response
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    
+                    const aiContent = JSON.parse(rawText);
 
                     this.result = {
                         output: this.input,
@@ -2700,19 +2667,13 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
 
                 } catch (e) {
                     console.error(e);
-                    // Smart Fallback if AI fails
-                    this.result = {
-                        output: this.input,
-                        outcome: "Increase Customer Value / Reduce Risk",
-                        leading: "Adoption Rate %",
-                        lagging: "Return on Investment (ROI)",
-                        explanation: "AI Connection failed, but the principle remains: Measure behavior, not delivery."
-                    };
+                    alert("Could not generate KPIs. Try a simpler input.");
                 } finally {
                     this.loading = false;
                 }
-            }
+            } 
         },
+
         // ------------------------------------------------------------------
         // REGULATORY SANDBOX PROPOSAL GENERATOR (The Legal Shield)
         // ------------------------------------------------------------------
