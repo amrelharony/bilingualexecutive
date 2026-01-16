@@ -2665,91 +2665,108 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
             }
         },
 
-        // ------------------------------------------------------------------
-        // KPI DESIGNER (Outcome vs Output)
+// ------------------------------------------------------------------
+        // KPI DESIGNER (Outcome vs Output) - AI ENHANCED
         // ------------------------------------------------------------------
         kpiDesigner: {
             input: '',
             loading: false,
             result: null,
 
-            // "Cheat Sheet" for common banking projects (Offline Mode)
+            // "Cheat Sheet" for common banking projects (Offline Mode / Fallback)
             presets: [
-                { keyword: 'app', output: 'Launch Mobile App v2', outcome: 'Reduce Call Center Volume by 15%', leading: '% of Logins using Biometrics', lagging: 'Cost to Serve per Customer' },
-                { keyword: 'cloud', output: 'Migrate to AWS', outcome: 'Reduce Infrastructure Spend by 20%', leading: '% of Non-Prod Servers Auto-Shutdown', lagging: 'Monthly Hosting Bill' },
-                { keyword: 'data', output: 'Build Data Lake', outcome: 'Reduce "Time-to-Insight" for Risk Reports', leading: 'Data Freshness (SLO)', lagging: 'Regulatory Fines / Audit Issues' },
-                { keyword: 'crm', output: 'Implement Salesforce', outcome: 'Increase Cross-Sell Ratio', leading: 'Sales Activity / Logins', lagging: 'Products per Customer' },
-                { keyword: 'loan', output: 'Automate Lending', outcome: 'Decrease "Time-to-Cash"', leading: '% of Loans Auto-Decisioned', lagging: 'Conversion Rate' }
+                { keyword: 'mobile app', output: 'Launch Mobile App v2', outcome: 'Reduce Call Center Volume by 15%', leading: '% of Logins using Biometrics', lagging: 'Cost to Serve per Customer' },
+                { keyword: 'cloud', output: 'Migrate to AWS', outcome: 'Reduce Infrastructure Spend by 20%', leading: '% of Non-Prod Servers Auto-Shutdown', lagging: 'Monthly Hosting Bill (FinOps)' },
+                { keyword: 'data lake', output: 'Build Data Lake', outcome: 'Reduce "Time-to-Insight" for Risk Reports', leading: 'Data Freshness (SLO Adherence)', lagging: 'Regulatory Fines / Audit Issues' },
+                { keyword: 'salesforce', output: 'Implement CRM', outcome: 'Increase Cross-Sell Ratio', leading: 'Sales Activity / Logins', lagging: 'Products per Customer' },
+                { keyword: 'lending', output: 'Automate Lending', outcome: 'Decrease "Time-to-Cash"', leading: '% of Loans Auto-Decisioned', lagging: 'Conversion Rate' }
             ],
 
             async generate() {
-                if (!this.input) return alert("Enter a project goal first.");
+                if (!this.input.trim()) return alert("Please enter a project goal first.");
                 
                 this.loading = true;
                 this.result = null;
 
-                // 1. Try Offline Match first (Instant)
+                // 1. Try Offline Match First (Instant Speed)
+                // We check if the user input matches a known keyword
                 const match = this.presets.find(p => this.input.toLowerCase().includes(p.keyword));
-                if (match && !localStorage.getItem('bilingual_api_key')) {
-                    // Simulate "thinking"
-                    await new Promise(r => setTimeout(r, 800));
+                
+                // 2. Setup AI Context
+                const API_KEY = localStorage.getItem('bilingual_api_key');
+
+                // If we have a match OR no API key, use the preset (or generic fallback if no match)
+                if (match && !API_KEY) {
+                    await new Promise(r => setTimeout(r, 600)); // UI polish delay
                     this.result = {
                         output: this.input,
                         outcome: match.outcome,
                         leading: match.leading,
                         lagging: match.lagging,
-                        explanation: "We shifted focus from 'Did we build it?' to 'Did it change behavior?'"
+                        explanation: "Standard banking pattern matched (Offline Mode)."
                     };
                     this.loading = false;
                     return;
                 }
 
-                // 2. Try AI Generation (If Key exists or no offline match)
-                const API_KEY = localStorage.getItem('bilingual_api_key');
-                
+                // 3. AI Execution (Gemini 3.0 Flash)
                 if (!API_KEY) {
-                    // Fallback if no key and no match
-                    this.result = {
-                        output: this.input,
-                        outcome: "Increase Customer Retention by [X]%",
-                        leading: "Daily Active Users (DAU)",
-                        lagging: "Net Promoter Score (NPS)",
-                        explanation: "Generic fallback. Add your API Key for custom analysis."
-                    };
+                    alert("To analyze custom inputs, please click the Key icon (top right) and save your Gemini API Key.");
                     this.loading = false;
                     return;
                 }
 
                 const prompt = `
-                    ACT AS: A Product Management Coach (Marty Cagan style).
-                    TASK: Convert this "Project Output" into a "Business Outcome".
-                    INPUT: "${this.input}"
+                    ACT AS: A Product Management Executive Coach (Specializing in FinTech).
+                    CONTEXT: A bank executive has defined a project by its "Output" (what they want to build). You must reframe it as an "Outcome" (the business value).
                     
-                    RETURN JSON ONLY:
+                    USER INPUT: "${this.input}"
+                    
+                    TASK: Generate a KPI Metric Tree.
+                    1. Outcome: What is the hard business value? (Revenue, Cost, Risk, or Efficiency).
+                    2. Leading Indicator: An early behavioral metric (e.g. Adoption, Latency, Usage) that predicts success.
+                    3. Lagging Indicator: The final P&L metric.
+                    4. Explanation: 1 short sentence on why this mindset shift saves money.
+                    
+                    OUTPUT JSON FORMAT ONLY:
                     {
-                        "outcome": "The measurable business value (e.g. Reduce Cost, Increase Revenue)",
-                        "leading": "An early signal metric (e.g. Adoption, Usage)",
-                        "lagging": "The final success metric (e.g. P&L, NPS)",
-                        "explanation": "1 sentence on why this shift matters."
+                        "outcome": "string",
+                        "leading": "string",
+                        "lagging": "string",
+                        "explanation": "string"
                     }
                 `;
 
                 try {
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: prompt }] }],
+                            generationConfig: { responseMimeType: "application/json" }
+                        })
                     });
-                    
-                    let json = await response.json();
-                    let data = JSON.parse(json.candidates[0].content.parts[0].text);
-                    
+
+                    if (!response.ok) throw new Error("AI Service Error");
+
+                    const json = await response.json();
+                    const aiContent = JSON.parse(json.candidates[0].content.parts[0].text);
+
                     this.result = {
                         output: this.input,
-                        ...data
+                        ...aiContent
                     };
 
                 } catch (e) {
-                    alert("AI Error. Using fallback.");
+                    console.error(e);
+                    // Smart Fallback if AI fails
+                    this.result = {
+                        output: this.input,
+                        outcome: "Increase Customer Value / Reduce Risk",
+                        leading: "Adoption Rate %",
+                        lagging: "Return on Investment (ROI)",
+                        explanation: "AI Connection failed, but the principle remains: Measure behavior, not delivery."
+                    };
                 } finally {
                     this.loading = false;
                 }
