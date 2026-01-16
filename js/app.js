@@ -2349,116 +2349,164 @@ async submitAndBenchmark() {
             }
         },
 
+
         // ------------------------------------------------------------------
-        // SHADOW IT DISCOVERY TOOL
+        // SHADOW IT DISCOVERY TOOL (AI-ENHANCED)
         // ------------------------------------------------------------------
         shadowAudit: {
             inputs: {
                 name: '',
-                cost: 50, // Monthly cost per user
+                cost: 50,
                 users: 5,
-                hasPII: false, // Does it hold customer data?
-                isCritical: false // If it goes down, does revenue stop?
+                hasPII: false,
+                isCritical: false
             },
+            aiAnalysis: null, // Stores the AI intelligence
+            loading: false,
             inventory: [],
             
-            // The Logic: Calculation of the "Tax"
+            init() {
+                const saved = localStorage.getItem('bilingual_shadow_inventory');
+                if (saved) this.inventory = JSON.parse(saved);
+            },
+
+            // 1. THE AI SCANNER
+            async scanTool() {
+                if(!this.inputs.name) return alert("Enter a tool name first.");
+                
+                this.loading = true;
+                this.aiAnalysis = null;
+                const API_KEY = localStorage.getItem('bilingual_api_key');
+
+                // Offline Fallback (if no key)
+                if (!API_KEY) {
+                    await new Promise(r => setTimeout(r, 1000));
+                    // Simple heuristic for demo
+                    const name = this.inputs.name.toLowerCase();
+                    const isRisky = name.includes('gpt') || name.includes('cloud') || name.includes('data');
+                    
+                    this.inputs.hasPII = isRisky;
+                    this.aiAnalysis = {
+                        category: "Productivity / SaaS",
+                        risks: isRisky ? ["Unstructured Data Leakage", "Data Residency Unknown"] : ["Shadow Cost", "Access Control"],
+                        justification: `This tool (${this.inputs.name}) provides unique features not available in the enterprise stack, reducing cycle time by ~20%.`
+                    };
+                    this.loading = false;
+                    return;
+                }
+
+                // Real AI Analysis
+                const prompt = `
+                    ACT AS: Bank CISO & Architecture Review Board.
+                    TASK: Analyze this SaaS tool: "${this.inputs.name}".
+                    CONTEXT: A department wants to use this tool instead of the approved enterprise standard.
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "category": "string (e.g. Project Mgmt, AI, Dev Tool)",
+                        "likely_has_pii": boolean (Does this tool typically store names/emails/data?),
+                        "criticality": boolean (Is this typically business critical?),
+                        "top_risks": ["string", "string", "string"] (Max 3 specific banking risks e.g. 'Data Residency', 'Model Training on Data'),
+                        "velocity_justification": "string" (1 sentence argument why a team would choose this over a legacy bank tool like SharePoint/Jira. Focus on UX/Speed.)
+                    }
+                `;
+
+                try {
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`, {
+                        method: "POST", headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }], generationConfig: { responseMimeType: "application/json" } })
+                    });
+                    
+                    const json = await response.json();
+                    const data = JSON.parse(json.candidates[0].content.parts[0].text);
+                    
+                    // Auto-fill the form based on AI findings
+                    this.inputs.hasPII = data.likely_has_pii;
+                    this.inputs.isCritical = data.criticality;
+                    
+                    this.aiAnalysis = {
+                        category: data.category,
+                        risks: data.top_risks,
+                        justification: data.velocity_justification
+                    };
+
+                } catch (e) {
+                    console.error(e);
+                    alert("AI Analysis failed. Using manual mode.");
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            // 2. FINANCIAL CALCULATIONS
             get analysis() {
                 const i = this.inputs;
                 const annualLicense = i.cost * i.users * 12;
                 
-                // The Tax Formula:
-                // 1. Base Integration Cost (Engineering time to build API): $5,000 one-off
-                // 2. Data Governance Surcharge: 20% of license fee if it holds PII
-                // 3. Maintenance Loading: 10% annual overhead
-                
                 let oneTimeTax = 5000; 
-                let recurringTax = annualLicense * 0.10; // 10% maintenance
+                let recurringTax = annualLicense * 0.10; 
                 
                 if (i.hasPII) {
-                    oneTimeTax += 2500; // Extra security review cost
+                    oneTimeTax += 2500; // Security audit cost
                     recurringTax += (annualLicense * 0.20); // Governance surcharge
                 }
 
-                const trueFirstYearCost = annualLicense + oneTimeTax + recurringTax;
-                
-                // Risk Score (1-10)
-                let risk = 2;
-                if (i.hasPII) risk += 5;
-                if (i.isCritical) risk += 3;
-                
                 return {
                     annualLicense: annualLicense,
                     integrationTax: oneTimeTax,
                     recurringOverhead: recurringTax,
-                    trueCost: trueFirstYearCost,
-                    riskScore: risk,
-                    riskLabel: risk > 7 ? "HIGH (Block)" : (risk > 4 ? "MEDIUM (Tax)" : "LOW (Allow)")
+                    trueCost: annualLicense + oneTimeTax + recurringTax,
+                    riskScore: (i.hasPII ? 7 : 2) + (i.isCritical ? 3 : 0)
                 };
             },
 
             addTool() {
                 if(!this.inputs.name) return alert("Enter tool name");
-                
-                // 1. Add to local state
-                this.inventory.push({
-                    id: Date.now(),
-                    ...this.inputs,
-                    stats: this.analysis // Snapshot the calculated tax
-                });
-                
-                // 2. SAVE TO STORAGE
+                this.inventory.push({ id: Date.now(), ...this.inputs, ai: this.aiAnalysis, stats: this.analysis });
                 localStorage.setItem('bilingual_shadow_inventory', JSON.stringify(this.inventory));
-                
-                // 3. Reset simple fields
-                this.inputs.name = '';
+                this.inputs.name = ''; 
+                this.aiAnalysis = null;
             },
 
             removeTool(id) {
-                // 1. Remove from local state
                 this.inventory = this.inventory.filter(t => t.id !== id);
-                
-                // 2. SAVE TO STORAGE
                 localStorage.setItem('bilingual_shadow_inventory', JSON.stringify(this.inventory));
             },
 
-            // Generate the "Memo" for Finance
+            // 3. GENERATE MEMO (AI-Powered)
             generateAgreement() {
-                if(!this.inputs.name) return alert("Please fill out the tool details first.");
-                
+                if(!this.inputs.name) return alert("Analyze a tool first.");
                 const a = this.analysis;
                 const i = this.inputs;
+                const ai = this.aiAnalysis || { justification: "Improves team efficiency.", risks: ["Standard SaaS Risk"] };
                 
-                const text = `MEMORANDUM OF UNDERSTANDING: UNAUTHORIZED SOFTWARE
+                const text = `MEMORANDUM OF UNDERSTANDING: SHADOW IT REGULARIZATION
 
-TO: IT Governance Committee & Finance
-FROM: [Department Head]
-SUBJECT: Regularization of "${i.name.toUpperCase()}"
+TO: IT Governance
+SUBJECT: Integration of ${i.name.toUpperCase()} (${ai.category})
 
-1. THE REQUEST
-We request approval to retain "${i.name}" for ${i.users} users to increase velocity in our Value Stream.
+1. BUSINESS CASE (VELOCITY)
+${ai.justification}
 
-2. THE "INTEGRATION TAX" CALCULATION
-We acknowledge that buying software is easy, but integrating data is hard. 
-- Sticker Price (License): $${a.annualLicense.toLocaleString()}/yr
-- Integration Tax (One-Time): $${a.integrationTax.toLocaleString()} (API Build & Security Audit)
-- Ongoing Data Maintenance: $${a.recurringOverhead.toLocaleString()}/yr
+2. RISK MITIGATION
+Identified Risks: ${ai.risks.join(", ")}.
+Mitigation: We accept the "Integration Tax" to connect this tool to the Enterprise Data Mesh via API, ensuring no data silos are created.
 
-3. TOTAL COST OF OWNERSHIP
-The True First Year Cost is $${a.trueCost.toLocaleString()}. 
-We agree to transfer $${(a.integrationTax + a.recurringOverhead).toLocaleString()} from our business budget to the Platform Engineering team to fund the integration.
+3. FINANCIAL COMMITMENT
+We will transfer the following budget to IT to fund the integration:
+- License Cost: $${a.annualLicense.toLocaleString()}/yr
+- Integration Tax (One-Time): $${a.integrationTax.toLocaleString()}
+- Governance Surcharge: $${a.recurringOverhead.toLocaleString()}/yr
 
-4. RISK ACCEPTANCE
-Risk Level: ${a.riskScore}/10 (${a.riskLabel}).
-${i.hasPII ? "WARNING: This tool contains Customer Data. We accept responsibility for GDPR compliance." : "Note: This tool does not house PII."}
+TOTAL YEAR 1 COST: $${a.trueCost.toLocaleString()}
 
 Signed,
-[Product Owner]`;
+Product Owner`;
                 
-                // Copy to clipboard logic
-                navigator.clipboard.writeText(text).then(() => alert("Agreement copied to clipboard!"));
+                navigator.clipboard.writeText(text).then(() => alert("Memo copied to clipboard!"));
             }
         },
+        
         // ------------------------------------------------------------------
         // AI HALLUCINATION DETECTOR (The Trust Shield)
         // ------------------------------------------------------------------
