@@ -2390,18 +2390,26 @@ async submitAndBenchmark() {
             addTool() {
                 if(!this.inputs.name) return alert("Enter tool name");
                 
+                // 1. Add to local state
                 this.inventory.push({
                     id: Date.now(),
                     ...this.inputs,
-                    stats: this.analysis
+                    stats: this.analysis // Snapshot the calculated tax
                 });
                 
-                // Reset simple fields only
+                // 2. SAVE TO STORAGE
+                localStorage.setItem('bilingual_shadow_inventory', JSON.stringify(this.inventory));
+                
+                // 3. Reset simple fields
                 this.inputs.name = '';
             },
 
             removeTool(id) {
+                // 1. Remove from local state
                 this.inventory = this.inventory.filter(t => t.id !== id);
+                
+                // 2. SAVE TO STORAGE
+                localStorage.setItem('bilingual_shadow_inventory', JSON.stringify(this.inventory));
             },
 
             // Generate the "Memo" for Finance
