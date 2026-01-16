@@ -1560,14 +1560,13 @@
                             <div class="text-xs font-mono text-slate-400">CUSTOMER TRAFFIC</div>
                             
                             <!-- Traffic Splitter -->
-                            <div class="flex gap-4 mt-2 text-[10px] font-bold">
-                                <span class="text-slate-400" x-show="stranglerSim.traffic.legacy > 0" x-text="stranglerSim.traffic.legacy + '% Legacy'"></span>
-                                <span class="text-primary" x-show="stranglerSim.traffic.modern > 0" x-text="stranglerSim.traffic.modern + '% Modern'"></span>
-                            </div>
-                        </div>
+                            <div class="flex gap-4 mt-2 text-[10px] font-bold bg-dark/80 px-3 py-1 rounded-full backdrop-blur-sm">
+                              <span class="text-slate-400" x-show="stranglerSim.traffic.legacy > 0" x-text="stranglerSim.traffic.legacy + '% Legacy'"></span>
+                              <span class="text-primary" x-show="stranglerSim.traffic.modern > 0" x-text="stranglerSim.traffic.modern + '% Modern'"></span>
+
 
                         <!-- THE ARCHITECTURE DIAGRAM -->
-                        <div class="relative w-full max-w-lg mt-16 flex justify-between items-stretch gap-4 h-64">
+                            <div class="relative w-full max-w-lg mt-32 flex justify-between items-stretch gap-4 h-64">
                             
                             <!-- 1. THE MONOLITH (Legacy) -->
                             <div class="flex-1 bg-slate-800 border-2 border-slate-600 rounded-lg flex flex-col items-center justify-center p-4 relative transition-all duration-1000"
