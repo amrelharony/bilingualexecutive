@@ -121,7 +121,7 @@ document.addEventListener('alpine:init', () => {
             this.vendorCoach.askSecureAI = secureBind;
             this.capexClassifier.askSecureAI = secureBind; 
             this.legacyExplainer.askSecureAI = secureBind;
-
+            this.watermelonDetector.askSecureAI = secureBind;
 
 
         },
@@ -912,6 +912,7 @@ teamManager: {
             { id: 'vendor', label: 'Vendor Coach', icon: 'fa-solid fa-handshake' },
             { id: 'capex', label: 'FinOps Auditor', icon: 'fa-solid fa-file-invoice-dollar' },
             { id: 'legacy', label: 'Legacy Translator', icon: 'fa-solid fa-code' },
+            { id: 'watermelon', label: 'Lie Detector', icon: 'fa-solid fa-user-secret' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -943,6 +944,7 @@ teamManager: {
             { id: 'proposal', label: 'Regulatory Sandbox Generator', desc: 'Create a compliant waiver request for your Risk Committee.', icon: 'fa-solid fa-scale-unbalanced', color: 'text-blue-400' },
             { id: 'capex', label: 'FinOps Auditor', desc: 'Classify Agile tickets as CapEx (Assets) vs OpEx.', icon: 'fa-solid fa-file-invoice-dollar', color: 'text-green-400' },
             { id: 'legacy', label: 'Legacy Code Explainer', desc: 'Translate COBOL/SQL into Business Rules.', icon: 'fa-solid fa-code', color: 'text-slate-400' },
+            { id: 'watermelon', label: 'Green Light Detector', desc: 'Detect the "Watermelon Effect" in status reports.', icon: 'fa-solid fa-user-secret', color: 'text-red-500' },
             { id: 'vendor', label: 'Vendor Partnership Pyramid', desc: 'AI Coach to renegotiate contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-contract', color: 'text-yellow-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
@@ -3053,6 +3055,62 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 } catch (e) {
                     console.error(e);
                     alert("Translation failed. Try a shorter snippet.");
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+        
+        // ------------------------------------------------------------------
+        // THE GREEN LIGHT LIE DETECTOR (Watermelon Effect)
+        // ------------------------------------------------------------------
+        watermelonDetector: {
+            // Demo Data: The classic "90% Done" trap
+            inputs: [
+                "Week 1: Development is on track. We are 90% complete. Morale is high.",
+                "Week 2: Still targeting launch. Found a few minor integration nuances. 95% complete.",
+                "Week 3: Almost there. Just waiting on a 3rd party vendor. Dashboard is Green."
+            ],
+            loading: false,
+            result: null,
+
+            async analyze() {
+                if (this.inputs.some(i => !i.trim())) return alert("Please fill in all 3 weeks.");
+                
+                this.loading = true;
+                this.result = null;
+
+                const prompt = `
+                    ACT AS: A Forensic Project Auditor.
+                    TASK: Analyze these 3 sequential weekly status updates for "The Watermelon Effect" (Green on outside, Red on inside).
+                    
+                    LOOK FOR:
+                    1. The "90% Done" Paradox (staying at 90% for weeks).
+                    2. Passive Voice ("Mistakes were made" vs "We missed it").
+                    3. Lack of Data (Vague optimism vs specific metrics).
+                    4. Scope Creep hiding as "refinement".
+                    
+                    INPUTS:
+                    Week 1: "${this.inputs[0]}"
+                    Week 2: "${this.inputs[1]}"
+                    Week 3: "${this.inputs[2]}"
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "bs_score": number (0-100, where 100 is Total Lies),
+                        "risk_level": "LOW" | "HIGH" | "CRITICAL",
+                        "verdict": "string (Short punchy summary, e.g., 'Delusional Optimism')",
+                        "red_flags": ["Specific quote or pattern detected"]
+                    }
+                `;
+
+                try {
+                    let rawText = await this.askSecureAI(prompt, "Detect Lies");
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    this.result = JSON.parse(rawText);
+                } catch (e) {
+                    console.error(e);
+                    alert("Analysis failed.");
                 } finally {
                     this.loading = false;
                 }
