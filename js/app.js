@@ -207,113 +207,156 @@ talentSkills: [
         // ------------------------------------------------------------------
         // NEW FEATURE: CASE STUDY SIMULATOR
         // ------------------------------------------------------------------
-        caseStudy: {
-            active: false,
-            step: 0,
-            gameOver: false,
-            finalMessage: "",
-            metrics: { politicalCapital: 50, velocity: 10, risk: 50 },
-            history: [],
-            scenarios: [
-                {
-                    id: 0,
-                    title: "The $30M Zombie",
-                    context: "You are Sarah, the new CDO. 'Project Olympus' is 18 months late, $30M over budget, and has delivered zero value. The CFO wants to save it.",
-                    question: "What is your first move?",
-                    choices: [
-                        {
-                            text: "Try to fix it. Hire consultants to audit the code.",
-                            outcome: "failure",
-                            feedback: "Sunk Cost Fallacy. You wasted another $5M. The Board lost faith.",
-                            impact: { politicalCapital: -20, velocity: -5, risk: +10 }
-                        },
-                        {
-                            text: "Kill it immediately. Reallocate budget to a pilot.",
-                            outcome: "success",
-                            feedback: "Bilingual Move. You stopped the bleeding and freed up resources.",
-                            impact: { politicalCapital: -10, velocity: +20, risk: -10 }
-                        }
-                    ]
-                },
-                {
-                    id: 1,
-                    title: "The Risk Wall",
-                    context: "Your 'Instant Loan' pilot is ready. The CRO blocks it: 'I don't trust code. I need a human analyst to sign off every loan.'",
-                    question: "How do you respond?",
-                    choices: [
-                        {
-                            text: "Escalate to the CEO. Complaining about the CRO.",
-                            outcome: "failure",
-                            feedback: "Political Trap. You made an enemy of Risk. They will block everything.",
-                            impact: { politicalCapital: -30, velocity: 0, risk: 0 }
-                        },
-                        {
-                            text: "The 'Red Screen' Demo. Show automated policy checks.",
-                            outcome: "success",
-                            feedback: "Bilingual Move. You proved the code is stricter than a human.",
-                            impact: { politicalCapital: +20, velocity: +30, risk: -20 }
-                        }
-                    ]
-                },
-                {
-                    id: 2,
-                    title: "The Demo Day",
-                    context: "90 Days are up. The app works. The Board expects a status report explaining delays.",
-                    question: "How do you present?",
-                    choices: [
-                        {
-                            text: "A 20-slide Strategy Deck on the 'Roadmap'.",
-                            outcome: "neutral",
-                            feedback: "Innovation Theater. They don't believe you. Just another PowerPoint.",
-                            impact: { politicalCapital: 0, velocity: 0, risk: 0 }
-                        },
-                        {
-                            text: "Live Demo. Ask the Chairman to apply right now.",
-                            outcome: "success",
-                            feedback: "Moment of Truth. The loan approves in 3 minutes. Culture shifts.",
-                            impact: { politicalCapital: +50, velocity: +20, risk: 0 }
-                        }
-                    ]
-                }
-            ],
-            start() {
-                this.active = true;
-                this.step = 0;
-                this.gameOver = false;
-                this.metrics = { politicalCapital: 50, velocity: 20, risk: 50 };
-                this.history = [];
-            },
-            makeChoice(choiceIndex) {
-                const currentScenario = this.scenarios[this.step];
-                const choice = currentScenario.choices[choiceIndex];
-                
-                this.metrics.politicalCapital += choice.impact.politicalCapital;
-                this.metrics.velocity += choice.impact.velocity;
-                this.metrics.risk += choice.impact.risk;
-                
-                this.history.push({
-                    step: this.step + 1,
-                    scenario: currentScenario.title,
-                    decision: choice.text,
-                    feedback: choice.feedback,
-                    result: choice.outcome
-                });
+caseStudy: {
+    active: false,
+    isGenerating: false, // New state for AI loading
+    step: 0,
+    gameOver: false,
+    finalMessage: "",
+    metrics: { politicalCapital: 50, velocity: 10, risk: 50 },
+    history: [],
+    
+    // New: User Inputs for Custom Scenarios
+    setup: {
+        industry: '',
+        painPoint: '',
+        mode: 'custom' // 'classic' or 'custom'
+    },
 
-                if (this.metrics.politicalCapital <= 0) {
-                    this.endGame("Fired. You lost the support of the Board.");
-                    return;
-                }
-                if (this.step < this.scenarios.length - 1) {
-                    this.step++;
-                } else {
-                    this.endGame("Victory! You have navigated the Clay Layer.");
-                }
-            },
-            endGame(message) {
-                this.gameOver = true;
-                this.finalMessage = message;
-            }
+    // Default "Meridian Trust" Data (The Classic Mode)
+    defaultScenarios: [
+        {
+            id: 0,
+            title: "The $30M Zombie",
+            context: "You are Sarah, the new CDO. 'Project Olympus' is 18 months late, $30M over budget, and has delivered zero value. The CFO wants to save it.",
+            question: "What is your first move?",
+            choices: [
+                { text: "Try to fix it. Hire consultants to audit the code.", outcome: "failure", feedback: "Sunk Cost Fallacy. You wasted another $5M. The Board lost faith.", impact: { politicalCapital: -20, velocity: -5, risk: +10 } },
+                { text: "Kill it immediately. Reallocate budget to a pilot.", outcome: "success", feedback: "Bilingual Move. You stopped the bleeding and freed up resources.", impact: { politicalCapital: -10, velocity: +20, risk: -10 } }
+            ]
         },
+        // ... (Keep existing scenarios 1 & 2 here for fallback/offline use)
+    ],
+
+    // The container for the active game data
+    scenarios: [], 
+
+    // --- METHODS ---
+
+    // 1. Start the Classic Version (Instant)
+    startClassic() {
+        this.scenarios = JSON.parse(JSON.stringify(this.defaultScenarios)); // Deep copy
+        this.launchGame();
+    },
+
+    // 2. Generate and Start Custom Version (AI)
+    async generateAndStart() {
+        if (!this.setup.industry || !this.setup.painPoint) return alert("Please fill in the details.");
+        
+        this.isGenerating = true;
+
+        const prompt = `
+            ACT AS: An Expert Agile Transformation Coach and Game Master.
+            TASK: Create a 3-turn "Choose Your Own Adventure" simulation for a bank executive.
+            
+            CONTEXT:
+            - Industry: ${this.setup.industry}
+            - Core Pain Point: ${this.setup.painPoint}
+            
+            STRUCTURE REQUIREMENTS:
+            1. Create exactly 3 scenarios (steps).
+            2. Scenario 1 Topic: Funding/Prioritization (Project vs Product).
+            3. Scenario 2 Topic: Governance/Risk (Gatekeeper vs Guardrails).
+            4. Scenario 3 Topic: Go-Live (Big Bang vs MVP).
+            
+            OUTPUT FORMAT: 
+            Provide ONLY a valid JSON array. Do not use Markdown code blocks. Matches this schema exactly:
+            [
+                {
+                    "title": "Short punchy title",
+                    "context": "2-3 sentences setting the scene based on the Industry/Pain Point.",
+                    "question": "The decision question?",
+                    "choices": [
+                        {
+                            "text": "The 'Traditional/Safe' choice (Wrong)",
+                            "outcome": "failure",
+                            "feedback": "Why this failed (Sunk cost, slow speed, etc).",
+                            "impact": { "politicalCapital": -10, "velocity": -10, "risk": 5 }
+                        },
+                        {
+                            "text": "The 'Bilingual/Agile' choice (Correct)",
+                            "outcome": "success",
+                            "feedback": "Why this worked (Flow, Value, Safety).",
+                            "impact": { "politicalCapital": 10, "velocity": 20, "risk": -10 }
+                        }
+                    ]
+                }
+            ]
+        `;
+
+        try {
+            // Call the main AI function from the toolkit
+            let rawText = await this.askSecureAI(prompt, "Generate Simulation");
+            
+            // Cleanup: AI often wraps JSON in ```json ... ```
+            rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+            
+            this.scenarios = JSON.parse(rawText);
+            this.launchGame();
+
+        } catch (e) {
+            console.error("AI Generation failed", e);
+            alert("Simulation generation failed. Loading Classic Mode instead.");
+            this.startClassic();
+        } finally {
+            this.isGenerating = false;
+        }
+    },
+
+    // Shared Launch Logic
+    launchGame() {
+        this.active = true;
+        this.step = 0;
+        this.gameOver = false;
+        this.metrics = { politicalCapital: 50, velocity: 10, risk: 50 };
+        this.history = [];
+    },
+
+    makeChoice(choiceIndex) {
+        // ... (Existing logic remains exactly the same)
+        const currentScenario = this.scenarios[this.step];
+        const choice = currentScenario.choices[choiceIndex];
+        
+        this.metrics.politicalCapital += choice.impact.politicalCapital;
+        this.metrics.velocity += choice.impact.velocity;
+        this.metrics.risk += choice.impact.risk;
+        
+        this.history.push({
+            step: this.step + 1,
+            scenario: currentScenario.title,
+            decision: choice.text,
+            feedback: choice.feedback,
+            result: choice.outcome
+        });
+
+        // Game Over Logic
+        if (this.metrics.politicalCapital <= 0) {
+            this.endGame("Fired. You lost the support of the Board.");
+            return;
+        }
+        if (this.step < this.scenarios.length - 1) {
+            this.step++;
+        } else {
+            this.endGame("Victory! You have successfully navigated the transformation.");
+        }
+    },
+
+    endGame(message) {
+        this.gameOver = true;
+        this.finalMessage = message;
+    }
+},
+
 
         // ------------------------------------------------------------------
         // BILINGUAL FLASHCARD QUIZ
