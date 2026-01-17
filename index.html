@@ -1615,6 +1615,108 @@
 
             </div>
 
+            <!-- CAPEX vs OPEX AUDITOR TAB -->
+            <div x-show="currentTab === 'capex'" x-cloak class="max-w-5xl mx-auto">
+                
+                <div class="text-center mb-8">
+                    <h2 class="font-mono text-3xl font-bold text-white mb-2">The FinOps Auditor</h2>
+                    <p class="text-textMuted text-sm">Translate "Jira Tickets" into "Capital Assets" (IAS 38). Speak the CFO's language.</p>
+                </div>
+
+                <div class="grid lg:grid-cols-3 gap-8 items-start">
+                    
+                    <!-- LEFT: INPUT AREA -->
+                    <div class="lg:col-span-1 bg-card border border-slate-700 p-6 rounded-xl">
+                        <label class="block text-xs font-mono text-white mb-3 uppercase font-bold">
+                            <i class="fa-solid fa-list-check mr-2"></i>Paste Ticket List
+                        </label>
+                        <p class="text-[10px] text-slate-500 mb-2">One ticket per line. (e.g., "FEAT-101: New Login")</p>
+                        
+                        <textarea x-model="capexClassifier.input" 
+                                  class="w-full h-64 bg-dark border border-slate-600 rounded-lg p-3 text-xs font-mono text-white focus:border-green-400 focus:outline-none leading-relaxed"
+                                  placeholder="Paste Jira titles here..."></textarea>
+                        
+                        <button @click="capexClassifier.analyze()" 
+                                :disabled="capexClassifier.loading"
+                                class="w-full mt-4 bg-green-500 hover:bg-green-400 text-dark font-bold py-3 rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
+                            <span x-show="!capexClassifier.loading"><i class="fa-solid fa-calculator"></i> CALCULATE CAPEX</span>
+                            <span x-show="capexClassifier.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> AUDITING...</span>
+                        </button>
+                    </div>
+
+                    <!-- RIGHT: RESULTS DASHBOARD -->
+                    <div class="lg:col-span-2 relative min-h-[400px]">
+                        
+                        <!-- Empty State -->
+                        <div x-show="!capexClassifier.analysis" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-500">
+                            <i class="fa-solid fa-scale-balanced text-4xl mb-4 opacity-20"></i>
+                            <p class="font-mono text-xs uppercase">Ready to Audit</p>
+                        </div>
+
+                        <!-- Results Content -->
+                        <div x-show="capexClassifier.analysis" x-transition class="space-y-6">
+                            
+                            <!-- Summary Bar -->
+                            <div class="bg-card border border-slate-700 p-6 rounded-xl flex items-center justify-between gap-6">
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase tracking-widest">CAPITALIZATION RATE</p>
+                                    <h3 class="text-4xl font-bold font-mono text-white">
+                                        <span x-text="capexClassifier.stats.ratio"></span>%
+                                    </h3>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex justify-between text-xs font-bold mb-2">
+                                        <span class="text-green-400">CapEx (Asset)</span>
+                                        <span class="text-orange-400">OpEx (Expense)</span>
+                                    </div>
+                                    <div class="w-full h-4 bg-slate-800 rounded-full overflow-hidden flex">
+                                        <div class="h-full bg-green-500" :style="`width: ${capexClassifier.stats.ratio}%`"></div>
+                                        <div class="h-full bg-orange-400" :style="`width: ${100 - capexClassifier.stats.ratio}%`"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Detailed List -->
+                            <div class="bg-card border border-slate-700 rounded-xl overflow-hidden">
+                                <div class="p-3 bg-slate-800/50 border-b border-slate-700 flex justify-between items-center">
+                                    <span class="text-xs font-mono text-slate-400 uppercase">Audit Log</span>
+                                    <button class="text-[10px] text-green-400 hover:text-white" @click="navigator.clipboard.writeText(JSON.stringify(capexClassifier.analysis, null, 2)); alert('Copied JSON for CFO!')">
+                                        <i class="fa-solid fa-download mr-1"></i> Export Data
+                                    </button>
+                                </div>
+                                
+                                <div class="max-h-[400px] overflow-y-auto">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead class="bg-dark text-[10px] text-slate-500 uppercase font-mono sticky top-0">
+                                            <tr>
+                                                <th class="p-3">Ticket</th>
+                                                <th class="p-3">Class</th>
+                                                <th class="p-3">Accounting Logic</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-700">
+                                            <template x-for="(item, idx) in capexClassifier.analysis" :key="idx">
+                                                <tr class="hover:bg-slate-800/50 transition-colors text-sm">
+                                                    <td class="p-3 font-mono text-white text-xs truncate max-w-[150px]" x-text="item.ticket"></td>
+                                                    <td class="p-3">
+                                                        <span class="px-2 py-1 rounded text-[10px] font-bold border"
+                                                              :class="item.type === 'CapEx' ? 'bg-green-900/20 text-green-400 border-green-500/50' : 'bg-orange-900/20 text-orange-400 border-orange-500/50'"
+                                                              x-text="item.type"></span>
+                                                    </td>
+                                                    <td class="p-3 text-slate-400 text-xs italic" x-text="item.justification"></td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
             <!-- STRANGLER VISUALIZER TAB -->
             <div x-show="currentTab === 'strangler'" x-cloak class="max-w-6xl mx-auto">
                 
