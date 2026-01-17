@@ -119,6 +119,8 @@ document.addEventListener('alpine:init', () => {
             this.hallucinationDetector.askSecureAI = secureBind;
             this.kpiDesigner.askSecureAI = secureBind;
             this.vendorCoach.askSecureAI = secureBind;
+         this.capexClassifier.askSecureAI = secureBind; 
+
             
 
 
