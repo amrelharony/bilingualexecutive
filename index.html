@@ -1717,6 +1717,96 @@
                 </div>
             </div>
 
+            
+<!-- LEGACY CODE EXPLAINER TAB -->
+            <div x-show="currentTab === 'legacy'" x-cloak class="max-w-5xl mx-auto">
+                
+                <div class="text-center mb-8">
+                    <h2 class="font-mono text-3xl font-bold text-white mb-2">Legacy Code Translator</h2>
+                    <p class="text-textMuted text-sm">Don't let them say "It's too risky to touch." Read the matrix yourself.</p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8 items-start">
+                    
+                    <!-- LEFT: THE TERMINAL (Input) -->
+                    <div class="bg-black border border-slate-700 rounded-xl overflow-hidden shadow-2xl flex flex-col h-[500px]">
+                        <div class="bg-slate-900 p-3 border-b border-slate-800 flex justify-between items-center">
+                            <div class="flex gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            </div>
+                            <span class="text-xs font-mono text-slate-500">mainframe_access.terminal</span>
+                        </div>
+                        
+                        <div class="flex-1 relative">
+                            <textarea x-model="legacyExplainer.input" 
+                                      class="w-full h-full bg-black text-green-500 font-mono text-xs p-6 focus:outline-none resize-none leading-loose"
+                                      placeholder="PASTE COBOL / SQL HERE..."></textarea>
+                            
+                            <!-- Run Button Floating -->
+                            <div class="absolute bottom-6 right-6">
+                                <button @click="legacyExplainer.explain()" 
+                                        :disabled="legacyExplainer.loading"
+                                        class="bg-green-600 hover:bg-green-500 text-black font-bold py-2 px-6 rounded font-mono text-xs shadow-glow transition-all">
+                                    <span x-show="!legacyExplainer.loading">> EXECUTE TRANSLATION</span>
+                                    <span x-show="legacyExplainer.loading">PROCESSING...</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: THE BOARDROOM (Output) -->
+                    <div class="relative min-h-[400px]">
+                        
+                        <!-- Empty State -->
+                        <div x-show="!legacyExplainer.result" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-500">
+                            <i class="fa-solid fa-language text-4xl mb-4 opacity-20"></i>
+                            <p class="font-mono text-xs uppercase">Waiting for Code...</p>
+                        </div>
+
+                        <!-- Results Card -->
+                        <div x-show="legacyExplainer.result" x-transition class="bg-card border border-slate-700 p-8 rounded-xl shadow-2xl relative overflow-hidden">
+                            
+                            <!-- Header -->
+                            <div class="mb-6 border-b border-slate-700 pb-4">
+                                <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">TRANSLATION RESULT</span>
+                                <h3 class="text-xl font-bold text-white mt-2 leading-relaxed">
+                                    "<span x-text="legacyExplainer.result?.executive_summary"></span>"
+                                </h3>
+                            </div>
+
+                            <!-- Business Rules -->
+                            <div class="mb-6">
+                                <h4 class="text-xs font-bold text-primary uppercase mb-3"><i class="fa-solid fa-list-check mr-2"></i>Business Logic</h4>
+                                <ul class="space-y-3">
+                                    <template x-for="rule in legacyExplainer.result?.business_rules">
+                                        <li class="flex items-start gap-3 text-sm text-slate-300">
+                                            <i class="fa-solid fa-arrow-right text-slate-600 mt-1"></i>
+                                            <span x-text="rule"></span>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+
+                            <!-- Risk Assessment -->
+                            <div class="bg-slate-800/50 p-4 rounded border-l-4" 
+                                 :class="legacyExplainer.result?.risk_assessment === 'HIGH' ? 'border-risk' : (legacyExplainer.result?.risk_assessment === 'MEDIUM' ? 'border-warn' : 'border-primary')">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-[10px] font-bold uppercase text-slate-400">Code Risk Profile</span>
+                                    <span class="text-xs font-bold px-2 py-1 rounded"
+                                          :class="legacyExplainer.result?.risk_assessment === 'HIGH' ? 'bg-risk text-dark' : (legacyExplainer.result?.risk_assessment === 'MEDIUM' ? 'bg-warn text-dark' : 'bg-primary text-dark')"
+                                          x-text="legacyExplainer.result?.risk_assessment"></span>
+                                </div>
+                                <p class="text-xs text-white leading-relaxed" x-text="legacyExplainer.result?.risk_reason"></p>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
             <!-- STRANGLER VISUALIZER TAB -->
             <div x-show="currentTab === 'strangler'" x-cloak class="max-w-6xl mx-auto">
                 
