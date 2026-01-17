@@ -119,9 +119,9 @@ document.addEventListener('alpine:init', () => {
             this.hallucinationDetector.askSecureAI = secureBind;
             this.kpiDesigner.askSecureAI = secureBind;
             this.vendorCoach.askSecureAI = secureBind;
-         this.capexClassifier.askSecureAI = secureBind; 
+            this.capexClassifier.askSecureAI = secureBind; 
+            this.legacyExplainer.askSecureAI = secureBind;
 
-            
 
 
         },
@@ -911,6 +911,7 @@ teamManager: {
             { id: 'proposal', label: 'Sandbox Gen', icon: 'fa-solid fa-file-signature' },
             { id: 'vendor', label: 'Vendor Coach', icon: 'fa-solid fa-handshake' },
             { id: 'capex', label: 'FinOps Auditor', icon: 'fa-solid fa-file-invoice-dollar' },
+            { id: 'legacy', label: 'Legacy Translator', icon: 'fa-solid fa-code' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -941,6 +942,7 @@ teamManager: {
             { id: 'shadow', label: 'Shadow IT Discovery', desc: 'Audit SaaS tools and calculate the Integration Tax.', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
             { id: 'proposal', label: 'Regulatory Sandbox Generator', desc: 'Create a compliant waiver request for your Risk Committee.', icon: 'fa-solid fa-scale-unbalanced', color: 'text-blue-400' },
             { id: 'capex', label: 'FinOps Auditor', desc: 'Classify Agile tickets as CapEx (Assets) vs OpEx.', icon: 'fa-solid fa-file-invoice-dollar', color: 'text-green-400' },
+            { id: 'legacy', label: 'Legacy Code Explainer', desc: 'Translate COBOL/SQL into Business Rules.', icon: 'fa-solid fa-code', color: 'text-slate-400' },
             { id: 'vendor', label: 'Vendor Partnership Pyramid', desc: 'AI Coach to renegotiate contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-contract', color: 'text-yellow-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
@@ -3002,6 +3004,55 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 } catch (e) {
                     console.error(e);
                     alert("Audit Failed. Please try a smaller list.");
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // LEGACY CODE EXPLAINER (The Rosetta Stone)
+        // ------------------------------------------------------------------
+        legacyExplainer: {
+            // Default demo: A COBOL snippet checking credit limits
+            input: "IF ORDER-AMT > CUST-CREDIT-LIMIT\n    MOVE 'Y' TO ORDER-REJECT-FLAG\n    PERFORM REJECT-ROUTINE\nELSE\n    SUBTRACT ORDER-AMT FROM CUST-CREDIT-LIMIT\n    ADD ORDER-AMT TO CUST-BALANCE\nEND-IF.",
+            loading: false,
+            result: null,
+
+            async explain() {
+                if (!this.input.trim()) return alert("Please paste some code.");
+                
+                this.loading = true;
+                this.result = null;
+
+                const prompt = `
+                    ACT AS: A Senior Mainframe Architect translating for a CEO.
+                    TASK: Explain this legacy code snippet in plain Business English.
+                    
+                    CONSTRAINTS: 
+                    1. DO NOT use variable names (e.g., don't say "CUST-LIMIT", say "Customer Credit Limit").
+                    2. DO NOT explain syntax (e.g., don't mention "Perform", "Move", "End-If").
+                    3. FOCUS ON MONEY & RISK: What happens to the funds? What is the business rule?
+                    
+                    INPUT CODE:
+                    """${this.input}"""
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "executive_summary": "1 sentence explanation of what this block does.",
+                        "business_rules": ["Rule 1", "Rule 2"],
+                        "risk_assessment": "LOW" | "MEDIUM" | "HIGH",
+                        "risk_reason": "Why is this logic risky? (e.g., hardcoded values, lack of validation)"
+                    }
+                `;
+
+                try {
+                    let rawText = await this.askSecureAI(prompt, "Explain Code");
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    this.result = JSON.parse(rawText);
+                } catch (e) {
+                    console.error(e);
+                    alert("Translation failed. Try a shorter snippet.");
                 } finally {
                     this.loading = false;
                 }
