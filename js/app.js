@@ -1265,84 +1265,82 @@ teamManager: {
             doc.save("Bilingual_Transformation_Map.pdf");
         },
 
-<!-- TALENT RADAR 2.0 (REDESIGNED) -->
-            <div x-show="currentTab === 'talent'" x-cloak class="max-w-6xl mx-auto h-full">
+// ============================================================
+        // UPDATED: TALENT ANALYSIS & CHARTS
+        // ============================================================
+        get talentMaturityScore() {
+            const total = this.talentSkills.reduce((acc, curr) => acc + curr.val, 0);
+            return (total / this.talentSkills.length).toFixed(1); // Returns "3.4" etc.
+        },
+
+        async analyzeGap() {
+            this.isAnalyzingTalent = true;
+            this.aiCoachResponse = null;
+            
+            const scores = this.talentSkills.map(s => `${s.label}: ${s.val}/5`);
+            const prompt = `
+                ACT AS: An Executive Coach for a Bank CIO.
+                DATA: My leadership profile is: ${scores.join(', ')}.
                 
-                <div class="grid lg:grid-cols-12 gap-8 h-full">
-                    
-                    <!-- LEFT COL: INPUTS & SCORE -->
-                    <div class="lg:col-span-5 flex flex-col gap-6">
-                        
-                        <!-- Header Card -->
-                        <div class="bg-card border border-hotpink/30 p-6 rounded-2xl relative overflow-hidden">
-                            <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-fingerprint text-8xl text-hotpink"></i></div>
-                            <h2 class="font-mono text-2xl font-bold text-white mb-1">Leadership Radar</h2>
-                            <p class="text-xs text-textMuted font-mono uppercase tracking-widest">Bilingual Executive Index</p>
-                            
-                            <div class="mt-6 flex items-end gap-3">
-                                <div class="text-6xl font-bold text-hotpink font-mono" x-text="talentMaturityScore"></div>
-                                <div class="text-sm font-bold text-white mb-2">/ 5.0</div>
-                            </div>
-                        </div>
+                TASK:
+                1. Identify my biggest blind spot.
+                2. Give me ONE specific, uncomfortable action to take tomorrow to improve the lowest score.
+                
+                OUTPUT: Markdown format. Keep it punchy. No corporate fluff.
+            `;
 
-                        <!-- Sliders Card -->
-                        <div class="bg-card border border-slate-700 p-6 rounded-2xl flex-1 overflow-y-auto">
-                            <div class="space-y-6">
-                                <template x-for="(skill, idx) in talentSkills" :key="idx">
-                                    <div class="group">
-                                        <div class="flex justify-between items-end mb-2">
-                                            <label class="font-bold text-white text-sm" x-text="skill.label"></label>
-                                            <span class="font-mono text-hotpink font-bold" x-text="skill.val"></span>
-                                        </div>
-                                        <input type="range" min="1" max="5" step="1" 
-                                               x-model.number="skill.val" 
-                                               @input="updateTalentChart()" 
-                                               class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-hotpink">
-                                        
-                                        <!-- Contextual Help -->
-                                        <p class="text-[10px] text-slate-500 mt-1" x-text="skill.desc"></p>
-                                    </div>
-                                </template>
-                            </div>
+            try {
+                const response = await this.askSecureAI(prompt, "Analyze Talent Profile");
+                this.aiCoachResponse = typeof marked !== 'undefined' ? marked.parse(response) : response;
+            } catch (e) {
+                this.aiCoachResponse = "Coach is currently offline. Please check your connection.";
+            } finally {
+                this.isAnalyzingTalent = false;
+            }
+        },
 
-                            <!-- Analysis Button -->
-                            <button @click="analyzeGap()" 
-                                    :disabled="isAnalyzingTalent"
-                                    class="w-full mt-8 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-bold py-4 rounded-xl shadow-glow-vip transition-all flex items-center justify-center gap-2 disabled:opacity-50">
-                                <span x-show="!isAnalyzingTalent"><i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE COACHING PLAN</span>
-                                <span x-show="isAnalyzingTalent"><i class="fa-solid fa-circle-notch fa-spin"></i> ANALYZING PROFILE...</span>
-                            </button>
-                        </div>
-                    </div>
+        updateTalentChart() {
+            this.$nextTick(() => {
+                const ctx = document.getElementById('talentChart');
+                if (!ctx) return;
 
-                    <!-- RIGHT COL: CHART & REPORT -->
-                    <div class="lg:col-span-7 flex flex-col gap-6">
-                        
-                        <!-- Radar Chart -->
-                        <div class="bg-dark border border-slate-800 p-4 rounded-2xl flex items-center justify-center min-h-[400px] relative">
-                            <!-- Background Grid Effect -->
-                            <div class="absolute inset-0 bg-[linear-gradient(rgba(244,114,182,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(244,114,182,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
-                            
-                            <div class="relative z-10 w-full h-full max-h-[500px]">
-                                <canvas id="talentChart"></canvas>
-                            </div>
-                        </div>
+                if (window.myTalentChart) window.myTalentChart.destroy();
 
-                        <!-- AI Report Area -->
-                        <div x-show="aiCoachResponse" x-transition.opacity 
-                             class="bg-slate-800/50 border border-slate-600 p-6 rounded-2xl flex-1 overflow-y-auto relative">
-                            <div class="absolute top-0 left-0 w-1 h-full bg-hotpink"></div>
-                            <h3 class="font-mono text-xs text-hotpink uppercase font-bold mb-4 flex items-center gap-2">
-                                <i class="fa-solid fa-user-tie"></i> Executive Coach Analysis
-                            </h3>
-                            <div class="prose prose-invert prose-sm max-w-none prose-p:text-slate-300 prose-headings:text-white prose-strong:text-hotpink"
-                                 x-html="aiCoachResponse"></div>
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-    
+                Chart.defaults.font.family = '"JetBrains Mono", monospace';
+                
+                window.myTalentChart = new Chart(ctx, { 
+                    type: 'radar', 
+                    data: { 
+                        labels: this.talentSkills.map(s => s.label), 
+                        datasets: [{ 
+                            label: 'Current Capability',
+                            data: this.talentSkills.map(s => s.val), 
+                            backgroundColor: 'rgba(244, 114, 182, 0.2)', // Pink opacity
+                            borderColor: '#f472b6', // Hot Pink
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#f472b6',
+                            pointHoverBackgroundColor: '#f472b6',
+                            pointHoverBorderColor: '#fff',
+                            borderWidth: 2
+                        }] 
+                    }, 
+                    options: { 
+                        animation: { duration: 200 }, // Fast animation
+                        plugins: { legend: { display: false } }, 
+                        scales: { 
+                            r: { 
+                                min: 0, max: 5, 
+                                ticks: { display: false, stepSize: 1 }, 
+                                grid: { color: '#334155', circular: true }, 
+                                angleLines: { color: '#334155' },
+                                pointLabels: { color: '#cbd5e1', font: { size: 11, weight: 'bold' } }
+                            } 
+                        } 
+                    } 
+                });
+            });
+        },
+        
         // ------------------------------------------------------------------
         // STATIC DATA
         // ------------------------------------------------------------------
