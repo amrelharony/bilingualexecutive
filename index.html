@@ -134,49 +134,78 @@
                 </div>
             </div>
 
-            <!-- SIMULATOR TAB -->
-            <div x-show="currentTab === 'simulator'" x-cloak class="max-w-4xl mx-auto">
-                
-                <!-- Intro Screen -->
-                <div x-show="!caseStudy.active" class="text-center py-10">
-                    <div class="inline-block p-6 rounded-full bg-card border border-primary/30 mb-6">
-                        <i class="fa-solid fa-chess-knight text-5xl text-primary"></i>
-                    </div>
-                    <h2 class="text-4xl font-mono font-bold text-white mb-4">The Meridian Trust Protocol</h2>
-                    <p class="text-textMuted max-w-xl mx-auto mb-8">
-                        Step into the shoes of Sarah, the new CDO. You have 90 days to save a failing bank.
-                        Your decisions will impact Political Capital, Velocity, and Risk.
-                    </p>
-                    <button @click="caseStudy.start()" class="bg-primary hover:bg-green-400 text-dark font-bold py-4 px-8 rounded-lg shadow-glow transition-all">
-                        START SIMULATION
-                    </button>
+           <!-- SIMULATOR TAB -->
+<div x-show="currentTab === 'simulator'" x-cloak class="max-w-4xl mx-auto">
+    
+    <!-- Intro / Setup Screen -->
+    <div x-show="!caseStudy.active" class="py-6">
+        
+        <div class="text-center mb-10">
+            <h2 class="text-3xl font-mono font-bold text-white mb-2">Transformation Simulator</h2>
+            <p class="text-textMuted">Test your decision-making in a safe environment.</p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-8">
+            
+            <!-- OPTION A: CLASSIC MODE -->
+            <div class="bg-card border border-slate-700 p-6 rounded-xl hover:border-slate-500 transition-all group">
+                <div class="mb-4">
+                    <span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-1 rounded font-mono uppercase">Standard</span>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">The Meridian Trust Protocol</h3>
+                <p class="text-sm text-textMuted mb-6 leading-relaxed">
+                    Play as Sarah, the new CDO of a failing retail bank. Can you navigate the "Clay Layer", kill the Zombie Project, and launch a Lighthouse pilot in 90 days?
+                </p>
+                <button @click="caseStudy.startClassic()" class="w-full border border-slate-600 hover:bg-slate-700 text-white font-bold py-3 rounded-lg transition-all">
+                    LAUNCH CLASSIC
+                </button>
+            </div>
+
+            <!-- OPTION B: CUSTOM AI MODE -->
+            <div class="bg-gradient-to-b from-slate-800 to-card border border-primary/30 p-6 rounded-xl relative overflow-hidden">
+                <!-- AI Badge -->
+                <div class="absolute top-0 right-0 p-3 opacity-20">
+                    <i class="fa-solid fa-microchip text-6xl text-primary"></i>
                 </div>
 
-                <!-- QUIZ / FLASHCARDS TAB -->
-            <div x-show="currentTab === 'quiz'" x-cloak class="max-w-2xl mx-auto">
-                
-                <!-- 1. Start Screen -->
-                <div x-show="!quiz.active" class="text-center py-12">
-                    <div class="w-24 h-24 bg-card rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-cyan-400 shadow-glow">
-                        <i class="fa-solid fa-brain text-4xl text-cyan-400"></i>
-                    </div>
-                    <h2 class="text-3xl font-mono font-bold text-white mb-4">The Bilingual Dictionary</h2>
-                    <p class="text-textMuted max-w-md mx-auto mb-8">
-                        Can you translate "Technologist" into "Business Value"? Test your fluency with 5 rapid-fire flashcards.
-                    </p>
-                    <button @click="quiz.start()" class="bg-cyan-400 hover:bg-cyan-300 text-dark font-bold py-4 px-10 rounded-full transition-all active:scale-95 shadow-lg">
-                        START QUIZ
-                    </button>
+                <div class="mb-4 relative z-10">
+                    <span class="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded font-mono uppercase flex w-fit items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> AI Generated
+                    </span>
                 </div>
 
-                <!-- 2. Gameplay Screen -->
-                <div x-show="quiz.active && !quiz.finished" class="relative">
-                    <!-- Progress Bar -->
-                    <div class="w-full bg-slate-800 h-2 rounded-full mb-6">
-                        <div class="bg-cyan-400 h-2 rounded-full transition-all duration-300" 
-                             :style="`width: ${((quiz.currentQuestion + 1) / quiz.questions.length) * 100}%`"></div>
+                <h3 class="text-xl font-bold text-white mb-2 relative z-10">The "Living" Case Study</h3>
+                <p class="text-sm text-textMuted mb-6 relative z-10">
+                    Generate a unique crisis scenario based on <strong>your</strong> reality. The AI acts as the Game Master.
+                </p>
+
+                <div class="space-y-4 relative z-10">
+                    <div>
+                        <label class="text-xs font-bold text-white block mb-1">Your Industry</label>
+                        <input type="text" x-model="caseStudy.setup.industry" placeholder="e.g. Regional Insurance, Wealth Mgmt..." class="w-full bg-dark border border-slate-600 rounded p-2 text-sm text-white focus:border-primary focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-white block mb-1">Current Pain Point</label>
+                        <input type="text" x-model="caseStudy.setup.painPoint" placeholder="e.g. Legacy Mainframe, Compliance delays..." class="w-full bg-dark border border-slate-600 rounded p-2 text-sm text-white focus:border-primary focus:outline-none">
                     </div>
 
+                    <button @click="caseStudy.generateAndStart()" 
+                            :disabled="caseStudy.isGenerating"
+                            class="w-full bg-primary hover:bg-green-400 text-dark font-bold py-3 rounded-lg shadow-glow transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                        <span x-show="!caseStudy.isGenerating">GENERATE SIMULATION</span>
+                        <span x-show="caseStudy.isGenerating"><i class="fa-solid fa-circle-notch fa-spin"></i> BUILDING WORLD...</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Active Game Interface (Existing code goes here...) -->
+    <!-- (Ensure the existing game interface div has x-show="caseStudy.active && !caseStudy.gameOver") -->
+    
+</div>
+            
                     <!-- The Flashcard -->
                     <div class="bg-card border border-slate-700 p-8 rounded-2xl shadow-2xl relative overflow-hidden min-h-[400px] flex flex-col justify-center">
                         
