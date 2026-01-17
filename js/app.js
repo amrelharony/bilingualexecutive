@@ -1871,7 +1871,7 @@ async submitAndBenchmark() {
                 } finally {
                     this.loading = false;
                 }
-            },
+            }
              },
 
                 // ------------------------------------------------------------------
