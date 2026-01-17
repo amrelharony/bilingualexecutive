@@ -16,24 +16,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-
-    <!-- YOUR APP LOGIC (Must load BEFORE Alpine) -->
-<script src="js/app.js"></script> 
-
-<!-- External Tools -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
-
-<!-- ALPINE (Must be LAST and have DEFER) -->
-<script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
-
-    <!-- YOUR LOCAL FILES -->
-    <link rel="stylesheet" href="css/styles.css">
-
+    <!-- 1. TAILWIND CSS (MUST BE FIRST) -->
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
@@ -48,8 +32,26 @@
             }
         }
     </script>
-    
+
+    <!-- 2. YOUR APP LOGIC (Must load BEFORE Alpine) -->
+    <script src="js/app.js"></script> 
+
+    <!-- 3. EXTERNAL LIBRARIES -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
+
+    <!-- 4. ALPINE.JS (MUST BE LAST) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+
+    <!-- 5. LOCAL STYLES -->
+    <link rel="stylesheet" href="css/styles.css">
 </head>
+
 <body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
 
     <div x-data="toolkit" class="flex w-full h-full relative">
