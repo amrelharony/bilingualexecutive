@@ -1820,43 +1820,25 @@ async submitAndBenchmark() {
            async sendReply() {
                 if (!this.input.trim()) return;
                 
-                // 1. Add User Message
                 const userText = this.input;
                 this.addMessage('user', userText);
                 this.input = '';
                 this.loading = true;
                 this.turn++;
 
-                // 2. Construct Prompt (Strict JSON)
                 const systemPrompt = `
                     ACT AS: Marcus, a cynical Chief Risk Officer.
-                    SCENARIO: User wants to launch a product. You must judge them.
-                    
-                    TASK:
-                    1. Score "safety_score" (0-100) on compliance.
-                    2. Score "speed_score" (0-100) on business value.
-                    3. Reply as Marcus (cynical, tough).
-                    
-                    OUTPUT JSON ONLY (No markdown formatting, just raw JSON):
-                    {
-                        "safety_score": number,
-                        "speed_score": number,
-                        "reply": "string"
-                    }
-                    
+                    SCENARIO: User wants to launch a product.
+                    TASK: Score safety/speed and reply.
+                    OUTPUT JSON ONLY: { "safety_score": number, "speed_score": number, "reply": "string" }
                     HISTORY: ${this.context.history.join('\n')}
                 `;
 
                 try {
-                    // 3. Call Secure Backend
                     let rawText = await this.askSecureAI(systemPrompt, userText);
-                    
-                    // Clean up potential markdown code blocks from AI response
                     rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-                    
                     let content = JSON.parse(rawText);
 
-                    // 4. Update State
                     this.scores.safety = content.safety_score;
                     this.scores.speed = content.speed_score;
                     this.addMessage('bot', content.reply);
@@ -1867,10 +1849,17 @@ async submitAndBenchmark() {
 
                 } catch (e) {
                     console.error(e);
-                    this.addMessage('system', "Connection Error. Logic core unavailable.");
+                    this.addMessage('system', "Connection Error.");
                 } finally {
                     this.loading = false;
                 }
+            },
+            
+            get statusColor() {
+                const avg = (this.scores.safety + this.scores.speed) / 2;
+                if (avg > 75) return 'text-primary';
+                if (avg > 40) return 'text-warn';
+                return 'text-risk';
             }
              },
 
