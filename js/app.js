@@ -198,11 +198,15 @@ document.addEventListener('alpine:init', () => {
         matrixCoords: { x: 50, y: 50 },
         compassCoords: { x: 50, y: 50 },
         canvasData: { name: '', owner: '', jobs: '', slo1: '' },
-        talentSkills: [ { label: "Tech Fluency", val: 3 }, { label: "P&L Literacy", val: 3 }, { label: "Data Culture", val: 3 }, { label: "Squad Autonomy", val: 3 }, { label: "Change EQ", val: 3 } ],
-        
-        talentChartInstance: null,
-        gapChartInstance: null,
-
+talentSkills: [ 
+            { label: "Tech Fluency", val: 3, desc: "Ability to understand API economy, Cloud, and 'The Monolith'." }, 
+            { label: "Financial Literacy", val: 3, desc: "Understanding how Latency impacts Revenue & OpEx." }, 
+            { label: "Data Culture", val: 3, desc: "Moving from 'Gut Feel' to 'Evidence-Based' decisions." }, 
+            { label: "Squad Autonomy", val: 3, desc: "Letting teams decide 'How' while you define 'What'." }, 
+            { label: "Psych Safety", val: 3, desc: "Does bad news travel up faster than good news?" } 
+        ],
+        aiCoachResponse: null, // New variable to store AI text
+        isAnalyzingTalent: false, // Loading state
         // ------------------------------------------------------------------
         // NEW FEATURE: CASE STUDY SIMULATOR
         // ------------------------------------------------------------------
@@ -1264,105 +1268,76 @@ teamManager: {
             doc.save("Bilingual_Transformation_Map.pdf");
         },
 
-     updateTalentChart() {
+// ============================================================
+        // UPDATED: TALENT ANALYSIS & CHARTS
+        // ============================================================
+        get talentMaturityScore() {
+            const total = this.talentSkills.reduce((acc, curr) => acc + curr.val, 0);
+            return (total / this.talentSkills.length).toFixed(1); // Returns "3.4" etc.
+        },
+
+        async analyzeGap() {
+            this.isAnalyzingTalent = true;
+            this.aiCoachResponse = null;
+            
+            const scores = this.talentSkills.map(s => `${s.label}: ${s.val}/5`);
+            const prompt = `
+                ACT AS: An Executive Coach for a Bank CIO.
+                DATA: My leadership profile is: ${scores.join(', ')}.
+                
+                TASK:
+                1. Identify my biggest blind spot.
+                2. Give me ONE specific, uncomfortable action to take tomorrow to improve the lowest score.
+                
+                OUTPUT: Markdown format. Keep it punchy. No corporate fluff.
+            `;
+
+            try {
+                const response = await this.askSecureAI(prompt, "Analyze Talent Profile");
+                this.aiCoachResponse = typeof marked !== 'undefined' ? marked.parse(response) : response;
+            } catch (e) {
+                this.aiCoachResponse = "Coach is currently offline. Please check your connection.";
+            } finally {
+                this.isAnalyzingTalent = false;
+            }
+        },
+
+        updateTalentChart() {
             this.$nextTick(() => {
                 const ctx = document.getElementById('talentChart');
                 if (!ctx) return;
-                
-                // 1. Destroy existing global instance to prevent memory leaks
-                if (window.myTalentChart) {
-                    window.myTalentChart.destroy();
-                }
-                
-                // 2. Configure Font
-                Chart.defaults.font.family = '"JetBrains Mono", monospace';
-                Chart.defaults.color = '#94a3b8';
 
-                // 3. Create new instance attached to Window (bypassing Alpine Proxy)
+                if (window.myTalentChart) window.myTalentChart.destroy();
+
+                Chart.defaults.font.family = '"JetBrains Mono", monospace';
+                
                 window.myTalentChart = new Chart(ctx, { 
                     type: 'radar', 
                     data: { 
                         labels: this.talentSkills.map(s => s.label), 
                         datasets: [{ 
-                            label: 'Candidate Shape',
+                            label: 'Current Capability',
                             data: this.talentSkills.map(s => s.val), 
-                            backgroundColor: 'rgba(244, 114, 182, 0.2)', 
-                            borderColor: '#f472b6', 
+                            backgroundColor: 'rgba(244, 114, 182, 0.2)', // Pink opacity
+                            borderColor: '#f472b6', // Hot Pink
                             pointBackgroundColor: '#fff',
-                            pointBorderColor: '#f472b6'
+                            pointBorderColor: '#f472b6',
+                            pointHoverBackgroundColor: '#f472b6',
+                            pointHoverBorderColor: '#fff',
+                            borderWidth: 2
                         }] 
                     }, 
-
                     options: { 
-                        animation: false, // Disable animation for instant slider feedback
+                        animation: { duration: 200 }, // Fast animation
                         plugins: { legend: { display: false } }, 
                         scales: { 
                             r: { 
-                                min: 0, 
-                                max: 5, 
-                                ticks: { display: false }, 
-                                grid: { color: '#334155' }, 
+                                min: 0, max: 5, 
+                                ticks: { display: false, stepSize: 1 }, 
+                                grid: { color: '#334155', circular: true }, 
                                 angleLines: { color: '#334155' },
-                                pointLabels: { color: '#f1f5f9', font: { size: 11 } }
+                                pointLabels: { color: '#cbd5e1', font: { size: 11, weight: 'bold' } }
                             } 
-                        } 
-                    } 
-                });
-            });
-        },
-
-         async analyzeGap() {
-            const scores = this.talentSkills.map(s => `${s.label}: ${s.val}/5`);
-            const prompt = `
-                ACT AS: An Executive Coach for a Bank CIO.
-                DATA: My talent profile is ${scores.join(', ')}.
-                TASK: Identify the single biggest risk in my profile based on these gaps.
-                OUTPUT: 1 sentence punchy warning. No fluff.
-            `;
-            
-            // Show a loading state
-            alert("Analyzing your profile with AI...");
-            
-            try {
-                const insight = await this.askSecureAI(prompt, "Analyze Profile");
-                alert("COACH SAYS:\n\n" + insight);
-            } catch (e) {
-                alert("Could not connect to Coach.");
-            }
-        },
-
-
-        updateGapChart() {
-            this.$nextTick(() => {
-                const ctx = document.getElementById('gapChart');
-                if (!ctx || !ctx.getContext) return;
-                if (this.gapChartInstance) this.gapChartInstance.destroy();
-                
-                const my = [
-                    this.assessmentData[0].questions.reduce((a,b)=>a+b.score,0), 
-                    this.assessmentData[1].questions.reduce((a,b)=>a+b.score,0), 
-                    this.assessmentData[2].questions.reduce((a,b)=>a+b.score,0)
-                ];
-                
-                const cs = this.challengerData.scores;
-                const ch = [
-                    cs.slice(0,5).reduce((a,b)=>a+b,0), 
-                    cs.slice(5,10).reduce((a,b)=>a+b,0), 
-                    cs.slice(10,15).reduce((a,b)=>a+b,0)
-                ];
-
-                this.gapChartInstance = new Chart(ctx, { 
-                    type: 'radar', 
-                    data: { 
-                        labels: ['Data', 'Delivery', 'Culture'], 
-                        datasets: [
-                            { label: 'You', data: my, borderColor: '#4ade80', backgroundColor: 'rgba(74, 222, 128, 0.2)' }, 
-                            { label: 'Challenger', data: ch, borderColor: '#f472b6', backgroundColor: 'rgba(244, 114, 182, 0.2)' }
-                        ] 
-                    }, 
-                    options: { 
-                        scales: { 
-                            r: { min: 0, max: 25, grid: { color: '#334155' }, angleLines: { color: '#334155' } } 
                         } 
                     } 
                 });
