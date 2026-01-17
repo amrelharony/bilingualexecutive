@@ -908,6 +908,7 @@ teamManager: {
             { id: 'kpi', label: 'KPI Designer', icon: 'fa-solid fa-bullseye' },
             { id: 'proposal', label: 'Sandbox Gen', icon: 'fa-solid fa-file-signature' },
             { id: 'vendor', label: 'Vendor Coach', icon: 'fa-solid fa-handshake' },
+            { id: 'capex', label: 'FinOps Auditor', icon: 'fa-solid fa-file-invoice-dollar' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -937,6 +938,7 @@ teamManager: {
             { id: 'kpi', label: 'Outcome vs. Output', desc: 'Convert vague "Project" goals into measurable "Product" value.', icon: 'fa-solid fa-chart-line', color: 'text-green-400' },
             { id: 'shadow', label: 'Shadow IT Discovery', desc: 'Audit SaaS tools and calculate the Integration Tax.', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
             { id: 'proposal', label: 'Regulatory Sandbox Generator', desc: 'Create a compliant waiver request for your Risk Committee.', icon: 'fa-solid fa-scale-unbalanced', color: 'text-blue-400' },
+            { id: 'capex', label: 'FinOps Auditor', desc: 'Classify Agile tickets as CapEx (Assets) vs OpEx.', icon: 'fa-solid fa-file-invoice-dollar', color: 'text-green-400' },
             { id: 'vendor', label: 'Vendor Partnership Pyramid', desc: 'AI Coach to renegotiate contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-contract', color: 'text-yellow-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
