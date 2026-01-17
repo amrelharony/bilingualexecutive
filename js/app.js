@@ -2936,6 +2936,74 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
             } 
         },
 
+        // ------------------------------------------------------------------
+        // CAPEX vs OPEX CLASSIFIER (FinOps Auditor)
+        // ------------------------------------------------------------------
+        capexClassifier: {
+            // Demo data to help the user understand the format
+            input: "FEAT-101: Implement Biometric Login\nBUG-402: Fix crash on payment screen\nCHORE: Update server dependencies\nFEAT-103: New 'Savings Pot' architecture\nSPIKE: Investigate blockchain latency",
+            loading: false,
+            analysis: null, // Stores the detailed JSON response
+            stats: { capexVal: 0, opexVal: 0, ratio: 0 },
+
+            async analyze() {
+                if (!this.input.trim()) return alert("Please paste some ticket titles.");
+                
+                this.loading = true;
+                this.analysis = null;
+
+                // The "Bilingual" Prompt
+                const prompt = `
+                    ACT AS: A Technical Accounting Auditor (IAS 38 Specialist).
+                    TASK: Classify the following software engineering tasks as "CapEx" (Capitalizable) or "OpEx" (Expense).
+                    
+                    RULES (IAS 38):
+                    - CapEx: New features, substantial enhancement, extending useful life, creating future economic benefit.
+                    - OpEx: Bug fixes, routine maintenance, research/spikes, refactoring (without new capability), training.
+                    
+                    INPUT LIST:
+                    """${this.input}"""
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "items": [
+                            { 
+                                "ticket": "string (original text)", 
+                                "type": "CapEx" or "OpEx", 
+                                "confidence": number (0-100),
+                                "justification": "string (Accounting logic sentence)" 
+                            }
+                        ],
+                        "summary": {
+                            "capex_count": number,
+                            "opex_count": number
+                        }
+                    }
+                `;
+
+                try {
+                    let rawText = await this.askSecureAI(prompt, "Audit Tickets");
+                    // Clean up markdown if Gemini adds it
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    
+                    const data = JSON.parse(rawText);
+                    this.analysis = data.items;
+                    
+                    // Calculate Ratio for the Dashboard
+                    const total = data.summary.capex_count + data.summary.opex_count;
+                    this.stats.capexVal = data.summary.capex_count;
+                    this.stats.opexVal = data.summary.opex_count;
+                    this.stats.ratio = total === 0 ? 0 : Math.round((data.summary.capex_count / total) * 100);
+
+                } catch (e) {
+                    console.error(e);
+                    alert("Audit Failed. Please try a smaller list.");
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+        
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
