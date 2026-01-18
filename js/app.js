@@ -3186,38 +3186,40 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
             aiNarrative: null,
             loading: false,
 
-           calculate() {
-                // VALIDATION FIX: Check for Project Name
-                if (!this.inputs.name.trim()) {
-                    alert("Please enter a Project Name to calculate ROI.");
-                    return; 
-                }
+          // Inside lighthouseROI object in js/app.js
 
-                const i = this.inputs;
-                
-                // 1. Hard Costs
-                const laborCost = i.duration_weeks * i.squad_cost_per_week;
-                const totalInvestment = laborCost + parseInt(i.software_cost);
-                
-                // 2. Hard Benefits
-                const totalValue = parseInt(i.revenue_generated) + parseInt(i.cost_avoided);
-                const netProfit = totalValue - totalInvestment;
-                const roiPercent = Math.round(((totalValue - totalInvestment) / totalInvestment) * 100);
+calculate() {
+    // --- VALIDATION CHECK ---
+    if (!this.inputs.name || this.inputs.name.trim() === '') {
+        alert("⚠️ Mandate Error: You cannot calculate ROI without a Project Name.");
+        return; // Stops the function immediately
+    }
 
-                // 3. Speed Differential (The Multiplier)
-                const speedFactor = (i.old_cycle_time / i.new_cycle_time).toFixed(1);
+    const i = this.inputs;
+    
+    // 1. Hard Costs
+    const laborCost = i.duration_weeks * i.squad_cost_per_week;
+    const totalInvestment = laborCost + parseInt(i.software_cost);
+    
+    // 2. Hard Benefits
+    const totalValue = parseInt(i.revenue_generated) + parseInt(i.cost_avoided);
+    const netProfit = totalValue - totalInvestment;
+    const roiPercent = Math.round(((totalValue - totalInvestment) / totalInvestment) * 100);
 
-                this.results = {
-                    totalInvestment: totalInvestment,
-                    totalValue: totalValue,
-                    netProfit: netProfit,
-                    roiPercent: roiPercent,
-                    speedFactor: speedFactor
-                };
+    // 3. Speed Differential (The Multiplier)
+    const speedFactor = (i.old_cycle_time / i.new_cycle_time).toFixed(1);
 
-                // Trigger AI to write the story
-                this.generateNarrative();
-            },
+    this.results = {
+        totalInvestment: totalInvestment,
+        totalValue: totalValue,
+        netProfit: netProfit,
+        roiPercent: roiPercent,
+        speedFactor: speedFactor
+    };
+
+    // Trigger AI to write the story
+    this.generateNarrative();
+},
 
             async generateNarrative() {
                 this.loading = true;
