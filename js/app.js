@@ -915,6 +915,7 @@ teamManager: {
             { id: 'legacy', label: 'Legacy Translator', icon: 'fa-solid fa-code' },
             { id: 'watermelon', label: 'Lie Detector', icon: 'fa-solid fa-user-secret' },
             { id: 'datacanvas', label: 'Data Product Gen', icon: 'fa-solid fa-cube' },
+            { id: 'silo', label: 'Silo Buster', icon: 'fa-solid fa-people-arrows' }, 
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -948,6 +949,7 @@ teamManager: {
             { id: 'legacy', label: 'Legacy Code Explainer', desc: 'Translate COBOL/SQL into Business Rules.', icon: 'fa-solid fa-code', color: 'text-slate-400' },
             { id: 'watermelon', label: 'Green Light Detector', desc: 'Detect the "Watermelon Effect" in status reports.', icon: 'fa-solid fa-user-secret', color: 'text-red-500' },
             { id: 'vendor', label: 'Vendor Partnership Pyramid', desc: 'AI Coach to renegotiate contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-contract', color: 'text-yellow-400' },
+            { id: 'silo', label: 'The Silo Buster', desc: 'Draft diplomatic emails using Empathy Engineering to unblock the "Clay Layer".', icon: 'fa-solid fa-people-arrows', color: 'text-teal-400' }, 
             { id: 'datacanvas', label: 'Data Product Generator', desc: 'Auto-generate Data Contracts & SLOs from raw Schema.', icon: 'fa-solid fa-cube', color: 'text-blue-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
@@ -3169,7 +3171,66 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 }
             }
         },
-        
+
+        // ------------------------------------------------------------------
+        // THE SILO BUSTER (Empathy Engineering Emailer)
+        // ------------------------------------------------------------------
+        siloBuster: {
+            recipient: '',
+            frictionPoint: '',
+            loading: false,
+            result: null,
+
+            // Demo data
+            loadDemo() {
+                this.recipient = "Head of Compliance (David)";
+                this.frictionPoint = "He is blocking our Cloud Sandbox because he thinks 'The Cloud is insecure' and wants a 6-month security audit first.";
+            },
+
+            async generate() {
+                if (!this.recipient || !this.frictionPoint) return alert("Please fill in who is blocking you and why.");
+                
+                this.loading = true;
+                this.result = null;
+
+                const prompt = `
+                    ACT AS: An Executive Communications Coach specializing in "Empathy Engineering".
+                    
+                    THE SITUATION:
+                    The User is trying to drive change.
+                    The Blocker (Recipient): "${this.recipient}"
+                    The Friction/Fear: "${this.frictionPoint}"
+
+                    TASK: Draft an email to the Blocker to unblock the situation.
+                    
+                    METHODOLOGY (Empathy Engineering):
+                    1. VALIDATE THE FEAR (Paragraph 1): Do not argue. Explicitly acknowledge their mandate (e.g., Safety, Compliance, Stability). Make them feel heard.
+                    2. REFRAME (Paragraph 2): Frame the innovation not as "New Tech" but as a better way to achieve *their* goal (e.g., Cloud allows better audit logs than on-prem).
+                    3. THE GOLDEN BRIDGE (Paragraph 3): Propose a "reversible experiment" or "pilot" with strict boundaries. Not a full rollout. A safe step.
+                    
+                    TONE: Professional, Collaborative, Low Ego, High Agency.
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "subject": "string (Compelling subject line)",
+                        "body": "string (The email text, use <br> for line breaks)",
+                        "strategy_breakdown": "string (Brief explanation of why this psychological approach works)"
+                    }
+                `;
+
+                try {
+                    let rawText = await this.askSecureAI(prompt, "Draft Email");
+                    // Clean up markdown
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    this.result = JSON.parse(rawText);
+                } catch (e) {
+                    console.error(e);
+                    alert("Drafting failed. Please try again.");
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
