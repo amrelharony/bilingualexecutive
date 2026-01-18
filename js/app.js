@@ -3186,7 +3186,13 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
             aiNarrative: null,
             loading: false,
 
-            calculate() {
+           calculate() {
+                // VALIDATION FIX: Check for Project Name
+                if (!this.inputs.name.trim()) {
+                    alert("Please enter a Project Name to calculate ROI.");
+                    return; 
+                }
+
                 const i = this.inputs;
                 
                 // 1. Hard Costs
@@ -3305,55 +3311,59 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 doc.setTextColor(100, 100, 100);
                 doc.text(`(Reduced cycle time from ${this.inputs.old_cycle_time} weeks to ${this.inputs.new_cycle_time} weeks)`, 20, 126);
 
-// AI Narrative
-if (this.aiNarrative) {
-    doc.setTextColor(0,0,0);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.text("3. EXECUTIVE SUMMARY", 20, 145);
-    
-    doc.setFontSize(11);
-    doc.setTextColor(30, 58, 138); // Dark Blue
-    
-    // Fix 1: Wrap the Headline
-    const headlineLines = doc.splitTextToSize(`"${this.aiNarrative.headline}"`, 170);
-    doc.text(headlineLines, 20, 155);
-    
-    // Calculate Y position based on headline length
-    let currentY = 155 + (headlineLines.length * 6) + 4;
+                // AI Narrative (PDF FIX STARTS HERE)
+                if (this.aiNarrative) {
+                    let currentY = 145; // Start position
+                    
+                    doc.setTextColor(0,0,0);
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(14);
+                    doc.text("3. EXECUTIVE SUMMARY", 20, currentY);
+                    
+                    currentY += 10;
+                    
+                    // 1. Headline (Wrap text to 170mm width)
+                    doc.setFontSize(11);
+                    doc.setTextColor(30, 58, 138); // Dark Blue
+                    const headlineLines = doc.splitTextToSize(`"${this.aiNarrative.headline}"`, 170);
+                    doc.text(headlineLines, 20, currentY);
+                    currentY += (headlineLines.length * 6) + 4; // Dynamic spacing
 
-    doc.setTextColor(0,0,0);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(10);
-    
-    // Fix 2: Wrap Strategic Verdict
-    const strategyLines = doc.splitTextToSize(this.aiNarrative.strategic_verdict, 170);
-    doc.text(strategyLines, 20, currentY);
-    
-    // Update Y position based on strategy length
-    currentY += (strategyLines.length * 5) + 10;
+                    // 2. Strategic Verdict (Wrap text)
+                    doc.setTextColor(0,0,0);
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(10);
+                    const strategyLines = doc.splitTextToSize(this.aiNarrative.strategic_verdict, 170);
+                    doc.text(strategyLines, 20, currentY);
+                    currentY += (strategyLines.length * 5) + 10; // Dynamic spacing
 
-    // The Defense Box
-    doc.setDrawColor(200, 200, 200);
-    
-    // Fix 3: Calculate Defense Script Height
-    doc.setFont("helvetica", "italic");
-    const defenseLines = doc.splitTextToSize(`"${this.aiNarrative.defense}"`, 160); // Width 160 to fit inside box
-    const boxHeight = (defenseLines.length * 5) + 15; // Dynamic height
-    
-    doc.rect(20, currentY, 170, boxHeight);
-    
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
-    doc.text("CFO DEFENSE SCRIPT:", 25, currentY + 7);
-    
-    doc.setFont("helvetica", "italic");
-    doc.text(defenseLines, 25, currentY + 15);
-}
+                    // 3. CFO Defense Script (Box + Text)
+                    doc.setFont("helvetica", "italic");
+                    // We calculate the lines for the box width (160mm to leave padding)
+                    const defenseLines = doc.splitTextToSize(`"${this.aiNarrative.defense}"`, 160);
+                    
+                    // Calculate height: lines * line-height + padding top/bottom
+                    const boxHeight = (defenseLines.length * 5) + 15; 
 
-doc.save("Lighthouse_ROI.pdf");
-                
+                    // Draw Box
+                    doc.setDrawColor(200, 200, 200);
+                    doc.rect(20, currentY, 170, boxHeight);
+                    
+                    // Header inside box
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(9);
+                    doc.setTextColor(0,0,0);
+                    doc.text("CFO DEFENSE SCRIPT:", 25, currentY + 7);
+                    
+                    // Script inside box
+                    doc.setFont("helvetica", "italic");
+                    doc.text(defenseLines, 25, currentY + 15);
+                }
+
+                doc.save("Lighthouse_ROI.pdf");
             }
+                
+            
         },
         
         // ------------------------------------------------------------------
