@@ -2062,6 +2062,120 @@
         </div>
     </div>
 </div>
+
+            <!-- FUTURE BANK SCENARIO BUILDER TAB -->
+<div x-show="currentTab === 'future'" x-cloak class="max-w-6xl mx-auto">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">The Future Bank Simulator</h2>
+        <p class="text-textMuted text-sm">Decisions have compounding interest. Choose a strategy and watch it play out to 2030.</p>
+    </div>
+
+    <!-- 1. SCENARIO SELECTOR -->
+    <div x-show="!futureBank.activeScenario" class="grid md:grid-cols-3 gap-6">
+        <template x-for="scenario in futureBank.scenarios" :key="scenario.id">
+            <button @click="futureBank.selectScenario(scenario.id)" 
+                    class="bg-card border border-slate-700 hover:border-primary p-8 rounded-xl text-center group transition-all hover:-translate-y-2">
+                <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-6 group-hover:bg-slate-700 transition-colors">
+                    <i :class="'fa-solid ' + scenario.icon + ' text-3xl ' + scenario.color"></i>
+                </div>
+                <h3 class="font-bold text-white text-xl mb-2" x-text="scenario.title"></h3>
+                <p class="text-sm text-slate-400 leading-relaxed" x-text="scenario.desc"></p>
+                <div class="mt-6 text-xs font-mono text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                    RUN SIMULATION <i class="fa-solid fa-arrow-right ml-1"></i>
+                </div>
+            </button>
+        </template>
+    </div>
+
+    <!-- 2. ACTIVE SIMULATION -->
+    <div x-show="futureBank.activeScenario" x-transition class="relative">
+        
+        <!-- Timeline Header -->
+        <div class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+            <button @click="futureBank.activeScenario = null" :disabled="futureBank.isPlaying" class="text-xs text-slate-400 hover:text-white disabled:opacity-30">
+                <i class="fa-solid fa-arrow-left mr-2"></i> Back to Strategy
+            </button>
+            <div class="text-center">
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">CURRENT YEAR</p>
+                <h2 class="text-6xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500" 
+                    x-text="futureBank.year"></h2>
+            </div>
+            <div class="w-24 text-right">
+                <span class="text-xs font-bold" :class="futureBank.activeScenario?.color" x-text="futureBank.activeScenario?.title"></span>
+            </div>
+        </div>
+
+        <!-- The 3 Pillars Display -->
+        <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <!-- Pillar 1: Org Structure -->
+            <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden transition-all duration-500" :key="futureBank.year + 'org'">
+                <div class="absolute top-0 right-0 p-3 opacity-10"><i class="fa-solid fa-sitemap text-6xl"></i></div>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">ORGANIZATION</p>
+                <h3 class="text-xl font-bold text-white mb-2" x-text="futureBank.currentState?.org"></h3>
+                <div class="w-full bg-slate-800 h-1 rounded-full mt-4">
+                    <div class="bg-blue-500 h-1 rounded-full transition-all duration-1000" :style="`width: ${(futureBank.year - 2025) * 20}%`"></div>
+                </div>
+            </div>
+
+            <!-- Pillar 2: Technology -->
+            <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden transition-all duration-500" :key="futureBank.year + 'tech'">
+                <div class="absolute top-0 right-0 p-3 opacity-10"><i class="fa-solid fa-microchip text-6xl"></i></div>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">TECHNOLOGY STACK</p>
+                <h3 class="text-xl font-bold text-white mb-2" x-text="futureBank.currentState?.tech"></h3>
+                <div class="w-full bg-slate-800 h-1 rounded-full mt-4">
+                    <div class="bg-purple-500 h-1 rounded-full transition-all duration-1000" :style="`width: ${(futureBank.year - 2025) * 20}%`"></div>
+                </div>
+            </div>
+
+            <!-- Pillar 3: Financials -->
+            <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden transition-all duration-500" :key="futureBank.year + 'money'">
+                <div class="absolute top-0 right-0 p-3 opacity-10"><i class="fa-solid fa-sack-dollar text-6xl"></i></div>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">NET PROFIT</p>
+                <h3 class="text-2xl font-mono font-bold text-green-400 mb-2" x-text="futureBank.currentState?.profit"></h3>
+                <div class="w-full bg-slate-800 h-1 rounded-full mt-4">
+                    <div class="bg-green-500 h-1 rounded-full transition-all duration-1000" :style="`width: ${(futureBank.year - 2025) * 20}%`"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. AI REFLECTION (THE LETTER) -->
+        <div x-show="!futureBank.isPlaying && futureBank.year === 2030" 
+             x-transition:enter="transition ease-out duration-1000 delay-500" 
+             x-transition:enter-start="opacity-0 translate-y-10" 
+             x-transition:enter-end="opacity-100 translate-y-0"
+             class="bg-gradient-to-b from-slate-800 to-dark border border-slate-600 p-8 rounded-xl shadow-2xl relative max-w-2xl mx-auto">
+            
+            <!-- Loading State -->
+            <div x-show="futureBank.loading" class="text-center py-10">
+                <i class="fa-solid fa-satellite-dish fa-spin text-4xl text-purple-400 mb-4"></i>
+                <p class="text-xs font-mono text-purple-300">RECEIVING TRANSMISSION FROM 2030...</p>
+            </div>
+
+            <!-- The Letter -->
+            <div x-show="!futureBank.loading && futureBank.aiNarrative">
+                <div class="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4">
+                    <div class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center text-white font-bold text-xs">AI</div>
+                    <div>
+                        <p class="text-[10px] text-slate-400 uppercase">FROM: CEO (Office of the Future)</p>
+                        <p class="text-sm text-white font-bold" x-text="futureBank.aiNarrative?.subject"></p>
+                    </div>
+                </div>
+                
+                <div class="prose prose-invert prose-sm text-slate-300 font-serif leading-relaxed italic" 
+                     x-html="futureBank.aiNarrative?.body"></div>
+                
+                <div class="mt-8 text-center">
+                    <button @click="futureBank.activeScenario = null" class="bg-white hover:bg-gray-200 text-dark font-bold py-2 px-6 rounded-full text-xs transition-all">
+                        TRY ANOTHER PATH
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
             
 <!-- LEGACY CODE EXPLAINER TAB -->
             <div x-show="currentTab === 'legacy'" x-cloak class="max-w-5xl mx-auto">
