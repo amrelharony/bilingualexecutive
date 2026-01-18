@@ -1394,8 +1394,148 @@
             <!-- GLOSSARY -->
             <div x-show="currentTab === 'glossary'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-purple-400 flex items-center"><i class="fa-solid fa-book-open mr-3"></i>The Glossary</h2><div class="mb-6"><input type="text" x-model="glossarySearch" placeholder="Filter terms..." class="w-full bg-card border border-slate-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-400 font-mono"></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20"><template x-for="term in filteredGlossary" :key="term.term"><div class="bg-card border border-slate-700 p-5 rounded-lg hover:border-purple-400/50 transition-colors"><h3 class="font-mono text-primary font-bold mb-2" x-text="term.term"></h3><p class="text-sm text-slate-300 leading-relaxed" x-text="term.def"></p></div></template></div></div>
 
-            <!-- RESOURCES -->
-            <div x-show="currentTab === 'resources'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-green-300 flex items-center"><i class="fa-solid fa-book-bookmark mr-3"></i>Recommended Resources</h2><div class="bg-card border border-slate-700 rounded-xl p-6"><ul class="space-y-4"><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Project to Product (Mik Kersten)</h4><p class="text-sm text-textMuted">Definitive guide to the "Flow Framework".</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Team Topologies (Skelton & Pais)</h4><p class="text-sm text-textMuted">Blueprint for structuring squads.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Sooner Safer Happier (Jonathan Smart)</h4><p class="text-sm text-textMuted">Agile for regulated banks.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Data Mesh (Zhamak Dehghani)</h4><p class="text-sm text-textMuted">Data as a Product.</p></li></ul></div></div>
+            <!-- BILINGUAL BOOKSHELF & TOOLKIT TAB -->
+<div x-show="currentTab === 'bookshelf'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-8">
+        <h2 class="text-3xl font-mono font-bold text-white mb-2">The Executive Library</h2>
+        <p class="text-textMuted text-sm">Tool B: Recommended Reading & The Technology Stack.</p>
+        
+        <!-- Toggle Switch -->
+        <div class="inline-flex bg-slate-800 p-1 rounded-lg mt-6 border border-slate-700">
+            <button @click="bookshelf.currentView = 'books'" 
+                    :class="bookshelf.currentView === 'books' ? 'bg-primary text-dark shadow-glow' : 'text-slate-400 hover:text-white'"
+                    class="px-6 py-2 rounded-md text-xs font-bold font-mono transition-all">
+                <i class="fa-solid fa-book mr-2"></i>READING LIST
+            </button>
+            <button @click="bookshelf.currentView = 'stack'" 
+                    :class="bookshelf.currentView === 'stack' ? 'bg-blue-500 text-white shadow-glow' : 'text-slate-400 hover:text-white'"
+                    class="px-6 py-2 rounded-md text-xs font-bold font-mono transition-all">
+                <i class="fa-solid fa-layer-group mr-2"></i>TECH STACK
+            </button>
+        </div>
+    </div>
+
+    <!-- VIEW 1: THE BOOKS -->
+    <div x-show="bookshelf.currentView === 'books'" x-transition.opacity>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <template x-for="book in bookshelf.books" :key="book.id">
+                <div @click="openBook(book)" 
+                     class="group relative bg-card border border-slate-700 rounded-xl overflow-hidden cursor-pointer hover:-translate-y-1 transition-all duration-300 shadow-lg hover:border-primary/50">
+                    
+                    <!-- Spine -->
+                    <div class="h-28 w-full bg-gradient-to-br flex items-center justify-center relative overflow-hidden"
+                         :class="book.color">
+                        <i :class="'fa-solid ' + book.icon" class="text-6xl text-white/20 absolute -right-4 -bottom-4"></i>
+                        <div class="absolute top-2 right-2 bg-black/30 backdrop-blur px-2 py-1 rounded text-[9px] font-mono text-white uppercase border border-white/20" x-text="book.category"></div>
+                        <h3 class="text-xl font-bold text-white z-10 px-6 text-center leading-tight drop-shadow-md" x-text="book.title"></h3>
+                    </div>
+
+                    <div class="p-5">
+                        <p class="text-xs text-slate-400 mb-3 font-mono" x-text="'// ' + book.author"></p>
+                        <p class="text-sm text-slate-200 line-clamp-3 mb-4 leading-relaxed" x-text="book.summary"></p>
+                        
+                        <div class="flex items-center gap-2 text-[10px] text-primary font-bold uppercase tracking-wide group-hover:underline">
+                            <span>Bilingual Takeaway</span>
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- VIEW 2: THE TECH STACK -->
+    <div x-show="bookshelf.currentView === 'stack'" x-transition.opacity class="max-w-4xl mx-auto space-y-8">
+        
+        <div class="bg-blue-900/20 border border-blue-500/30 p-4 rounded-lg flex gap-3 items-start mb-6">
+            <i class="fa-solid fa-circle-info text-blue-400 mt-1"></i>
+            <p class="text-sm text-blue-200">You don't need to be an expert in these tools, but you should recognize their names when your teams ask for budget.</p>
+        </div>
+
+        <template x-for="category in bookshelf.techStack">
+            <div class="bg-card border border-slate-700 rounded-xl overflow-hidden">
+                <div class="p-4 bg-slate-800/50 border-b border-slate-700 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-white text-lg" x-text="category.category"></h3>
+                        <p class="text-xs text-textMuted" x-text="category.desc"></p>
+                    </div>
+                    <i class="fa-solid fa-server text-slate-600 text-xl"></i>
+                </div>
+                
+                <div class="divide-y divide-slate-700">
+                    <template x-for="tool in category.tools">
+                        <div class="p-5 hover:bg-slate-800/30 transition-colors grid md:grid-cols-3 gap-4 items-center">
+                            <div class="font-mono text-sm font-bold text-primary md:col-span-1">
+                                <i class="fa-solid fa-terminal mr-2 opacity-50"></i><span x-text="tool.name"></span>
+                            </div>
+                            <div class="md:col-span-2">
+                                <span class="text-[10px] bg-slate-700 text-slate-300 px-2 py-1 rounded uppercase font-bold mr-2" x-text="tool.role"></span>
+                                <span class="text-sm text-slate-300 italic" x-text="tool.insight"></span>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- BOOK DETAIL OVERLAY -->
+    <div x-show="bookshelf.activeBook" x-transition.opacity 
+         class="fixed inset-0 z-[80] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+        
+        <div class="bg-card border border-slate-600 w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl shadow-2xl relative flex flex-col md:flex-row">
+            
+            <button @click="closeBook()" class="absolute top-4 right-4 z-50 text-white bg-black/50 rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-500 transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Visual Side -->
+            <div class="md:w-1/3 p-8 text-white flex flex-col justify-center relative overflow-hidden" 
+                 :class="'bg-gradient-to-br ' + bookshelf.activeBook?.color">
+                <i :class="'fa-solid ' + bookshelf.activeBook?.icon" class="text-8xl mb-6 drop-shadow-lg opacity-50 absolute -right-6 -bottom-6"></i>
+                <h2 class="text-3xl font-bold font-mono mb-2 relative z-10" x-text="bookshelf.activeBook?.title"></h2>
+                <p class="text-sm opacity-90 font-mono relative z-10" x-text="bookshelf.activeBook?.author"></p>
+            </div>
+
+            <!-- Content Side -->
+            <div class="md:w-2/3 bg-dark p-8 space-y-6">
+                <div>
+                    <h3 class="text-primary font-mono text-xs font-bold uppercase mb-2">Why read it?</h3>
+                    <p class="text-white text-sm leading-relaxed" x-text="bookshelf.activeBook?.summary"></p>
+                </div>
+
+                <div class="bg-slate-800 p-4 rounded-lg border-l-4 border-primary">
+                    <h3 class="text-slate-400 font-mono text-[10px] font-bold uppercase mb-2">BILINGUAL TAKEAWAY</h3>
+                    <p class="text-slate-200 text-sm italic" x-text="bookshelf.activeBook?.bilingualTakeaway"></p>
+                </div>
+
+                <div>
+                    <h3 class="text-slate-400 font-mono text-xs font-bold uppercase mb-3">Action Steps</h3>
+                    <ul class="space-y-2">
+                        <template x-for="action in bookshelf.activeBook?.actions">
+                            <li class="flex items-start gap-2 text-sm text-slate-300">
+                                <i class="fa-solid fa-check text-green-500 mt-1"></i>
+                                <span x-text="action"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+
+                <div class="flex gap-3 pt-4 border-t border-slate-700">
+                     <button @click="currentTab = bookshelf.activeBook?.linkedTool; closeBook()" 
+                            class="flex-1 bg-slate-700 hover:bg-slate-600 text-white py-3 rounded-lg text-xs font-bold transition-colors">
+                        <i class="fa-solid fa-rocket mr-2"></i> <span x-text="bookshelf.activeBook?.linkedToolLabel"></span>
+                    </button>
+                    <button @click="askAIAboutBook(bookshelf.activeBook?.title)" 
+                            class="flex-1 border border-slate-600 hover:bg-slate-800 text-white py-3 rounded-lg text-xs font-bold transition-colors">
+                        <i class="fa-solid fa-wand-magic-sparkles mr-2 text-purple-400"></i> Ask AI Assistant
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
                         <!-- DAILY FEED TAB -->
             <div x-show="currentTab === 'feed'" x-cloak class="max-w-2xl mx-auto" x-init="dailyFeed.init()">
