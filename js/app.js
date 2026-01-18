@@ -122,6 +122,7 @@ document.addEventListener('alpine:init', () => {
             this.capexClassifier.askSecureAI = secureBind; 
             this.legacyExplainer.askSecureAI = secureBind;
             this.watermelonDetector.askSecureAI = secureBind;
+            this.dataCanvasGen.askSecureAI = secureBind;
 
 
         },
@@ -913,6 +914,7 @@ teamManager: {
             { id: 'capex', label: 'FinOps Auditor', icon: 'fa-solid fa-file-invoice-dollar' },
             { id: 'legacy', label: 'Legacy Translator', icon: 'fa-solid fa-code' },
             { id: 'watermelon', label: 'Lie Detector', icon: 'fa-solid fa-user-secret' },
+            { id: 'datacanvas', label: 'Data Product Gen', icon: 'fa-solid fa-cube' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -946,6 +948,7 @@ teamManager: {
             { id: 'legacy', label: 'Legacy Code Explainer', desc: 'Translate COBOL/SQL into Business Rules.', icon: 'fa-solid fa-code', color: 'text-slate-400' },
             { id: 'watermelon', label: 'Green Light Detector', desc: 'Detect the "Watermelon Effect" in status reports.', icon: 'fa-solid fa-user-secret', color: 'text-red-500' },
             { id: 'vendor', label: 'Vendor Partnership Pyramid', desc: 'AI Coach to renegotiate contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-contract', color: 'text-yellow-400' },
+            { id: 'datacanvas', label: 'Data Product Generator', desc: 'Auto-generate Data Contracts & SLOs from raw Schema.', icon: 'fa-solid fa-cube', color: 'text-blue-400' },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
         ],
@@ -3111,6 +3114,56 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 } catch (e) {
                     console.error(e);
                     alert("Analysis failed.");
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // DATA PRODUCT CANVAS GENERATOR (Data Mesh)
+        // ------------------------------------------------------------------
+        dataCanvasGen: {
+            // Demo Input: A raw, ugly database schema snippet
+            input: "TABLE: CUST_TRX_HIST_V2\nCOLS: TRX_ID (PK), AMT_USD, MERCH_CAT_CODE, GEO_LAT, GEO_LONG, TS_UTC, RISK_FLG, SETTLE_STAT, CUST_REF_ID",
+            loading: false,
+            result: null,
+
+            async generate() {
+                if (!this.input.trim()) return alert("Please paste a schema or description.");
+                
+                this.loading = true;
+                this.result = null;
+
+                const prompt = `
+                    ACT AS: A Data Product Manager (Data Mesh Expert).
+                    TASK: Convert this raw technical schema/description into a "Data Product Canvas".
+                    
+                    GOAL: define the "Value" and the "Contract" (SLOs) so a business user understands why they should "buy" this data.
+                    
+                    INPUT SCHEMA:
+                    """${this.input}"""
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "product_name": "Catchy Business Name (e.g., 'Customer 360' or 'Fraud Radar')",
+                        "domain": "e.g., Risk, Marketing, Payments",
+                        "consumer_persona": "Who buys this? (e.g., 'Fraud Analyst')",
+                        "jobs_to_be_done": "What business problem does this solve? (e.g., 'Detects money laundering in real-time')",
+                        "slo_freshness": "e.g., < 200ms latency",
+                        "slo_accuracy": "e.g., 99.9% completeness",
+                        "output_ports": ["SQL", "API", "Events"],
+                        "price": "Metaphorical cost (e.g., 'High Compute' or 'T-Shirt Size M')"
+                    }
+                `;
+
+                try {
+                    let rawText = await this.askSecureAI(prompt, "Generate Data Product");
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    this.result = JSON.parse(rawText);
+                } catch (e) {
+                    console.error(e);
+                    alert("Generation failed. Try a simpler schema.");
                 } finally {
                     this.loading = false;
                 }
