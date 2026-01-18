@@ -1029,7 +1029,7 @@ teamManager: {
             { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king' }, 
             { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox' }, 
             { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
-            { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
+            { id: 'bookshelf', label: 'Executive Library', icon: 'fa-solid fa-book-bookmark', vip: false },
             { id: 'excel', label: 'Excel Calculator', icon: 'fa-solid fa-file-excel' },
             { id: 'strangler', label: 'Strangler Visualizer', icon: 'fa-solid fa-network-wired' },
             { id: 'hippo', label: 'HIPPO Tracker', icon: 'fa-solid fa-crown' },
@@ -1080,6 +1080,7 @@ teamManager: {
             { id: 'vendor', label: 'Vendor Partnership Pyramid', desc: 'AI Coach to renegotiate contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-contract', color: 'text-yellow-400' },
             { id: 'silo', label: 'The Silo Buster', desc: 'Draft diplomatic emails using Empathy Engineering to unblock the "Clay Layer".', icon: 'fa-solid fa-people-arrows', color: 'text-teal-400' }, 
             { id: 'datacanvas', label: 'Data Product Generator', desc: 'Auto-generate Data Contracts & SLOs from raw Schema.', icon: 'fa-solid fa-cube', color: 'text-blue-400' },
+           { id: 'bookshelf', label: 'Executive Library', desc: 'Tool B: Required Reading & Tech Stack.', icon: 'fa-solid fa-book', color: 'text-cyan-400', vip: false },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
         ],
@@ -3360,6 +3361,199 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 }
             }
         },
+        
+        //-------------------------------------------
+        //Bookshelf
+        //-------------------------------------------
+        bookshelf: {
+            activeBook: null,
+            currentView: 'books',
+            
+            // 1. THE BOOKS (Complete List)
+            books: [
+                {
+                    id: 'projecttoproduct',
+                    title: 'Project to Product',
+                    author: 'Mik Kersten',
+                    category: 'Strategy',
+                    color: 'from-purple-600 to-pink-500',
+                    icon: 'fa-timeline',
+                    summary: "The definitive guide to the 'Flow Framework'. It explains the mechanics of shifting from tracking hours to tracking value.",
+                    bilingualTakeaway: "Project funding kills agility because it disbands the team just as they learn. Product funding keeps the team together to maintain the asset.",
+                    actions: ["Stop capitalizing 'Projects'; capitalize 'Features'.", "Measure Flow Efficiency (Active vs Wait time)."],
+                    linkedTool: 'capex',
+                    linkedToolLabel: 'Audit FinOps/CapEx'
+                },
+                {
+                    id: 'teamtopologies',
+                    title: 'Team Topologies',
+                    author: 'Skelton & Pais',
+                    category: 'Delivery',
+                    color: 'from-green-600 to-emerald-500',
+                    icon: 'fa-people-group',
+                    summary: "A blueprint for organizing business and technology teams for fast flow, dealing with Conway's Law.",
+                    bilingualTakeaway: "Your software architecture mirrors your org chart. If you want microservices, you need micro-teams (Squads).",
+                    actions: ["Identify 'Stream-Aligned' teams vs 'Enabling' teams.", "Reduce cognitive load on developers."],
+                    linkedTool: 'squad',
+                    linkedToolLabel: 'Design a Bionic Squad'
+                },
+                {
+                    id: 'soonersafer',
+                    title: 'Sooner Safer Happier',
+                    author: 'Jonathan Smart',
+                    category: 'Strategy',
+                    color: 'from-blue-500 to-indigo-600',
+                    icon: 'fa-dove',
+                    summary: "Written by the former lead of Ways of Working at Barclays. One of the few Agile books written specifically for highly regulated banking.",
+                    bilingualTakeaway: "You don't need to 'scale Agile frameworks'; you need to scale 'Agile Principles'. Focus on outcomes, not ceremonies.",
+                    actions: ["Audit your governance gates.", "Replace 'Milestones' with 'Learning Outcomes'."],
+                    linkedTool: 'culture',
+                    linkedToolLabel: 'Measure Cultural Debt'
+                },
+                {
+                    id: 'datamesh',
+                    title: 'Data Mesh',
+                    author: 'Zhamak Dehghani',
+                    category: 'Data',
+                    color: 'from-cyan-500 to-blue-600',
+                    icon: 'fa-network-wired',
+                    summary: "The shift from centralized data lakes (swamps) to decentralized data ownership. Treat data as a product.",
+                    bilingualTakeaway: "IT shouldn't own the data; the business domain must own it. They understand the context. IT just owns the pipes.",
+                    actions: ["Assign a Product Owner to a critical dataset.", "Define SLOs (Freshness/Accuracy)."],
+                    linkedTool: 'datacanvas',
+                    linkedToolLabel: 'Build Data Product Canvas'
+                },
+                {
+                    id: 'dambok',
+                    title: 'DAMA-DMBOK',
+                    author: 'DAMA Int.',
+                    category: 'Data',
+                    color: 'from-slate-600 to-slate-800',
+                    icon: 'fa-book-atlas',
+                    summary: "The Data Management Body of Knowledge. The encyclopedia of data standards.",
+                    bilingualTakeaway: "You don't read this cover-to-cover. You use it as the reference manual when defining standards for quality, lineage, and security.",
+                    actions: ["Define 'Golden Source' for Customer Data.", "Map data lineage for one regulatory report."],
+                    linkedTool: 'glossary',
+                    linkedToolLabel: 'Check Dictionary'
+                },
+                {
+                    id: 'infonomics',
+                    title: 'Infonomics',
+                    author: 'Doug Laney',
+                    category: 'Data',
+                    color: 'from-emerald-500 to-teal-600',
+                    icon: 'fa-money-bill-trend-up',
+                    summary: "Treating data as an actual asset class on the balance sheet.",
+                    bilingualTakeaway: "Excellent for explaining the value of data governance to a CFO. Data isn't exhaust; it's capital.",
+                    actions: ["Calculate the 'Cost of Bad Data' (rework/fines).", "Audit 'Dark Data' storage costs."],
+                    linkedTool: 'shadow',
+                    linkedToolLabel: 'Audit Shadow IT Costs'
+                },
+                {
+                    id: 'hitrefresh',
+                    title: 'Hit Refresh',
+                    author: 'Satya Nadella',
+                    category: 'Culture',
+                    color: 'from-blue-600 to-blue-400',
+                    icon: 'fa-arrows-rotate',
+                    summary: "The story of Microsoft's turnaround. Moving from a 'Know-it-all' culture to a 'Learn-it-all' culture.",
+                    bilingualTakeaway: "Culture isn't soft; it's the engine of valuation. You must kill the 'HIPPO' effect to survive.",
+                    actions: ["Ask a 'stupid question' in the next board meeting.", "Reward a team for sharing a failure."],
+                    linkedTool: 'culture',
+                    linkedToolLabel: 'Cultural Thermometer'
+                },
+                {
+                    id: 'fearless',
+                    title: 'The Fearless Organization',
+                    author: 'Amy Edmondson',
+                    category: 'Culture',
+                    color: 'from-red-500 to-orange-500',
+                    icon: 'fa-heart-pulse',
+                    summary: "The academic foundation for Psychological Safety. Why speaking up is crucial for risk management.",
+                    bilingualTakeaway: "If people are afraid to report a 'Red' status, your risk dashboards are a fiction. Safety is a control mechanism.",
+                    actions: ["Run a 'Blameless Post-Mortem'.", "Conduct the 'Bad News' test."],
+                    linkedTool: 'silo',
+                    linkedToolLabel: 'Bust a Silo'
+                },
+                {
+                    id: 'bankingonit',
+                    title: 'Banking On It',
+                    author: 'Anne Boden',
+                    category: 'Leadership',
+                    color: 'from-teal-400 to-cyan-500',
+                    icon: 'fa-mobile-screen',
+                    summary: "Memoir of the founder of Starling Bank. A career banker who learned tech to build a bank from scratch.",
+                    bilingualTakeaway: "The perfect example of a Bilingual Executive. She didn't outsource the core; she owned the risk and the code.",
+                    actions: ["Stop hiring 'Proxy' product owners.", "Sit with a developer for one hour."],
+                    linkedTool: 'compass',
+                    linkedToolLabel: 'Check Leadership Balance'
+                }
+            ],
+
+            // 2. THE TECH STACK
+            techStack: [
+                {
+                    category: "The Delivery Stack (The Engine)",
+                    desc: "Tools for tracking work and automating code.",
+                    tools: [
+                        { name: "Jira / Azure DevOps", role: "Work Tracking", insight: "Don't use it for Gantt charts. Use it for backlogs." },
+                        { name: "GitHub / GitLab", role: "Code Repository", insight: "Where the IP lives. If it's not here, it doesn't exist." },
+                        { name: "Jenkins / CircleCI", role: "CI/CD Pipeline", insight: "The robot that deploys the code. The 'Definition of Done' lives here." }
+                    ]
+                },
+                {
+                    category: "The Data Stack (The Fuel)",
+                    desc: "Tools for storing and moving data.",
+                    tools: [
+                        { name: "Snowflake / Databricks", role: "Cloud Data Platform", insight: "Separates storage from compute. Essential for escaping the 'Data Swamp'." },
+                        { name: "Collibra / Alation", role: "Data Catalog", insight: "The map of your data. Essential for governance." },
+                        { name: "Kafka", role: "Event Streaming", insight: "Real-time data movement. The nervous system of the bank." }
+                    ]
+                },
+                {
+                    category: "The Collaboration Stack (The Glue)",
+                    desc: "Tools for breaking down silos.",
+                    tools: [
+                        { name: "Slack / Teams", role: "Async Comms", insight: "Moves communication out of email silos." },
+                        { name: "Miro / Mural", role: "Digital Whiteboard", insight: "Where remote agile collaboration happens." }
+                    ]
+                }
+            ]
+        },
+
+        // --- PASTE THIS IN YOUR 'NAV ITEMS' ARRAY ---
+        navItems: [
+            // ... previous items ...
+            // Add this line:
+            { id: 'bookshelf', label: 'Bilingual Library', icon: 'fa-solid fa-book-bookmark', vip: false },
+        ],
+
+        // --- PASTE THIS IN YOUR 'DASHBOARD TOOLS' ARRAY ---
+        dashboardTools: [
+            // ... previous tools ...
+            // Add this line:
+            { id: 'bookshelf', label: 'Executive Library', desc: 'Tool B: Required Reading & Tech Stack.', icon: 'fa-solid fa-book', color: 'text-cyan-400', vip: false },
+        ],
+
+        // --- PASTE THESE HELPER FUNCTIONS AT THE ROOT LEVEL ---
+        // (Do not put them inside the bookshelf object, put them next to init())
+        
+        openBook(book) {
+            this.bookshelf.activeBook = book;
+        },
+
+        closeBook() {
+            this.bookshelf.activeBook = null;
+        },
+
+        askAIAboutBook(bookTitle) {
+            // This function is bound to the root, so 'this' can access chatInput and sendMessage
+            this.bookshelf.activeBook = null;
+            this.isChatOpen = true;
+            this.chatInput = `Act as an expert on the book '${bookTitle}'. How do I apply its main bilingual concept to a traditional bank?`;
+            this.sendMessage();
+        },
+
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
