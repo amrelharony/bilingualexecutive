@@ -126,6 +126,8 @@ document.addEventListener('alpine:init', () => {
             this.siloBuster.askSecureAI = secureBind;
             this.culturalMonitor.askSecureAI = secureBind;
             this.lighthouseROI.askSecureAI = secureBind;
+            this.futureBank.askSecureAI = secureBind;
+
 
 
 
@@ -1047,6 +1049,7 @@ teamManager: {
             { id: 'datacanvas', label: 'Data Product Gen', icon: 'fa-solid fa-cube' },
             { id: 'silo', label: 'Silo Buster', icon: 'fa-solid fa-people-arrows' }, 
             { id: 'roi', label: 'ROI Calculator', icon: 'fa-solid fa-calculator', vip: false },
+            { id: 'future', label: 'Future Bank 2030', icon: 'fa-solid fa-crystal-ball', vip: false },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -1083,6 +1086,7 @@ teamManager: {
             { id: 'silo', label: 'The Silo Buster', desc: 'Draft diplomatic emails using Empathy Engineering to unblock the "Clay Layer".', icon: 'fa-solid fa-people-arrows', color: 'text-teal-400' }, 
             { id: 'datacanvas', label: 'Data Product Generator', desc: 'Auto-generate Data Contracts & SLOs from raw Schema.', icon: 'fa-solid fa-cube', color: 'text-blue-400' },
             { id: 'roi', label: 'Lighthouse ROI', desc: 'Quantify Hard & Soft value of your pilot.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
+            { id: 'future', label: 'Scenario Builder', desc: 'Simulate your strategy to 2030.', icon: 'fa-solid fa-timeline', color: 'text-purple-400', vip: false },
             { id: 'bookshelf', label: 'Executive Library', desc: 'Tool B: Required Reading & Tech Stack.', icon: 'fa-solid fa-book', color: 'text-cyan-400', vip: false },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
@@ -3366,6 +3370,128 @@ calculate() {
             }
                 
             
+        },
+
+        // ------------------------------------------------------------------
+        // FUTURE BANK SCENARIO BUILDER (2030 SIMULATOR)
+        // ------------------------------------------------------------------
+        futureBank: {
+            activeScenario: null,
+            year: 2026,
+            isPlaying: false,
+            aiNarrative: null,
+            loading: false,
+
+            // The Strategic Paths
+            scenarios: [
+                {
+                    id: 'ai_first',
+                    title: 'The Bionic Bank',
+                    icon: 'fa-robot',
+                    color: 'text-purple-400',
+                    desc: 'Aggressive automation. AI Agents handle 90% of service.',
+                    evolution: {
+                        2026: { org: "Hierarchical", tech: "Hybrid Cloud", profit: "$1.2B" },
+                        2027: { org: "Flattening...", tech: "Data Mesh Live", profit: "$1.1B (J-Curve)" },
+                        2028: { org: "Squad Based", tech: "GenAI Core", profit: "$1.5B" },
+                        2029: { org: "Bionic Teams", tech: "Agentic Swarm", profit: "$2.8B" },
+                        2030: { org: "30% Smaller / 10x Faster", tech: "Self-Driving Finance", profit: "$4.5B" }
+                    }
+                },
+                {
+                    id: 'partnership',
+                    title: 'The Invisible Bank',
+                    icon: 'fa-handshake',
+                    color: 'text-green-400',
+                    desc: 'Embedded Finance. We become the utility for Big Tech.',
+                    evolution: {
+                        2026: { org: "Siloed", tech: "API Gateway V1", profit: "$1.2B" },
+                        2027: { org: "Partnership Div", tech: "Headless Core", profit: "$1.3B" },
+                        2028: { org: "Brand Fading", tech: "Embedded in Tesla/Amazon", profit: "$1.8B" },
+                        2029: { org: "Utility Model", tech: "Invisible Rails", profit: "$2.2B" },
+                        2030: { org: "Infrastructure Only", tech: "Global Liquidity Engine", profit: "$3.0B" }
+                    }
+                },
+                {
+                    id: 'crisis',
+                    title: 'The Fortress',
+                    icon: 'fa-shield-halved',
+                    color: 'text-risk',
+                    desc: 'Defensive posture. Compliance first. Innovation second.',
+                    evolution: {
+                        2026: { org: "Bureaucratic", tech: "Mainframe", profit: "$1.2B" },
+                        2027: { org: "Frozen Middle", tech: "Security Patches", profit: "$1.0B" },
+                        2028: { org: "Talent Drain", tech: "Technical Debt", profit: "$0.8B" },
+                        2029: { org: "Acquisition Target", tech: "Legacy Swamp", profit: "$0.5B" },
+                        2030: { org: "Obsolete", tech: "Liquidated / Merged", profit: "-$0.2B" }
+                    }
+                }
+            ],
+
+            selectScenario(id) {
+                this.activeScenario = this.scenarios.find(s => s.id === id);
+                this.year = 2026;
+                this.aiNarrative = null;
+                this.playSimulation();
+            },
+
+            playSimulation() {
+                this.isPlaying = true;
+                let timer = setInterval(() => {
+                    if (this.year < 2030) {
+                        this.year++;
+                    } else {
+                        clearInterval(timer);
+                        this.isPlaying = false;
+                        this.generateReflection(); // Trigger AI at the end
+                    }
+                }, 1500); // 1.5 seconds per year
+            },
+
+            get currentState() {
+                if (!this.activeScenario) return null;
+                return this.activeScenario.evolution[this.year];
+            },
+
+            // AI ENHANCEMENT: The "Letter from the Future"
+            async generateReflection() {
+                this.loading = true;
+                const s = this.activeScenario;
+
+                const prompt = `
+                    ACT AS: The CEO of this Bank in the year 2030.
+                    SCENARIO CHOSEN IN 2026: "${s.title}" (${s.desc}).
+                    OUTCOME IN 2030:
+                    - Org Structure: ${s.evolution[2030].org}
+                    - Tech Stack: ${s.evolution[2030].tech}
+                    - Financials: ${s.evolution[2030].profit}
+                    
+                    TASK: Write a short, dramatic "Retrospective Letter" to your past self (in 2026).
+                    - If "Bionic Bank": Celebrate the pain of the J-Curve and the ultimate victory of automation.
+                    - If "Invisible Bank": Reflect on losing the brand but saving the balance sheet via APIs.
+                    - If "The Fortress": A regretful warning about playing it safe while the market moved on.
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "subject": "Email Subject Line",
+                        "body": "The letter content (approx 100 words). Use <br> for line breaks."
+                    }
+                `;
+
+                try {
+                    let rawText = await this.askSecureAI(prompt, "Future Simulation");
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    this.aiNarrative = JSON.parse(rawText);
+                } catch (e) {
+                    console.error(e);
+                    this.aiNarrative = {
+                        subject: "Connection Lost",
+                        body: "The time portal is unstable. But the data shows this strategy defined our destiny."
+                    };
+                } finally {
+                    this.loading = false;
+                }
+            }
         },
         
         // ------------------------------------------------------------------
