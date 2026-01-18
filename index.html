@@ -1924,6 +1924,142 @@
                 </div>
             </div>
 
+<!-- LIGHTHOUSE ROI CALCULATOR TAB -->
+<div x-show="currentTab === 'roi'" x-cloak class="max-w-5xl mx-auto">
+    
+    <div class="text-center mb-8">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">Lighthouse ROI Calculator</h2>
+        <p class="text-textMuted text-sm">Translate "Agile Success" into the only language the Board speaks: Money.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8">
+        
+        <!-- LEFT: INPUTS -->
+        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+            <h3 class="font-mono text-xs text-primary uppercase border-b border-slate-700 pb-2">Pilot Parameters</h3>
+            
+            <div>
+                <label class="text-xs text-white block mb-1">Project Name</label>
+                <input type="text" x-model="lighthouseROI.inputs.name" placeholder="e.g. Instant SME Loan" class="w-full bg-dark border border-slate-600 rounded p-2 text-white focus:border-primary focus:outline-none">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] text-slate-400 block mb-1">Duration (Weeks)</label>
+                    <input type="number" x-model="lighthouseROI.inputs.duration_weeks" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 block mb-1">Squad Cost ($/Wk)</label>
+                    <input type="number" x-model="lighthouseROI.inputs.squad_cost_per_week" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
+                </div>
+            </div>
+
+            <h3 class="font-mono text-xs text-green-400 uppercase border-b border-slate-700 pb-2 pt-2">Financial Impact</h3>
+            
+            <div>
+                <label class="text-[10px] text-slate-400 block mb-1">Revenue Generated ($)</label>
+                <input type="number" x-model="lighthouseROI.inputs.revenue_generated" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
+            </div>
+            <div>
+                <label class="text-[10px] text-slate-400 block mb-1">Cost Avoided ($)</label>
+                <p class="text-[9px] text-slate-500 mb-1">(e.g. fines, legacy maintenance saved)</p>
+                <input type="number" x-model="lighthouseROI.inputs.cost_avoided" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
+            </div>
+
+            <h3 class="font-mono text-xs text-purple-400 uppercase border-b border-slate-700 pb-2 pt-2">Soft Metrics</h3>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] text-slate-400 block mb-1">Old Speed (Weeks)</label>
+                    <input type="number" x-model="lighthouseROI.inputs.old_cycle_time" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-400 block mb-1">New Speed (Weeks)</label>
+                    <input type="number" x-model="lighthouseROI.inputs.new_cycle_time" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
+                </div>
+            </div>
+
+            <button @click="lighthouseROI.calculate()" 
+                    :disabled="lighthouseROI.loading"
+                    class="w-full bg-white hover:bg-gray-200 text-dark font-bold py-3 rounded-lg shadow-glow transition-all mt-4 flex items-center justify-center gap-2">
+                <span x-show="!lighthouseROI.loading"><i class="fa-solid fa-calculator"></i> CALCULATE ROI</span>
+                <span x-show="lighthouseROI.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> CONSULTING AI...</span>
+            </button>
+        </div>
+
+        <!-- RIGHT: RESULTS -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Empty State -->
+            <div x-show="!lighthouseROI.results" class="h-full border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-500 p-10">
+                <i class="fa-solid fa-chart-pie text-4xl mb-4 opacity-20"></i>
+                <p class="text-xs font-mono">Enter data to prove value.</p>
+            </div>
+
+            <!-- Results Dashboard -->
+            <div x-show="lighthouseROI.results" x-transition>
+                
+                <!-- 1. The Big Numbers -->
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div class="bg-card border border-slate-700 p-4 rounded-xl text-center">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">NET FINANCIAL IMPACT</p>
+                        <h3 class="text-3xl font-bold font-mono my-2" 
+                            :class="lighthouseROI.results?.netProfit > 0 ? 'text-green-400' : 'text-red-400'"
+                            x-text="'$' + lighthouseROI.results?.netProfit.toLocaleString()"></h3>
+                        <span class="text-xs bg-slate-800 px-2 py-1 rounded border border-slate-600" x-text="lighthouseROI.results?.roiPercent + '% ROI'"></span>
+                    </div>
+                    <div class="bg-card border border-slate-700 p-4 rounded-xl text-center">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">VELOCITY GAIN</p>
+                        <h3 class="text-3xl font-bold font-mono text-purple-400 my-2" x-text="lighthouseROI.results?.speedFactor + 'x'"></h3>
+                        <span class="text-xs text-slate-400">Faster than legacy</span>
+                    </div>
+                </div>
+
+                <!-- 2. AI Executive Summary -->
+                <div class="bg-gradient-to-br from-slate-800 to-card border border-primary/30 p-6 rounded-xl relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+                    
+                    <h4 class="font-mono text-xs text-primary font-bold uppercase mb-4 flex items-center">
+                        <i class="fa-solid fa-robot mr-2"></i> Boardroom Narrative
+                    </h4>
+
+                    <template x-if="lighthouseROI.aiNarrative">
+                        <div class="space-y-4">
+                            <h3 class="text-xl font-bold text-white leading-tight" x-text="lighthouseROI.aiNarrative.headline"></h3>
+                            
+                            <div class="bg-dark/50 p-4 rounded border border-slate-700">
+                                <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">STRATEGIC VERDICT</p>
+                                <p class="text-sm text-slate-300 italic" x-text="lighthouseROI.aiNarrative.strategic_verdict"></p>
+                            </div>
+
+                            <div class="bg-red-900/10 border-l-4 border-red-500 p-3">
+                                <p class="text-[10px] text-red-400 uppercase font-bold mb-1">DEFENSE AGAINST THE CFO</p>
+                                <p class="text-sm text-white font-medium" x-text="lighthouseROI.aiNarrative.defense"></p>
+                            </div>
+                        </div>
+                    </template>
+                    
+                    <template x-if="!lighthouseROI.aiNarrative && lighthouseROI.results">
+                        <div class="animate-pulse flex space-x-4">
+                            <div class="flex-1 space-y-4 py-1">
+                                <div class="h-4 bg-slate-700 rounded w-3/4"></div>
+                                <div class="space-y-2">
+                                    <div class="h-4 bg-slate-700 rounded"></div>
+                                    <div class="h-4 bg-slate-700 rounded w-5/6"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- 3. Export -->
+                <button @click="lighthouseROI.generatePDF()" class="w-full mt-6 border border-slate-600 hover:bg-slate-800 text-slate-300 py-3 rounded-lg text-xs font-bold transition-all">
+                    <i class="fa-solid fa-file-pdf mr-2"></i> DOWNLOAD BOARD ONE-PAGER
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
             
 <!-- LEGACY CODE EXPLAINER TAB -->
             <div x-show="currentTab === 'legacy'" x-cloak class="max-w-5xl mx-auto">
