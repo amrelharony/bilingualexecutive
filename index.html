@@ -585,10 +585,14 @@
                             </div>
                         </div>
 
-                        <button @click="culturalMonitor.submitCheckin()" 
-                                class="w-full mt-8 bg-white hover:bg-slate-200 text-dark font-bold py-3 rounded-lg shadow-glow transition-all">
-                            ANALYZE RESULTS
-                        </button>
+<button @click="culturalMonitor.submitCheckin()" 
+        :disabled="culturalMonitor.loadingAI"
+        class="w-full mt-8 bg-white hover:bg-slate-200 text-dark font-bold py-3 rounded-lg shadow-glow transition-all disabled:opacity-50 disabled:cursor-wait flex items-center justify-center gap-2">
+    <span x-show="!culturalMonitor.loadingAI">ANALYZE RESULTS</span>
+    <span x-show="culturalMonitor.loadingAI" class="flex items-center gap-2">
+        <i class="fa-solid fa-circle-notch fa-spin text-purple-600"></i> ANALYZING...
+    </span>
+</button>
                     </div>
                 </div>
 
