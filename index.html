@@ -3231,15 +3231,19 @@
 
         </main>
 
-        <!-- CHAT INTERFACE WITH API SETTINGS -->
+     <!-- CHAT INTERFACE WITH API SETTINGS -->
         <div x-show="isChatOpen" class="fixed inset-0 z-50 md:inset-auto md:bottom-24 md:right-6 md:w-96 md:h-[550px] bg-dark flex flex-col md:rounded-2xl border-l md:border border-primary shadow-2xl overflow-hidden font-sans" x-transition>
             <div class="bg-card p-4 border-b border-slate-700 flex justify-between items-center pt-safe">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary"><i class="fa-solid fa-bolt text-sm"></i></div>
-                    <div><h3 class="font-bold text-white text-sm">Bilingual AI Assistant</h3><p class="text-[10px] text-textMuted uppercase tracking-tighter">Gemini 1.5 Flash / 2.0 Failover</p></div>
+                    <div>
+                        <h3 class="font-bold text-white text-sm">Bilingual AI Assistant</h3>
+                        <!-- UPDATED LABEL -->
+                        <p class="text-[10px] text-textMuted uppercase tracking-tighter">GEMINI 3 FLASH</p>
+                    </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button @click="showKeyModal = true" class="text-slate-400 hover:text-primary p-2" title="API Settings"><i class="fa-solid fa-key"></i></button>
+                    <!-- API KEY BUTTON REMOVED HERE -->
                     <button @click="isChatOpen = false" class="text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
             </div>
