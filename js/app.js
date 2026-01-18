@@ -3305,34 +3305,54 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
                 doc.setTextColor(100, 100, 100);
                 doc.text(`(Reduced cycle time from ${this.inputs.old_cycle_time} weeks to ${this.inputs.new_cycle_time} weeks)`, 20, 126);
 
-                // AI Narrative
-                if (this.aiNarrative) {
-                    doc.setTextColor(0,0,0);
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(14);
-                    doc.text("3. EXECUTIVE SUMMARY", 20, 145);
-                    
-                    doc.setFontSize(11);
-                    doc.setTextColor(30, 58, 138); // Dark Blue
-                    doc.text(`"${this.aiNarrative.headline}"`, 20, 155);
-                    
-                    doc.setTextColor(0,0,0);
-                    doc.setFont("helvetica", "normal");
-                    doc.setFontSize(10);
-                    const strategyLines = doc.splitTextToSize(this.aiNarrative.strategic_verdict, 170);
-                    doc.text(strategyLines, 20, 165);
+// AI Narrative
+if (this.aiNarrative) {
+    doc.setTextColor(0,0,0);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("3. EXECUTIVE SUMMARY", 20, 145);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(30, 58, 138); // Dark Blue
+    
+    // Fix 1: Wrap the Headline
+    const headlineLines = doc.splitTextToSize(`"${this.aiNarrative.headline}"`, 170);
+    doc.text(headlineLines, 20, 155);
+    
+    // Calculate Y position based on headline length
+    let currentY = 155 + (headlineLines.length * 6) + 4;
 
-                    // The Defense
-                    doc.setDrawColor(200, 200, 200);
-                    doc.rect(20, 185, 170, 25);
-                    doc.setFont("helvetica", "bold");
-                    doc.setFontSize(9);
-                    doc.text("CFO DEFENSE SCRIPT:", 25, 192);
-                    doc.setFont("helvetica", "italic");
-                    doc.text(`"${this.aiNarrative.defense}"`, 25, 200);
-                }
+    doc.setTextColor(0,0,0);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    
+    // Fix 2: Wrap Strategic Verdict
+    const strategyLines = doc.splitTextToSize(this.aiNarrative.strategic_verdict, 170);
+    doc.text(strategyLines, 20, currentY);
+    
+    // Update Y position based on strategy length
+    currentY += (strategyLines.length * 5) + 10;
 
-                doc.save("Lighthouse_ROI.pdf");
+    // The Defense Box
+    doc.setDrawColor(200, 200, 200);
+    
+    // Fix 3: Calculate Defense Script Height
+    doc.setFont("helvetica", "italic");
+    const defenseLines = doc.splitTextToSize(`"${this.aiNarrative.defense}"`, 160); // Width 160 to fit inside box
+    const boxHeight = (defenseLines.length * 5) + 15; // Dynamic height
+    
+    doc.rect(20, currentY, 170, boxHeight);
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(9);
+    doc.text("CFO DEFENSE SCRIPT:", 25, currentY + 7);
+    
+    doc.setFont("helvetica", "italic");
+    doc.text(defenseLines, 25, currentY + 15);
+}
+
+doc.save("Lighthouse_ROI.pdf");
+                
             }
         },
         
