@@ -680,7 +680,7 @@ async send() {
                 }
             },
 
-            renderChart() {
+renderChart() {
                 setTimeout(() => {
                     const ctx = document.getElementById('debtChart');
                     if (!ctx) return;
@@ -705,7 +705,32 @@ async send() {
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            scales: { y: { min: 0, max: 100, grid: { color: '#334155' } }, x: { display: true } },
+                            // 1. ADD LAYOUT PADDING TO FIX CLIPPING
+                            layout: {
+                                padding: {
+                                    bottom: 10, 
+                                    left: 5
+                                }
+                            },
+                            scales: { 
+                                y: { 
+                                    min: 0, 
+                                    max: 100, 
+                                    grid: { 
+                                        color: '#334155',
+                                        drawBorder: false // 2. Removes the bottom line so "0" floats freely
+                                    },
+                                    ticks: {
+                                        color: '#94a3b8',
+                                        padding: 8 // 3. Adds space between numbers and chart
+                                    }
+                                }, 
+                                x: { 
+                                    display: true,
+                                    grid: { display: false },
+                                    ticks: { color: '#94a3b8' }
+                                } 
+                            },
                             plugins: { legend: { display: false } }
                         }
                     });
