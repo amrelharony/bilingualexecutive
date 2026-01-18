@@ -524,9 +524,59 @@ async send() {
                 try {
                     const saved = localStorage.getItem('bilingual_culture_history');
                     if (saved) this.history = JSON.parse(saved);
+                    this.checkSchedule(); 
+
                 } catch (e) { console.error("Load Error", e); }
             },
 
+
+                        checkSchedule() {
+                // If notification not supported, stop
+                if (!("Notification" in window)) return;
+
+                // Get last survey time
+                const lastEntry = this.history.length > 0 
+                    ? this.history[this.history.length - 1].timestamp 
+                    : 0;
+                
+                const now = Date.now();
+                const oneWeek = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+                // For testing, you can change oneWeek to 10000 (10 seconds)
+
+                // If more than a week has passed, or no history exists
+                if (now - lastEntry > oneWeek) {
+                    if (Notification.permission === "granted") {
+                        this.sendNotification();
+                    } else if (Notification.permission !== "denied") {
+                        // We can't request permission automatically on load (browsers block it),
+                        // but we can flag UI to ask for it.
+                        this.showNotificationPrompt = true; 
+                    }
+                }
+            },
+
+            requestPermission() {
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        this.sendNotification();
+                        this.showNotificationPrompt = false;
+                    }
+                });
+            },
+
+            sendNotification() {
+                // The actual PWA notification
+                if (document.hidden) { // Only notify if user isn't looking
+                     new Notification("Cultural Pulse Check", {
+                        body: "It's been a week. Time for your 2-minute culture check-in.",
+                        icon: "https://cdn-icons-png.flaticon.com/512/3208/3208726.png", // Generic thermometer icon
+                        tag: "culture-check" // Prevents duplicate notifications
+                    });
+                }
+            },
+
+
+            
             startCheckin() {
                 // Select 2 random questions + 1 fixed sentiment question
                 const shuffled = this.questionBank.sort(() => 0.5 - Math.random());
