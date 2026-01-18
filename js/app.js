@@ -123,6 +123,8 @@ document.addEventListener('alpine:init', () => {
             this.legacyExplainer.askSecureAI = secureBind;
             this.watermelonDetector.askSecureAI = secureBind;
             this.dataCanvasGen.askSecureAI = secureBind;
+            this.siloBuster.askSecureAI = secureBind;
+
 
 
         },
