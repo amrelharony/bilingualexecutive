@@ -1049,7 +1049,7 @@ teamManager: {
             { id: 'datacanvas', label: 'Data Product Gen', icon: 'fa-solid fa-cube' },
             { id: 'silo', label: 'Silo Buster', icon: 'fa-solid fa-people-arrows' }, 
             { id: 'roi', label: 'ROI Calculator', icon: 'fa-solid fa-calculator', vip: false },
-            { id: 'future', label: 'Future Bank 2030', icon: 'fa-solid fa-crystal-ball', vip: false },
+            { id: 'future', label: 'Future Bank 2030', icon: 'fa-solid fa-forward', vip: false },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
