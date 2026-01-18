@@ -1891,6 +1891,108 @@
 
                 </div>
             </div>
+
+            <!-- DATA PRODUCT CANVAS GENERATOR TAB -->
+            <div x-show="currentTab === 'datacanvas'" x-cloak class="max-w-5xl mx-auto">
+                
+                <div class="text-center mb-8">
+                    <h2 class="font-mono text-3xl font-bold text-white mb-2">Data Product Factory</h2>
+                    <p class="text-textMuted text-sm">Turn raw "Tables" into "Products" with defined SLOs and Consumers.</p>
+                </div>
+
+                <div class="grid lg:grid-cols-2 gap-8 items-start">
+                    
+                    <!-- LEFT: THE RAW MATERIAL (Input) -->
+                    <div class="bg-card border border-slate-700 p-6 rounded-xl">
+                        <label class="block text-xs font-mono text-white mb-3 uppercase font-bold">
+                            <i class="fa-solid fa-database mr-2"></i>Raw Input (Schema/Description)
+                        </label>
+                        <p class="text-[10px] text-slate-500 mb-2">Paste SQL columns, CSV headers, or a rough description.</p>
+                        
+                        <textarea x-model="dataCanvasGen.input" 
+                                  class="w-full h-48 bg-dark border border-slate-600 rounded-lg p-3 text-xs font-mono text-blue-300 focus:border-blue-400 focus:outline-none"
+                                  placeholder="Paste schema here..."></textarea>
+                        
+                        <button @click="dataCanvasGen.generate()" 
+                                :disabled="dataCanvasGen.loading"
+                                class="w-full mt-4 bg-blue-500 hover:bg-blue-400 text-white font-bold py-3 rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
+                            <span x-show="!dataCanvasGen.loading"><i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE CANVAS</span>
+                            <span x-show="dataCanvasGen.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> DESIGNING PRODUCT...</span>
+                        </button>
+                    </div>
+
+                    <!-- RIGHT: THE FINISHED PRODUCT (Output) -->
+                    <div class="relative min-h-[400px]">
+                        
+                        <!-- Empty State -->
+                        <div x-show="!dataCanvasGen.result" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-500">
+                            <i class="fa-solid fa-cube text-4xl mb-4 opacity-20"></i>
+                            <p class="font-mono text-xs uppercase">No Product Defined</p>
+                        </div>
+
+                        <!-- The Canvas Card -->
+                        <div x-show="dataCanvasGen.result" x-transition class="bg-card border-2 border-blue-500 rounded-xl overflow-hidden shadow-2xl relative">
+                            
+                            <!-- Product Tag (Top Right) -->
+                            <div class="absolute top-0 right-0 bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-bl-lg font-mono">
+                                CERTIFIED DATA PRODUCT
+                            </div>
+
+                            <!-- Header -->
+                            <div class="p-6 bg-slate-800/50 border-b border-slate-700">
+                                <span class="text-[10px] font-mono text-slate-400 uppercase tracking-widest block mb-1">DOMAIN: <span x-text="dataCanvasGen.result?.domain" class="text-white"></span></span>
+                                <h3 class="text-3xl font-bold text-white leading-tight" x-text="dataCanvasGen.result?.product_name"></h3>
+                            </div>
+
+                            <!-- Body -->
+                            <div class="p-6 space-y-6">
+                                
+                                <!-- Value Prop -->
+                                <div>
+                                    <h4 class="text-[10px] font-bold text-blue-400 uppercase mb-2">Jobs to be Done (Consumer Value)</h4>
+                                    <p class="text-sm text-slate-200 italic border-l-2 border-blue-500 pl-3 leading-relaxed" 
+                                       x-text="dataCanvasGen.result?.jobs_to_be_done"></p>
+                                </div>
+
+                                <!-- The Contract Grid -->
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="bg-dark p-3 rounded border border-slate-700">
+                                        <div class="text-[9px] text-slate-500 uppercase mb-1">Consumer Persona</div>
+                                        <div class="text-xs font-bold text-white" x-text="dataCanvasGen.result?.consumer_persona"></div>
+                                    </div>
+                                    <div class="bg-dark p-3 rounded border border-slate-700">
+                                        <div class="text-[9px] text-slate-500 uppercase mb-1">Output Ports</div>
+                                        <div class="flex gap-1 flex-wrap">
+                                            <template x-for="port in dataCanvasGen.result?.output_ports">
+                                                <span class="text-[9px] bg-slate-700 px-1.5 py-0.5 rounded text-slate-300" x-text="port"></span>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- SLOs (The Guarantee) -->
+                                <div class="bg-blue-900/10 border border-blue-500/30 rounded-lg p-4">
+                                    <h4 class="text-[10px] font-bold text-blue-300 uppercase mb-3 flex items-center">
+                                        <i class="fa-solid fa-file-signature mr-2"></i>Service Level Objectives (SLOs)
+                                    </h4>
+                                    <div class="flex justify-between items-center text-xs text-white mb-2">
+                                        <span class="opacity-70">Freshness Guarantee</span>
+                                        <span class="font-mono font-bold" x-text="dataCanvasGen.result?.slo_freshness"></span>
+                                    </div>
+                                    <div class="w-full bg-slate-700 h-px mb-2"></div>
+                                    <div class="flex justify-between items-center text-xs text-white">
+                                        <span class="opacity-70">Accuracy Target</span>
+                                        <span class="font-mono font-bold" x-text="dataCanvasGen.result?.slo_accuracy"></span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
             
             <!-- STRANGLER VISUALIZER TAB -->
             <div x-show="currentTab === 'strangler'" x-cloak class="max-w-6xl mx-auto">
