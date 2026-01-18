@@ -124,7 +124,8 @@ document.addEventListener('alpine:init', () => {
             this.watermelonDetector.askSecureAI = secureBind;
             this.dataCanvasGen.askSecureAI = secureBind;
             this.siloBuster.askSecureAI = secureBind;
-            this.culturalMonitor.askSecureAI = secureBind; 
+            this.culturalMonitor.askSecureAI = secureBind;
+            this.lighthouseROI.askSecureAI = secureBind;
 
 
 
@@ -1045,6 +1046,7 @@ teamManager: {
             { id: 'watermelon', label: 'Lie Detector', icon: 'fa-solid fa-user-secret' },
             { id: 'datacanvas', label: 'Data Product Gen', icon: 'fa-solid fa-cube' },
             { id: 'silo', label: 'Silo Buster', icon: 'fa-solid fa-people-arrows' }, 
+            { id: 'roi', label: 'ROI Calculator', icon: 'fa-solid fa-calculator', vip: false },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -1080,7 +1082,8 @@ teamManager: {
             { id: 'vendor', label: 'Vendor Partnership Pyramid', desc: 'AI Coach to renegotiate contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-contract', color: 'text-yellow-400' },
             { id: 'silo', label: 'The Silo Buster', desc: 'Draft diplomatic emails using Empathy Engineering to unblock the "Clay Layer".', icon: 'fa-solid fa-people-arrows', color: 'text-teal-400' }, 
             { id: 'datacanvas', label: 'Data Product Generator', desc: 'Auto-generate Data Contracts & SLOs from raw Schema.', icon: 'fa-solid fa-cube', color: 'text-blue-400' },
-           { id: 'bookshelf', label: 'Executive Library', desc: 'Tool B: Required Reading & Tech Stack.', icon: 'fa-solid fa-book', color: 'text-cyan-400', vip: false },
+            { id: 'roi', label: 'Lighthouse ROI', desc: 'Quantify Hard & Soft value of your pilot.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
+            { id: 'bookshelf', label: 'Executive Library', desc: 'Tool B: Required Reading & Tech Stack.', icon: 'fa-solid fa-book', color: 'text-cyan-400', vip: false },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
         ],
@@ -3163,6 +3166,176 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
             }
         },
 
+        // ------------------------------------------------------------------
+        // LIGHTHOUSE ROI CALCULATOR (Hard & Soft Value)
+        // ------------------------------------------------------------------
+        lighthouseROI: {
+            // Default inputs based on a typical 90-day pilot
+            inputs: {
+                name: '',
+                duration_weeks: 12,
+                squad_cost_per_week: 15000, // Approx $15k/week for a team of 6
+                software_cost: 25000, // Licenses, cloud
+                revenue_generated: 0, // New income
+                cost_avoided: 150000, // Legacy maintenance saved, fines avoided
+                old_cycle_time: 20, // Weeks to ship before
+                new_cycle_time: 2,  // Weeks to ship now
+                cultural_score: 8   // 1-10 (Team morale/learning)
+            },
+            results: null,
+            aiNarrative: null,
+            loading: false,
+
+            calculate() {
+                const i = this.inputs;
+                
+                // 1. Hard Costs
+                const laborCost = i.duration_weeks * i.squad_cost_per_week;
+                const totalInvestment = laborCost + parseInt(i.software_cost);
+                
+                // 2. Hard Benefits
+                const totalValue = parseInt(i.revenue_generated) + parseInt(i.cost_avoided);
+                const netProfit = totalValue - totalInvestment;
+                const roiPercent = Math.round(((totalValue - totalInvestment) / totalInvestment) * 100);
+
+                // 3. Speed Differential (The Multiplier)
+                const speedFactor = (i.old_cycle_time / i.new_cycle_time).toFixed(1);
+
+                this.results = {
+                    totalInvestment: totalInvestment,
+                    totalValue: totalValue,
+                    netProfit: netProfit,
+                    roiPercent: roiPercent,
+                    speedFactor: speedFactor
+                };
+
+                // Trigger AI to write the story
+                this.generateNarrative();
+            },
+
+            async generateNarrative() {
+                this.loading = true;
+                this.aiNarrative = null;
+                const r = this.results;
+                const i = this.inputs;
+
+                const prompt = `
+                    ACT AS: A CFO / Chief Strategy Officer.
+                    TASK: Write a "Board-Ready Executive Summary" for a Pilot Project based on these ROI numbers.
+                    
+                    DATA:
+                    - Project: ${i.name || "Pilot"}
+                    - Investment: $${r.totalInvestment.toLocaleString()}
+                    - Hard Return: $${r.netProfit.toLocaleString()} (${r.roiPercent}% ROI)
+                    - Speed Gain: ${r.speedFactor}x faster than legacy process.
+                    - Cultural Score: ${i.cultural_score}/10.
+
+                    OUTPUT JSON ONLY:
+                    {
+                        "headline": "A punchy, 1-sentence title focusing on value.",
+                        "financial_verdict": "2 sentences analyzing the hard money. Be objective.",
+                        "strategic_verdict": "2 sentences explaining why the SPEED (Speed Factor) matters more than the money long term.",
+                        "defense": "1 sentence to say to a skeptic who says 'This pilot was too expensive'."
+                    }
+                `;
+
+                try {
+                    // Note: We use the secureBind we set up in init()
+                    let rawText = await this.askSecureAI(prompt, "ROI Analysis");
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    this.aiNarrative = JSON.parse(rawText);
+                } catch (e) {
+                    console.error(e);
+                    this.aiNarrative = {
+                        headline: "Pilot Analysis Complete",
+                        financial_verdict: "ROI has been calculated based on inputs.",
+                        strategic_verdict: "Speed improvements indicate strong future value.",
+                        defense: "The cost of inaction is higher than the cost of this pilot."
+                    };
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            // Generate Board One-Pager PDF
+            generatePDF() {
+                if (!window.jspdf) { alert("PDF Lib missing"); return; }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                
+                // Colors
+                const navy = [15, 23, 42];
+                const green = [34, 197, 94];
+
+                // Header
+                doc.setFillColor(...navy);
+                doc.rect(0, 0, 210, 40, 'F');
+                doc.setTextColor(255, 255, 255);
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(22);
+                doc.text("LIGHTHOUSE ROI REPORT", 20, 20);
+                doc.setFontSize(12);
+                doc.setFont("helvetica", "normal");
+                doc.text(`PROJECT: ${(this.inputs.name || 'PILOT').toUpperCase()}`, 20, 32);
+
+                // The Big Numbers
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(14);
+                doc.text("1. FINANCIAL PERFORMANCE (HARD ROI)", 20, 60);
+
+                doc.setFontSize(10);
+                doc.text(`Total Investment: $${this.results.totalInvestment.toLocaleString()}`, 20, 70);
+                doc.text(`Total Value Created: $${this.results.totalValue.toLocaleString()}`, 80, 70);
+                
+                // ROI Box
+                doc.setFillColor(this.results.netProfit > 0 ? 220 : 255, this.results.netProfit > 0 ? 255 : 220, 220);
+                doc.rect(20, 75, 170, 20, 'F');
+                doc.setFont("helvetica", "bold");
+                doc.setTextColor(0,0,0);
+                doc.text(`NET PROFIT: $${this.results.netProfit.toLocaleString()}`, 30, 88);
+                doc.text(`ROI: ${this.results.roiPercent}%`, 120, 88);
+
+                // Velocity
+                doc.setFontSize(14);
+                doc.text("2. OPERATIONAL VELOCITY (SOFT ROI)", 20, 110);
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(12);
+                doc.text(`Speed Multiplier: ${this.results.speedFactor}x Faster`, 20, 120);
+                doc.setFontSize(10);
+                doc.setTextColor(100, 100, 100);
+                doc.text(`(Reduced cycle time from ${this.inputs.old_cycle_time} weeks to ${this.inputs.new_cycle_time} weeks)`, 20, 126);
+
+                // AI Narrative
+                if (this.aiNarrative) {
+                    doc.setTextColor(0,0,0);
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(14);
+                    doc.text("3. EXECUTIVE SUMMARY", 20, 145);
+                    
+                    doc.setFontSize(11);
+                    doc.setTextColor(30, 58, 138); // Dark Blue
+                    doc.text(`"${this.aiNarrative.headline}"`, 20, 155);
+                    
+                    doc.setTextColor(0,0,0);
+                    doc.setFont("helvetica", "normal");
+                    doc.setFontSize(10);
+                    const strategyLines = doc.splitTextToSize(this.aiNarrative.strategic_verdict, 170);
+                    doc.text(strategyLines, 20, 165);
+
+                    // The Defense
+                    doc.setDrawColor(200, 200, 200);
+                    doc.rect(20, 185, 170, 25);
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(9);
+                    doc.text("CFO DEFENSE SCRIPT:", 25, 192);
+                    doc.setFont("helvetica", "italic");
+                    doc.text(`"${this.aiNarrative.defense}"`, 25, 200);
+                }
+
+                doc.save("Lighthouse_ROI.pdf");
+            }
+        },
+        
         // ------------------------------------------------------------------
         // LEGACY CODE EXPLAINER (The Rosetta Stone)
         // ------------------------------------------------------------------
