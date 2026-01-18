@@ -1216,6 +1216,22 @@ teamManager: {
             this.copyToClipboard(url, "Challenge Link");
         },
 
+                openBook(book) {
+            this.bookshelf.activeBook = book;
+        },
+
+        closeBook() {
+            this.bookshelf.activeBook = null;
+        },
+
+        askAIAboutBook(bookTitle) {
+            // This function is bound to the root, so 'this' can access chatInput and sendMessage
+            this.bookshelf.activeBook = null;
+            this.isChatOpen = true;
+            this.chatInput = `Act as an expert on the book '${bookTitle}'. How do I apply its main bilingual concept to a traditional bank?`;
+            this.sendMessage();
+        },
+
         // ------------------------------------------------------------------
         // STANDARD PDF REPORT GENERATOR
         // ------------------------------------------------------------------
@@ -3521,38 +3537,7 @@ Don't worry about the paperwork yet; you can submit a refund claim within 90 day
             ]
         },
 
-        // --- PASTE THIS IN YOUR 'NAV ITEMS' ARRAY ---
-        navItems: [
-            // ... previous items ...
-            // Add this line:
-            { id: 'bookshelf', label: 'Bilingual Library', icon: 'fa-solid fa-book-bookmark', vip: false },
-        ],
-
-        // --- PASTE THIS IN YOUR 'DASHBOARD TOOLS' ARRAY ---
-        dashboardTools: [
-            // ... previous tools ...
-            // Add this line:
-            { id: 'bookshelf', label: 'Executive Library', desc: 'Tool B: Required Reading & Tech Stack.', icon: 'fa-solid fa-book', color: 'text-cyan-400', vip: false },
-        ],
-
-        // --- PASTE THESE HELPER FUNCTIONS AT THE ROOT LEVEL ---
-        // (Do not put them inside the bookshelf object, put them next to init())
-        
-        openBook(book) {
-            this.bookshelf.activeBook = book;
-        },
-
-        closeBook() {
-            this.bookshelf.activeBook = null;
-        },
-
-        askAIAboutBook(bookTitle) {
-            // This function is bound to the root, so 'this' can access chatInput and sendMessage
-            this.bookshelf.activeBook = null;
-            this.isChatOpen = true;
-            this.chatInput = `Act as an expert on the book '${bookTitle}'. How do I apply its main bilingual concept to a traditional bank?`;
-            this.sendMessage();
-        },
+    
 
     })); // <-- This closes the Alpine.data object
 
