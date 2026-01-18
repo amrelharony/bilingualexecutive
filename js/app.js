@@ -124,6 +124,7 @@ document.addEventListener('alpine:init', () => {
             this.watermelonDetector.askSecureAI = secureBind;
             this.dataCanvasGen.askSecureAI = secureBind;
             this.siloBuster.askSecureAI = secureBind;
+            this.culturalMonitor.askSecureAI = secureBind; 
 
 
 
@@ -497,17 +498,28 @@ async send() {
 
         }, 
                     
-
-        // ------------------------------------------------------------------
-        // CULTURAL DEBT MONITOR
+// ------------------------------------------------------------------
+        // [REVAMPED] CULTURAL DEBT THERMOMETER (AI-POWERED)
         // ------------------------------------------------------------------
         culturalMonitor: {
             history: [],
             isCheckinOpen: false,
-            answers: { q1: null, q2: null, q3: null },
+            currentQuestions: [],
+            answers: {}, 
             chartInstance: null,
+            aiReport: null,
+            loadingAI: false,
 
-            // Initialize: Load history from LocalStorage
+            // The Question Bank (Categorized)
+            questionBank: [
+                { id: 'safety_1', category: 'Psychological Safety', text: "Did you feel safe sharing 'bad news' or a delay this week?", type: 'boolean', badAnswer: 'no' },
+                { id: 'safety_2', category: 'Psychological Safety', text: "Did leadership blame a person or the process for a failure?", type: 'boolean', badAnswer: 'person' },
+                { id: 'silo_1', category: 'Silo Wars', text: "Did you have to negotiate with another department just to do your job?", type: 'boolean', badAnswer: 'yes' },
+                { id: 'silo_2', category: 'Silo Wars', text: "Did data flow freely between squads, or was it hoard?", type: 'boolean', badAnswer: 'hoarded' },
+                { id: 'speed_1', category: 'Fear of Failure', text: "Did a 'Green Light' report hide a real 'Red' risk?", type: 'boolean', badAnswer: 'yes' },
+                { id: 'speed_2', category: 'Fear of Failure', text: "Did we ship value to a customer, or just documentation?", type: 'boolean', badAnswer: 'documentation' }
+            ],
+
             init() {
                 try {
                     const saved = localStorage.getItem('bilingual_culture_history');
@@ -515,37 +527,86 @@ async send() {
                 } catch (e) { console.error("Load Error", e); }
             },
 
-            // The Check-In Logic
-            submitCheckin() {
-                // Calculate Debt Score (0-100, Higher is worse)
-                let debt = 0;
-                
-                // Q1: Bad News Shared? (If Yes, Debt decreases. If No, Fear exists.)
-                if (this.answers.q1 === 'no') debt += 40; 
-                
-                // Q2: HiPPO Override? (If Yes, Debt increases.)
-                if (this.answers.q2 === 'yes') debt += 30;
+            startCheckin() {
+                // Select 2 random questions + 1 fixed sentiment question
+                const shuffled = this.questionBank.sort(() => 0.5 - Math.random());
+                this.currentQuestions = shuffled.slice(0, 2);
+                this.answers = { q1: null, q2: null, sentiment: 50 }; // Sentiment is a slider
+                this.isCheckinOpen = true;
+                this.aiReport = null;
+            },
 
-                // Q3: Shipped Value? (If No, Stagnation adds debt.)
-                if (this.answers.q3 === 'no') debt += 30;
+            async submitCheckin() {
+                // Calculate Daily Debt Score (0-100, Higher is worse)
+                let debt = 0;
+                let tags = [];
+
+                // Score the 2 random questions
+                this.currentQuestions.forEach((q, idx) => {
+                    const ans = idx === 0 ? this.answers.q1 : this.answers.q2;
+                    if (ans === q.badAnswer) {
+                        debt += 30; // High penalty for cultural friction
+                        tags.push(q.category);
+                    }
+                });
+
+                // Score Sentiment (Slider 0-100 where 100 is great. Invert for Debt)
+                debt += (100 - this.answers.sentiment) * 0.4;
 
                 const entry = {
                     date: new Date().toLocaleDateString(),
-                    score: debt,
+                    score: Math.min(100, Math.round(debt)),
+                    tags: tags, // Track what specific issues arose
                     timestamp: Date.now()
                 };
 
                 this.history.push(entry);
-                // Keep last 10 entries
-                if (this.history.length > 10) this.history.shift();
+                if (this.history.length > 12) this.history.shift(); // Keep last 12 weeks
                 
                 localStorage.setItem('bilingual_culture_history', JSON.stringify(this.history));
                 
-                this.isCheckinOpen = false;
-                this.answers = { q1: null, q2: null, q3: null };
+                // Trigger AI Analysis immediately
+                await this.generateCultureReport(entry);
                 
-                // Refresh Chart
+                this.isCheckinOpen = false;
                 this.renderChart();
+            },
+
+            async generateCultureReport(latestEntry) {
+                this.loadingAI = true;
+                
+                // Calculate Trend
+                const prevScore = this.history.length > 1 ? this.history[this.history.length - 2].score : 0;
+                const trend = latestEntry.score > prevScore ? "Worsening (Debt Increasing)" : "Improving";
+
+                const prompt = `
+                    ACT AS: An Organizational Psychologist and Agile Coach.
+                    TASK: Analyze this week's "Cultural Debt" Pulse Check for a Bank.
+                    
+                    DATA:
+                    - Current Debt Score: ${latestEntry.score}/100 (0 is perfect, 100 is toxic).
+                    - Trend: ${trend}
+                    - Pain Points Flagged: ${latestEntry.tags.join(', ') || "None specifically flagged, general malaise"}
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "diagnosis": "1 punchy sentence summarizing the cultural state.",
+                        "risk_level": "Low" | "Medium" | "Critical",
+                        "industry_benchmark": "How this compares to Top Quartile Fintechs.",
+                        "prescription": "1 specific, unconventional 'Bilingual Move' to fix this (e.g., 'Kill the SteerCo', 'Gemba Walk', 'Failure Party')."
+                    }
+                `;
+
+                try {
+                    const response = await this.askSecureAI(prompt, "Cultural Audit");
+                    const cleanText = response.replace(/```json/g, '').replace(/```/g, '').trim();
+                    this.aiReport = JSON.parse(cleanText);
+                } catch (e) {
+                    console.error(e);
+                    this.aiReport = { diagnosis: "AI Offline. Culture requires human empathy today.", prescription: "Talk to your team." };
+                } finally {
+                    this.loadingAI = false;
+                }
             },
 
             get currentScore() {
@@ -553,63 +614,54 @@ async send() {
                 return this.history[this.history.length - 1].score;
             },
 
-            get status() {
+            get thermometerColor() {
                 const s = this.currentScore;
-                if (s < 30) return { label: "HEALTHY", color: "text-primary", desc: "High safety. Fast flow." };
-                if (s < 70) return { label: "AT RISK", color: "text-warn", desc: "Friction is building. Intervene now." };
-                return { label: "TOXIC", color: "text-risk", desc: "Culture of fear. Transformation stalled." };
-            },
-
-            get recommendation() {
-                const s = this.currentScore;
-                if (s < 30) return "Keep reinforcing the 'No Jargon' rule.";
-                if (s < 70) return "Run a 'Bad News' Audit. Ask teams what they are hiding.";
-                return "Emergency: Kill a 'Zombie Project' publicly to restore trust.";
+                if (s < 30) return 'bg-primary shadow-[0_0_20px_rgba(74,222,128,0.6)]'; // Cool/Good
+                if (s < 60) return 'bg-warn shadow-[0_0_20px_rgba(251,191,36,0.6)]';    // Warm/Caution
+                return 'bg-risk shadow-[0_0_20px_rgba(248,113,113,0.8)] animate-pulse'; // Hot/Toxic
             },
 
             reset() {
-                if(confirm("Clear all history?")) {
+                if(confirm("Clear cultural history?")) {
                     this.history = [];
+                    this.aiReport = null;
                     localStorage.removeItem('bilingual_culture_history');
                     if(this.chartInstance) this.chartInstance.destroy();
                 }
             },
 
             renderChart() {
-                // Wait for DOM
                 setTimeout(() => {
                     const ctx = document.getElementById('debtChart');
                     if (!ctx) return;
-                    
                     if (this.chartInstance) this.chartInstance.destroy();
 
-                    const labels = this.history.map(h => h.date);
+                    const labels = this.history.map(h => h.date.substring(0,5)); // Short date
                     const data = this.history.map(h => h.score);
-                    const color = this.currentScore > 50 ? '#f87171' : '#4ade80';
 
                     this.chartInstance = new Chart(ctx, {
                         type: 'line',
                         data: {
                             labels: labels,
                             datasets: [{
-                                label: 'Cultural Debt %',
+                                label: 'Cultural Heat',
                                 data: data,
-                                borderColor: color,
-                                backgroundColor: color + '20', // transparent
-                                tension: 0.4,
-                                fill: true
+                                borderColor: '#94a3b8',
+                                borderWidth: 2,
+                                pointBackgroundColor: data.map(v => v > 60 ? '#f87171' : (v > 30 ? '#fbbf24' : '#4ade80')),
+                                tension: 0.4
                             }]
                         },
                         options: {
-                            scales: { y: { min: 0, max: 100, grid: { color: '#334155' } }, x: { display: false } },
-                            plugins: { legend: { display: false } },
-                            animation: false
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: { y: { min: 0, max: 100, grid: { color: '#334155' } }, x: { display: true } },
+                            plugins: { legend: { display: false } }
                         }
                     });
                 }, 100);
             }
         },
-
         // ------------------------------------------------------------------
 // TEAM COLLABORATION MANAGER
 // ------------------------------------------------------------------
