@@ -440,26 +440,36 @@
             </div>
         </div>
 
-        <!-- Input Area -->
-        <div class="p-4 bg-card border-t border-slate-700">
-            <div class="relative">
-                <input type="text" 
-                       x-model="rolePlay.input" 
-                       @keydown.enter="rolePlay.send()"
-                       :disabled="rolePlay.loading || rolePlay.score <= 10 || rolePlay.score >= 90"
-                       placeholder="Type your response here..." 
-                       class="w-full bg-dark text-white rounded-lg pl-4 pr-12 py-4 border border-slate-600 focus:border-primary focus:outline-none transition-colors disabled:opacity-50">
-                
-                <button @click="rolePlay.send()" 
-                        :disabled="rolePlay.loading"
-                        class="absolute right-2 top-2 bottom-2 w-12 bg-primary text-dark rounded-md flex items-center justify-center hover:bg-green-400 transition-colors disabled:opacity-50">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
-            </div>
-        </div>
+      <!-- Input Area (Refactored for Multiple Choice) -->
+<div class="p-4 bg-card border-t border-slate-700">
+    
+    <!-- Loading State -->
+    <div x-show="rolePlay.loading" class="text-center py-4 text-slate-500 font-mono text-sm animate-pulse">
+        <i class="fa-solid fa-circle-notch fa-spin mr-2"></i> Thinking...
+    </div>
 
+    <!-- Choice Buttons -->
+    <div x-show="!rolePlay.loading && rolePlay.currentOptions.length > 0" class="grid gap-3">
+        <template x-for="option in rolePlay.currentOptions">
+            <button @click="rolePlay.makeChoice(option)" 
+                    class="text-left bg-slate-800 hover:bg-slate-700 border border-slate-600 hover:border-primary p-3 rounded-lg transition-all group">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-[10px] font-mono uppercase text-slate-400 group-hover:text-primary" x-text="option.label"></span>
+                    <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-primary text-xs"></i>
+                </div>
+                <div class="text-sm text-white font-medium line-clamp-2" x-text="option.text"></div>
+            </button>
+        </template>
+    </div>
+
+    <!-- Restart / End State -->
+    <div x-show="rolePlay.currentOptions.length === 0 && !rolePlay.loading" class="text-center">
+        <button @click="rolePlay.active = false" class="text-xs text-slate-400 hover:text-white underline">
+            End Simulation & Choose Another Persona
+        </button>
     </div>
 </div>
+
             
             <!-- CULTURAL DEBT THERMOMETER TAB -->
             <div x-show="currentTab === 'culture'" x-cloak class="max-w-5xl mx-auto h-full flex flex-col">
