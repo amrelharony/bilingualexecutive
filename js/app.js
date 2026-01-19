@@ -421,88 +421,151 @@ talentSkills: [
             }
         },
 
-        // ------------------------------------------------------------------
-        // ROLE-PLAY SIMULATOR
+         // ------------------------------------------------------------------
+        // BILINGUAL BOT (AI Role-Playing Assistant)
         // ------------------------------------------------------------------
         rolePlay: {
             active: false,
-            scenario: null,
-            messages: [],
-            input: '',
             loading: false,
+            input: '',
+            messages: [],
+            activePersona: null,
+            score: 50, // Starts neutral (0 = Fired, 100 = Promoted)
             
-            // The Scenarios
-            scenarios: [
-                {
-                    id: 'cloud',
-                    title: 'The Cloud Skeptic',
-                    myRole: 'Chief Digital Officer',
-                    opponent: 'CFO',
-                    topic: 'Cloud Migration Cost',
-                    intro: 'I see a $10M request for AWS. Our physical data centers are fully paid for. Why should I approve this massive OpEx spike just to rent computers?'
-                },
-                {
-                    id: 'mvp',
-                    title: 'The Scope Creeper',
-                    myRole: 'Product Owner',
-                    opponent: 'Head of Sales',
-                    topic: 'Minimum Viable Product',
-                    intro: 'I saw the prototype. It looks basic. We cannot launch without the "Gold Tier" features. My clients expect perfection, not an experiment.'
-                },
+            // The Stakeholders
+            personas: [
                 {
                     id: 'risk',
-                    title: 'The Gatekeeper',
-                    myRole: 'Tech Lead',
-                    opponent: 'Chief Risk Officer',
-                    topic: 'Automated Compliance',
-                    intro: 'You want to deploy code daily? Absolutely not. I need 2 weeks to review every release manually. How can a script be safer than my signature?'
+                    name: "Marcus (The Wall)",
+                    role: "Chief Risk Officer",
+                    avatar: "fa-user-shield",
+                    color: "text-red-400",
+                    mood: "Skeptical & Protective",
+                    context: "You want to launch a cloud app. He thinks the cloud is insecure.",
+                    hidden_fear: "He fears a data breach will end his career."
+                },
+                {
+                    id: 'sales',
+                    name: "Sarah (The Sprinter)",
+                    role: "Head of Sales",
+                    avatar: "fa-user-tie",
+                    color: "text-green-400",
+                    mood: "Impatient & Greedy",
+                    context: "You need 2 sprints to refactor code. She wants new features now.",
+                    hidden_fear: "She fears missing her quarterly bonus targets."
+                },
+                {
+                    id: 'architect',
+                    name: "Raj (The Purist)",
+                    role: "Lead Architect",
+                    avatar: "fa-network-wired",
+                    color: "text-purple-400",
+                    mood: "Pedantic & Intellectual",
+                    context: "You want to buy a SaaS tool. He wants to build it in-house perfectly.",
+                    hidden_fear: "He fears 'Spaghetti Architecture' will make the system unmaintainable."
                 }
             ],
 
             start(index) {
+                this.activePersona = this.personas[index];
                 this.active = true;
-                this.scenario = this.scenarios[index];
-                this.messages = [
-                    { role: 'opponent', text: this.scenario.intro }
-                ];
+                this.messages = [];
+                this.score = 50;
                 this.input = '';
+                
+                // Initial message from the Bot
+                this.addMessage('bot', `(Arms crossed) So, I hear you have a proposal. Convince me.`, null);
             },
 
             stop() {
                 this.active = false;
-                this.messages = [];
+                this.activePersona = null;
             },
-async send() {
+
+            addMessage(role, text, coaching) {
+                this.messages.push({ 
+                    role, 
+                    text, 
+                    coaching, // The "Bilingual Coach" whisper
+                    timestamp: new Date().toLocaleTimeString() 
+                });
+                this.scrollToBottom();
+            },
+
+            async send() {
                 if (!this.input.trim()) return;
                 
-                // 1. Add User Message locally
-                this.messages.push({ role: 'user', text: this.input });
                 const userText = this.input;
                 this.input = '';
+                this.addMessage('user', userText, null);
                 this.loading = true;
 
-                // 2. Construct the Persona Context
-                // We access the current scenario's details using 'this.scenario'
+                const p = this.activePersona;
+
+                // AI PROMPT: This instructs the AI to play two roles (Actor + Coach)
                 const systemPrompt = `
-                    ACT AS: ${this.scenario.opponent} at a traditional bank.
-                    USER IS: ${this.scenario.myRole}.
-                    TOPIC: ${this.scenario.topic}.
-                    GOAL: You are skeptical and resistant to change. The user must convince you using "Business Value".
-                    HISTORY: ${JSON.stringify(this.messages)}
-                    INSTRUCTION: Keep response under 50 words.
+                    ACT AS: A Role-Play Simulation Engine.
+                    
+                    ROLE 1 (THE ACTOR): You are ${p.name}, the ${p.role}.
+                    YOUR MOOD: ${p.mood}.
+                    YOUR SECRET FEAR: ${p.hidden_fear}.
+                    CURRENT CONTEXT: ${p.context}.
+                    
+                    ROLE 2 (THE COACH): You are a "Bilingual Executive Coach" grading the user.
+                    
+                    TASK:
+                    1. Respond to the user's input as THE ACTOR. If they use jargon, get confused or angry. If they speak value, get interested.
+                    2. Provide a "Coach's Whisper" explaining why the user's answer was good or bad.
+                    3. Adjust the "Trust Score" (-10 to +10) based on how well they translated tech to business.
+                    
+                    USER INPUT: "${userText}"
+                    
+                    OUTPUT JSON ONLY (No markdown):
+                    {
+                        "reply": "string (The Actor's response)",
+                        "coach_tip": "string (Short feedback on communication style)",
+                        "score_impact": number (Integer between -10 and 10),
+                        "mood_shift": "string (e.g. 'More Relaxed' or 'Annoyed')"
+                    }
                 `;
 
-                // 3. Call Secure Backend
-                // Note: We access the main toolkit function via 'this'
-                const reply = await this.askSecureAI(systemPrompt, userText);
+                try {
+                    let rawText = await this.askSecureAI(systemPrompt, "Roleplay");
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    const data = JSON.parse(rawText);
 
-                // 4. Update UI
-                this.messages.push({ role: 'opponent', text: reply });
-                this.loading = false;
-            }
-
-        }, 
+                    // Update State
+                    this.score = Math.max(0, Math.min(100, this.score + data.score_impact));
                     
+                    // Add Bot Reply
+                    this.addMessage('bot', data.reply, {
+                        tip: data.coach_tip,
+                        mood: data.mood_shift,
+                        impact: data.score_impact
+                    });
+
+                    // Check Win/Loss
+                    if (this.score <= 10) {
+                        this.addMessage('system', "⛔ MEETING ENDED EARLY. You lost the room.", null);
+                    } else if (this.score >= 90) {
+                        this.addMessage('system', "✅ SUCCESS. You have total buy-in.", null);
+                    }
+
+                } catch (e) {
+                    console.error(e);
+                    this.addMessage('bot', "I didn't quite catch that. Can you rephrase?", null);
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            scrollToBottom() {
+                setTimeout(() => {
+                    const el = document.getElementById('rp-scroll');
+                    if(el) el.scrollTop = el.scrollHeight;
+                }, 100);
+            }
+        },           
 // ------------------------------------------------------------------
         // [REVAMPED] CULTURAL DEBT THERMOMETER (AI-POWERED)
         // ------------------------------------------------------------------
@@ -1064,7 +1127,7 @@ teamManager: {
             { id: 'feed', label: 'Daily Insight', desc: 'Micro-lessons to build your streak.', icon: 'fa-solid fa-mug-hot', color: 'text-orange-400' },
             { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
             { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
-            { id: 'roleplay', label: 'Role-Play Dojo', desc: 'Simulate high-stakes conversations.', icon: 'fa-solid fa-user-tie', color: 'text-warn' },
+            { id: 'roleplay', label: 'Bilingual Bot', desc: 'AI Role-Play: Practice high-stakes conversations.', icon: 'fa-solid fa-masks-theater', color: 'text-yellow-400', vip: false },
             { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture & speed.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
             { id: 'quiz', label: 'Flashcards', desc: 'Test your fluency in tech jargon.', icon: 'fa-solid fa-graduation-cap', color: 'text-cyan-400' },
             { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational health.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
