@@ -2176,6 +2176,119 @@
 
     </div>
 </div>
+
+            <!-- CONWAY'S LAW VISUALIZER TAB -->
+<div x-show="currentTab === 'conway'" x-cloak class="max-w-6xl mx-auto">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">Conway's Law Visualizer</h2>
+        <p class="text-textMuted text-sm">"Organizations which design systems are constrained to produce designs which are copies of the communication structures of these organizations." — Melvin Conway (1967)</p>
+    </div>
+
+    <!-- CONTROLS -->
+    <div class="flex justify-center gap-4 mb-12">
+        <button @click="conwaySim.loadScenario('silo')" class="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-600 text-xs font-bold transition-all">
+            LOAD: TRADITIONAL BANK
+        </button>
+        <button @click="conwaySim.loadScenario('squad')" class="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-full border border-primary/50 text-primary text-xs font-bold transition-all">
+            LOAD: AGILE MODEL
+        </button>
+        <button @click="conwaySim.addDept()" class="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-full border border-slate-600 text-xs font-bold transition-all">
+            + ADD CUSTOM DEPT
+        </button>
+    </div>
+
+    <div class="grid lg:grid-cols-11 gap-4 items-stretch relative min-h-[400px]">
+        
+        <!-- LEFT: THE ORGANIZATION (Input) -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+            <h3 class="text-center text-xs font-mono text-slate-500 uppercase tracking-widest mb-2">THE ORG CHART (PEOPLE)</h3>
+            <div class="bg-card border border-slate-700 rounded-xl p-6 min-h-[400px] flex flex-col gap-4 relative">
+                <template x-if="conwaySim.departments.length === 0">
+                    <div class="text-center text-slate-600 mt-20">
+                        <i class="fa-solid fa-users text-4xl mb-2 opacity-20"></i>
+                        <p class="text-xs">Add departments to see the effect.</p>
+                    </div>
+                </template>
+                <template x-for="(dept, idx) in conwaySim.departments" :key="dept.id">
+                    <div class="p-4 rounded-lg border-l-4 bg-slate-800 relative group transition-all hover:translate-x-1" 
+                         :class="dept.color">
+                        <button @click="conwaySim.removeDept(idx)" class="absolute top-2 right-2 text-slate-600 hover:text-red-400 opacity-0 group-hover:opacity-100"><i class="fa-solid fa-xmark"></i></button>
+                        <div class="flex items-center gap-3">
+                            <i :class="'fa-solid ' + dept.icon"></i>
+                            <span class="font-bold text-white text-sm" x-text="dept.name"></span>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- CENTER: THE MIRROR (Arrow) -->
+        <div class="lg:col-span-1 flex flex-col justify-center items-center text-slate-600">
+            <div class="hidden lg:block h-full w-px bg-gradient-to-b from-transparent via-slate-600 to-transparent"></div>
+            <div class="bg-dark p-2 z-10 border border-slate-700 rounded-full">
+                <i class="fa-solid fa-arrow-right-arrow-left text-xl"></i>
+            </div>
+            <p class="text-[9px] font-mono text-slate-500 mt-2 uppercase text-center">Mirrored<br>Structure</p>
+        </div>
+
+        <!-- RIGHT: THE ARCHITECTURE (Output) -->
+        <div class="lg:col-span-5 flex flex-col gap-4">
+            <h3 class="text-center text-xs font-mono text-slate-500 uppercase tracking-widest mb-2">THE SYSTEM (RESULT)</h3>
+            <div class="bg-dark border-2 border-dashed border-slate-700 rounded-xl p-6 min-h-[400px] flex flex-col gap-4">
+                <template x-for="sys in conwaySim.architecture">
+                    <div class="p-4 rounded-lg border border-slate-700 flex justify-between items-center animate-pulse-once" :class="sys.style">
+                        <div>
+                            <h4 class="font-mono text-sm text-white font-bold" x-text="sys.name"></h4>
+                            <p class="text-[10px] text-slate-400" x-text="sys.desc"></p>
+                        </div>
+                        <i :class="'fa-solid ' + sys.icon + ' text-xl text-slate-500'"></i>
+                    </div>
+                </template>
+                
+                <!-- The Invisible Friction Lines -->
+                <template x-if="conwaySim.architecture.length > 1 && conwaySim.departments[0].type === 'silo'">
+                    <div class="mt-4 p-3 bg-red-900/10 border border-red-500/30 rounded text-center">
+                        <p class="text-[10px] text-red-400 font-mono"><i class="fa-solid fa-link-slash mr-2"></i>API FRAGMENTATION DETECTED</p>
+                        <p class="text-[9px] text-red-300/50">These systems cannot talk to each other efficiently.</p>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- AI DIAGNOSIS -->
+    <div class="mt-8 text-center">
+        <button @click="conwaySim.analyze()" 
+                :disabled="conwaySim.loading || conwaySim.departments.length === 0"
+                class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-8 rounded-lg shadow-glow transition-all disabled:opacity-50">
+            <span x-show="!conwaySim.loading"><i class="fa-solid fa-microchip mr-2"></i> PREDICT TECHNICAL DEBT</span>
+            <span x-show="conwaySim.loading"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i> ANALYZING STRUCTURE...</span>
+        </button>
+    </div>
+
+    <div x-show="conwaySim.aiAnalysis" x-transition class="mt-8 bg-gradient-to-br from-slate-800 to-indigo-900/20 border border-indigo-500/30 p-8 rounded-xl shadow-2xl relative overflow-hidden">
+        <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+        <div class="grid md:grid-cols-2 gap-8">
+            <div>
+                <p class="text-[10px] font-mono text-indigo-400 uppercase tracking-widest mb-1">ARCHITECTURE VERDICT</p>
+                <h3 class="text-3xl font-bold text-white mb-4" x-text="conwaySim.aiAnalysis?.verdict"></h3>
+                <p class="text-sm text-slate-300 leading-relaxed italic">"<span x-text="conwaySim.aiAnalysis?.pain_point"></span>"</p>
+            </div>
+            <div class="space-y-4">
+                <div class="bg-dark/50 p-4 rounded border border-slate-700">
+                    <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">PREDICTED TECHNICAL DEBT</p>
+                    <p class="text-xs text-white font-mono" x-text="conwaySim.aiAnalysis?.technical_debt"></p>
+                </div>
+                <div class="bg-green-900/10 border border-green-500/30 p-4 rounded">
+                    <p class="text-[10px] text-green-400 uppercase font-bold mb-1">THE REORG FIX</p>
+                    <p class="text-sm text-white font-medium" x-text="conwaySim.aiAnalysis?.fix"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
             
 <!-- LEGACY CODE EXPLAINER TAB -->
             <div x-show="currentTab === 'legacy'" x-cloak class="max-w-5xl mx-auto">
