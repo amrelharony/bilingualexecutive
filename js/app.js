@@ -129,6 +129,10 @@ document.addEventListener('alpine:init', () => {
             this.futureBank.askSecureAI = secureBind;
             this.conwaySim.askSecureAI = secureBind;
             this.dumbPipeCalc.askSecureAI = secureBind;
+            this.dataGovDash.askSecureAI = secureBind;
+            this.excelEscape.askSecureAI = secureBind;
+
+
         },
 
         async askSecureAI(systemPrompt, userInput, model = "gemini-3-flash-preview") {
@@ -1050,7 +1054,9 @@ teamManager: {
             { id: 'future', label: 'Future Bank 2030', icon: 'fa-solid fa-forward', vip: false },
             { id: 'conway', label: 'Conway Visualizer', icon: 'fa-solid fa-sitemap', vip: false },
             { id: 'dumbpipe', label: 'Dumb Pipe Calc', icon: 'fa-solid fa-faucet-drip', vip: false },
+            { id: 'datagov', label: 'Data Health Dash', icon: 'fa-solid fa-server', vip: false },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
+            { id: 'escaperoom', label: 'Excel Escape Room', icon: 'fa-solid fa-dungeon', vip: false },
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
         
@@ -1090,6 +1096,8 @@ teamManager: {
             { id: 'conway', label: 'Org Chart Mirror', desc: 'See how your Org Chart creates your Tech Stack.', icon: 'fa-solid fa-project-diagram', color: 'text-indigo-400', vip: false },
             { id: 'dumbpipe', label: 'Utility Risk', desc: 'Are you becoming invisible?', icon: 'fa-solid fa-link-slash', color: 'text-red-400', vip: false },
             { id: 'bookshelf', label: 'Executive Library', desc: 'Tool B: Required Reading & Tech Stack.', icon: 'fa-solid fa-book', color: 'text-cyan-400', vip: false },
+            { id: 'escaperoom', label: 'Escape the Factory', desc: 'Gamified technical debt reduction.', icon: 'fa-solid fa-gamepad', color: 'text-green-400', vip: false },
+            { id: 'datagov', label: 'Live Data Governance', desc: 'Monitor SLOs, Lineage, and Quality in real-time.', icon: 'fa-solid fa-traffic-light', color: 'text-blue-500', vip: false },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
         ],
@@ -3742,6 +3750,134 @@ calculate() {
                 }
             }
         },
+
+        // ------------------------------------------------------------------
+        // AGILE DATA GOVERNANCE DASHBOARD (Real-Time SLOs)
+        // ------------------------------------------------------------------
+        dataGovDash: {
+            isLive: false,
+            interval: null,
+            selectedProduct: null,
+            aiAnalysis: null,
+            loading: false,
+
+            // The Data Products (Assets)
+            products: [
+                { 
+                    id: 'cust360', 
+                    name: "Customer 360", 
+                    owner: "Marketing Squad", 
+                    lineage: "CRM -> Snowflake -> API",
+                    slo: { freshness: 100, accuracy: 100, completeness: 100 }, // Targets: 99.9%
+                    status: 'healthy',
+                    logs: []
+                },
+                { 
+                    id: 'risk_engine', 
+                    name: "Credit Risk Engine", 
+                    owner: "Risk Squad", 
+                    lineage: "Mainframe -> Kafka -> Model",
+                    slo: { freshness: 100, accuracy: 100, completeness: 100 },
+                    status: 'healthy',
+                    logs: []
+                },
+                { 
+                    id: 'payments', 
+                    name: "Real-Time Payments", 
+                    owner: "Payments Tribe", 
+                    lineage: "Gateway -> Ledger -> API",
+                    slo: { freshness: 100, accuracy: 100, completeness: 100 },
+                    status: 'healthy',
+                    logs: []
+                }
+            ],
+
+            toggleSim() {
+                if (this.isLive) {
+                    clearInterval(this.interval);
+                    this.isLive = false;
+                } else {
+                    this.isLive = true;
+                    this.interval = setInterval(() => this.tick(), 1000);
+                }
+            },
+
+            tick() {
+                // Simulate minor fluctuations in healthy products
+                this.products.forEach(p => {
+                    if (p.status === 'healthy') {
+                        // Randomly fluctuate between 98.0 and 100.0
+                        p.slo.freshness = (98 + Math.random() * 2).toFixed(1);
+                        p.slo.accuracy = (99 + Math.random() * 1).toFixed(1);
+                    } else {
+                        // Degrade unhealthy products
+                        p.slo.freshness = Math.max(40, p.slo.freshness - 5).toFixed(1);
+                        p.slo.accuracy = Math.max(50, p.slo.accuracy - 2).toFixed(1);
+                    }
+                });
+            },
+
+            injectFailure(type) {
+                // Simulate a break
+                const target = this.products[1]; // Break Risk Engine
+                target.status = 'critical';
+                target.slo.freshness = 75.0;
+                
+                const log = {
+                    time: new Date().toLocaleTimeString(),
+                    code: type === 'schema' ? "ERR_SCHEMA_MISMATCH" : "ERR_LATENCY_SPIKE",
+                    msg: type === 'schema' ? "Null value detected in 'Credit_Score' field." : "Kafka consumer lag > 5000ms."
+                };
+                
+                target.logs.unshift(log);
+                this.selectedProduct = target;
+                
+                // Auto-trigger AI to explain the failure
+                this.analyzeFailure(target, log);
+            },
+
+            async analyzeFailure(product, log) {
+                this.loading = true;
+                this.aiAnalysis = null;
+
+                const prompt = `
+                    ACT AS: A Data Reliability Engineer explaining a technical failure to a Business Executive.
+                    
+                    CONTEXT:
+                    - Data Product: ${product.name} (Owned by ${product.owner})
+                    - Error Code: ${log.code}
+                    - Error Msg: ${log.msg}
+                    - Current Health: Freshness ${product.slo.freshness}%, Accuracy ${product.slo.accuracy}%
+                    
+                    TASK:
+                    1. Translate this error into Business Impact (Risk/Revenue).
+                    2. Suggest the "Agile Governance" fix (e.g. "Schema Contract", "Circuit Breaker").
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "impact": "1 sentence business translation.",
+                        "fix": "1 sentence technical fix."
+                    }
+                `;
+
+                try {
+                    let rawText = await this.askSecureAI(prompt, "Analyze Data Failure");
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    this.aiAnalysis = JSON.parse(rawText);
+                } catch (e) {
+                    this.aiAnalysis = { impact: "Data is unreliable. Decisions may be flawed.", fix: "Check data pipeline." };
+                } finally {
+                    this.loading = false;
+                }
+            },
+
+            repair(product) {
+                product.status = 'healthy';
+                product.slo = { freshness: 100, accuracy: 100, completeness: 100 };
+                product.logs.unshift({ time: new Date().toLocaleTimeString(), code: "FIXED", msg: "Automated remediation complete." });
+                this.aiAnalysis = null;
+            }
+        },
         
         // ------------------------------------------------------------------
         // LEGACY CODE EXPLAINER (The Rosetta Stone)
@@ -4117,7 +4253,124 @@ calculate() {
             ]
         },
 
-    
+    // ------------------------------------------------------------------
+        // EXCEL FACTORY ESCAPE ROOM (Gamified Debt Reduction)
+        // ------------------------------------------------------------------
+        excelEscape: {
+            active: false,
+            level: 0, // 0=Intro, 1-3=Levels, 4=Win, 5=Game Over
+            hp: 100, // Corporate Political Capital (Health)
+            score: 0, // Automation Points
+            inventory: [], // Tools collected
+            logs: [], // Battle history
+            loading: false,
+            
+            // The Levels
+            levels: [
+                {
+                    id: 1,
+                    name: "The Basement of Reconciliation",
+                    enemy: "The VLOOKUP Hydra",
+                    desc: "You are trapped in Finance. A 50MB spreadsheet is crashing Excel every time you open it. The deadline is in 1 hour.",
+                    weakness: "python", // Logic hint
+                    options: [
+                        { id: 'macro', label: "Write a VBA Macro", risk: 30, value: 10, type: "legacy" },
+                        { id: 'manual', label: "Copy/Paste Faster", risk: 50, value: 0, type: "manual" },
+                        { id: 'python', label: "Script a Python ETL", risk: 10, value: 50, type: "modern" }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "The Email Chain of Doom",
+                    enemy: "The Version Control Ghost",
+                    desc: "Three departments are emailing files named 'Final_v3_UPDATED_REAL.xlsx'. No one knows which one is true.",
+                    weakness: "database",
+                    options: [
+                        { id: 'meeting', label: "Call a Meeting", risk: 20, value: 5, type: "manual" },
+                        { id: 'sharepoint', label: "Upload to SharePoint", risk: 40, value: 15, type: "legacy" },
+                        { id: 'database', label: "Centralize in Snowflake", risk: 0, value: 100, type: "modern" }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "The Boardroom Firewall",
+                    enemy: "The PDF Dragon",
+                    desc: "The CEO wants a live dashboard. The data is currently trapped in static PDFs generated by a mainframe.",
+                    weakness: "api",
+                    options: [
+                        { id: 'ocr', label: "Hire Interns to type it in", risk: 60, value: 10, type: "manual" },
+                        { id: 'scrape', label: "Screen Scraper", risk: 30, value: 40, type: "legacy" },
+                        { id: 'api', label: "Build an API Wrapper", risk: 10, value: 150, type: "modern" }
+                    ]
+                }
+            ],
+
+            start() {
+                this.active = true;
+                this.level = 1;
+                this.hp = 100;
+                this.score = 0;
+                this.logs = ["SYSTEM: Entered the Excel Factory. Oxygen is low."];
+            },
+
+            async makeMove(optionIndex) {
+                if (this.loading) return;
+                
+                const currentLvl = this.levels[this.level - 1];
+                const choice = currentLvl.options[optionIndex];
+                
+                // 1. Calculate Results (Hard Logic)
+                let damageTaken = 0;
+                let pointsGained = choice.value;
+
+                // Manual = High Damage, Legacy = Med Damage, Modern = Low/No Damage
+                if (choice.type === 'manual') damageTaken = Math.floor(Math.random() * 30) + 20;
+                if (choice.type === 'legacy') damageTaken = Math.floor(Math.random() * 15) + 5;
+                if (choice.type === 'modern') damageTaken = 0;
+
+                this.hp -= damageTaken;
+                this.score += pointsGained;
+                this.loading = true;
+
+                // 2. AI Narrative (Dungeon Master)
+                const prompt = `
+                    ACT AS: A cynical Corporate Dungeon Master in a text adventure game.
+                    SCENARIO: The player faces "${currentLvl.enemy}".
+                    PLAYER ACTION: Used "${choice.label}".
+                    OUTCOME TYPE: "${choice.type}" (Modern is Critical Hit, Legacy is weak, Manual is fail).
+                    DAMAGE TAKEN: ${damageTaken} HP.
+                    
+                    TASK: Describe what happens in 1 punchy, funny sentence. Use banking humor.
+                `;
+
+                try {
+                    let resultText = await this.askSecureAI(prompt, "Game Turn");
+                    // Clean text
+                    resultText = resultText.replace(/"/g, ''); 
+                    
+                    this.logs.unshift(`Turn ${this.level}: ${resultText} (${choice.type === 'modern' ? '+' + pointsGained + ' PTS' : '-' + damageTaken + ' HP'})`);
+
+                } catch(e) {
+                    this.logs.unshift("The spreadsheet freezes. (AI Connection Lost)");
+                }
+
+                this.loading = false;
+
+                // 3. Game State Check
+                if (this.hp <= 0) {
+                    this.level = 5; // Game Over
+                } else if (this.level < 3) {
+                    this.level++; // Next Level
+                } else {
+                    this.level = 4; // Victory
+                }
+            },
+
+            reset() {
+                this.active = false;
+                this.level = 0;
+            }
+        },
 
     })); // <-- This closes the Alpine.data object
 
