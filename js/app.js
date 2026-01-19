@@ -134,6 +134,8 @@ document.addEventListener('alpine:init', () => {
 
 
         },
+
+        
 async askSecureAI(systemPrompt, userInput, model = "gemini-3-flash-preview") {
             // Check if Supabase is initialized
             if (!this.supabase) {
