@@ -127,10 +127,7 @@ document.addEventListener('alpine:init', () => {
             this.culturalMonitor.askSecureAI = secureBind;
             this.lighthouseROI.askSecureAI = secureBind;
             this.futureBank.askSecureAI = secureBind;
-
-
-
-
+            this.conwaySim.askSecureAI = secureBind;
         },
 
         async askSecureAI(systemPrompt, userInput, model = "gemini-3-flash-preview") {
@@ -1050,6 +1047,7 @@ teamManager: {
             { id: 'silo', label: 'Silo Buster', icon: 'fa-solid fa-people-arrows' }, 
             { id: 'roi', label: 'ROI Calculator', icon: 'fa-solid fa-calculator', vip: false },
             { id: 'future', label: 'Future Bank 2030', icon: 'fa-solid fa-forward', vip: false },
+            { id: 'conway', label: 'Conway Visualizer', icon: 'fa-solid fa-sitemap', vip: false },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -1087,6 +1085,7 @@ teamManager: {
             { id: 'datacanvas', label: 'Data Product Generator', desc: 'Auto-generate Data Contracts & SLOs from raw Schema.', icon: 'fa-solid fa-cube', color: 'text-blue-400' },
             { id: 'roi', label: 'Lighthouse ROI', desc: 'Quantify Hard & Soft value of your pilot.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
             { id: 'future', label: 'Scenario Builder', desc: 'Simulate your strategy to 2030.', icon: 'fa-solid fa-timeline', color: 'text-purple-400', vip: false },
+            { id: 'conway', label: 'Org Chart Mirror', desc: 'See how your Org Chart creates your Tech Stack.', icon: 'fa-solid fa-project-diagram', color: 'text-indigo-400', vip: false },
             { id: 'bookshelf', label: 'Executive Library', desc: 'Tool B: Required Reading & Tech Stack.', icon: 'fa-solid fa-book', color: 'text-cyan-400', vip: false },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
@@ -3487,6 +3486,126 @@ calculate() {
                     this.aiNarrative = {
                         subject: "Connection Lost",
                         body: "The time portal is unstable. But the data shows this strategy defined our destiny."
+                    };
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // CONWAY'S LAW VISUALIZER (Org -> Arch)
+        // ------------------------------------------------------------------
+        conwaySim: {
+            inputMode: 'silo', // 'silo' (Bad) or 'squad' (Good)
+            departments: [],
+            architecture: [], // The resulting software
+            loading: false,
+            aiAnalysis: null,
+
+            // Presets for quick demos
+            loadScenario(type) {
+                this.departments = [];
+                this.aiAnalysis = null;
+                
+                if (type === 'silo') {
+                    this.departments = [
+                        { id: 1, name: "Retail Banking Dept", type: "silo", icon: "fa-building-columns", color: "border-orange-500 text-orange-400" },
+                        { id: 2, name: "Credit Card Dept", type: "silo", icon: "fa-credit-card", color: "border-red-500 text-red-400" },
+                        { id: 3, name: "Mobile App Team", type: "silo", icon: "fa-mobile-screen", color: "border-blue-400 text-blue-300" },
+                        { id: 4, name: "Risk Committee", type: "gatekeeper", icon: "fa-gavel", color: "border-slate-400 text-slate-300" }
+                    ];
+                } else {
+                    this.departments = [
+                        { id: 1, name: "Instant Loan Squad", type: "squad", icon: "fa-rocket", color: "border-green-400 text-green-300" },
+                        { id: 2, name: "Daily Banking Squad", type: "squad", icon: "fa-wallet", color: "border-green-400 text-green-300" },
+                        { id: 3, name: "Platform Ops", type: "enabler", icon: "fa-server", color: "border-purple-400 text-purple-300" }
+                    ];
+                }
+                this.generateArchitecture();
+            },
+
+            addDept() {
+                const name = prompt("Enter Department Name (e.g., 'Mortgage Ops'):");
+                if (name) {
+                    this.departments.push({ 
+                        id: Date.now(), 
+                        name: name, 
+                        type: 'silo', 
+                        icon: "fa-building", 
+                        color: "border-slate-500 text-slate-400" 
+                    });
+                    this.generateArchitecture();
+                }
+            },
+
+            removeDept(index) {
+                this.departments.splice(index, 1);
+                this.generateArchitecture();
+            },
+
+            // The "Conway Engine" - Simple Rules Logic
+            generateArchitecture() {
+                this.architecture = this.departments.map(dept => {
+                    if (dept.type === 'silo') {
+                        return { 
+                            name: `${dept.name} Monolith`, 
+                            desc: "Isolated Database. No API access.", 
+                            icon: "fa-database", 
+                            style: "opacity-50 border-dashed"
+                        };
+                    } else if (dept.type === 'gatekeeper') {
+                        return { 
+                            name: "Manual Review Queue", 
+                            desc: "Bottleneck. 3-day delay.", 
+                            icon: "fa-hand-paper", 
+                            style: "border-red-500 bg-red-900/10"
+                        };
+                    } else {
+                        return { 
+                            name: `${dept.name} Microservice`, 
+                            desc: "API-First. Real-time Data.", 
+                            icon: "fa-cubes", 
+                            style: "border-green-500 bg-green-900/10"
+                        };
+                    }
+                });
+            },
+
+            async analyze() {
+                if (this.departments.length === 0) return alert("Build an org chart first.");
+                
+                this.loading = true;
+                
+                const orgList = this.departments.map(d => d.name).join(", ");
+                
+                const prompt = `
+                    ACT AS: Systems Architect & Anthropologist.
+                    THEORY: Conway's Law (Software architecture reflects organizational structure).
+                    INPUT ORG CHART: ${orgList}.
+                    
+                    TASK: Predict the specific technical failure modes caused by this structure.
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "verdict": "string (e.g., 'Distributed Monolith' or 'Aligned Mesh')",
+                        "pain_point": "string (Where the customer feels the org chart)",
+                        "technical_debt": "string (The specific code consequence, e.g., 'Spaghetti integrations')",
+                        "fix": "string (How to restructure for flow)"
+                    }
+                `;
+
+                try {
+                    let rawText = await this.askSecureAI(prompt, "Conway Analysis");
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    this.aiAnalysis = JSON.parse(rawText);
+                } catch (e) {
+                    console.error(e);
+                    this.aiAnalysis = {
+                        verdict: "Siloed Architecture Detected",
+                        pain_point: "Customer data is fragmented across these departments.",
+                        technical_debt: "Massive ETL reconciliation costs.",
+                        fix: "Move to Cross-Functional Squads."
                     };
                 } finally {
                     this.loading = false;
