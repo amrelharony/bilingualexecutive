@@ -344,91 +344,123 @@
 
             </div>
             
-<!-- ROLE-PLAY DOJO TAB -->
-            <div x-show="currentTab === 'roleplay'" x-cloak class="max-w-4xl mx-auto">
-                
-                <!-- 1. Selection Screen -->
-                <div x-show="!rolePlay.active">
-                    <div class="text-center mb-10 pt-4">
-                        <h2 class="text-3xl font-mono font-bold text-white mb-2">The Negotiation Dojo</h2>
-                        <p class="text-textMuted">Choose a scenario. Convince the skeptic. Don't use jargon.</p>
-                    </div>
+<!-- BILINGUAL BOT / ROLE-PLAY TAB -->
+<div x-show="currentTab === 'roleplay'" x-cloak class="max-w-4xl mx-auto h-full flex flex-col">
+    
+    <div class="text-center mb-8">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">Bilingual Bot Simulator</h2>
+        <p class="text-textMuted text-sm">Practice the art of translation before you enter the boardroom.</p>
+    </div>
 
-                    <div class="grid md:grid-cols-3 gap-6">
-                        <template x-for="(scenario, index) in rolePlay.scenarios" :key="index">
-                            <button @click="rolePlay.start(index)" 
-                                    class="bg-card border border-slate-700 hover:border-warn p-6 rounded-xl text-left group transition-all hover:-translate-y-1">
-                                <div class="flex justify-between items-start mb-4">
-                                    <div class="bg-slate-800 p-3 rounded-lg group-hover:bg-warn group-hover:text-dark transition-colors">
-                                        <i class="fa-solid fa-comments text-xl"></i>
-                                    </div>
-                                    <span class="text-[10px] font-mono border border-slate-600 px-2 py-1 rounded text-slate-400">HARD</span>
-                                </div>
-                                <h3 class="text-lg font-bold text-white mb-1" x-text="scenario.title"></h3>
-                                <p class="text-xs text-textMuted mb-4">VS <span x-text="scenario.opponent"></span></p>
-                                <p class="text-sm text-slate-300 line-clamp-3 italic">"<span x-text="scenario.intro"></span>"</p>
-                            </button>
-                        </template>
-                    </div>
+    <!-- 1. SELECT PERSONA -->
+    <div x-show="!rolePlay.active" class="grid md:grid-cols-3 gap-6">
+        <template x-for="(p, index) in rolePlay.personas" :key="index">
+            <button @click="rolePlay.start(index)" 
+                    class="bg-card border border-slate-700 hover:border-primary p-6 rounded-xl text-left group transition-all hover:-translate-y-2">
+                <div class="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center mb-4 border border-slate-600">
+                    <i :class="'fa-solid ' + p.avatar + ' text-2xl ' + p.color"></i>
                 </div>
+                <h3 class="font-bold text-white text-lg" x-text="p.name"></h3>
+                <p class="text-xs text-slate-400 font-mono mb-3" x-text="p.role"></p>
+                <div class="text-[10px] text-slate-300 bg-slate-800 p-2 rounded mb-4 italic">
+                    "<span x-text="p.context"></span>"
+                </div>
+                <span class="text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transition-opacity">
+                    START SESSION <i class="fa-solid fa-arrow-right ml-1"></i>
+                </span>
+            </button>
+        </template>
+    </div>
 
-                <!-- 2. Active Simulation Screen -->
-                <div x-show="rolePlay.active" class="flex flex-col h-[600px] bg-card rounded-xl border border-slate-700 shadow-2xl relative overflow-hidden">
-                    
-                    <!-- Header -->
-                    <div class="p-4 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-warn/20 flex items-center justify-center text-warn">
-                                <i class="fa-solid fa-user-tie"></i>
-                            </div>
-                            <div>
-                                <h3 class="font-bold text-white text-sm" x-text="rolePlay.scenario?.opponent"></h3>
-                                <p class="text-[10px] text-textMuted">Topic: <span x-text="rolePlay.scenario?.topic"></span></p>
-                            </div>
-                        </div>
-                        <button @click="rolePlay.stop()" class="text-slate-400 hover:text-white text-xs px-3 py-1 border border-slate-600 rounded">
-                            End Session
-                        </button>
-                    </div>
-
-                    <!-- Chat Area -->
-                    <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-dark/50" id="rp-chat-box">
-                        <template x-for="msg in rolePlay.messages">
-                            <div class="flex flex-col" :class="msg.role === 'user' ? 'items-end' : 'items-start'">
-                                <div class="max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed"
-                                     :class="msg.role === 'user' ? 'bg-primary text-dark rounded-br-none' : (msg.role === 'system' ? 'bg-red-900/50 text-red-200 border border-red-500' : 'bg-card border border-slate-600 text-white rounded-bl-none')">
-                                    <span x-text="msg.text"></span>
-                                </div>
-                                <span class="text-[10px] text-slate-500 mt-1 uppercase font-mono" x-text="msg.role === 'user' ? 'You' : (msg.role === 'system' ? 'System' : rolePlay.scenario?.opponent)"></span>
-                            </div>
-                        </template>
-                        
-                        <!-- Typing Indicator -->
-                        <div x-show="rolePlay.loading" class="flex items-center gap-2 text-slate-500 text-xs ml-2">
-                            <i class="fa-solid fa-circle-notch fa-spin"></i> Opponent is thinking...
-                        </div>
-                    </div>
-
-                    <!-- Input Area -->
-                    <div class="p-4 bg-card border-t border-slate-700">
-                        <div class="relative">
-                            <input type="text" 
-                                   x-model="rolePlay.input" 
-                                   @keydown.enter="rolePlay.send()"
-                                   :disabled="rolePlay.loading"
-                                   placeholder="Type your response (Focus on business value)..." 
-                                   class="w-full bg-dark text-white rounded-lg pl-4 pr-12 py-4 focus:outline-none focus:border-warn border border-slate-600 font-mono text-sm disabled:opacity-50">
-                            
-                            <button @click="rolePlay.send()" 
-                                    :disabled="rolePlay.loading"
-                                    class="absolute right-2 top-2 bottom-2 bg-warn text-dark w-10 rounded flex items-center justify-center hover:bg-yellow-400 transition-colors disabled:opacity-50">
-                                <i class="fa-solid fa-paper-plane"></i>
-                            </button>
-                        </div>
-                    </div>
+    <!-- 2. ACTIVE CHAT INTERFACE -->
+    <div x-show="rolePlay.active" class="flex flex-col h-[600px] bg-card border border-slate-700 rounded-xl overflow-hidden relative shadow-2xl">
+        
+        <!-- Header / Trust Meter -->
+        <div class="p-4 bg-slate-900 border-b border-slate-700 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full flex items-center justify-center border border-slate-600" :class="rolePlay.activePersona?.color">
+                    <i :class="'fa-solid ' + rolePlay.activePersona?.avatar"></i>
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-sm" x-text="rolePlay.activePersona?.name"></h3>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-widest">Trust Level</p>
+                </div>
+            </div>
+            
+            <!-- Trust Bar -->
+            <div class="flex-1 mx-6 max-w-xs">
+                <div class="flex justify-between text-[10px] text-slate-500 mb-1">
+                    <span>Fired (0)</span>
+                    <span>Hired (100)</span>
+                </div>
+                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div class="h-full transition-all duration-500"
+                         :class="rolePlay.score < 30 ? 'bg-red-500' : (rolePlay.score > 70 ? 'bg-green-500' : 'bg-yellow-500')"
+                         :style="`width: ${rolePlay.score}%`"></div>
                 </div>
             </div>
 
+            <button @click="rolePlay.stop()" class="text-slate-500 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+
+        <!-- Chat History -->
+        <div id="rp-scroll" class="flex-1 overflow-y-auto p-6 space-y-6 bg-dark/50">
+            <template x-for="msg in rolePlay.messages">
+                <div class="flex flex-col w-full" :class="msg.role === 'user' ? 'items-end' : 'items-start'">
+                    
+                    <!-- Bubble -->
+                    <div class="max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed relative"
+                         :class="msg.role === 'user' 
+                            ? 'bg-blue-600 text-white rounded-tr-none' 
+                            : (msg.role === 'system' ? 'bg-slate-800 text-yellow-400 border border-yellow-500 text-center w-full' : 'bg-slate-800 text-slate-200 border border-slate-700 rounded-tl-none')">
+                        <span x-text="msg.text"></span>
+                    </div>
+
+                    <!-- Coach Whisper (Only on Bot Replies) -->
+                    <div x-show="msg.coaching" class="mt-2 ml-2 max-w-[85%]">
+                        <div class="flex items-start gap-2 text-[10px] bg-indigo-900/30 border border-indigo-500/30 p-2 rounded-lg text-indigo-300">
+                            <i class="fa-solid fa-graduation-cap mt-0.5"></i>
+                            <div>
+                                <span class="font-bold block mb-0.5" x-text="msg.coaching?.impact > 0 ? '👍 Good Move' : '⚠️ Warning'"></span>
+                                <span x-text="msg.coaching?.tip"></span>
+                            </div>
+                            <span class="ml-auto font-mono font-bold" 
+                                  :class="msg.coaching?.impact > 0 ? 'text-green-400' : 'text-red-400'"
+                                  x-text="(msg.coaching?.impact > 0 ? '+' : '') + msg.coaching?.impact"></span>
+                        </div>
+                    </div>
+
+                </div>
+            </template>
+            
+            <div x-show="rolePlay.loading" class="flex items-center gap-2 text-slate-500 text-xs italic">
+                <div class="w-2 h-2 bg-slate-500 rounded-full animate-bounce"></div>
+                <div class="w-2 h-2 bg-slate-500 rounded-full animate-bounce delay-75"></div>
+                <span>Thinking...</span>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="p-4 bg-card border-t border-slate-700">
+            <div class="relative">
+                <input type="text" 
+                       x-model="rolePlay.input" 
+                       @keydown.enter="rolePlay.send()"
+                       :disabled="rolePlay.loading || rolePlay.score <= 10 || rolePlay.score >= 90"
+                       placeholder="Type your response here..." 
+                       class="w-full bg-dark text-white rounded-lg pl-4 pr-12 py-4 border border-slate-600 focus:border-primary focus:outline-none transition-colors disabled:opacity-50">
+                
+                <button @click="rolePlay.send()" 
+                        :disabled="rolePlay.loading"
+                        class="absolute right-2 top-2 bottom-2 w-12 bg-primary text-dark rounded-md flex items-center justify-center hover:bg-green-400 transition-colors disabled:opacity-50">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+            
             <!-- CULTURAL DEBT THERMOMETER TAB -->
             <div x-show="currentTab === 'culture'" x-cloak class="max-w-5xl mx-auto h-full flex flex-col">
                 
