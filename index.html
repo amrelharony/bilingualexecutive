@@ -2510,6 +2510,132 @@
 
     </div>
 </div>
+
+            <!-- AGILE DATA GOVERNANCE DASHBOARD TAB -->
+<div x-show="currentTab === 'datagov'" x-cloak class="max-w-6xl mx-auto">
+    
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="font-mono text-3xl font-bold text-white mb-2">Agile Data Governance</h2>
+            <p class="text-textMuted text-sm">Don't fix data downstream (Janitor). Fix it at the source (Guardrails).</p>
+        </div>
+        
+        <div class="flex gap-2">
+             <button @click="dataGovDash.injectFailure('schema')" class="px-4 py-2 border border-red-500/50 text-red-400 hover:bg-red-900/20 rounded-full text-xs font-bold transition-all">
+                <i class="fa-solid fa-bug mr-2"></i> INJECT SCHEMA ERROR
+            </button>
+            <button @click="dataGovDash.toggleSim()" 
+                    class="font-bold py-2 px-6 rounded-full shadow-glow transition-all flex items-center gap-2"
+                    :class="dataGovDash.isLive ? 'bg-green-500/20 text-green-400 border border-green-500' : 'bg-slate-700 text-white'">
+                <i class="fa-solid" :class="dataGovDash.isLive ? 'fa-spin fa-circle-notch' : 'fa-play'"></i>
+                <span x-text="dataGovDash.isLive ? 'MONITORING ACTIVE' : 'START MONITOR'"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6">
+        
+        <!-- LEFT: DATA PRODUCTS GRID -->
+        <div class="lg:col-span-2 space-y-4">
+            <template x-for="product in dataGovDash.products" :key="product.id">
+                <div @click="dataGovDash.selectedProduct = product"
+                     class="bg-card border p-6 rounded-xl cursor-pointer transition-all hover:translate-x-1"
+                     :class="product.status === 'critical' ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : (dataGovDash.selectedProduct?.id === product.id ? 'border-blue-500' : 'border-slate-700')">
+                    
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="w-2 h-2 rounded-full" :class="product.status === 'critical' ? 'bg-red-500 animate-pulse' : 'bg-green-400'"></span>
+                                <h3 class="font-bold text-white text-lg" x-text="product.name"></h3>
+                            </div>
+                            <p class="text-xs text-slate-400 font-mono">Owner: <span class="text-white" x-text="product.owner"></span></p>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-[10px] uppercase tracking-widest text-slate-500">Health Score</span>
+                            <div class="text-2xl font-mono font-bold" :class="product.status === 'critical' ? 'text-red-500' : 'text-green-400'">
+                                <span x-text="Math.round((parseFloat(product.slo.freshness) + parseFloat(product.slo.accuracy))/2)"></span>%
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Lineage -->
+                    <div class="flex items-center gap-2 text-[10px] font-mono text-slate-500 bg-dark/50 p-2 rounded mb-4">
+                        <i class="fa-solid fa-network-wired"></i>
+                        <span x-text="product.lineage"></span>
+                    </div>
+
+                    <!-- SLO Metrics -->
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div class="bg-slate-800 rounded p-2">
+                            <p class="text-[9px] text-slate-400 uppercase">Freshness</p>
+                            <p class="font-mono font-bold text-sm" :class="product.slo.freshness < 99 ? 'text-red-400' : 'text-white'" x-text="product.slo.freshness + '%'"></p>
+                        </div>
+                        <div class="bg-slate-800 rounded p-2">
+                            <p class="text-[9px] text-slate-400 uppercase">Accuracy</p>
+                            <p class="font-mono font-bold text-sm" :class="product.slo.accuracy < 99 ? 'text-red-400' : 'text-white'" x-text="product.slo.accuracy + '%'"></p>
+                        </div>
+                        <div class="bg-slate-800 rounded p-2">
+                            <p class="text-[9px] text-slate-400 uppercase">Completeness</p>
+                            <p class="font-mono font-bold text-sm text-white" x-text="product.slo.completeness + '%'"></p>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- RIGHT: INCIDENT COMMAND -->
+        <div class="bg-dark border-l border-slate-700 p-6 lg:min-h-screen flex flex-col">
+            <h3 class="font-mono text-xs text-blue-400 uppercase mb-4">Incident Command</h3>
+            
+            <!-- Empty State -->
+            <div x-show="!dataGovDash.selectedProduct" class="text-center text-slate-600 mt-10">
+                <i class="fa-solid fa-magnifying-glass text-2xl mb-2 opacity-30"></i>
+                <p class="text-xs">Select a Data Product to inspect.</p>
+            </div>
+
+            <!-- Active Product Details -->
+            <div x-show="dataGovDash.selectedProduct" class="flex-1 flex flex-col">
+                <div class="mb-4 pb-4 border-b border-slate-800">
+                     <span class="text-xs font-bold text-white block" x-text="dataGovDash.selectedProduct?.name"></span>
+                     <span class="text-[10px] text-slate-400" x-text="dataGovDash.selectedProduct?.status === 'critical' ? '🔴 CRITICAL INCIDENT' : '🟢 OPERATIONAL'"></span>
+                </div>
+
+                <!-- AI Analysis (Only shows if broken) -->
+                <div x-show="dataGovDash.aiAnalysis" x-transition class="bg-red-900/10 border border-red-500/30 p-4 rounded-lg mb-6">
+                    <div class="flex items-center gap-2 mb-2 text-red-400 text-xs font-bold uppercase">
+                        <i class="fa-solid fa-robot"></i> AI Root Cause
+                    </div>
+                    
+                    <div x-show="dataGovDash.loading" class="text-xs text-red-300 animate-pulse">Analyzing logs...</div>
+                    
+                    <div x-show="!dataGovDash.loading">
+                        <p class="text-xs text-slate-300 mb-2"><strong class="text-white">Business Impact:</strong> <span x-text="dataGovDash.aiAnalysis?.impact"></span></p>
+                        <p class="text-xs text-slate-300"><strong class="text-white">Technical Fix:</strong> <span x-text="dataGovDash.aiAnalysis?.fix"></span></p>
+                        
+                        <button @click="dataGovDash.repair(dataGovDash.selectedProduct)" class="w-full mt-3 bg-green-600 hover:bg-green-500 text-white text-xs font-bold py-2 rounded transition-all">
+                            APPLY FIX
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Log Stream -->
+                <div class="flex-1 overflow-y-auto space-y-2 max-h-[300px]">
+                    <template x-for="log in dataGovDash.selectedProduct?.logs">
+                        <div class="text-[10px] p-2 rounded border-l-2 font-mono"
+                             :class="log.code === 'FIXED' ? 'bg-green-900/10 border-green-500 text-green-300' : 'bg-slate-800 border-red-500 text-red-300'">
+                            <span class="opacity-50 mr-2" x-text="log.time"></span>
+                            <span class="font-bold" x-text="log.code"></span>
+                            <div class="opacity-80 mt-0.5" x-text="log.msg"></div>
+                        </div>
+                    </template>
+                    <div x-show="dataGovDash.selectedProduct?.logs.length === 0" class="text-[10px] text-slate-600 italic text-center py-4">No recent incidents.</div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
             
 <!-- LEGACY CODE EXPLAINER TAB -->
             <div x-show="currentTab === 'legacy'" x-cloak class="max-w-5xl mx-auto">
