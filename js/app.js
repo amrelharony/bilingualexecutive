@@ -112,7 +112,7 @@ document.addEventListener('alpine:init', () => {
 
                         const secureBind = this.askSecureAI.bind(this);
             
-            this.rolePlay.askSecureAI = secureBind;
+            this.roleplay.askSecureAI = secureBind;
             this.whatIf.askSecureAI = secureBind;
             this.riskSim.askSecureAI = secureBind;
             this.shadowAudit.askSecureAI = secureBind;
