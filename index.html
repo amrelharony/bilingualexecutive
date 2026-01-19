@@ -1830,20 +1830,17 @@
         <h2 class="font-mono text-3xl font-bold text-white mb-2 tracking-widest text-green-400">
             <i class="fa-solid fa-terminal mr-2"></i>EXCEL_FACTORY.EXE
         </h2>
-        <p class="text-textMuted text-sm">Global Leaderboard Active. Compete for High Score.</p>
+        <p class="text-textMuted text-sm">Levels are randomized. AI profiles your leadership style.</p>
     </div>
 
     <!-- 1. INTRO SCREEN -->
     <div x-show="excelEscape.level === 0" class="flex-1 flex flex-col items-center justify-center p-10 border-2 border-green-500/30 rounded-xl bg-black/40 text-center relative overflow-hidden">
-        
-        <!-- Background Animation -->
         <div class="absolute inset-0 opacity-10" style="background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, #22c55e 20px);"></div>
         
         <i class="fa-solid fa-ghost text-6xl text-green-500 mb-6 animate-bounce relative z-10"></i>
         <h3 class="text-2xl font-bold text-white mb-2 relative z-10">Escape the Spreadsheet</h3>
-        <p class="text-slate-400 max-w-md mb-8 relative z-10">The year is 2026. The systems are from 1990. Can you automate your way out?</p>
+        <p class="text-slate-400 max-w-md mb-8 relative z-10">You have 100 HP (Political Capital). 5 Random Scenarios stand between you and the future.</p>
         
-        <!-- Player Name Input -->
         <div class="relative z-10 mb-6 w-64">
             <label class="block text-[10px] text-green-400 font-mono uppercase mb-1 text-left">Identify Yourself</label>
             <input type="text" x-model="excelEscape.playerName" placeholder="Enter Agent Name..." 
@@ -1851,47 +1848,54 @@
         </div>
 
         <button @click="excelEscape.start()" class="relative z-10 bg-green-600 hover:bg-green-500 text-black font-bold py-4 px-12 rounded shadow-glow transition-all text-xl font-mono">
-            > START GAME
+            > EXECUTE
         </button>
 
-        <button @click="excelEscape.fetchLeaderboard(); excelEscape.level = 4" class="mt-4 text-xs text-slate-500 hover:text-white underline relative z-10">
+        <button @click="excelEscape.fetchLeaderboard(); excelEscape.level = 6" class="mt-4 text-xs text-slate-500 hover:text-white underline relative z-10">
             View Leaderboard
         </button>
     </div>
 
-    <!-- 2. GAMEPLAY SCREEN (Unchanged logic, just ensure wrapper exists) -->
-    <div x-show="excelEscape.level > 0 && excelEscape.level < 4" class="relative">
+    <!-- 2. GAMEPLAY SCREEN (Levels 1-5) -->
+    <div x-show="excelEscape.level > 0 && excelEscape.level < 6" class="relative">
+        
         <!-- HUD -->
         <div class="flex justify-between items-center mb-6 bg-slate-900 p-4 rounded-lg border border-slate-700">
             <div class="flex items-center gap-4">
                 <div class="text-left">
-                    <p class="text-[10px] text-slate-500 uppercase">Political Capital (HP)</p>
+                    <p class="text-[10px] text-slate-500 uppercase">Political Capital</p>
                     <div class="w-32 h-3 bg-slate-800 rounded-full mt-1 overflow-hidden">
-                        <div class="h-full bg-red-500 transition-all duration-500" :style="`width: ${excelEscape.hp}%`"></div>
+                        <div class="h-full transition-all duration-500" 
+                             :class="excelEscape.hp < 30 ? 'bg-red-500' : 'bg-green-500'"
+                             :style="`width: ${excelEscape.hp}%`"></div>
                     </div>
                 </div>
                 <div class="text-left">
-                    <p class="text-[10px] text-slate-500 uppercase">Automation Score</p>
+                    <p class="text-[10px] text-slate-500 uppercase">Score</p>
                     <p class="text-xl font-mono text-yellow-400 font-bold" x-text="excelEscape.score"></p>
                 </div>
             </div>
             <div class="text-right">
                 <span class="bg-green-900/30 text-green-400 border border-green-500/30 px-3 py-1 rounded text-xs font-mono">
-                    LEVEL <span x-text="excelEscape.level"></span>/3
+                    LEVEL <span x-text="excelEscape.level"></span>/5
                 </span>
             </div>
         </div>
 
         <!-- ENCOUNTER -->
-        <div class="bg-card border-2 border-slate-600 rounded-xl p-8 mb-6 relative overflow-hidden">
+        <div class="bg-card border-2 border-slate-600 rounded-xl p-8 mb-6 relative overflow-hidden min-h-[300px] flex flex-col justify-center">
             <div class="absolute top-0 left-0 w-full h-1 bg-green-500/50 animate-pulse"></div>
+
             <div class="text-center mb-8">
-                <p class="text-xs font-mono text-red-400 mb-2 animate-pulse">⚠️ ENEMY ENCOUNTERED</p>
-                <h3 class="text-3xl font-bold text-white mb-2" x-text="excelEscape.levels[excelEscape.level-1]?.enemy"></h3>
-                <p class="text-slate-300 italic" x-text="excelEscape.levels[excelEscape.level-1]?.desc"></p>
+                <p class="text-xs font-mono text-red-400 mb-2 animate-pulse">⚠️ THREAT DETECTED</p>
+                <!-- Using gamePath array for dynamic levels -->
+                <h3 class="text-3xl font-bold text-white mb-2" x-text="excelEscape.gamePath[excelEscape.level-1]?.enemy"></h3>
+                <p class="text-slate-300 italic text-lg" x-text="excelEscape.gamePath[excelEscape.level-1]?.desc"></p>
             </div>
+
+            <!-- CHOICES -->
             <div class="grid md:grid-cols-3 gap-4">
-                <template x-for="(opt, idx) in excelEscape.levels[excelEscape.level-1]?.options" :key="idx">
+                <template x-for="(opt, idx) in excelEscape.gamePath[excelEscape.level-1]?.options" :key="idx">
                     <button @click="excelEscape.makeMove(idx)" 
                             :disabled="excelEscape.loading"
                             class="p-4 border rounded-lg text-left transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
@@ -1904,9 +1908,11 @@
                     </button>
                 </template>
             </div>
+
+            <!-- LOADING OVERLAY -->
             <div x-show="excelEscape.loading" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
                 <i class="fa-solid fa-microchip fa-spin text-4xl text-green-500 mb-4"></i>
-                <p class="font-mono text-green-400 text-xs">CALCULATING OUTCOME...</p>
+                <p class="font-mono text-green-400 text-xs">DUNGEON MASTER THINKING...</p>
             </div>
         </div>
 
@@ -1920,14 +1926,33 @@
         </div>
     </div>
 
-    <!-- 3. VICTORY & LEADERBOARD SCREEN -->
-    <div x-show="excelEscape.level === 4" class="text-center py-6">
+    <!-- 3. VICTORY & ANALYSIS SCREEN (Level 6) -->
+    <div x-show="excelEscape.level === 6" class="text-center py-6">
         <div class="inline-block p-4 rounded-full bg-yellow-500/20 mb-4">
             <i class="fa-solid fa-trophy text-5xl text-yellow-500"></i>
         </div>
-        <h2 class="text-3xl font-bold text-white mb-2">SYSTEM UPGRADE COMPLETE</h2>
-        <p class="text-slate-400 mb-6">Score uploaded to Global Mainframe.</p>
+        <h2 class="text-3xl font-bold text-white mb-1">FACTORY AUTOMATED</h2>
+        <p class="text-slate-400 mb-6 text-sm">You survived. Here is your leadership profile.</p>
         
+        <!-- AI ANALYSIS CARD -->
+        <div class="bg-gradient-to-br from-slate-800 to-indigo-900/30 border border-indigo-500/50 p-6 rounded-xl text-left max-w-lg mx-auto mb-8 relative overflow-hidden">
+            <div x-show="!excelEscape.finalAnalysis" class="text-center py-6">
+                <i class="fa-solid fa-circle-notch fa-spin text-indigo-400"></i> <span class="text-xs text-indigo-300 ml-2">Generating Persona...</span>
+            </div>
+            
+            <div x-show="excelEscape.finalAnalysis" x-transition>
+                <p class="text-[10px] font-mono text-indigo-400 uppercase tracking-widest mb-2">YOUR ARCHETYPE</p>
+                <h3 class="text-2xl font-bold text-white mb-4" x-text="excelEscape.finalAnalysis?.archetype"></h3>
+                
+                <div class="bg-black/30 p-3 rounded mb-4">
+                    <p class="text-sm text-slate-300 italic">"<span x-text="excelEscape.finalAnalysis?.analysis"></span>"</p>
+                </div>
+                
+                <p class="text-[10px] font-mono text-green-400 uppercase tracking-widest mb-1">COACH'S TIP</p>
+                <p class="text-sm text-white font-bold" x-text="excelEscape.finalAnalysis?.tip"></p>
+            </div>
+        </div>
+
         <div class="flex justify-center gap-8 mb-8">
             <div class="text-center">
                 <p class="text-[10px] text-slate-500 uppercase">FINAL SCORE</p>
@@ -1941,16 +1966,14 @@
 
         <!-- Leaderboard Table -->
         <div class="max-w-md mx-auto bg-slate-900 border border-slate-700 rounded-lg overflow-hidden mb-8">
-            <div class="bg-slate-800 p-3 border-b border-slate-700 text-xs font-bold text-white uppercase tracking-widest">
-                🏆 Top Agents
+            <div class="bg-slate-800 p-3 border-b border-slate-700 text-xs font-bold text-white uppercase tracking-widest flex justify-between">
+                <span>🏆 Top Agents</span>
+                <span class="text-slate-500 text-[9px]">GLOBAL RANKING</span>
             </div>
             <table class="w-full text-left text-sm">
                 <tbody class="divide-y divide-slate-800">
-                    <tr class="bg-yellow-500/10" x-show="excelEscape.isSubmitting">
-                        <td class="p-3 text-yellow-500 font-mono animate-pulse">Syncing...</td>
-                    </tr>
                     <template x-for="(entry, index) in excelEscape.leaderboard" :key="index">
-                        <tr class="hover:bg-slate-800/50">
+                        <tr class="hover:bg-slate-800/50" :class="entry.player_name === excelEscape.playerName ? 'bg-indigo-900/20' : ''">
                             <td class="p-3 font-mono text-slate-500 w-10" x-text="'#' + (index + 1)"></td>
                             <td class="p-3 text-white font-bold" x-text="entry.player_name"></td>
                             <td class="p-3 text-right font-mono text-green-400" x-text="entry.score"></td>
@@ -1963,8 +1986,8 @@
         <button @click="excelEscape.reset()" class="border border-slate-500 text-white px-8 py-3 rounded-full hover:bg-slate-800 transition-all">Play Again</button>
     </div>
 
-    <!-- 4. GAME OVER SCREEN -->
-    <div x-show="excelEscape.level === 5" class="text-center py-12">
+    <!-- 4. GAME OVER SCREEN (Level 7) -->
+    <div x-show="excelEscape.level === 7" class="text-center py-12">
         <div class="inline-block p-6 rounded-full bg-red-500/20 mb-6">
             <i class="fa-solid fa-skull text-6xl text-red-500"></i>
         </div>
