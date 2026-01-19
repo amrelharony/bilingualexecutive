@@ -3617,13 +3617,13 @@ calculate() {
         },
 
         // ------------------------------------------------------------------
-        // DUMB PIPE RISK CALCULATOR (Chapter 1)
+        // DUMB PIPE RISK CALCULATOR (SMART VERSION v2)
         // ------------------------------------------------------------------
         dumbPipeCalc: {
             inputs: {
-                commodity_share: 60, // % of revenue from low-margin fees (Interchange, FX)
-                engagement: 30,      // % of customers who log in daily (DAU/MAU)
-                brand_trust: 5,      // 1-10: Do customers love you (10) or tolerate you (1)?
+                commodity_share: 60, 
+                engagement: 30,      
+                brand_trust: 5,      
             },
             result: null,
             loading: false,
@@ -3636,74 +3636,106 @@ calculate() {
 
                 const i = this.inputs;
 
-                // 1. Calculate Dumb Pipe Score (0-100)
-                // High Commodity % + Low Engagement + Low Trust = High Risk
-                
-                let risk = 0;
-                risk += i.commodity_share * 0.5; // Heavy weight on revenue source
-                risk += (100 - i.engagement) * 0.3; // Low engagement increases risk
-                risk += (10 - i.brand_trust) * 20 * 0.2; // Low trust increases risk
+                // 1. SMART SCORING LOGIC
+                // Base Risk = Your dependency on commodity revenue
+                let baseRisk = parseInt(i.commodity_share);
 
-                // Cap at 100
-                risk = Math.min(100, Math.round(risk));
+                // Mitigation Factors (Engagement & Brand can lower risk, but not eliminate it)
+                // We weight Brand higher than Engagement (Engagement is vanity, Brand is moat)
+                let engagementDiscount = (i.engagement / 100) * 15; // Max 15 points off
+                let brandDiscount = (i.brand_trust / 10) * 20;      // Max 20 points off
 
-                // 2. Determine Verdict & Timeline
+                let finalRisk = baseRisk - engagementDiscount - brandDiscount;
+
+                // CRITICAL OVERRIDE: If Commodity > 80%, you are a Utility regardless of how nice you are.
+                // You cannot "Nice" your way out of bad unit economics.
+                if (i.commodity_share > 80) {
+                    finalRisk = Math.max(finalRisk, 65); // Floor at 65% (High Risk)
+                }
+
+                // Cap boundaries
+                finalRisk = Math.max(0, Math.min(100, Math.round(finalRisk)));
+
+                // 2. Determine Verdict Profile
                 let verdict = "";
                 let timeline = "";
                 let color = "";
+                let archetype = "";
 
-                if (risk > 75) {
-                    verdict = "UTILITY PROVIDER (Dumb Pipe)";
-                    timeline = "18 Months to Irrelevance";
+                if (finalRisk > 75) {
+                    verdict = "TERMINAL UTILITY";
+                    timeline = "12 Months to Irrelevance";
                     color = "text-risk";
-                } else if (risk > 40) {
-                    verdict = "HYBRID TRAP";
-                    timeline = "3 Years to Commoditization";
-                    color = "text-warn";
+                    archetype = "The Dumb Pipe";
+                } else if (finalRisk > 50) {
+                    // Smart Logic: Check specific edge cases
+                    if (i.engagement > 70) {
+                        verdict = "THE BUSY FOOL"; // High Traffic, Low Margin
+                        timeline = "Burning OpEx fast";
+                        color = "text-orange-500";
+                        archetype = "High-Traffic Utility";
+                    } else {
+                        verdict = "SLOW BLEED";
+                        timeline = "2-3 Years";
+                        color = "text-warn";
+                        archetype = "The Legacy Bank";
+                    }
                 } else {
-                    verdict = "TRUSTED ADVISOR";
-                    timeline = "Safe. You own the relationship.";
+                    verdict = "TRUSTED ECOSYSTEM";
+                    timeline = "Sustainable";
                     color = "text-primary";
+                    archetype = "The Bilingual Bank";
                 }
 
-                this.result = { score: risk, verdict, timeline, color };
+                this.result = { score: finalRisk, verdict, timeline, color, archetype };
 
-                // 3. Trigger AI Analysis
-                this.generateAIStrategy(risk, verdict);
+                // 3. Trigger Smarter AI Analysis
+                this.generateAIStrategy(finalRisk, archetype);
             },
 
-            async generateAIStrategy(risk, verdict) {
+            async generateAIStrategy(risk, archetype) {
+                const i = this.inputs;
+                
                 const prompt = `
-                    ACT AS: Chief Strategy Officer at a Bank.
-                    CONTEXT: We are running the "Dumb Pipe" Risk Calculator from Chapter 1.
+                    ACT AS: An Activist Investor analyzing a Bank's P&L.
                     
-                    DATA:
-                    - Risk Score: ${risk}/100 (Higher is worse).
-                    - Verdict: ${verdict}
-                    - Commodity Revenue: ${this.inputs.commodity_share}%
-                    - Daily Engagement: ${this.inputs.engagement}%
+                    DIAGNOSIS DATA:
+                    - Revenue Mix: ${i.commodity_share}% Commodity (Interchange/FX/Fees) vs Value-Add.
+                    - Customer Activity: ${i.engagement}% Daily Active Users.
+                    - Brand Sentiment: ${i.brand_trust}/10.
+                    - Calculated Risk Score: ${risk}/100.
+                    - Assigned Archetype: "${archetype}"
+                    
+                    ANALYSIS LOGIC:
+                    - IF Commodity is High (>80%) AND Engagement is High (>80%): This is a "Busy Fool" scenario. The bank has high operating costs (server load) but low margins. They are subsidizing customers. Warning should be about "Negative Unit Economics".
+                    - IF Commodity is High (>80%) AND Engagement is Low (<30%): This is a "Dumb Pipe". Customers use another interface and just park money here. Warning should be about "Losing the Interface".
+                    - IF Commodity is Low (<40%): This is a healthy mix (Advisory/Lending focused).
                     
                     TASK:
-                    1. Warn the user about the specific danger of their current mix.
-                    2. Suggest 2 specific "Sticky" features (High-Margin, High-Advice) to launch immediately to regain the relationship.
+                    1. WARNING: A brutal, 1-sentence reality check based on the specific logic above.
+                    2. DEFENSIVE MOVE: A product suggestion to lower "Cost to Serve" or lock in deposits (e.g. "Subscription Bundles").
+                    3. OFFENSIVE MOVE: A product suggestion to increase "Margin per User" (e.g. "Wealth Lending", "SME Advisory").
                     
                     OUTPUT JSON ONLY:
                     {
-                        "warning": "Punchy 1-sentence reality check.",
-                        "defensive_move": "1 specific product to build (e.g. 'Automated Tax Vault').",
-                        "offensive_move": "1 specific partnership to sign (e.g. 'Embed into Real Estate platform')."
+                        "warning": "string",
+                        "defensive_move": "string",
+                        "offensive_move": "string"
                     }
                 `;
 
                 try {
-                    let rawText = await this.askSecureAI(prompt, "Dumb Pipe Analysis");
+                    let rawText = await this.askSecureAI(prompt, "Strategic Diagnosis");
                     rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
                     this.aiStrategy = JSON.parse(rawText);
                 } catch (e) {
+                    // Smart Fallback based on logic
                     this.aiStrategy = {
-                        warning: "You are losing the interface war.",
-                        defensive_move: "Launch 'Self-Driving Savings'.",
-                        offensive_move: "Integrate with Accounting Software."
+                        warning: i.commodity_share > 80 
+                            ? "You are running a charity. High engagement with low margin = faster bankruptcy." 
+                            : "You are losing relevance. Customers treat you as a wallet, not an advisor.",
+                        defensive_move: "Launch a 'Prime' Subscription (Monetize the engagement).",
+                        offensive_move: "Automated Wealth Advisory (Cross-sell to the 100% active users)."
                     };
                 } finally {
                     this.loading = false;
