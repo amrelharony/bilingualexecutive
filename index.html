@@ -1822,6 +1822,118 @@
 
             </div>
 
+       <!-- EXCEL ESCAPE ROOM TAB -->
+<div x-show="currentTab === 'escaperoom'" x-cloak class="max-w-4xl mx-auto h-full flex flex-col">
+    
+    <!-- HEADER -->
+    <div class="text-center mb-8">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2 tracking-widest text-green-400">
+            <i class="fa-solid fa-terminal mr-2"></i>EXCEL_FACTORY.EXE
+        </h2>
+        <p class="text-textMuted text-sm">Gamified Decommissioning. Can you survive the legacy debt?</p>
+    </div>
+
+    <!-- 1. INTRO SCREEN -->
+    <div x-show="excelEscape.level === 0" class="flex-1 flex flex-col items-center justify-center p-10 border-2 border-green-500/30 rounded-xl bg-black/40 text-center">
+        <i class="fa-solid fa-ghost text-6xl text-green-500 mb-6 animate-bounce"></i>
+        <h3 class="text-2xl font-bold text-white mb-4">Escape the Spreadsheet</h3>
+        <p class="text-slate-400 max-w-md mb-8">You are trapped in the basement of a Tier-1 Bank. The year is 2026, but the systems are from 1990. Use modern tools to defeat the legacy monsters.</p>
+        <button @click="excelEscape.start()" class="bg-green-600 hover:bg-green-500 text-black font-bold py-4 px-12 rounded shadow-glow transition-all text-xl font-mono">
+            > START GAME
+        </button>
+    </div>
+
+    <!-- 2. GAMEPLAY SCREEN -->
+    <div x-show="excelEscape.level > 0 && excelEscape.level < 4" class="relative">
+        
+        <!-- HUD -->
+        <div class="flex justify-between items-center mb-6 bg-slate-900 p-4 rounded-lg border border-slate-700">
+            <div class="flex items-center gap-4">
+                <div class="text-left">
+                    <p class="text-[10px] text-slate-500 uppercase">Political Capital (HP)</p>
+                    <div class="w-32 h-3 bg-slate-800 rounded-full mt-1 overflow-hidden">
+                        <div class="h-full bg-red-500 transition-all duration-500" :style="`width: ${excelEscape.hp}%`"></div>
+                    </div>
+                </div>
+                <div class="text-left">
+                    <p class="text-[10px] text-slate-500 uppercase">Automation Score</p>
+                    <p class="text-xl font-mono text-yellow-400 font-bold" x-text="excelEscape.score"></p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="bg-green-900/30 text-green-400 border border-green-500/30 px-3 py-1 rounded text-xs font-mono">
+                    LEVEL <span x-text="excelEscape.level"></span>/3
+                </span>
+            </div>
+        </div>
+
+        <!-- THE ENCOUNTER -->
+        <div class="bg-card border-2 border-slate-600 rounded-xl p-8 mb-6 relative overflow-hidden">
+            <!-- Glitch Effect Overlay -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-green-500/50 animate-pulse"></div>
+
+            <div class="text-center mb-8">
+                <p class="text-xs font-mono text-red-400 mb-2 animate-pulse">⚠️ ENEMY ENCOUNTERED</p>
+                <h3 class="text-3xl font-bold text-white mb-2" x-text="excelEscape.levels[excelEscape.level-1]?.enemy"></h3>
+                <p class="text-slate-300 italic" x-text="excelEscape.levels[excelEscape.level-1]?.desc"></p>
+            </div>
+
+            <!-- CHOICES -->
+            <div class="grid md:grid-cols-3 gap-4">
+                <template x-for="(opt, idx) in excelEscape.levels[excelEscape.level-1]?.options" :key="idx">
+                    <button @click="excelEscape.makeMove(idx)" 
+                            :disabled="excelEscape.loading"
+                            class="p-4 border rounded-lg text-left transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+                            :class="opt.type === 'modern' ? 'bg-indigo-900/20 border-indigo-500 hover:bg-indigo-900/40' : (opt.type === 'legacy' ? 'bg-slate-800 border-slate-600' : 'bg-red-900/10 border-red-500/50')">
+                        <div class="flex justify-between items-start mb-2">
+                            <i class="fa-solid" :class="opt.type === 'modern' ? 'fa-bolt text-indigo-400' : (opt.type === 'legacy' ? 'fa-floppy-disk text-slate-400' : 'fa-hand text-red-400')"></i>
+                            <span class="text-[10px] font-mono opacity-50" x-text="opt.type.toUpperCase()"></span>
+                        </div>
+                        <span class="font-bold text-sm text-white" x-text="opt.label"></span>
+                    </button>
+                </template>
+            </div>
+
+            <!-- LOADING OVERLAY -->
+            <div x-show="excelEscape.loading" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
+                <i class="fa-solid fa-microchip fa-spin text-4xl text-green-500 mb-4"></i>
+                <p class="font-mono text-green-400 text-xs">CALCULATING OUTCOME...</p>
+            </div>
+        </div>
+
+        <!-- BATTLE LOG -->
+        <div class="bg-black rounded-lg p-4 font-mono text-xs h-32 overflow-y-auto border border-green-500/30 shadow-inner">
+            <template x-for="log in excelEscape.logs">
+                <div class="mb-1">
+                    <span class="text-green-500">>></span> <span class="text-slate-300" x-text="log"></span>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- 3. VICTORY SCREEN -->
+    <div x-show="excelEscape.level === 4" class="text-center py-12">
+        <div class="inline-block p-6 rounded-full bg-yellow-500/20 mb-6">
+            <i class="fa-solid fa-trophy text-6xl text-yellow-500"></i>
+        </div>
+        <h2 class="text-4xl font-bold text-white mb-2">SYSTEM UPGRADE COMPLETE</h2>
+        <p class="text-slate-400 mb-8">You successfully automated the bureaucracy.</p>
+        <div class="text-6xl font-mono font-bold text-green-400 mb-8" x-text="excelEscape.score + ' PTS'"></div>
+        <button @click="excelEscape.start()" class="border border-slate-500 text-white px-8 py-3 rounded-full hover:bg-slate-800 transition-all">Play Again</button>
+    </div>
+
+    <!-- 4. GAME OVER SCREEN -->
+    <div x-show="excelEscape.level === 5" class="text-center py-12">
+        <div class="inline-block p-6 rounded-full bg-red-500/20 mb-6">
+            <i class="fa-solid fa-skull text-6xl text-red-500"></i>
+        </div>
+        <h2 class="text-4xl font-bold text-white mb-2">FIRED.</h2>
+        <p class="text-slate-400 mb-8">You ran out of Political Capital (HP). The manual processes won.</p>
+        <button @click="excelEscape.start()" class="bg-red-600 text-white px-8 py-3 rounded-full hover:bg-red-500 transition-all">Try Again</button>
+    </div>
+
+</div>
+            
             <!-- CAPEX vs OPEX AUDITOR TAB -->
             <div x-show="currentTab === 'capex'" x-cloak class="max-w-5xl mx-auto">
                 
