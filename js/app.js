@@ -128,6 +128,7 @@ document.addEventListener('alpine:init', () => {
             this.lighthouseROI.askSecureAI = secureBind;
             this.futureBank.askSecureAI = secureBind;
             this.conwaySim.askSecureAI = secureBind;
+            this.dumbPipeCalc.askSecureAI = secureBind;
         },
 
         async askSecureAI(systemPrompt, userInput, model = "gemini-3-flash-preview") {
@@ -1048,6 +1049,7 @@ teamManager: {
             { id: 'roi', label: 'ROI Calculator', icon: 'fa-solid fa-calculator', vip: false },
             { id: 'future', label: 'Future Bank 2030', icon: 'fa-solid fa-forward', vip: false },
             { id: 'conway', label: 'Conway Visualizer', icon: 'fa-solid fa-sitemap', vip: false },
+            { id: 'dumbpipe', label: 'Dumb Pipe Calc', icon: 'fa-solid fa-faucet-drip', vip: false },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true },
         ],
@@ -1086,6 +1088,7 @@ teamManager: {
             { id: 'roi', label: 'Lighthouse ROI', desc: 'Quantify Hard & Soft value of your pilot.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
             { id: 'future', label: 'Scenario Builder', desc: 'Simulate your strategy to 2030.', icon: 'fa-solid fa-timeline', color: 'text-purple-400', vip: false },
             { id: 'conway', label: 'Org Chart Mirror', desc: 'See how your Org Chart creates your Tech Stack.', icon: 'fa-solid fa-project-diagram', color: 'text-indigo-400', vip: false },
+            { id: 'dumbpipe', label: 'Utility Risk', desc: 'Are you becoming invisible?', icon: 'fa-solid fa-link-slash', color: 'text-red-400', vip: false },
             { id: 'bookshelf', label: 'Executive Library', desc: 'Tool B: Required Reading & Tech Stack.', icon: 'fa-solid fa-book', color: 'text-cyan-400', vip: false },
             { id: 'risksim', label: 'Risk vs. Speed', desc: 'Simulate a high-stakes negotiation with a Risk Officer.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
 
@@ -3606,6 +3609,101 @@ calculate() {
                         pain_point: "Customer data is fragmented across these departments.",
                         technical_debt: "Massive ETL reconciliation costs.",
                         fix: "Move to Cross-Functional Squads."
+                    };
+                } finally {
+                    this.loading = false;
+                }
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // DUMB PIPE RISK CALCULATOR (Chapter 1)
+        // ------------------------------------------------------------------
+        dumbPipeCalc: {
+            inputs: {
+                commodity_share: 60, // % of revenue from low-margin fees (Interchange, FX)
+                engagement: 30,      // % of customers who log in daily (DAU/MAU)
+                brand_trust: 5,      // 1-10: Do customers love you (10) or tolerate you (1)?
+            },
+            result: null,
+            loading: false,
+            aiStrategy: null,
+
+            analyze() {
+                this.loading = true;
+                this.result = null;
+                this.aiStrategy = null;
+
+                const i = this.inputs;
+
+                // 1. Calculate Dumb Pipe Score (0-100)
+                // High Commodity % + Low Engagement + Low Trust = High Risk
+                
+                let risk = 0;
+                risk += i.commodity_share * 0.5; // Heavy weight on revenue source
+                risk += (100 - i.engagement) * 0.3; // Low engagement increases risk
+                risk += (10 - i.brand_trust) * 20 * 0.2; // Low trust increases risk
+
+                // Cap at 100
+                risk = Math.min(100, Math.round(risk));
+
+                // 2. Determine Verdict & Timeline
+                let verdict = "";
+                let timeline = "";
+                let color = "";
+
+                if (risk > 75) {
+                    verdict = "UTILITY PROVIDER (Dumb Pipe)";
+                    timeline = "18 Months to Irrelevance";
+                    color = "text-risk";
+                } else if (risk > 40) {
+                    verdict = "HYBRID TRAP";
+                    timeline = "3 Years to Commoditization";
+                    color = "text-warn";
+                } else {
+                    verdict = "TRUSTED ADVISOR";
+                    timeline = "Safe. You own the relationship.";
+                    color = "text-primary";
+                }
+
+                this.result = { score: risk, verdict, timeline, color };
+
+                // 3. Trigger AI Analysis
+                this.generateAIStrategy(risk, verdict);
+            },
+
+            async generateAIStrategy(risk, verdict) {
+                const prompt = `
+                    ACT AS: Chief Strategy Officer at a Bank.
+                    CONTEXT: We are running the "Dumb Pipe" Risk Calculator from Chapter 1.
+                    
+                    DATA:
+                    - Risk Score: ${risk}/100 (Higher is worse).
+                    - Verdict: ${verdict}
+                    - Commodity Revenue: ${this.inputs.commodity_share}%
+                    - Daily Engagement: ${this.inputs.engagement}%
+                    
+                    TASK:
+                    1. Warn the user about the specific danger of their current mix.
+                    2. Suggest 2 specific "Sticky" features (High-Margin, High-Advice) to launch immediately to regain the relationship.
+                    
+                    OUTPUT JSON ONLY:
+                    {
+                        "warning": "Punchy 1-sentence reality check.",
+                        "defensive_move": "1 specific product to build (e.g. 'Automated Tax Vault').",
+                        "offensive_move": "1 specific partnership to sign (e.g. 'Embed into Real Estate platform')."
+                    }
+                `;
+
+                try {
+                    let rawText = await this.askSecureAI(prompt, "Dumb Pipe Analysis");
+                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
+                    this.aiStrategy = JSON.parse(rawText);
+                } catch (e) {
+                    this.aiStrategy = {
+                        warning: "You are losing the interface war.",
+                        defensive_move: "Launch 'Self-Driving Savings'.",
+                        offensive_move: "Integrate with Accounting Software."
                     };
                 } finally {
                     this.loading = false;
