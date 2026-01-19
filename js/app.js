@@ -4253,17 +4253,22 @@ calculate() {
             ]
         },
 
-    // ------------------------------------------------------------------
-        // EXCEL FACTORY ESCAPE ROOM (Gamified Debt Reduction)
+        // ------------------------------------------------------------------
+        // EXCEL FACTORY ESCAPE ROOM (Multiplayer Edition)
         // ------------------------------------------------------------------
         excelEscape: {
             active: false,
-            level: 0, // 0=Intro, 1-3=Levels, 4=Win, 5=Game Over
-            hp: 100, // Corporate Political Capital (Health)
-            score: 0, // Automation Points
-            inventory: [], // Tools collected
-            logs: [], // Battle history
+            level: 0, 
+            hp: 100, 
+            score: 0, 
+            inventory: [], 
+            logs: [], 
             loading: false,
+            
+            // Multiplayer Data
+            playerName: '',
+            leaderboard: [],
+            isSubmitting: false,
             
             // The Levels
             levels: [
@@ -4272,7 +4277,7 @@ calculate() {
                     name: "The Basement of Reconciliation",
                     enemy: "The VLOOKUP Hydra",
                     desc: "You are trapped in Finance. A 50MB spreadsheet is crashing Excel every time you open it. The deadline is in 1 hour.",
-                    weakness: "python", // Logic hint
+                    weakness: "python", 
                     options: [
                         { id: 'macro', label: "Write a VBA Macro", risk: 30, value: 10, type: "legacy" },
                         { id: 'manual', label: "Copy/Paste Faster", risk: 50, value: 0, type: "manual" },
@@ -4306,11 +4311,17 @@ calculate() {
             ],
 
             start() {
+                if (!this.playerName.trim()) {
+                    // Default to a guest name if empty
+                    const guestId = Math.floor(Math.random() * 1000);
+                    this.playerName = `Agent_${guestId}`;
+                }
                 this.active = true;
                 this.level = 1;
                 this.hp = 100;
                 this.score = 0;
-                this.logs = ["SYSTEM: Entered the Excel Factory. Oxygen is low."];
+                this.logs = [`SYSTEM: Welcome, ${this.playerName}. Entering the Excel Factory...`];
+                this.isSubmitting = false;
             },
 
             async makeMove(optionIndex) {
@@ -4319,11 +4330,10 @@ calculate() {
                 const currentLvl = this.levels[this.level - 1];
                 const choice = currentLvl.options[optionIndex];
                 
-                // 1. Calculate Results (Hard Logic)
+                // 1. Calculate Results
                 let damageTaken = 0;
                 let pointsGained = choice.value;
 
-                // Manual = High Damage, Legacy = Med Damage, Modern = Low/No Damage
                 if (choice.type === 'manual') damageTaken = Math.floor(Math.random() * 30) + 20;
                 if (choice.type === 'legacy') damageTaken = Math.floor(Math.random() * 15) + 5;
                 if (choice.type === 'modern') damageTaken = 0;
@@ -4332,37 +4342,87 @@ calculate() {
                 this.score += pointsGained;
                 this.loading = true;
 
-                // 2. AI Narrative (Dungeon Master)
+                // 2. AI Dungeon Master
                 const prompt = `
-                    ACT AS: A cynical Corporate Dungeon Master in a text adventure game.
-                    SCENARIO: The player faces "${currentLvl.enemy}".
-                    PLAYER ACTION: Used "${choice.label}".
-                    OUTCOME TYPE: "${choice.type}" (Modern is Critical Hit, Legacy is weak, Manual is fail).
-                    DAMAGE TAKEN: ${damageTaken} HP.
-                    
-                    TASK: Describe what happens in 1 punchy, funny sentence. Use banking humor.
+                    ACT AS: A cynical Corporate Dungeon Master.
+                    SCENARIO: Player faces "${currentLvl.enemy}".
+                    ACTION: Used "${choice.label}".
+                    OUTCOME: "${choice.type}" (Modern=Crit, Legacy=Weak, Manual=Fail).
+                    DAMAGE: ${damageTaken} HP.
+                    TASK: 1 sentence result. Use banking humor.
                 `;
 
                 try {
                     let resultText = await this.askSecureAI(prompt, "Game Turn");
-                    // Clean text
                     resultText = resultText.replace(/"/g, ''); 
-                    
                     this.logs.unshift(`Turn ${this.level}: ${resultText} (${choice.type === 'modern' ? '+' + pointsGained + ' PTS' : '-' + damageTaken + ' HP'})`);
-
                 } catch(e) {
-                    this.logs.unshift("The spreadsheet freezes. (AI Connection Lost)");
+                    this.logs.unshift("System Lag. Move executed.");
                 }
 
                 this.loading = false;
 
-                // 3. Game State Check
+                // 3. Check State
                 if (this.hp <= 0) {
                     this.level = 5; // Game Over
                 } else if (this.level < 3) {
-                    this.level++; // Next Level
+                    this.level++; 
                 } else {
                     this.level = 4; // Victory
+                    this.saveScore(); // Auto-save on win
+                }
+            },
+
+            // --- NEW: LEADERBOARD LOGIC ---
+            
+            async saveScore() {
+                if (this.isSubmitting) return;
+                this.isSubmitting = true;
+
+                // Check for Supabase access via the parent scope (toolkit)
+                // We assume 'this' is bound correctly in Alpine data
+                // If accessing parent props is tricky, we look for window.supabase
+                const sb = window.supabase ? window.supabaseClient : null; 
+                // Note: In your init(), you set this.supabase. We will try to access that.
+                
+                // Accessing the parent scope variable inside a nested object in Alpine:
+                // We will use the direct client created in init() if available, 
+                // otherwise recreate it or use the global variable if you exposed it.
+                // Assuming `this.supabase` refers to the toolkit's supabase instance:
+                
+                try {
+                     // Using the exact credentials from your app.js init
+                    const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
+                    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
+                    const client = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+                    await client.from('game_leaderboard').insert({
+                        player_name: this.playerName,
+                        score: this.score,
+                        hp_remaining: this.hp
+                    });
+                    
+                    // After saving, fetch the board
+                    this.fetchLeaderboard(client);
+
+                } catch (e) {
+                    console.error("Score Save Error", e);
+                }
+            },
+
+            async fetchLeaderboard(clientOverride) {
+                const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
+                const client = clientOverride || window.supabase.createClient(supabaseUrl, supabaseKey);
+
+                const { data, error } = await client
+                    .from('game_leaderboard')
+                    .select('*')
+                    .order('score', { ascending: false })
+                    .limit(10);
+
+                if (data) {
+                    this.leaderboard = data;
                 }
             },
 
