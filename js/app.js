@@ -420,152 +420,188 @@ talentSkills: [
                 }, 1500);
             }
         },
+        
+// ------------------------------------------------------------------
+// BILINGUAL BOT (DETERMINISTIC / NO-AI VERSION)
+// ------------------------------------------------------------------
+rolePlay: {
+    active: false,
+    loading: false,
+    messages: [], // Chat history
+    activePersona: null, // Current character data
+    currentOptions: [], // The choices available to the user
+    score: 50, // 0-100 Trust Meter
 
-         // ------------------------------------------------------------------
-        // BILINGUAL BOT (AI Role-Playing Assistant)
-        // ------------------------------------------------------------------
-        rolePlay: {
-            active: false,
-            loading: false,
-            input: '',
-            messages: [],
-            activePersona: null,
-            score: 50, // Starts neutral (0 = Fired, 100 = Promoted)
+    // THE SCRIPT DATABASE
+    // We pre-define the Persona, their Challenge, and the 3 types of answers.
+    personas: [
+        {
+            id: 'risk',
+            name: "Marcus (The Wall)",
+            role: "Chief Risk Officer",
+            avatar: "fa-user-shield",
+            color: "text-red-400",
+            context: "You want to move the Core Banking Ledger to the Cloud.",
+            opening_line: "(Arms crossed) I've stopped three cloud migrations before. Why should I let you put our customer data on someone else's computer?",
+            options: [
+                {
+                    label: "The Technical Argument",
+                    text: "We will use AWS Fargate with a multi-region active-active cluster and 99.999% SLA.",
+                    score_impact: -20,
+                    reply: "Stop throwing acronyms at me! I don't care about 'Fargate', I care about hackers. Request denied.",
+                    coach_tip: "❌ FAIL. You spoke 'Geek', not 'Risk'. He thinks complexity = danger."
+                },
+                {
+                    label: "The Speed Argument",
+                    text: "We need this to ship features faster. Our competitors are releasing weekly.",
+                    score_impact: -5,
+                    reply: "Speed is exactly what I'm afraid of. Fast means broken. I prefer slow and safe.",
+                    coach_tip: "⚠️ WEAK. A Risk Officer doesn't care about speed; they are paid to slow you down."
+                },
+                {
+                    label: "The Bilingual Argument",
+                    text: "Actually, Marcus, this increases safety. It moves us from 'Basement Security' to 'Zero Trust', reducing our liability by 40%.",
+                    score_impact: +25,
+                    reply: "(Uncrosses arms) Reducing liability, you say? ...Okay. Show me the audit trail.",
+                    coach_tip: "✅ PERFECT. You framed the technology as a 'Risk Reduction Tool'."
+                }
+            ]
+        },
+        {
+            id: 'sales',
+            name: "Sarah (The Sprinter)",
+            role: "Head of Sales",
+            avatar: "fa-user-tie",
+            color: "text-green-400",
+            context: "You need 2 sprints to refactor technical debt. No new features.",
+            opening_line: "I have a quarterly target to hit. Why are you telling me we can't launch the new checkout flow for 4 weeks?",
+            options: [
+                {
+                    label: "The Technical Argument",
+                    text: "We need to refactor the monolithic codebase and upgrade the Angular library.",
+                    score_impact: -20,
+                    reply: "I don't care about your library! I care about my bonus. I'm escalating this to the CEO.",
+                    coach_tip: "❌ FAIL. Never mention 'Refactoring' to Sales without explaining the gain."
+                },
+                {
+                    label: "The Bilingual Argument",
+                    text: "We are doing this to prevent a Black Friday crash. If we don't fix it, the checkout will fail when traffic spikes.",
+                    score_impact: +25,
+                    reply: "A crash? ...Okay. Fix it. But I need that feature by November 1st.",
+                    coach_tip: "✅ SUCCESS. You translated 'Technical Debt' into 'Revenue Protection'."
+                },
+                {
+                    label: "The Process Argument",
+                    text: "Agile methodology dictates we must maintain code hygiene.",
+                    score_impact: -10,
+                    reply: "Don't quote the rulebook at me. We are a business, not a computer science class.",
+                    coach_tip: "⚠️ POOR. Process arguments rarely win against Revenue arguments."
+                }
+            ]
+        },
+        {
+            id: 'architect',
+            name: "Raj (The Purist)",
+            role: "Lead Architect",
+            avatar: "fa-network-wired",
+            color: "text-purple-400",
+            context: "You want to buy a SaaS solution. He wants to build it in-house.",
+            opening_line: "Why would we buy this off-the-shelf trash? It doesn't fit our domain model. We should build it ourselves.",
+            options: [
+                {
+                    label: "The Cost Argument",
+                    text: "Building it is too expensive. Buying is cheaper.",
+                    score_impact: 0,
+                    reply: "Cheap now, expensive later when we can't customize it. You're thinking short term.",
+                    coach_tip: "😐 NEUTRAL. Architects care about elegance and control, not just budget."
+                },
+                {
+                    label: "The Bilingual Argument",
+                    text: "This is a commodity feature, Raj. I want your team focused on our 'Secret Sauce', not building a generic login page.",
+                    score_impact: +25,
+                    reply: "Hmm. I suppose I don't want to waste time on login pages. Fine.",
+                    coach_tip: "✅ SUCCESS. You appealed to his ego. You let him focus on the interesting work."
+                },
+                {
+                    label: "The Authority Argument",
+                    text: "Because I said so. We signed the contract.",
+                    score_impact: -30,
+                    reply: "Fine. But don't ask me to support it when it breaks.",
+                    coach_tip: "❌ TOXIC. You won the battle but lost the war. He will let you fail."
+                }
+            ]
+        }
+    ],
+
+    start(index) {
+        this.activePersona = this.personas[index];
+        this.active = true;
+        this.score = 50;
+        this.messages = [];
+        
+        // Load the specific options for this persona
+        // We shuffle them so the "Right" answer isn't always in the same spot
+        this.currentOptions = this.activePersona.options.sort(() => Math.random() - 0.5);
+
+        // Bot speaks first
+        this.addMessage('bot', this.activePersona.opening_line, null);
+    },
+
+    stop() {
+        this.active = false;
+        this.activePersona = null;
+    },
+
+    addMessage(role, text, coaching) {
+        this.messages.push({ 
+            role, 
+            text, 
+            coaching, 
+            timestamp: new Date().toLocaleTimeString() 
+        });
+        this.scrollToBottom();
+    },
+
+    // The Logic Engine (Replaces the AI Call)
+    makeChoice(option) {
+        // 1. User "Types" the response
+        this.addMessage('user', option.text, null);
+        this.loading = true;
+        this.currentOptions = []; // Hide buttons
+
+        // 2. Simulate "Thinking" delay
+        setTimeout(() => {
+            this.loading = false;
             
-            // The Stakeholders
-            personas: [
-                {
-                    id: 'risk',
-                    name: "Marcus (The Wall)",
-                    role: "Chief Risk Officer",
-                    avatar: "fa-user-shield",
-                    color: "text-red-400",
-                    mood: "Skeptical & Protective",
-                    context: "You want to launch a cloud app. He thinks the cloud is insecure.",
-                    hidden_fear: "He fears a data breach will end his career."
-                },
-                {
-                    id: 'sales',
-                    name: "Sarah (The Sprinter)",
-                    role: "Head of Sales",
-                    avatar: "fa-user-tie",
-                    color: "text-green-400",
-                    mood: "Impatient & Greedy",
-                    context: "You need 2 sprints to refactor code. She wants new features now.",
-                    hidden_fear: "She fears missing her quarterly bonus targets."
-                },
-                {
-                    id: 'architect',
-                    name: "Raj (The Purist)",
-                    role: "Lead Architect",
-                    avatar: "fa-network-wired",
-                    color: "text-purple-400",
-                    mood: "Pedantic & Intellectual",
-                    context: "You want to buy a SaaS tool. He wants to build it in-house perfectly.",
-                    hidden_fear: "He fears 'Spaghetti Architecture' will make the system unmaintainable."
-                }
-            ],
+            // 3. Update Score
+            this.score = Math.max(0, Math.min(100, this.score + option.score_impact));
 
-            start(index) {
-                this.activePersona = this.personas[index];
-                this.active = true;
-                this.messages = [];
-                this.score = 50;
-                this.input = '';
-                
-                // Initial message from the Bot
-                this.addMessage('bot', `(Arms crossed) So, I hear you have a proposal. Convince me.`, null);
-            },
+            // 4. Bot Replies
+            this.addMessage('bot', option.reply, {
+                tip: option.coach_tip,
+                impact: option.score_impact
+            });
 
-            stop() {
-                this.active = false;
-                this.activePersona = null;
-            },
-
-            addMessage(role, text, coaching) {
-                this.messages.push({ 
-                    role, 
-                    text, 
-                    coaching, // The "Bilingual Coach" whisper
-                    timestamp: new Date().toLocaleTimeString() 
-                });
-                this.scrollToBottom();
-            },
-
-            async send() {
-                if (!this.input.trim()) return;
-                
-                const userText = this.input;
-                this.input = '';
-                this.addMessage('user', userText, null);
-                this.loading = true;
-
-                const p = this.activePersona;
-
-                // AI PROMPT: This instructs the AI to play two roles (Actor + Coach)
-                const systemPrompt = `
-                    ACT AS: A Role-Play Simulation Engine.
-                    
-                    ROLE 1 (THE ACTOR): You are ${p.name}, the ${p.role}.
-                    YOUR MOOD: ${p.mood}.
-                    YOUR SECRET FEAR: ${p.hidden_fear}.
-                    CURRENT CONTEXT: ${p.context}.
-                    
-                    ROLE 2 (THE COACH): You are a "Bilingual Executive Coach" grading the user.
-                    
-                    TASK:
-                    1. Respond to the user's input as THE ACTOR. If they use jargon, get confused or angry. If they speak value, get interested.
-                    2. Provide a "Coach's Whisper" explaining why the user's answer was good or bad.
-                    3. Adjust the "Trust Score" (-10 to +10) based on how well they translated tech to business.
-                    
-                    USER INPUT: "${userText}"
-                    
-                    OUTPUT JSON ONLY (No markdown):
-                    {
-                        "reply": "string (The Actor's response)",
-                        "coach_tip": "string (Short feedback on communication style)",
-                        "score_impact": number (Integer between -10 and 10),
-                        "mood_shift": "string (e.g. 'More Relaxed' or 'Annoyed')"
-                    }
-                `;
-
-                try {
-                    let rawText = await this.askSecureAI(systemPrompt, "Roleplay");
-                    rawText = rawText.replace(/```json/g, '').replace(/```/g, '').trim();
-                    const data = JSON.parse(rawText);
-
-                    // Update State
-                    this.score = Math.max(0, Math.min(100, this.score + data.score_impact));
-                    
-                    // Add Bot Reply
-                    this.addMessage('bot', data.reply, {
-                        tip: data.coach_tip,
-                        mood: data.mood_shift,
-                        impact: data.score_impact
-                    });
-
-                    // Check Win/Loss
-                    if (this.score <= 10) {
-                        this.addMessage('system', "⛔ MEETING ENDED EARLY. You lost the room.", null);
-                    } else if (this.score >= 90) {
-                        this.addMessage('system', "✅ SUCCESS. You have total buy-in.", null);
-                    }
-
-                } catch (e) {
-                    console.error(e);
-                    this.addMessage('bot', "I didn't quite catch that. Can you rephrase?", null);
-                } finally {
-                    this.loading = false;
-                }
-            },
-
-            scrollToBottom() {
-                setTimeout(() => {
-                    const el = document.getElementById('rp-scroll');
-                    if(el) el.scrollTop = el.scrollHeight;
-                }, 100);
+            // 5. End Game Check
+            if (this.score >= 70) {
+                this.addMessage('system', "🎉 VICTORY. You cleared the blocker.", null);
+            } else if (this.score <= 30) {
+                this.addMessage('system', "⛔ FAILED. Meeting terminated.", null);
+            } else {
+                this.addMessage('system', "😐 STALEMATE. Try a different approach next time.", null);
             }
-        },           
+
+        }, 1000);
+    },
+
+    scrollToBottom() {
+        setTimeout(() => {
+            const el = document.getElementById('rp-scroll');
+            if(el) el.scrollTop = el.scrollHeight;
+        }, 100);
+    }
+},
+        
 // ------------------------------------------------------------------
         // [REVAMPED] CULTURAL DEBT THERMOMETER (AI-POWERED)
         // ------------------------------------------------------------------
