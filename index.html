@@ -2289,6 +2289,115 @@
         </div>
     </div>
 </div>
+
+            <!-- DUMB PIPE RISK CALCULATOR TAB -->
+<div x-show="currentTab === 'dumbpipe'" x-cloak class="max-w-4xl mx-auto">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">Dumb Pipe Risk Calculator</h2>
+        <p class="text-textMuted text-sm">"If you lose the interface, you lose the margin." — Chapter 1</p>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+        
+        <!-- LEFT: INPUTS -->
+        <div class="bg-card border border-slate-700 p-6 rounded-xl space-y-8">
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-slate-400 uppercase">Commodity Revenue %</label>
+                    <span class="text-xs font-bold text-white" x-text="dumbPipeCalc.inputs.commodity_share + '%'"></span>
+                </div>
+                <input type="range" min="0" max="100" x-model="dumbPipeCalc.inputs.commodity_share" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500">
+                <p class="text-[10px] text-slate-500 mt-2">Revenue from interchange, FX, or basic fees (Low Loyalty).</p>
+            </div>
+
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-slate-400 uppercase">Daily Engagement (DAU)</label>
+                    <span class="text-xs font-bold text-white" x-text="dumbPipeCalc.inputs.engagement + '%'"></span>
+                </div>
+                <input type="range" min="0" max="100" x-model="dumbPipeCalc.inputs.engagement" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                <p class="text-[10px] text-slate-500 mt-2">% of customers who open your app daily.</p>
+            </div>
+
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-slate-400 uppercase">Brand Love (NPS Proxy)</label>
+                    <span class="text-xs font-bold text-white" x-text="dumbPipeCalc.inputs.brand_trust + '/10'"></span>
+                </div>
+                <input type="range" min="1" max="10" x-model="dumbPipeCalc.inputs.brand_trust" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-green-500">
+                <p class="text-[10px] text-slate-500 mt-2">1 = "I tolerate my bank", 10 = "I love my bank".</p>
+            </div>
+
+            <button @click="dumbPipeCalc.analyze()" 
+                    :disabled="dumbPipeCalc.loading"
+                    class="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg shadow-glow transition-all disabled:opacity-50">
+                <span x-show="!dumbPipeCalc.loading">CALCULATE RISK</span>
+                <span x-show="dumbPipeCalc.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> CALCULATING...</span>
+            </button>
+        </div>
+
+        <!-- RIGHT: THE VERDICT -->
+        <div class="relative">
+            
+            <!-- Empty State -->
+            <div x-show="!dumbPipeCalc.result" class="h-full border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-500">
+                <i class="fa-solid fa-link-slash text-4xl mb-3 opacity-20"></i>
+                <p class="text-xs font-mono">Waiting for data...</p>
+            </div>
+
+            <!-- Result Card -->
+            <div x-show="dumbPipeCalc.result" x-transition class="bg-card border border-slate-700 rounded-xl overflow-hidden h-full flex flex-col">
+                
+                <!-- Meter -->
+                <div class="p-6 text-center border-b border-slate-700 relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-10 bg-gradient-to-b from-red-500/20 to-transparent"></div>
+                    
+                    <p class="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-2">PROBABILITY OF IRRELEVANCE</p>
+                    <h3 class="text-6xl font-bold font-mono mb-2" :class="dumbPipeCalc.result?.color">
+                        <span x-text="dumbPipeCalc.result?.score"></span>%
+                    </h3>
+                    <div class="inline-block px-3 py-1 rounded border text-xs font-bold uppercase"
+                         :class="dumbPipeCalc.result?.score > 75 ? 'border-red-500 text-red-500 bg-red-500/10' : 'border-slate-500 text-slate-300'">
+                        <span x-text="dumbPipeCalc.result?.verdict"></span>
+                    </div>
+                    <p class="text-xs text-white mt-4 font-bold">
+                        <i class="fa-solid fa-hourglass-half mr-2"></i><span x-text="dumbPipeCalc.result?.timeline"></span>
+                    </p>
+                </div>
+
+                <!-- AI Advice -->
+                <div class="flex-1 p-6 bg-dark/50">
+                    <div x-show="dumbPipeCalc.aiStrategy" x-transition>
+                        <h4 class="font-mono text-xs text-primary uppercase mb-4">Strategic Defense Plan</h4>
+                        
+                        <div class="space-y-4">
+                            <div class="flex gap-3 items-start">
+                                <i class="fa-solid fa-triangle-exclamation text-red-400 mt-1"></i>
+                                <div>
+                                    <p class="text-[10px] text-red-400 uppercase font-bold">WARNING</p>
+                                    <p class="text-xs text-slate-300 italic" x-text="dumbPipeCalc.aiStrategy?.warning"></p>
+                                </div>
+                            </div>
+
+                            <div class="bg-blue-900/20 p-3 rounded border border-blue-500/30">
+                                <p class="text-[10px] text-blue-400 uppercase font-bold mb-1">BUILD THIS (Stickiness)</p>
+                                <p class="text-sm text-white" x-text="dumbPipeCalc.aiStrategy?.defensive_move"></p>
+                            </div>
+
+                            <div class="bg-green-900/20 p-3 rounded border border-green-500/30">
+                                <p class="text-[10px] text-green-400 uppercase font-bold mb-1">PARTNER HERE (Distribution)</p>
+                                <p class="text-sm text-white" x-text="dumbPipeCalc.aiStrategy?.offensive_move"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
             
 <!-- LEGACY CODE EXPLAINER TAB -->
             <div x-show="currentTab === 'legacy'" x-cloak class="max-w-5xl mx-auto">
