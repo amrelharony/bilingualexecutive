@@ -136,40 +136,29 @@ document.addEventListener('alpine:init', () => {
         },
 
         
-async askSecureAI(systemPrompt, userInput, model = "gemini-3-flash-preview") {
+        async askSecureAI(systemPrompt, userInput, model = "gemini-3-flash-preview") {
             // Check if Supabase is initialized
             if (!this.supabase) {
                 console.error("Supabase not initialized");
                 return "System Error: Database connection missing.";
             }
 
-            // CHECK FOR API KEY
-            if (!this.userApiKey) {
-                alert("⚠️ Missing API Key. Please click the 'Bolt' icon in the mobile menu or top right to enter your Google Gemini Key.");
-                return "System Error: No API Key provided.";
-            }
-
             try {
+                // Calls the Edge Function named 'bilingual-ai'
                 const { data, error } = await this.supabase.functions.invoke('bilingual-ai', {
                     body: { 
                         system: systemPrompt, 
                         input: userInput,
-                        // UPDATED MODEL HERE:
-                        model: model, 
-                        apiKey: this.userApiKey
+                        model: model 
                     }
                 });
 
                 if (error) throw error;
-                
-                // Fallback if the function returns an error structure instead of text
-                if (data.error) throw new Error(data.error.message || data.error);
-
                 return data.text;
 
             } catch (err) {
                 console.error("AI Error:", err);
-                return "System Error: " + (err.message || "Connection failed.");
+                return "I apologize, but I cannot connect to the neural core right now.";
             }
         },
 
