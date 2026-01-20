@@ -532,6 +532,48 @@
 
             </div>
 
+
+            <!-- KPI DESIGNER TAB -->
+<div x-show="currentTab === 'kpi'" x-cloak class="max-w-4xl mx-auto">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">Outcome vs. Output Designer</h2>
+        <p class="text-textMuted text-sm">Stop funding "Deliverables." Start funding "Results."</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-8 items-start">
+        
+        <!-- INPUT: The "Project Mindset" -->
+        <div class="bg-card border border-slate-700 p-8 rounded-xl relative overflow-hidden">
+            <div class="absolute -right-4 -top-4 text-slate-800 opacity-50"><i class="fa-solid fa-industry text-9xl"></i></div>
+
+            <label class="block font-mono text-xs text-slate-500 uppercase mb-2">The "Project" Goal (Output)</label>
+            <p class="text-sm text-textMuted mb-4">What did the business ask you to build?</p>
+            
+            <div class="relative">
+                <input type="text" x-model="kpiDesigner.input" @keydown.enter="kpiDesigner.generate()"
+                       placeholder="e.g. We need a new Mobile App..." 
+                       class="w-full bg-dark border border-slate-600 rounded-lg p-4 text-white focus:border-green-400 focus:outline-none transition-colors">
+                
+                <!-- Quick Selects (Expanded) -->
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="text-[10px] text-slate-500 w-full uppercase font-bold">Try Examples:</span>
+                    <button @click="kpiDesigner.input='Migrate Core to Cloud'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded border border-slate-700">Cloud Migration</button>
+                    <button @click="kpiDesigner.input='Launch AI Chatbot'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded border border-slate-700">AI Chatbot</button>
+                    <button @click="kpiDesigner.input='Build Data Lake'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded border border-slate-700">Data Lake</button>
+                    <button @click="kpiDesigner.input='Refactor to Microservices'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded border border-slate-700">Microservices</button>
+                    <button @click="kpiDesigner.input='Implement 2FA Security'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded border border-slate-700">Cyber Security</button>
+                </div>
+            </div>
+
+            <button @click="kpiDesigner.generate()" 
+                    :disabled="kpiDesigner.loading || !kpiDesigner.input"
+                    class="mt-8 w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-glow">
+                <span x-show="!kpiDesigner.loading">CONVERT TO OUTCOME <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                <span x-show="kpiDesigner.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> REFRAMING...</span>
+            </button>
+        </div>
+        
            <!-- OUTPUT COLUMN -->
         <div class="space-y-6">
             
