@@ -124,15 +124,6 @@ document.addEventListener('alpine:init', () => {
 
         },
 
-    this.aiNarrative = {
-        headline: "Analysis Complete",
-        financial_verdict: "Calculations based on standard industry inputs.",
-        strategic_verdict: "Review manual inputs for accuracy.",
-        defense: "ROI is based on FTE savings."
-    };
-    this.loading = false;
-},
-
         
 
         // ------------------------------------------------------------------
