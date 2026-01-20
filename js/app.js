@@ -581,79 +581,91 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
-        // ------------------------------------------------------------------
-        // KPI DESIGNER (Offline Mode + Advanced Prompt Engineering)
+// ------------------------------------------------------------------
+        // KPI DESIGNER (The Prompt Architect Wizard)
         // ------------------------------------------------------------------
         kpiDesigner: {
-            input: '',
+            step: 1,
             loading: false,
-            result: null,
+            
+            // The Wizard Data
+            form: {
+                project: '', // What are we building?
+                who: '',     // Who is the customer?
+                pain: '',    // What is their problem?
+                value: ''    // What is the business value?
+            },
+
             generatedPrompt: '',
 
-            // Offline Cheat Sheet
+            // Offline Cheat Sheet (Quick-fill)
             presets: [
-                { keyword: 'mobile', output: 'Launch Mobile App v2', outcome: 'Reduce Call Center Volume by 15%', leading: '% of Logins using Biometrics', lagging: 'Cost to Serve per Customer' },
-                { keyword: 'cloud', output: 'Migrate to AWS', outcome: 'Reduce Infrastructure Spend by 20%', leading: '% of Non-Prod Servers Auto-Shutdown', lagging: 'Monthly Hosting Bill (FinOps)' },
-                { keyword: 'data lake', output: 'Build Data Lake', outcome: 'Reduce "Time-to-Insight" for Risk Reports', leading: 'Data Freshness (SLO Adherence)', lagging: 'Regulatory Fines / Audit Issues' },
-                { keyword: 'crm', output: 'Implement Salesforce', outcome: 'Increase Cross-Sell Ratio', leading: 'Sales Activity / Logins', lagging: 'Products per Customer' },
-                { keyword: 'lending', output: 'Automate Lending', outcome: 'Decrease "Time-to-Cash"', leading: '% of Loans Auto-Decisioned', lagging: 'Conversion Rate' },
-                { keyword: 'microservices', output: 'Refactor to Microservices', outcome: 'Increase Release Velocity (Speed)', leading: 'Deployment Frequency (Daily)', lagging: 'Time-to-Revenue for New Features' },
-                { keyword: 'core', output: 'Upgrade Core Banking', outcome: 'Reduce Cost per Transaction', leading: 'Straight-Through Processing %', lagging: 'Operating Margin Efficiency' },
-                { keyword: 'security', output: 'Implement 2FA / Zero Trust', outcome: 'Reduce Fraud Loss Exposure', leading: '% of High-Risk Logins Blocked', lagging: 'Net Fraud Loss ($)' },
-                { keyword: 'ai', output: 'GenAI Chatbot', outcome: 'Deflect L1 Support Tickets', leading: 'First Contact Resolution Rate', lagging: 'Support Staff Headcount Efficiency' }
+                { label: 'Mobile App', project: 'New Retail App', who: 'Gen-Z Customers', pain: 'Current app is too slow/clunky', value: 'Retention' },
+                { label: 'Cloud Migration', project: 'Move Core to AWS', who: 'Internal Dev Team', pain: 'Server provisioning takes 6 weeks', value: 'OpEx Savings & Speed' },
+                { label: 'Data Lake', project: 'Snowflake Implementation', who: 'Risk Analysts', pain: 'Reports take 3 days to run', value: 'Real-time Decisioning' },
+                { label: 'AI Chatbot', project: 'GenAI Support Agent', who: 'Frustrated Callers', pain: 'Hold times are 45 minutes', value: 'Reduce Call Volume' }
             ],
 
+            // Actions
+            next() {
+                if (this.step === 1 && !this.form.project) return alert("Define the project first.");
+                if (this.step === 2 && !this.form.who) return alert("Who is this for?");
+                if (this.step === 3 && !this.form.pain) return alert("What is the pain point?");
+                if (this.step < 4) this.step++;
+            },
+
+            back() {
+                this.step--;
+            },
+
+            quickFill(preset) {
+                this.form.project = preset.project;
+                this.form.who = preset.who;
+                this.form.pain = preset.pain;
+                this.form.value = preset.value;
+                this.step = 4; // Jump to end confirmation
+            },
+
             generate() {
-                if (!this.input.trim()) return alert("Please enter a project goal or select a tag.");
+                if (!this.form.value) return alert("Define the business value.");
                 
                 this.loading = true;
-                this.result = null;
+                this.step = 5; // Result Screen
 
-                // --- THE ADVANCED SYSTEM PROMPT ---
-                this.generatedPrompt = `ACT AS: A Ruthless Product Strategy Consultant (McKinsey/Silicon Valley Hybrid).
+                // --- THE MEGA-PROMPT CONSTRUCTION ---
+                this.generatedPrompt = `ACT AS: A Product Strategy Coach (Silicon Valley Style).
 
-CONTEXT:
-I am a Bank Executive. I am about to spend budget on a project: "${this.input}".
-Right now, this is just an "Output" (something we build). I need to turn it into an "Outcome" (value we create).
+I need you to critique my initiative and help me define "Outcome-based KPIs" instead of "Output-based Deliverables".
+
+HERE IS MY CONTEXT:
+1. THE OUTPUT (What I am building): "${this.form.project}"
+2. THE USER (Who is it for): "${this.form.who}"
+3. THE PAIN (Why they struggle now): "${this.form.pain}"
+4. THE GOAL (Business Value): "${this.form.value}"
 
 YOUR TASK:
-1. CHALLENGE ME: Briefly explain why building "${this.input}" is an expense, not an asset, unless it changes customer behavior.
-2. REFRAME: Rewrite my goal into a specific Business Outcome (Revenue, Cost, Risk, or Velocity).
-3. DEFINE METRICS:
-   - Leading Indicator: A behavioral metric I can measure *next week* (e.g., % adoption, speed).
-   - Lagging Indicator: The financial result I can measure in *6 months* (e.g., ROI, Retention).
-   - The "Vanity Metric" Trap: Warn me about one useless metric I should ignore (e.g., "Number of App Downloads").
+1. THE ROAST: Briefly explain why building "${this.form.project}" is a waste of money if it doesn't solve "${this.form.pain}". Be ruthless.
+2. THE NORTH STAR: Rewrite my goal into a single, measurable Outcome Statement (e.g., "Reduce Time-to-Cash by 40%").
+3. THE METRICS TREE:
+   - Leading Indicator (Behavioral): What will "${this.form.who}" DO differently in week 1? (e.g. usage freq).
+   - Lagging Indicator (Financial): What is the hard P&L impact in 6 months? (e.g. cost savings).
+   - Counter-Metric: What might go wrong? (e.g. "We reduce call volume but Customer Satisfaction tanks").
 
-TONE: High agency, concise, financially literate. No fluff.`;
+TONE: High agency, executive, mathematically precise. No corporate fluff.`;
 
-                setTimeout(() => {
-                    // 2. Try Offline Match
-                    const match = this.presets.find(p => this.input.toLowerCase().includes(p.keyword));
-                    
-                    if (match) {
-                        this.result = { 
-                            output: this.input, 
-                            ...match, 
-                            explanation: "Standard pattern matched from database." 
-                        };
-                    } else {
-                        // 3. No Match - Show Prompt Only
-                        this.result = {
-                            output: this.input,
-                            outcome: "??? (Use Prompt Below)",
-                            leading: "???",
-                            lagging: "???",
-                            explanation: "Custom scenario. Use the 'Bilingual Prompt' below to get a deep analysis from your AI."
-                        };
-                    }
-                    
-                    this.loading = false;
-                }, 400);
+                // Simulate processing
+                setTimeout(() => { this.loading = false; }, 600);
             },
 
             copyPrompt() {
                 navigator.clipboard.writeText(this.generatedPrompt);
-                alert("Advanced Prompt copied! Paste this into ChatGPT/Claude.");
+                alert("Prompt copied! Paste this into your AI tool.");
+            },
+
+            reset() {
+                this.step = 1;
+                this.form = { project: '', who: '', pain: '', value: '' };
+                this.generatedPrompt = '';
             }
         },
         
