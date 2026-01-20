@@ -131,13 +131,7 @@ document.addEventListener('alpine:init', () => {
         vipJson: '{\n  "product_id": "DP-PAY-001",\n  "domain": "Payments_Processing",\n  "owner": "Sarah_Connor@meridian.com",\n  "slo": { "freshness": "200ms", "accuracy": "99.999%" }\n}',
         vipPrompt: 'Act as a CDO presenting to a skeptical Board. \nWe need $5M for Cloud Migration. Draft a 2-minute response using the "House Analogy". Focus on Risk, not just Speed.',
 
-        isChatOpen: false,
-        chatInput: '',
-        chatMessages: [],
-        isTyping: false,
-        userApiKey: '',
-        showKeyModal: false,
-
+        
         searchQuery: '',
         glossarySearch: '',
         assessmentSubmitted: false,
@@ -950,110 +944,6 @@ teamManager: {
             });
         },
 
-        saveApiKey() {
-            try { 
-                localStorage.setItem('bilingual_api_key', this.userApiKey); 
-                this.showKeyModal = false; 
-                alert("API Key saved securely to your device.");
-            } 
-            catch (e) { alert("Storage Error: Private Browsing may be enabled."); }
-        },
-
-        async sendMessage() {
-            if (!this.chatInput.trim()) return;
-            if (typeof DOMPurify === 'undefined') { this.chatMessages.push({ role: 'bot', text: "Error: Security module missing." }); return; }
-
-            const API_KEY = this.userApiKey; 
-            if (!API_KEY) { 
-                this.chatMessages.push({ role: 'bot', text: "Please set your Gemini API key in settings (Key icon)." }); 
-                this.showKeyModal = true; 
-                return; 
-            }
-
-            const userText = DOMPurify.sanitize(this.chatInput);
-            this.chatMessages.push({ role: 'user', text: userText });
-            this.chatInput = '';
-            this.isTyping = true;
-            this.scrollToBottom();
-
-            const systemPrompt = "You are 'The Translator', a Bilingual Executive Assistant. Translate technical jargon into business impact (P&L, Risk, Speed). Rules: Technical Debt->Financial leverage; Refactoring->Renovation; Microservices->Legos; API->Universal Adapter. Tone: Concise, executive.";
-            
-            const tryFetch = async (model, version) => {
-                const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${API_KEY}`, {
-                    method: "POST", headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nInput: " + userText }] }] })
-                });
-                if (!response.ok) throw new Error(`${response.status}`);
-                return response.json();
-            };
-
-           try {
-                let data;
-                // First, try the new Gemini 3 Flash model
-                try { 
-                    data = await tryFetch("gemini-3-flash-preview", "v1beta"); 
-                } catch (e) { 
-                    // Fallback to the stable Gemini 2.5 Flash model
-                    data = await tryFetch("gemini-2.5-flash", "v1beta"); 
-                }
-
-                let botText = "I couldn't process that.";
-                if (data.candidates && data.candidates[0].content) botText = data.candidates[0].content.parts[0].text;
-                
-                this.isTyping = false;
-                
-                let parsedText = botText;
-                try {
-                    if (typeof marked !== 'undefined') parsedText = marked.parse(botText);
-                } catch (e) {
-                    console.warn("Markdown Parse Error", e);
-                    parsedText = botText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                }
-                
-                const cleanHtml = DOMPurify.sanitize(parsedText);
-                this.chatMessages.push({ role: 'bot', text: cleanHtml });
-                this.scrollToBottom();
-            } catch (error) {
-                this.isTyping = false;
-                let msg = "Connection Error.";
-                if (error.message.includes("403")) msg = "Invalid API Key. Please check settings.";
-                if (error.message.includes("429")) msg = "Quota exceeded. Try again later.";
-                this.chatMessages.push({ role: 'bot', text: msg });
-            }
-        },
-
-        scrollToBottom() { 
-            this.$nextTick(() => { 
-                const c = document.getElementById('chat-messages-container'); 
-                if (c) c.scrollTop = c.scrollHeight; 
-            }); 
-        },
-
-        copyToClipboard(text, type) {
-            if (navigator.clipboard && window.isSecureContext) {
-                navigator.clipboard.writeText(text)
-                    .then(() => alert(`${type} copied!`))
-                    .catch(() => this.fallbackCopy(text, type));
-            } else {
-                this.fallbackCopy(text, type);
-            }
-        },
-        
-        fallbackCopy(text, type) {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            textArea.style.position = "fixed"; 
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            try {
-                document.execCommand('copy');
-                alert(`${type} copied!`);
-            } catch (err) {
-                alert("Copy failed. Please copy manually.");
-            }
-            document.body.removeChild(textArea);
-        },
 
         copyChallengeLink() {
             const scores = this.assessmentData.flatMap(s => s.questions.map(q => q.score));
