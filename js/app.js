@@ -500,134 +500,138 @@ rolePlay: {
     }
 },
 
-        <!-- CULTURAL DEBT THERMOMETER TAB -->
-            <div x-show="currentTab === 'culture'" x-cloak class="max-w-5xl mx-auto h-full flex flex-col">
+        // ------------------------------------------------------------------
+        // CULTURAL DEBT THERMOMETER (OFFLINE FIXED)
+        // ------------------------------------------------------------------
+        culturalMonitor: {
+            history: [],
+            isCheckinOpen: false,
+            currentQuestions: [],
+            answers: { q1: null, q2: null, sentiment: 50 }, 
+            chartInstance: null,
+
+            // Static Question Bank
+            questionBank: [
+                { id: 'safety_1', category: 'Psychological Safety', text: "Did you feel safe sharing 'bad news' or a delay this week?", type: 'boolean', badAnswer: 'no' },
+                { id: 'safety_2', category: 'Psychological Safety', text: "Did leadership blame a person or the process for a failure?", type: 'boolean', badAnswer: 'person' },
+                { id: 'silo_1', category: 'Silo Wars', text: "Did you have to negotiate with another department just to do your job?", type: 'boolean', badAnswer: 'yes' },
+                { id: 'silo_2', category: 'Silo Wars', text: "Did data flow freely between squads, or was it hoarded?", type: 'boolean', badAnswer: 'hoarded' },
+                { id: 'speed_1', category: 'Fear of Failure', text: "Did a 'Green Light' report hide a real 'Red' risk?", type: 'boolean', badAnswer: 'yes' },
+                { id: 'speed_2', category: 'Fear of Failure', text: "Did we ship value to a customer, or just documentation?", type: 'boolean', badAnswer: 'documentation' }
+            ],
+
+            init() {
+                try {
+                    const saved = localStorage.getItem('bilingual_culture_history');
+                    if (saved) this.history = JSON.parse(saved);
+                } catch (e) { console.error("Load Error", e); }
+            },
+            
+            startCheckin() {
+                const shuffled = this.questionBank.sort(() => 0.5 - Math.random());
+                this.currentQuestions = shuffled.slice(0, 2);
+                this.answers = { q1: null, q2: null, sentiment: 50 }; 
+                this.isCheckinOpen = true;
+            },
+
+            submitCheckin() {
+                let debt = 0;
+                let tags = [];
+
+                this.currentQuestions.forEach((q, idx) => {
+                    const ans = idx === 0 ? this.answers.q1 : this.answers.q2;
+                    if (ans === q.badAnswer) {
+                        debt += 30; 
+                        tags.push(q.category);
+                    }
+                });
+
+                // Invert sentiment (100 is good, we want Debt Score where 100 is bad)
+                debt += (100 - this.answers.sentiment) * 0.4;
+
+                const entry = {
+                    date: new Date().toLocaleDateString(),
+                    score: Math.min(100, Math.round(debt)),
+                    tags: tags,
+                    timestamp: Date.now()
+                };
+
+                this.history.push(entry);
+                if (this.history.length > 12) this.history.shift(); 
                 
-                <!-- Header -->
-                <div class="flex justify-between items-end mb-8">
-                    <div>
-                        <h2 class="text-3xl font-mono font-bold text-white"><i class="fa-solid fa-temperature-half mr-3 text-red-500"></i>Cultural Thermometer</h2>
-                        <p class="text-textMuted text-sm mt-1">Continuous pulse-check on "The Clay Layer" and Psychological Safety.</p>
-                        <!-- Only show button if notifications are supported -->
-                        <div x-data="{ supported: 'Notification' in window }">
-                            <button x-show="supported && Notification.permission === 'default'" 
-                                    @click="culturalMonitor.requestPermission()" 
-                                    class="text-[10px] text-blue-400 hover:text-white underline mt-1 cursor-pointer">
-                                <i class="fa-solid fa-bell mr-1"></i> Enable Weekly Reminders
-                            </button>
-                        </div>
-                    </div>
-                    <button @click="culturalMonitor.startCheckin()" class="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-400 hover:to-orange-400 text-white font-bold py-2 px-6 rounded-full shadow-glow transition-all flex items-center gap-2">
-                        <i class="fa-solid fa-stethoscope"></i> TAKE PULSE
-                    </button>
-                </div>
+                localStorage.setItem('bilingual_culture_history', JSON.stringify(this.history));
+                
+                this.isCheckinOpen = false;
+                this.renderChart();
+            },
 
-                <!-- Main Content (Centered 2-Column Grid) -->
-                <div class="flex-1 flex flex-col items-center justify-center">
-                    <div class="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
-                        
-                        <!-- 1. The Thermometer Visual -->
-                        <div class="bg-card border border-slate-700 p-8 rounded-2xl flex flex-col items-center justify-center relative overflow-hidden h-[450px] shadow-lg">
-                            <h3 class="font-mono text-xs text-slate-400 uppercase mb-6 tracking-widest">Friction Heat Index</h3>
-                            
-                            <!-- Thermometer Housing -->
-                            <div class="w-20 h-72 bg-slate-800 rounded-full border-4 border-slate-600 relative flex items-end p-1">
-                                <!-- Mercury Level -->
-                                <div class="w-full rounded-full transition-all duration-1000 ease-out"
-                                     :class="culturalMonitor.thermometerColor"
-                                     :style="`height: ${culturalMonitor.currentScore}%`">
-                                </div>
-                                <!-- Hash marks -->
-                                <div class="absolute right-0 top-10 w-3 h-1 bg-slate-500"></div> <!-- 80% -->
-                                <div class="absolute right-0 top-36 w-3 h-1 bg-slate-500"></div> <!-- 50% -->
-                                <div class="absolute right-0 bottom-10 w-3 h-1 bg-slate-500"></div> <!-- 20% -->
-                            </div>
-                            
-                            <!-- Score Display -->
-                            <div class="absolute bottom-8 bg-dark/90 backdrop-blur px-5 py-3 rounded-lg border border-slate-600 text-center shadow-2xl">
-                                <span class="block text-3xl font-bold font-mono text-white" x-text="culturalMonitor.currentScore"></span>
-                                <span class="text-[10px] uppercase text-slate-400">Debt Score</span>
-                            </div>
-                        </div>
+            get currentScore() {
+                if (this.history.length === 0) return 0;
+                return this.history[this.history.length - 1].score;
+            },
 
-                        <!-- 2. The Trend Chart & Controls -->
-                        <div class="flex flex-col h-[450px] gap-4">
-                            
-                            <!-- Chart Card -->
-                            <div class="bg-card border border-slate-700 p-6 rounded-2xl flex-1 shadow-lg relative">
-                                <h4 class="text-xs font-bold text-slate-500 uppercase mb-4">12-Week History</h4>
-                                <div class="relative w-full h-full pb-6">
-                                    <canvas id="debtChart"></canvas>
-                                </div>
-                            </div>
+            get thermometerColor() {
+                const s = this.currentScore;
+                if (s < 30) return 'bg-primary shadow-glow'; 
+                if (s < 60) return 'bg-warn shadow-glow';    
+                return 'bg-risk shadow-glow animate-pulse'; 
+            },
 
-                            <!-- Actions Card -->
-                            <div class="bg-slate-800/50 border border-slate-700 p-6 rounded-2xl text-center">
-                                <p class="text-sm text-slate-300 mb-4 italic">"Culture is what happens when managers leave the room."</p>
-                                <button @click="culturalMonitor.reset()" class="text-xs text-red-400 hover:text-white underline transition-colors">
-                                    <i class="fa-solid fa-trash mr-1"></i> Clear Data History
-                                </button>
-                            </div>
-                        </div>
+            reset() {
+                if(confirm("Clear history?")) {
+                    this.history = [];
+                    localStorage.removeItem('bilingual_culture_history');
+                    if(this.chartInstance) this.chartInstance.destroy();
+                }
+            },
 
-                    </div>
-                </div>
+            renderChart() {
+                setTimeout(() => {
+                    const ctx = document.getElementById('debtChart');
+                    if (!ctx) return;
+                    if (this.chartInstance) this.chartInstance.destroy();
 
-                <!-- SURVEY MODAL -->
-                <div x-show="culturalMonitor.isCheckinOpen" x-transition.opacity 
-                     class="fixed inset-0 z-[70] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div class="bg-card border border-slate-500 p-8 rounded-2xl max-w-lg w-full shadow-2xl relative">
-                        <button @click="culturalMonitor.isCheckinOpen = false" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-                        
-                        <h3 class="text-xl font-bold text-white mb-6 flex items-center gap-2">
-                            <i class="fa-solid fa-clipboard-question text-primary"></i> Weekly Micro-Survey
-                        </h3>
+                    const labels = this.history.map(h => h.date.substring(0,5)); 
+                    const data = this.history.map(h => h.score);
 
-                        <!-- Dynamic Questions -->
-                        <div class="space-y-6">
-                            <template x-for="(q, idx) in culturalMonitor.currentQuestions" :key="q.id">
-                                <div>
-                                    <div class="flex justify-between mb-2">
-                                        <span class="text-xs font-mono text-slate-400 uppercase" x-text="q.category"></span>
-                                        <span class="text-xs font-mono text-slate-600">Q<span x-text="idx+1"></span></span>
-                                    </div>
-                                    <p class="text-sm text-white font-medium mb-3" x-text="q.text"></p>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <button @click="culturalMonitor.answers['q'+(idx+1)] = 'yes'" 
-                                                class="p-3 rounded border transition-all text-sm"
-                                                :class="culturalMonitor.answers['q'+(idx+1)] === 'yes' ? 'bg-primary text-dark border-primary font-bold' : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-slate-400'">
-                                            YES
-                                        </button>
-                                        <button @click="culturalMonitor.answers['q'+(idx+1)] = q.badAnswer === 'yes' || q.badAnswer === 'no' ? 'no' : (q.badAnswer === 'person' ? 'process' : 'hoarded')"
-                                                class="p-3 rounded border transition-all text-sm"
-                                                :class="culturalMonitor.answers['q'+(idx+1)] && culturalMonitor.answers['q'+(idx+1)] !== 'yes' ? 'bg-primary text-dark border-primary font-bold' : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-slate-400'">
-                                            NO / OTHER
-                                        </button>
-                                    </div>
-                                </div>
-                            </template>
-
-                            <!-- Slider Question -->
-                            <div>
-                                <label class="block text-xs font-mono text-slate-400 uppercase mb-2">Overall Vibe (0 = Toxic, 100 = Safe)</label>
-                                <input type="range" min="0" max="100" x-model="culturalMonitor.answers.sentiment" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-primary">
-                                <div class="flex justify-between text-[10px] text-slate-500 mt-1">
-                                    <span>Fearful</span>
-                                    <span class="text-primary font-bold" x-text="culturalMonitor.answers.sentiment"></span>
-                                    <span>Flowing</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- SUBMIT BUTTON -->
-                        <button @click="culturalMonitor.submitCheckin()" 
-                                class="w-full mt-8 bg-white hover:bg-slate-200 text-dark font-bold py-3 rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
-                            <span>SAVE CHECK-IN</span>
-                        </button>
-                    </div>
-                </div>
-
-            </div>
+                    this.chartInstance = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Cultural Heat',
+                                data: data,
+                                borderColor: '#94a3b8',
+                                borderWidth: 2,
+                                pointBackgroundColor: data.map(v => v > 60 ? '#f87171' : (v > 30 ? '#fbbf24' : '#4ade80')),
+                                tension: 0.4
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            layout: { padding: { bottom: 10, left: 5 } },
+                            scales: { 
+                                y: { 
+                                    min: 0, max: 100, 
+                                    grid: { color: '#334155', drawBorder: false },
+                                    ticks: { color: '#94a3b8', padding: 8 }
+                                }, 
+                                x: { 
+                                    display: true,
+                                    grid: { display: false },
+                                    ticks: { color: '#94a3b8' }
+                                } 
+                            },
+                            plugins: { legend: { display: false } }
+                        }
+                    });
+                }, 100);
+            },
+            
+            // Dummy function to prevent errors if button is clicked
+            requestPermission() { return false; }
+        },
         
         // ------------------------------------------------------------------
 // TEAM COLLABORATION MANAGER
