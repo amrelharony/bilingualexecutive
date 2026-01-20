@@ -1454,22 +1454,20 @@
 
     
 
-    <!-- Service Worker -->
-
-    <script>
-        if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
-            window.addEventListener('load', () => {
-                fetch('sw.js')
-                    .then(response => {
-                        if (response.status === 200) {
-                            navigator.serviceWorker.register('sw.js')
-                                .then(r => console.log('SW Registered'))
-                                .catch(e => console.log('SW Fail:', e));
-                        }
-                    })
-                    .catch(() => {});
-            });
-        }
-    </script>
+<!-- Service Worker - Fixed Version -->
+<script>
+    // Register service worker for PWA
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('sw.js')
+                .then(function(registration) {
+                    console.log('SW registered: ', registration.scope);
+                })
+                .catch(function(err) {
+                    console.log('SW registration failed: ', err);
+                });
+        });
+    }
+</script>
 </body>
 </html>
