@@ -582,7 +582,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
-        // KPI DESIGNER (Offline Mode + Prompt Generator)
+        // KPI DESIGNER (Offline Mode + Advanced Prompt Engineering)
         // ------------------------------------------------------------------
         kpiDesigner: {
             input: '',
@@ -590,7 +590,7 @@ document.addEventListener('alpine:init', () => {
             result: null,
             generatedPrompt: '',
 
-            // Expanded Cheat Sheet
+            // Offline Cheat Sheet
             presets: [
                 { keyword: 'mobile', output: 'Launch Mobile App v2', outcome: 'Reduce Call Center Volume by 15%', leading: '% of Logins using Biometrics', lagging: 'Cost to Serve per Customer' },
                 { keyword: 'cloud', output: 'Migrate to AWS', outcome: 'Reduce Infrastructure Spend by 20%', leading: '% of Non-Prod Servers Auto-Shutdown', lagging: 'Monthly Hosting Bill (FinOps)' },
@@ -599,7 +599,8 @@ document.addEventListener('alpine:init', () => {
                 { keyword: 'lending', output: 'Automate Lending', outcome: 'Decrease "Time-to-Cash"', leading: '% of Loans Auto-Decisioned', lagging: 'Conversion Rate' },
                 { keyword: 'microservices', output: 'Refactor to Microservices', outcome: 'Increase Release Velocity (Speed)', leading: 'Deployment Frequency (Daily)', lagging: 'Time-to-Revenue for New Features' },
                 { keyword: 'core', output: 'Upgrade Core Banking', outcome: 'Reduce Cost per Transaction', leading: 'Straight-Through Processing %', lagging: 'Operating Margin Efficiency' },
-                { keyword: 'security', output: 'Implement 2FA / Zero Trust', outcome: 'Reduce Fraud Loss Exposure', leading: '% of High-Risk Logins Blocked', lagging: 'Net Fraud Loss ($)' }
+                { keyword: 'security', output: 'Implement 2FA / Zero Trust', outcome: 'Reduce Fraud Loss Exposure', leading: '% of High-Risk Logins Blocked', lagging: 'Net Fraud Loss ($)' },
+                { keyword: 'ai', output: 'GenAI Chatbot', outcome: 'Deflect L1 Support Tickets', leading: 'First Contact Resolution Rate', lagging: 'Support Staff Headcount Efficiency' }
             ],
 
             generate() {
@@ -608,17 +609,22 @@ document.addEventListener('alpine:init', () => {
                 this.loading = true;
                 this.result = null;
 
-                // 1. Generate the "Bilingual" System Prompt for them to use elsewhere
-                this.generatedPrompt = `ACT AS: A Product Strategy Coach.
-TASK: Convert this Project Output into a Business Outcome.
-INPUT: "${this.input}"
+                // --- THE ADVANCED SYSTEM PROMPT ---
+                this.generatedPrompt = `ACT AS: A Ruthless Product Strategy Consultant (McKinsey/Silicon Valley Hybrid).
 
-GOAL: Stop me from measuring "Deliverables" (e.g. App Launched). Force me to measure "Value" (e.g. Money Saved).
+CONTEXT:
+I am a Bank Executive. I am about to spend budget on a project: "${this.input}".
+Right now, this is just an "Output" (something we build). I need to turn it into an "Outcome" (value we create).
 
-OUTPUT FORMAT:
-1. The Outcome (Revenue, Cost, Risk, or Speed).
-2. Leading Indicator (Early behavioral signal).
-3. Lagging Indicator (Hard financial result).`;
+YOUR TASK:
+1. CHALLENGE ME: Briefly explain why building "${this.input}" is an expense, not an asset, unless it changes customer behavior.
+2. REFRAME: Rewrite my goal into a specific Business Outcome (Revenue, Cost, Risk, or Velocity).
+3. DEFINE METRICS:
+   - Leading Indicator: A behavioral metric I can measure *next week* (e.g., % adoption, speed).
+   - Lagging Indicator: The financial result I can measure in *6 months* (e.g., ROI, Retention).
+   - The "Vanity Metric" Trap: Warn me about one useless metric I should ignore (e.g., "Number of App Downloads").
+
+TONE: High agency, concise, financially literate. No fluff.`;
 
                 setTimeout(() => {
                     // 2. Try Offline Match
@@ -628,7 +634,7 @@ OUTPUT FORMAT:
                         this.result = { 
                             output: this.input, 
                             ...match, 
-                            explanation: "Match found in Bilingual Database." 
+                            explanation: "Standard pattern matched from database." 
                         };
                     } else {
                         // 3. No Match - Show Prompt Only
@@ -637,7 +643,7 @@ OUTPUT FORMAT:
                             outcome: "??? (Use Prompt Below)",
                             leading: "???",
                             lagging: "???",
-                            explanation: "Custom scenario detected. Use the prompt below with ChatGPT/Claude."
+                            explanation: "Custom scenario. Use the 'Bilingual Prompt' below to get a deep analysis from your AI."
                         };
                     }
                     
@@ -647,7 +653,7 @@ OUTPUT FORMAT:
 
             copyPrompt() {
                 navigator.clipboard.writeText(this.generatedPrompt);
-                alert("Prompt copied! Paste this into ChatGPT/Claude to get your KPIs.");
+                alert("Advanced Prompt copied! Paste this into ChatGPT/Claude.");
             }
         },
         
