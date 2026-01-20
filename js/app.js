@@ -973,6 +973,7 @@ teamManager: {
             { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
             { id: 'kpi', label: 'KPI Designer', icon: 'fa-solid fa-bullseye' },
+            { id: 'roi', label: 'ROI Calculator', icon: 'fa-solid fa-calculator', vip: false },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } 
         ],
@@ -991,6 +992,7 @@ teamManager: {
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'kpi', label: 'Outcome vs. Output', desc: 'Convert vague "Project" goals into measurable "Product" value.', icon: 'fa-solid fa-chart-line', color: 'text-green-400' },
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
+            { id: 'roi', label: 'Lighthouse ROI', desc: 'Quantify Hard & Soft value. Generate Board Defense script.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
         ],
         
