@@ -582,54 +582,75 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
-        // KPI DESIGNER (Outcome vs Output) - OFFLINE VERSION
+        // KPI DESIGNER (Offline Mode + Prompt Generator)
         // ------------------------------------------------------------------
         kpiDesigner: {
             input: '',
             loading: false,
             result: null,
+            generatedPrompt: '',
 
-            // "Cheat Sheet" for common banking projects (Offline Mode / Fallback)
+            // Expanded Cheat Sheet
             presets: [
-                { keyword: 'mobile app', output: 'Launch Mobile App v2', outcome: 'Reduce Call Center Volume by 15%', leading: '% of Logins using Biometrics', lagging: 'Cost to Serve per Customer' },
+                { keyword: 'mobile', output: 'Launch Mobile App v2', outcome: 'Reduce Call Center Volume by 15%', leading: '% of Logins using Biometrics', lagging: 'Cost to Serve per Customer' },
                 { keyword: 'cloud', output: 'Migrate to AWS', outcome: 'Reduce Infrastructure Spend by 20%', leading: '% of Non-Prod Servers Auto-Shutdown', lagging: 'Monthly Hosting Bill (FinOps)' },
                 { keyword: 'data lake', output: 'Build Data Lake', outcome: 'Reduce "Time-to-Insight" for Risk Reports', leading: 'Data Freshness (SLO Adherence)', lagging: 'Regulatory Fines / Audit Issues' },
-                { keyword: 'salesforce', output: 'Implement CRM', outcome: 'Increase Cross-Sell Ratio', leading: 'Sales Activity / Logins', lagging: 'Products per Customer' },
-                { keyword: 'lending', output: 'Automate Lending', outcome: 'Decrease "Time-to-Cash"', leading: '% of Loans Auto-Decisioned', lagging: 'Conversion Rate' }
+                { keyword: 'crm', output: 'Implement Salesforce', outcome: 'Increase Cross-Sell Ratio', leading: 'Sales Activity / Logins', lagging: 'Products per Customer' },
+                { keyword: 'lending', output: 'Automate Lending', outcome: 'Decrease "Time-to-Cash"', leading: '% of Loans Auto-Decisioned', lagging: 'Conversion Rate' },
+                { keyword: 'microservices', output: 'Refactor to Microservices', outcome: 'Increase Release Velocity (Speed)', leading: 'Deployment Frequency (Daily)', lagging: 'Time-to-Revenue for New Features' },
+                { keyword: 'core', output: 'Upgrade Core Banking', outcome: 'Reduce Cost per Transaction', leading: 'Straight-Through Processing %', lagging: 'Operating Margin Efficiency' },
+                { keyword: 'security', output: 'Implement 2FA / Zero Trust', outcome: 'Reduce Fraud Loss Exposure', leading: '% of High-Risk Logins Blocked', lagging: 'Net Fraud Loss ($)' }
             ],
 
             generate() {
-                if (!this.input.trim()) return alert("Please enter a project goal first.");
+                if (!this.input.trim()) return alert("Please enter a project goal or select a tag.");
                 
                 this.loading = true;
                 this.result = null;
 
-                // Simulate brief calculation time for UX
+                // 1. Generate the "Bilingual" System Prompt for them to use elsewhere
+                this.generatedPrompt = `ACT AS: A Product Strategy Coach.
+TASK: Convert this Project Output into a Business Outcome.
+INPUT: "${this.input}"
+
+GOAL: Stop me from measuring "Deliverables" (e.g. App Launched). Force me to measure "Value" (e.g. Money Saved).
+
+OUTPUT FORMAT:
+1. The Outcome (Revenue, Cost, Risk, or Speed).
+2. Leading Indicator (Early behavioral signal).
+3. Lagging Indicator (Hard financial result).`;
+
                 setTimeout(() => {
-                    // 1. Try Offline Match First
+                    // 2. Try Offline Match
                     const match = this.presets.find(p => this.input.toLowerCase().includes(p.keyword));
                     
                     if (match) {
                         this.result = { 
                             output: this.input, 
                             ...match, 
-                            explanation: "Standard pattern matched (Preset)." 
+                            explanation: "Match found in Bilingual Database." 
                         };
                     } else {
-                        // 2. Fallback Template (Since AI is removed)
+                        // 3. No Match - Show Prompt Only
                         this.result = {
                             output: this.input,
-                            outcome: "Define Business Value (e.g., Revenue increase or Cost reduction)",
-                            leading: "Define Early Indicator (e.g., Adoption %)",
-                            lagging: "Define Success Metric (e.g., ROI $)",
-                            explanation: "No preset found. Use this template to structure your outcome manually."
+                            outcome: "??? (Use Prompt Below)",
+                            leading: "???",
+                            lagging: "???",
+                            explanation: "Custom scenario detected. Use the prompt below with ChatGPT/Claude."
                         };
                     }
                     
                     this.loading = false;
-                }, 500);
-            } 
+                }, 400);
+            },
+
+            copyPrompt() {
+                navigator.clipboard.writeText(this.generatedPrompt);
+                alert("Prompt copied! Paste this into ChatGPT/Claude to get your KPIs.");
+            }
         },
+        
         // ------------------------------------------------------------------
 // TEAM COLLABORATION MANAGER
 // ------------------------------------------------------------------
