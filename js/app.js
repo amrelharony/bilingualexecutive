@@ -501,7 +501,7 @@ rolePlay: {
 },
 
         // ------------------------------------------------------------------
-        // [REVAMPED] CULTURAL DEBT THERMOMETER (CORE ONLY - NO AI)
+        //  CULTURAL DEBT THERMOMETER 
         // ------------------------------------------------------------------
         culturalMonitor: {
             history: [],
