@@ -20,6 +20,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+document.addEventListener('alpine:init', () => {
+    Alpine.data('toolkit', () => ({
+
         // ------------------------------------------------------------------
         // INITIALIZATION
         // ------------------------------------------------------------------
