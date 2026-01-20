@@ -532,6 +532,90 @@
 
             </div>
 
+            <!-- KPI DESIGNER TAB -->
+<div x-show="currentTab === 'kpi'" x-cloak class="max-w-4xl mx-auto">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">Outcome vs. Output Designer</h2>
+        <p class="text-textMuted text-sm">Stop funding "Deliverables." Start funding "Results."</p>
+    </div>
+
+    <div class="grid lg:grid-cols-2 gap-8 items-start">
+        
+        <!-- INPUT: The "Project Mindset" -->
+        <div class="bg-card border border-slate-700 p-8 rounded-xl relative overflow-hidden">
+            <!-- Watermark -->
+            <div class="absolute -right-4 -top-4 text-slate-800 opacity-50">
+                <i class="fa-solid fa-industry text-9xl"></i>
+            </div>
+
+            <label class="block font-mono text-xs text-slate-500 uppercase mb-2">The "Project" Goal (Output)</label>
+            <p class="text-sm text-textMuted mb-4">What did the business ask you to build?</p>
+            
+            <div class="relative">
+                <input type="text" x-model="kpiDesigner.input" @keydown.enter="kpiDesigner.generate()"
+                       placeholder="e.g. We need a new Mobile App..." 
+                       class="w-full bg-dark border border-slate-600 rounded-lg p-4 text-white focus:border-green-400 focus:outline-none transition-colors">
+                
+                <!-- Quick Selects -->
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <button @click="kpiDesigner.input='Migrate Core to Cloud'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded transition-colors">Cloud Migration</button>
+                    <button @click="kpiDesigner.input='Launch AI Chatbot'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded transition-colors">AI Chatbot</button>
+                    <button @click="kpiDesigner.input='New Data Warehouse'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded transition-colors">Data Lake</button>
+                </div>
+            </div>
+
+            <button @click="kpiDesigner.generate()" 
+                    :disabled="kpiDesigner.loading || !kpiDesigner.input"
+                    class="mt-8 w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all">
+                <span x-show="!kpiDesigner.loading">CONVERT TO OUTCOME <i class="fa-solid fa-arrow-right ml-1"></i></span>
+                <span x-show="kpiDesigner.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> REFRAMING...</span>
+            </button>
+        </div>
+
+        <!-- OUTPUT: The "Product Mindset" -->
+        <div class="relative min-h-[300px]">
+            
+            <!-- Empty State -->
+            <div x-show="!kpiDesigner.result" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-600">
+                <i class="fa-solid fa-wand-magic-sparkles text-4xl mb-3"></i>
+                <p class="text-xs font-mono">Waiting for input...</p>
+            </div>
+
+            <!-- Result Card -->
+            <div x-show="kpiDesigner.result" x-transition:enter="transition ease-out duration-500 transform" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
+                 class="bg-gradient-to-br from-green-900/20 to-card border border-green-500/50 p-8 rounded-xl shadow-glow relative">
+                
+                <div class="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
+
+                <label class="block font-mono text-xs text-green-400 uppercase mb-4 font-bold"><i class="fa-solid fa-check-circle mr-2"></i>The Business Outcome</label>
+                
+                <h3 class="text-2xl font-bold text-white mb-2 leading-tight" x-text="kpiDesigner.result?.outcome"></h3>
+                <p class="text-xs text-slate-400 italic mb-6" x-text="kpiDesigner.result?.explanation"></p>
+
+                <div class="grid grid-cols-1 gap-4">
+                    <div class="bg-dark/50 p-4 rounded border border-slate-700">
+                        <span class="text-[10px] text-slate-500 uppercase block mb-1">Leading Indicator (Early Signal)</span>
+                        <span class="text-sm font-mono text-blue-300" x-text="kpiDesigner.result?.leading"></span>
+                    </div>
+                    <div class="bg-dark/50 p-4 rounded border border-slate-700">
+                        <span class="text-[10px] text-slate-500 uppercase block mb-1">Lagging Indicator (Success)</span>
+                        <span class="text-sm font-mono text-green-300" x-text="kpiDesigner.result?.lagging"></span>
+                    </div>
+                </div>
+                
+                <div class="mt-6 pt-4 border-t border-slate-700/50 flex justify-between items-center">
+                    <span class="text-[10px] text-slate-500">KPI Dashboard Blueprint</span>
+                    <button class="text-xs text-green-400 hover:text-white font-bold" @click="navigator.clipboard.writeText(`Goal: ${kpiDesigner.result.outcome}\nMetric: ${kpiDesigner.result.lagging}`); alert('KPIs copied!')">
+                        <i class="fa-regular fa-copy mr-1"></i> COPY
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+            
             <!-- API SANDBOX TAB -->
             <div x-show="currentTab === 'sandbox'" x-cloak class="max-w-5xl mx-auto">
                 
