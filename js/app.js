@@ -9,23 +9,22 @@ document.addEventListener('alpine:init', () => {
             this.isMobile = window.innerWidth < 768;
             window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
 
-            
-            // PWA & Install Logic
-            const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+            // Initialize Supabase (Only for Teams/Leaderboards now, not AI)
+            if (window.supabase) {
+                const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
+                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
+                this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                if (this.teamManager) this.teamManager.supabase = this.supabase; 
+            }
 
-            // 1. Capture the event for Android/Chrome (so we can trigger it later)
+            // PWA Logic
+            const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 this.deferredPrompt = e;
             });
-
-            // 2. Show the banner for EVERYONE on mobile (iOS & Android)
-            // We moved this OUTSIDE the event listener so it works on iPhones too
             if (this.isMobile && !isPWA) {
-                // Check if they dismissed it previously
                 const dismissed = localStorage.getItem('pwaPromptDismissed');
-                
-                // If not dismissed, show it after 2 seconds
                 if (!dismissed) {
                     setTimeout(() => { this.showPwaPrompt = true; }, 2000);
                 }
@@ -37,30 +36,14 @@ document.addEventListener('alpine:init', () => {
             
             const teamCode = params.get('team_code');
             if (teamCode) {
-                console.log("Team Invite Detected:", teamCode); // Debugging line
                 this.currentTab = 'assessment';
                 this.$nextTick(() => {
-                    if(this.teamManager) {
-                        this.teamManager.joinByLink(teamCode);
-                    }
+                    if(this.teamManager) this.teamManager.joinByLink(teamCode);
                 });
-            }
-
-
-
-            const challenger = params.get('challenger');
-            if (challenger) {
-                try {
-                    this.challengerData = JSON.parse(atob(challenger));
-                    this.currentTab = 'assessment';
-                } catch (e) { console.error("URL Parameter Error", e); }
             }
 
             // Restore Data
             try {
-                const savedKey = localStorage.getItem('bilingual_api_key');
-                if(savedKey) this.userApiKey = savedKey;
-
                 const savedScores = localStorage.getItem('bilingual_scores');
                 if (savedScores) {
                     const parsed = JSON.parse(savedScores);
@@ -68,63 +51,14 @@ document.addEventListener('alpine:init', () => {
                         section.questions.forEach((q, qIdx) => { if(parsed[sIdx] && parsed[sIdx][qIdx]) q.score = parsed[sIdx][qIdx]; });
                     });
                 }
-
-                                const savedShadow = localStorage.getItem('bilingual_shadow_inventory');
-                if (savedShadow) {
-                    this.shadowAudit.inventory = JSON.parse(savedShadow);
-                }
-
-             const savedTeam = localStorage.getItem('bilingual_active_team');
-                if (savedTeam) {
-                    this.teamManager.activeTeam = JSON.parse(savedTeam);
-                    this.teamManager.view = 'dashboard';
-                    // We use $nextTick to ensure Supabase client is ready
-                    this.$nextTick(() => {
-                        this.teamManager.fetchResults();
-                    });
-                }
-   
+                // Restore other local data...
             } catch(e) {}
 
-            // Watchers
-            this.$watch('assessmentData', (val) => {
-                const simpleScores = val.map(s => s.questions.map(q => q.score));
-                try { localStorage.setItem('bilingual_scores', JSON.stringify(simpleScores)); } catch (e) {}
-            });
-
-            this.$watch('mobileMenuOpen', (value) => {
-                if (value) document.body.classList.add('mobile-menu-open');
-                else document.body.classList.remove('mobile-menu-open');
-            });
-          
-            this.culturalMonitor.init(); 
-
-                        const secureBind = this.askSecureAI.bind(this);
-            
-            this.roleplay.askSecureAI = secureBind;
-            this.whatIf.askSecureAI = secureBind;
-            this.riskSim.askSecureAI = secureBind;
-            this.shadowAudit.askSecureAI = secureBind;
-            this.hallucinationDetector.askSecureAI = secureBind;
-            this.kpiDesigner.askSecureAI = secureBind;
-            this.vendorCoach.askSecureAI = secureBind;
-            this.capexClassifier.askSecureAI = secureBind; 
-            this.legacyExplainer.askSecureAI = secureBind;
-            this.watermelonDetector.askSecureAI = secureBind;
-            this.dataCanvasGen.askSecureAI = secureBind;
-            this.siloBuster.askSecureAI = secureBind;
-            this.culturalMonitor.askSecureAI = secureBind;
-            this.lighthouseROI.askSecureAI = secureBind;
-            this.futureBank.askSecureAI = secureBind;
-            this.conwaySim.askSecureAI = secureBind;
-            this.dumbPipeCalc.askSecureAI = secureBind;
-            this.dataGovDash.askSecureAI = secureBind;
-            this.excelEscape.askSecureAI = secureBind;
-
-
+            // Initialize Modules that don't need AI
+            if (this.culturalMonitor) this.culturalMonitor.init(); 
+            if (this.hippoTracker) this.hippoTracker.init();
+            if (this.dailyFeed) this.dailyFeed.init();
         },
-
-        
 
         // ------------------------------------------------------------------
         // STATE VARIABLES
