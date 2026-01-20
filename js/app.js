@@ -1,27 +1,28 @@
 // js/app.js
 
-// Add this BEFORE Alpine initialization to ensure libraries are loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Ensure Alpine is properly loaded
-    if (typeof Alpine === 'undefined') {
-        console.error('Alpine.js failed to load');
-        // Load Alpine manually as fallback
-        const script = document.createElement('script');
-        script.src = 'https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js';
-        document.head.appendChild(script);
-    }
-    
-    // Initialize marked and DOMPurify if needed
-    if (typeof marked === 'undefined') {
-        console.warn('marked library not loaded');
-    }
-    if (typeof DOMPurify === 'undefined') {
-        console.warn('DOMPurify library not loaded');
-    }
-});
+// FIX: Ensure Alpine is loaded before we define components
+function waitForAlpine() {
+    return new Promise((resolve) => {
+        if (typeof Alpine !== 'undefined') {
+            resolve();
+        } else {
+            const checkAlpine = setInterval(() => {
+                if (typeof Alpine !== 'undefined') {
+                    clearInterval(checkAlpine);
+                    resolve();
+                }
+            }, 50);
+        }
+    });
+}
 
-document.addEventListener('alpine:init', () => {
-    Alpine.data('toolkit', () => ({
+// Start everything when Alpine is ready
+waitForAlpine().then(() => {
+    console.log('Alpine.js loaded, initializing toolkit...');
+    
+    // Your existing Alpine initialization code starts here
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('toolkit', () => ({
 
         // ------------------------------------------------------------------
         // INITIALIZATION
@@ -1689,6 +1690,16 @@ TONE: High agency, financially literate, forward-looking. No tech jargon.`;
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
+
+        // Force Alpine to initialize
+    if (typeof Alpine !== 'undefined') {
+        Alpine.start();
+    }
+}).catch(error => {
+    console.error('Failed to load Alpine.js:', error);
+    // Fallback: Show a basic message
+    document.body.innerHTML = '<div class="p-10 text-center text-white">Error loading application. Please refresh the page.</div>';
+});
 
     // ------------------------------------------------------------------
 // OFFLINE BENCHMARK DATA (Fallback if Database fails)
