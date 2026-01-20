@@ -883,6 +883,7 @@ teamManager: {
             { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox' }, 
             { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
+            { id: 'roi', label: 'ROI Calculator', icon: 'fa-solid fa-calculator', vip: false },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } 
         ],
@@ -900,6 +901,7 @@ teamManager: {
             { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
+            { id: 'roi', label: 'Lighthouse ROI', desc: 'Quantify Hard & Soft value. Generate Board Defense script.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
         ],
         
@@ -1453,6 +1455,95 @@ async submitAndBenchmark() {
             const q = this.glossarySearch.toLowerCase(); 
             return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); 
         }
+
+
+        // ------------------------------------------------------------------
+        // LIGHTHOUSE ROI CALCULATOR (Math + Prompt Generator)
+        // ------------------------------------------------------------------
+        lighthouseROI: {
+            inputs: {
+                name: '',
+                duration_weeks: 12,
+                squad_cost_per_week: 15000, 
+                software_cost: 25000,       
+                revenue_generated: 0,       
+                cost_avoided: 150000,       
+                old_cycle_time: 20,         
+                new_cycle_time: 2           
+            },
+            results: null,
+            generatedPrompt: '',
+
+            calculate() {
+                if (!this.inputs.name) return alert("Please enter a Project Name.");
+
+                const i = this.inputs;
+                
+                // 1. Hard Costs
+                const laborCost = i.duration_weeks * i.squad_cost_per_week;
+                const totalInvestment = laborCost + parseInt(i.software_cost);
+                
+                // 2. Hard Benefits
+                const totalValue = parseInt(i.revenue_generated) + parseInt(i.cost_avoided);
+                const netProfit = totalValue - totalInvestment;
+                
+                let roiPercent = 0;
+                if (totalInvestment > 0) roiPercent = Math.round(((totalValue - totalInvestment) / totalInvestment) * 100);
+
+                // 3. Speed Differential
+                let speedFactor = 0;
+                if (i.new_cycle_time > 0) speedFactor = (i.old_cycle_time / i.new_cycle_time).toFixed(1);
+
+                this.results = {
+                    totalInvestment: totalInvestment,
+                    totalValue: totalValue,
+                    netProfit: netProfit,
+                    roiPercent: roiPercent,
+                    speedFactor: speedFactor
+                };
+
+                // --- GENERATE THE ADVANCED SYSTEM PROMPT ---
+                this.generatedPrompt = `ACT AS: A CFO & Chief Strategy Officer (Boardroom Level).
+
+CONTEXT:
+I need to defend a "Lighthouse Pilot" project we just completed. 
+Project Name: "${i.name}".
+
+THE HARD DATA (We just calculated this):
+1. Total Spend: $${totalInvestment.toLocaleString()}
+2. Immediate Financial Impact: $${netProfit.toLocaleString()} (ROI: ${roiPercent}%)
+3. Velocity Gain: ${speedFactor}x faster than our legacy process.
+
+YOUR TASK:
+Write a "Board Briefing Note" that justifies this investment.
+
+SPECIFIC INSTRUCTIONS:
+1. THE FINANCIAL VERDICT: Summarize the ROI. If it's negative, frame it as "R&D Tuition" for a new capability. If positive, frame it as "Scalable Value".
+2. THE VELOCITY MULTIPLIER: Explain that the ${speedFactor}x speed gain is the *real* asset. Calculate the "Cost of Delay" we are now avoiding.
+3. THE SKEPTIC'S DEFENSE: Write a verbatim script for me to answer this specific objection: "Why did we spend $${totalInvestment.toLocaleString()} on such a small pilot?"
+
+TONE: High agency, financially literate, forward-looking. No tech jargon.`;
+            },
+
+            copyPrompt() {
+                navigator.clipboard.writeText(this.generatedPrompt);
+                alert("Boardroom Strategy Prompt copied! Paste into ChatGPT/Claude.");
+            },
+
+            generatePDF() {
+                // (Existing PDF Logic goes here - kept brief for this snippet)
+                if (!window.jspdf) { alert("PDF Lib missing"); return; }
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF();
+                doc.setFont("helvetica", "bold");
+                doc.text(`ROI REPORT: ${this.inputs.name}`, 20, 20);
+                doc.setFont("helvetica", "normal");
+                doc.text(`Net Profit: $${this.results.netProfit}`, 20, 30);
+                doc.text(`Speed Gain: ${this.results.speedFactor}x`, 20, 40);
+                doc.save(`${this.inputs.name}_ROI.pdf`);
+            }
+        },
+
 
     })); // <-- This closes the Alpine.data object
 
