@@ -582,6 +582,55 @@ document.addEventListener('alpine:init', () => {
         },
 
         // ------------------------------------------------------------------
+        // KPI DESIGNER (Outcome vs Output) - OFFLINE VERSION
+        // ------------------------------------------------------------------
+        kpiDesigner: {
+            input: '',
+            loading: false,
+            result: null,
+
+            // "Cheat Sheet" for common banking projects (Offline Mode / Fallback)
+            presets: [
+                { keyword: 'mobile app', output: 'Launch Mobile App v2', outcome: 'Reduce Call Center Volume by 15%', leading: '% of Logins using Biometrics', lagging: 'Cost to Serve per Customer' },
+                { keyword: 'cloud', output: 'Migrate to AWS', outcome: 'Reduce Infrastructure Spend by 20%', leading: '% of Non-Prod Servers Auto-Shutdown', lagging: 'Monthly Hosting Bill (FinOps)' },
+                { keyword: 'data lake', output: 'Build Data Lake', outcome: 'Reduce "Time-to-Insight" for Risk Reports', leading: 'Data Freshness (SLO Adherence)', lagging: 'Regulatory Fines / Audit Issues' },
+                { keyword: 'salesforce', output: 'Implement CRM', outcome: 'Increase Cross-Sell Ratio', leading: 'Sales Activity / Logins', lagging: 'Products per Customer' },
+                { keyword: 'lending', output: 'Automate Lending', outcome: 'Decrease "Time-to-Cash"', leading: '% of Loans Auto-Decisioned', lagging: 'Conversion Rate' }
+            ],
+
+            generate() {
+                if (!this.input.trim()) return alert("Please enter a project goal first.");
+                
+                this.loading = true;
+                this.result = null;
+
+                // Simulate brief calculation time for UX
+                setTimeout(() => {
+                    // 1. Try Offline Match First
+                    const match = this.presets.find(p => this.input.toLowerCase().includes(p.keyword));
+                    
+                    if (match) {
+                        this.result = { 
+                            output: this.input, 
+                            ...match, 
+                            explanation: "Standard pattern matched (Preset)." 
+                        };
+                    } else {
+                        // 2. Fallback Template (Since AI is removed)
+                        this.result = {
+                            output: this.input,
+                            outcome: "Define Business Value (e.g., Revenue increase or Cost reduction)",
+                            leading: "Define Early Indicator (e.g., Adoption %)",
+                            lagging: "Define Success Metric (e.g., ROI $)",
+                            explanation: "No preset found. Use this template to structure your outcome manually."
+                        };
+                    }
+                    
+                    this.loading = false;
+                }, 500);
+            } 
+        },
+        // ------------------------------------------------------------------
 // TEAM COLLABORATION MANAGER
 // ------------------------------------------------------------------
 teamManager: {
