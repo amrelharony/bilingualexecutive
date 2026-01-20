@@ -16,39 +16,37 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    <!-- CSS Libraries -->
+   <!-- Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- LOCAL CSS FIRST -->
-    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
 
-    <!-- Inline Tailwind Config (MUST come before Tailwind) -->
+    <!-- YOUR LOCAL FILES -->
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/app.js"></script>
+
     <script>
-        // Minimal Tailwind config - inline to avoid CDN warning
-        window.tailwindConfig = {
+        tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        dark: '#0f172a', card: '#1e293b', primary: '#4ade80', 
-                        risk: '#f87171', warn: '#fbbf24', hotpink: '#f472b6', 
-                        textMain: '#f1f5f9', textMuted: '#94a3b8',
+                        dark: '#0f172a', card: '#1e293b', primary: '#4ade80', risk: '#f87171', warn: '#fbbf24', hotpink: '#f472b6', textMain: '#f1f5f9', textMuted: '#94a3b8',
                     },
-                    fontFamily: { 
-                        mono: ['"JetBrains Mono"', 'monospace'], 
-                        sans: ['"Inter"', 'sans-serif'] 
-                    },
-                    boxShadow: { 
-                        'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 
-                        'glow-vip': '0 0 20px rgba(244, 114, 182, 0.2)' 
-                    },
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'], sans: ['"Inter"', 'sans-serif'], },
+                    boxShadow: { 'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 'glow-vip': '0 0 20px rgba(244, 114, 182, 0.2)' },
                     animation: { 'glitch': 'glitch 1s linear infinite' }
                 }
             }
         }
     </script>
-</head>
     
-<body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
+</head>
 <body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
 
     <div x-data="toolkit" class="flex w-full h-full relative">
@@ -153,6 +151,86 @@
                         START SIMULATION
                     </button>
                 </div>
+
+                <!-- QUIZ / FLASHCARDS TAB -->
+            <div x-show="currentTab === 'quiz'" x-cloak class="max-w-2xl mx-auto">
+                
+                <!-- 1. Start Screen -->
+                <div x-show="!quiz.active" class="text-center py-12">
+                    <div class="w-24 h-24 bg-card rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-cyan-400 shadow-glow">
+                        <i class="fa-solid fa-brain text-4xl text-cyan-400"></i>
+                    </div>
+                    <h2 class="text-3xl font-mono font-bold text-white mb-4">The Bilingual Dictionary</h2>
+                    <p class="text-textMuted max-w-md mx-auto mb-8">
+                        Can you translate "Technologist" into "Business Value"? Test your fluency with 5 rapid-fire flashcards.
+                    </p>
+                    <button @click="quiz.start()" class="bg-cyan-400 hover:bg-cyan-300 text-dark font-bold py-4 px-10 rounded-full transition-all active:scale-95 shadow-lg">
+                        START QUIZ
+                    </button>
+                </div>
+
+                <!-- 2. Gameplay Screen -->
+                <div x-show="quiz.active && !quiz.finished" class="relative">
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-800 h-2 rounded-full mb-6">
+                        <div class="bg-cyan-400 h-2 rounded-full transition-all duration-300" 
+                             :style="`width: ${((quiz.currentQuestion + 1) / quiz.questions.length) * 100}%`"></div>
+                    </div>
+
+                    <!-- The Flashcard -->
+                    <div class="bg-card border border-slate-700 p-8 rounded-2xl shadow-2xl relative overflow-hidden min-h-[400px] flex flex-col justify-center">
+                        
+                        <!-- Flashcard Content -->
+                        <div class="text-center mb-8">
+                            <span class="text-[10px] font-mono text-cyan-400 tracking-widest uppercase mb-2 block">
+                                TERM TO TRANSLATE
+                            </span>
+                            <h3 class="text-3xl md:text-4xl font-bold text-white" x-text="quiz.questions[quiz.currentQuestion].term"></h3>
+                        </div>
+
+                        <!-- Options -->
+                        <div class="space-y-3">
+                            <template x-for="(option, index) in quiz.questions[quiz.currentQuestion].options" :key="index">
+                                <button @click="quiz.submitAnswer(option.correct)"
+                                        :class="{
+                                            'hover:border-cyan-400 hover:bg-slate-800': !quiz.feedback,
+                                            'border-green-500 bg-green-500/10': quiz.feedback && option.correct,
+                                            'border-red-500 bg-red-500/10 opacity-50': quiz.feedback && !option.correct
+                                        }"
+                                        class="w-full p-4 rounded-xl border border-slate-600 text-left transition-all duration-200">
+                                    <span class="text-sm md:text-base text-slate-200" x-text="option.text"></span>
+                                </button>
+                            </template>
+                        </div>
+
+                        <!-- Feedback Overlay (Popup) -->
+                        <div x-show="quiz.feedback" x-transition.opacity 
+                             class="absolute inset-0 flex items-center justify-center backdrop-blur-sm z-10 rounded-2xl">
+                            <div class="p-6 rounded-full shadow-2xl transform scale-110" 
+                                 :class="quiz.feedback === 'correct' ? 'bg-green-500' : 'bg-red-500'">
+                                <i class="fa-solid text-4xl text-white" 
+                                   :class="quiz.feedback === 'correct' ? 'fa-check' : 'fa-xmark'"></i>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 3. Results Screen -->
+                <div x-show="quiz.finished" class="text-center py-10">
+                    <h2 class="text-2xl font-mono text-white mb-2">SESSION COMPLETE</h2>
+                    <div class="text-6xl font-bold mb-4" :class="quiz.score === 5 ? 'text-primary' : 'text-cyan-400'">
+                        <span x-text="quiz.score"></span>/<span x-text="quiz.questions.length"></span>
+                    </div>
+                    
+                    <p class="text-textMuted mb-8" x-show="quiz.score === 5">Perfect Score! You are a Bilingual Executive.</p>
+                    <p class="text-textMuted mb-8" x-show="quiz.score < 5">Keep practicing. Fluency takes time.</p>
+
+                    <button @click="quiz.start()" class="border border-slate-500 hover:bg-slate-800 text-white py-3 px-8 rounded-full transition-all">
+                        <i class="fa-solid fa-rotate-right mr-2"></i> Play Again
+                    </button>
+                </div>
+            </div>
 
                 <!-- Game Interface -->
                 <div x-show="caseStudy.active && !caseStudy.gameOver" class="grid md:grid-cols-3 gap-6">
@@ -454,115 +532,6 @@
 
             </div>
 
-            <!-- KPI DESIGNER TAB -->
-<div x-show="currentTab === 'kpi'" x-cloak class="max-w-3xl mx-auto">
-    
-    <div class="text-center mb-8">
-        <h2 class="font-mono text-3xl font-bold text-white mb-2">Outcome Generator</h2>
-        <p class="text-textMuted text-sm">Don't write the prompt. Let the machine build the prompt.</p>
-    </div>
-
-    <!-- MAIN CARD -->
-    <div class="bg-card border border-slate-700 rounded-xl p-8 relative overflow-hidden shadow-2xl min-h-[400px] flex flex-col">
-        
-        <!-- Progress Bar (Visible only on Steps 1-4) -->
-        <div x-show="kpiDesigner.step < 5" class="flex gap-2 mb-8">
-            <template x-for="i in 4">
-                <div class="h-1 flex-1 rounded-full transition-all duration-500" 
-                     :class="kpiDesigner.step >= i ? 'bg-green-500' : 'bg-slate-700'"></div>
-            </template>
-        </div>
-
-        <!-- STEP 1: THE PROJECT (Output) -->
-        <div x-show="kpiDesigner.step === 1" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-x-10" x-transition:enter-end="opacity-100 translate-x-0">
-            <label class="block text-xs font-mono text-green-400 font-bold uppercase mb-2">Step 1/4: The Output</label>
-            <h3 class="text-xl font-bold text-white mb-4">What are you being asked to build?</h3>
-            <input type="text" x-model="kpiDesigner.form.project" @keydown.enter="kpiDesigner.next()"
-                   placeholder="e.g. A new Mobile Banking App" 
-                   class="w-full bg-dark border border-slate-600 rounded p-4 text-white focus:border-green-400 focus:outline-none mb-6">
-            
-            <div class="grid grid-cols-2 gap-3">
-                <template x-for="preset in kpiDesigner.presets">
-                    <button @click="kpiDesigner.quickFill(preset)" class="text-left text-xs p-3 rounded border border-slate-700 bg-slate-800/50 hover:border-green-500 hover:text-white text-slate-400 transition-all">
-                        <span class="block font-bold text-white" x-text="preset.label"></span>
-                        <span class="opacity-50">Autofill Demo</span>
-                    </button>
-                </template>
-            </div>
-        </div>
-
-        <!-- STEP 2: THE WHO (User) -->
-        <div x-show="kpiDesigner.step === 2" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-x-10" x-transition:enter-end="opacity-100 translate-x-0">
-            <label class="block text-xs font-mono text-green-400 font-bold uppercase mb-2">Step 2/4: The Customer</label>
-            <h3 class="text-xl font-bold text-white mb-4">Who is going to use this?</h3>
-            <p class="text-xs text-slate-400 mb-4">Be specific. "Everyone" is the wrong answer.</p>
-            <input type="text" x-model="kpiDesigner.form.who" @keydown.enter="kpiDesigner.next()"
-                   placeholder="e.g. Small Business Owners needing cashflow" 
-                   class="w-full bg-dark border border-slate-600 rounded p-4 text-white focus:border-green-400 focus:outline-none">
-        </div>
-
-        <!-- STEP 3: THE PAIN (Problem) -->
-        <div x-show="kpiDesigner.step === 3" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-x-10" x-transition:enter-end="opacity-100 translate-x-0">
-            <label class="block text-xs font-mono text-green-400 font-bold uppercase mb-2">Step 3/4: The Friction</label>
-            <h3 class="text-xl font-bold text-white mb-4">Why do they hate the current process?</h3>
-            <textarea x-model="kpiDesigner.form.pain" 
-                      placeholder="e.g. It takes 3 weeks to get approved and they have to fax documents." 
-                      class="w-full h-32 bg-dark border border-slate-600 rounded p-4 text-white focus:border-green-400 focus:outline-none"></textarea>
-        </div>
-
-        <!-- STEP 4: THE VALUE (Goal) -->
-        <div x-show="kpiDesigner.step === 4" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-x-10" x-transition:enter-end="opacity-100 translate-x-0">
-            <label class="block text-xs font-mono text-green-400 font-bold uppercase mb-2">Step 4/4: The Business Value</label>
-            <h3 class="text-xl font-bold text-white mb-4">What does the Bank get out of this?</h3>
-            <div class="grid grid-cols-2 gap-3 mb-4">
-                <button @click="kpiDesigner.form.value = 'Reduce Cost to Serve'" :class="kpiDesigner.form.value === 'Reduce Cost to Serve' ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-3 rounded border border-slate-600 text-xs font-bold transition-all">Reduce Cost</button>
-                <button @click="kpiDesigner.form.value = 'Increase Revenue / Sales'" :class="kpiDesigner.form.value === 'Increase Revenue / Sales' ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-3 rounded border border-slate-600 text-xs font-bold transition-all">Increase Revenue</button>
-                <button @click="kpiDesigner.form.value = 'Reduce Compliance Risk'" :class="kpiDesigner.form.value === 'Reduce Compliance Risk' ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-3 rounded border border-slate-600 text-xs font-bold transition-all">Reduce Risk</button>
-                <button @click="kpiDesigner.form.value = 'Increase Velocity (Speed)'" :class="kpiDesigner.form.value === 'Increase Velocity (Speed)' ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-3 rounded border border-slate-600 text-xs font-bold transition-all">Increase Speed</button>
-            </div>
-            <input type="text" x-model="kpiDesigner.form.value" placeholder="Or type custom value..." class="w-full bg-dark border border-slate-600 rounded p-3 text-white text-sm focus:border-green-400 focus:outline-none">
-        </div>
-
-        <!-- STEP 5: THE RESULT (The Prompt) -->
-        <div x-show="kpiDesigner.step === 5" x-transition:enter="transition ease-out duration-500 transform" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="h-full flex flex-col">
-            
-            <div x-show="kpiDesigner.loading" class="flex-1 flex flex-col items-center justify-center text-green-400">
-                <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
-                <p class="font-mono text-xs">ENGINEERING PROMPT...</p>
-            </div>
-
-            <div x-show="!kpiDesigner.loading" class="flex-1 flex flex-col">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-white text-lg"><i class="fa-solid fa-robot mr-2 text-green-400"></i>Prompt Generated</h3>
-                    <button @click="kpiDesigner.reset()" class="text-xs text-slate-500 hover:text-white">Start Over</button>
-                </div>
-
-                <div class="bg-black p-4 rounded-lg border-l-4 border-green-500 flex-1 overflow-y-auto max-h-[300px] font-mono text-xs text-slate-300 whitespace-pre-wrap leading-relaxed shadow-inner" x-text="kpiDesigner.generatedPrompt"></div>
-
-                <button @click="kpiDesigner.copyPrompt()" class="mt-6 w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-lg shadow-glow transition-all flex items-center justify-center gap-2 group">
-                    <i class="fa-regular fa-copy group-hover:scale-110 transition-transform"></i> COPY TO CLIPBOARD
-                </button>
-                <p class="text-center text-[10px] text-slate-500 mt-2">Ready to paste into ChatGPT / Claude / Gemini.</p>
-            </div>
-        </div>
-
-        <!-- NAV BUTTONS (Bottom) -->
-        <div x-show="kpiDesigner.step < 5" class="mt-auto pt-8 flex justify-between border-t border-slate-700/50">
-            <button @click="kpiDesigner.back()" x-show="kpiDesigner.step > 1" class="text-slate-400 hover:text-white text-sm font-mono flex items-center gap-2">
-                <i class="fa-solid fa-arrow-left"></i> Back
-            </button>
-            <div x-show="kpiDesigner.step === 1"></div> <!-- Spacer -->
-            
-            <button @click="kpiDesigner.step === 4 ? kpiDesigner.generate() : kpiDesigner.next()" 
-                    class="bg-white hover:bg-slate-200 text-dark font-bold px-6 py-2 rounded-lg text-sm transition-all flex items-center gap-2">
-                <span x-text="kpiDesigner.step === 4 ? 'GENERATE PROMPT' : 'NEXT'"></span>
-                <i class="fa-solid" :class="kpiDesigner.step === 4 ? 'fa-wand-magic-sparkles' : 'fa-arrow-right'"></i>
-            </button>
-        </div>
-
-    </div>
-</div>
-
             <!-- API SANDBOX TAB -->
             <div x-show="currentTab === 'sandbox'" x-cloak class="max-w-5xl mx-auto">
                 
@@ -763,139 +732,6 @@
                 </div>
 
             </div>
-
-            <!-- LIGHTHOUSE ROI CALCULATOR TAB -->
-<div x-show="currentTab === 'roi'" x-cloak class="max-w-5xl mx-auto">
-    
-    <div class="text-center mb-8">
-        <h2 class="font-mono text-3xl font-bold text-white mb-2">Lighthouse ROI Calculator</h2>
-        <p class="text-textMuted text-sm">Translate "Agile Success" into the only language the Board speaks: Money.</p>
-    </div>
-
-    <div class="grid lg:grid-cols-12 gap-8">
-        
-        <!-- LEFT: INPUTS -->
-        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
-            <h3 class="font-mono text-xs text-green-400 uppercase border-b border-slate-700 pb-2">Pilot Parameters</h3>
-            
-            <div>
-                <label class="text-xs text-white block mb-1">Project Name</label>
-                <input type="text" x-model="lighthouseROI.inputs.name" placeholder="e.g. Instant SME Loan" class="w-full bg-dark border border-slate-600 rounded p-2 text-white focus:border-green-400 focus:outline-none">
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[10px] text-slate-400 block mb-1">Duration (Weeks)</label>
-                    <input type="number" x-model="lighthouseROI.inputs.duration_weeks" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-                </div>
-                <div>
-                    <label class="text-[10px] text-slate-400 block mb-1">Squad Cost ($/Wk)</label>
-                    <input type="number" x-model="lighthouseROI.inputs.squad_cost_per_week" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-                </div>
-            </div>
-
-            <h3 class="font-mono text-xs text-green-400 uppercase border-b border-slate-700 pb-2 pt-2">Financial Impact</h3>
-            
-            <div>
-                <label class="text-[10px] text-slate-400 block mb-1">Revenue Generated ($)</label>
-                <input type="number" x-model="lighthouseROI.inputs.revenue_generated" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-            </div>
-            <div>
-                <label class="text-[10px] text-slate-400 block mb-1">Cost Avoided ($)</label>
-                <p class="text-[9px] text-slate-500 mb-1">(e.g. fines, legacy maintenance saved)</p>
-                <input type="number" x-model="lighthouseROI.inputs.cost_avoided" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-            </div>
-
-            <h3 class="font-mono text-xs text-purple-400 uppercase border-b border-slate-700 pb-2 pt-2">Soft Metrics</h3>
-            
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[10px] text-slate-400 block mb-1">Old Speed (Weeks)</label>
-                    <input type="number" x-model="lighthouseROI.inputs.old_cycle_time" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-                </div>
-                <div>
-                    <label class="text-[10px] text-slate-400 block mb-1">New Speed (Weeks)</label>
-                    <input type="number" x-model="lighthouseROI.inputs.new_cycle_time" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-                </div>
-            </div>
-
-            <button @click="lighthouseROI.calculate()" 
-                    :disabled="!lighthouseROI.inputs.name"
-                    class="w-full bg-white hover:bg-gray-200 text-dark font-bold py-3 rounded-lg shadow-glow transition-all mt-4 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                <i class="fa-solid fa-calculator"></i> CALCULATE ROI
-            </button>
-        </div>
-
-        <!-- RIGHT: RESULTS -->
-        <div class="lg:col-span-7 space-y-6">
-            
-            <!-- Empty State -->
-            <div x-show="!lighthouseROI.results" class="h-full border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-500 p-10">
-                <i class="fa-solid fa-chart-pie text-4xl mb-4 opacity-20"></i>
-                <p class="text-xs font-mono">Enter data to prove value.</p>
-            </div>
-
-            <!-- Results Dashboard -->
-            <div x-show="lighthouseROI.results" x-transition>
-                
-                <!-- 1. The Big Numbers -->
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-card border border-slate-700 p-6 rounded-xl text-center shadow-lg">
-                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">NET FINANCIAL IMPACT</p>
-                        <h3 class="text-3xl font-bold font-mono my-2" 
-                            :class="lighthouseROI.results?.netProfit > 0 ? 'text-green-400' : 'text-red-400'"
-                            x-text="'$' + lighthouseROI.results?.netProfit.toLocaleString()"></h3>
-                        <span class="text-xs bg-slate-800 px-3 py-1 rounded border border-slate-600" x-text="lighthouseROI.results?.roiPercent + '% ROI'"></span>
-                    </div>
-                    <div class="bg-card border border-slate-700 p-6 rounded-xl text-center shadow-lg">
-                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">VELOCITY GAIN</p>
-                        <h3 class="text-3xl font-bold font-mono text-purple-400 my-2" x-text="lighthouseROI.results?.speedFactor + 'x'"></h3>
-                        <span class="text-xs text-slate-400">Faster than legacy</span>
-                    </div>
-                </div>
-
-                <!-- 2. Breakdown -->
-                <div class="bg-slate-800/50 border border-slate-700 p-6 rounded-xl mb-6">
-                    <h4 class="font-mono text-xs text-slate-400 uppercase mb-4">Financial Breakdown</h4>
-                    <div class="space-y-4">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-slate-300">Total Investment (Cost)</span>
-                            <span class="text-white font-mono" x-text="'$' + lighthouseROI.results?.totalInvestment.toLocaleString()"></span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-slate-300">Total Value (Revenue + Savings)</span>
-                            <span class="text-green-400 font-mono" x-text="'$' + lighthouseROI.results?.totalValue.toLocaleString()"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. THE PROMPT GENERATOR (New Feature) -->
-                <div class="bg-card border-2 border-indigo-500/30 p-1 rounded-xl">
-                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-800">
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <span class="text-[10px] font-mono text-indigo-400 uppercase font-bold"><i class="fa-solid fa-robot mr-2"></i>Board Defense Strategy</span>
-                                <p class="text-[9px] text-slate-500 mt-1">Use this prompt to generate your Board Presentation script.</p>
-                            </div>
-                            <button @click="lighthouseROI.copyPrompt()" class="group text-[10px] bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded font-bold transition-all shadow-glow flex items-center gap-2">
-                                <i class="fa-regular fa-copy"></i> <span>COPY PROMPT</span>
-                            </button>
-                        </div>
-                        
-                        <!-- Visual "Code" Block -->
-                        <div class="bg-black p-3 rounded text-[10px] font-mono text-slate-300 whitespace-pre-wrap border-l-2 border-indigo-500 overflow-y-auto max-h-32 opacity-80 hover:opacity-100 transition-opacity" x-text="lighthouseROI.generatedPrompt">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4. Export PDF -->
-                <button @click="lighthouseROI.generatePDF()" class="w-full mt-6 border border-slate-600 hover:bg-slate-800 text-slate-300 py-3 rounded-lg text-xs font-bold transition-all">
-                    <i class="fa-solid fa-file-pdf mr-2"></i> DOWNLOAD ONE-PAGER PDF
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 
             <!-- ARCHITECT CONSOLE (VIP ONLY) -->
             <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
@@ -1188,15 +1024,11 @@
             </div>
         </div>
     </div>
-                        
 
                         <div class="mt-6">
                             <button @click="copyChallengeLink()" class="text-xs text-textMuted hover:text-white underline"><i class="fa-solid fa-link mr-2"></i><span x-text="copyBtnText"></span></button>
                         </div>
                     </div>
-                </div> 
-        
-
             
 <!-- TRANSLATOR TAB -->
             <div x-show="currentTab === 'translator'" x-cloak class="max-w-5xl mx-auto h-full flex flex-col">
@@ -1348,16 +1180,61 @@
 
         </main>
 
+        <!-- CHAT INTERFACE WITH API SETTINGS -->
+        <div x-show="isChatOpen" class="fixed inset-0 z-50 md:inset-auto md:bottom-24 md:right-6 md:w-96 md:h-[550px] bg-dark flex flex-col md:rounded-2xl border-l md:border border-primary shadow-2xl overflow-hidden font-sans" x-transition>
+            <div class="bg-card p-4 border-b border-slate-700 flex justify-between items-center pt-safe">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary"><i class="fa-solid fa-bolt text-sm"></i></div>
+                    <div><h3 class="font-bold text-white text-sm">Bilingual AI Assistant</h3><p class="text-[10px] text-textMuted uppercase tracking-tighter">Gemini 1.5 Flash / 2.0 Failover</p></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button @click="showKeyModal = true" class="text-slate-400 hover:text-primary p-2" title="API Settings"><i class="fa-solid fa-key"></i></button>
+                    <button @click="isChatOpen = false" class="text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-4 flex flex-col space-y-4 bg-dark" id="chat-messages-container">
+                <div class="chat-bubble chat-bot">Hello. I translate IT jargon into P&L impact. How can I help you today?</div>
+                <template x-for="msg in chatMessages"><div class="chat-bubble" :class="msg.role === 'user' ? 'chat-user' : 'chat-bot'" x-html="msg.text"></div></template>
+                <div x-show="isTyping" class="chat-bubble chat-bot flex gap-1 items-center w-16"><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div></div>
+            </div>
+
+            <div class="p-4 bg-card border-t border-slate-800 pb-safe">
+                <div class="relative flex gap-2">
+                    <input type="text" x-model="chatInput" @keydown.enter="sendMessage()" placeholder="Ask a question..." class="flex-1 bg-dark text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-slate-700">
+                    <button @click="sendMessage()" class="w-12 h-12 bg-primary rounded-full text-dark flex items-center justify-center active:scale-90 transition-transform"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API KEY MODAL -->
+        <div x-show="showKeyModal" class="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm" x-cloak>
+            <div class="bg-card border border-slate-600 p-6 rounded-lg max-w-sm w-full shadow-2xl">
+                <h3 class="text-white font-bold mb-2">API Settings</h3>
+                <p class="text-xs text-slate-400 mb-4">Enter your Google Gemini API Key. Keys are stored safely in your browser's local memory.</p>
+                <input type="password" x-model="userApiKey" placeholder="AIzaSy..." class="w-full bg-dark border border-slate-600 rounded p-2 text-white mb-4 font-mono text-sm">
+                <div class="flex justify-end gap-2">
+                    <button @click="showKeyModal = false" class="text-xs text-slate-400 px-3 py-2">Close</button>
+                    <button @click="saveApiKey()" class="bg-primary text-dark text-xs font-bold px-4 py-2 rounded">Save Key</button>
+                </div>
+            </div>
+        </div>
 
         <!-- MOBILE NAV -->
         <nav class="md:hidden fixed bottom-0 w-full bg-dark/95 backdrop-blur-lg border-t border-slate-800 z-50 pb-safe">
-            <div class="grid grid-cols-4 h-16 items-center">
+            <div class="grid grid-cols-5 h-16 items-center">
                 <button @click="handleNavClick('dashboard')" class="flex flex-col items-center" :class="currentTab === 'dashboard' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-home text-lg"></i><span class="text-[9px] font-mono mt-1">Home</span></button>
                 <button @click="handleNavClick('assessment')" class="flex flex-col items-center" :class="currentTab === 'assessment' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-clipboard-check text-lg"></i><span class="text-[9px] font-mono mt-1">Audit</span></button>
+                <div class="relative -top-5"><button @click="isChatOpen = !isChatOpen" class="w-14 h-14 bg-primary rounded-full shadow-glow flex items-center justify-center text-dark border-4 border-dark"><i class="fa-solid fa-bolt text-xl"></i></button></div>
                 <button @click="handleNavClick('translator')" class="flex flex-col items-center" :class="currentTab === 'translator' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-language text-lg"></i><span class="text-[9px] font-mono mt-1">Trans</span></button>
                 <button @click="mobileMenuOpen = !mobileMenuOpen" class="flex flex-col items-center" :class="mobileMenuOpen ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-bars-staggered text-lg"></i><span class="text-[9px] font-mono mt-1">Menu</span></button>
             </div>
         </nav>
+
+        <!-- FLOATING CHAT BUTTON (Desktop) -->
+        <button @click="isChatOpen = !isChatOpen" class="hidden md:flex fixed bottom-8 right-8 w-16 h-16 bg-primary rounded-full shadow-glow items-center justify-center text-dark text-2xl z-40 transition-transform hover:scale-110">
+            <i class="fa-solid" :class="isChatOpen ? 'fa-xmark' : 'fa-robot'"></i>
+        </button>
 
         <!-- MOBILE MENU OVERLAY -->
         <div x-show="mobileMenuOpen" x-transition x-cloak class="fixed inset-0 z-[60] bg-dark flex flex-col p-6 pt-safe overflow-y-auto mobile-scroll-fix">
@@ -1373,46 +1250,24 @@
 
     </div>
 
-    <!-- ALL SCRIPTS LOADED AT THE BOTTOM - IN CORRECT ORDER -->
     
-    <!-- 1. Load Alpine.js and dependencies FIRST -->
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js" defer></script>
-    
-    <!-- 2. Load other libraries (non-critical) -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
-    
-    <!-- 3. Load Tailwind CSS via CDN (or use local build) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        // Apply config after Tailwind loads
-        if (window.tailwindConfig) {
-            tailwind.config = window.tailwindConfig;
-        }
-    </script>
-    
-    <!-- 4. Load YOUR App.js LAST -->
-    <script src="js/app.js"></script>
 
-    <!-- Service Worker - Fixed Version -->
+    <!-- Service Worker -->
+
     <script>
-        // Register service worker for PWA
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('sw.js')
-                    .then(function(registration) {
-                        console.log('SW registered: ', registration.scope);
+        if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
+            window.addEventListener('load', () => {
+                fetch('sw.js')
+                    .then(response => {
+                        if (response.status === 200) {
+                            navigator.serviceWorker.register('sw.js')
+                                .then(r => console.log('SW Registered'))
+                                .catch(e => console.log('SW Fail:', e));
+                        }
                     })
-                    .catch(function(err) {
-                        console.log('SW registration failed: ', err);
-                    });
+                    .catch(() => {});
             });
         }
     </script>
 </body>
 </html>
-       
