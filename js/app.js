@@ -1,7 +1,25 @@
 // js/app.js
 
-document.addEventListener('alpine:init', () => {
-    Alpine.data('toolkit', () => ({
+// Add this BEFORE Alpine initialization to ensure libraries are loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure Alpine is properly loaded
+    if (typeof Alpine === 'undefined') {
+        console.error('Alpine.js failed to load');
+        // Load Alpine manually as fallback
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js';
+        document.head.appendChild(script);
+    }
+    
+    // Initialize marked and DOMPurify if needed
+    if (typeof marked === 'undefined') {
+        console.warn('marked library not loaded');
+    }
+    if (typeof DOMPurify === 'undefined') {
+        console.warn('DOMPurify library not loaded');
+    }
+});
+
         // ------------------------------------------------------------------
         // INITIALIZATION
         // ------------------------------------------------------------------
@@ -21,26 +39,30 @@ document.addEventListener('alpine:init', () => {
             }
 
             
-            // PWA & Install Logic
-            const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+          // PWA & Install Logic
+const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+             window.navigator.standalone || 
+             document.referrer.includes('android-app://');
 
-            // 1. Capture the event for Android/Chrome (so we can trigger it later)
-            window.addEventListener('beforeinstallprompt', (e) => {
-                e.preventDefault();
-                this.deferredPrompt = e;
-            });
+// Capture install prompt
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    this.deferredPrompt = e;
+    
+    // Show install prompt for mobile users
+    if (this.isMobile && !isPWA) {
+        const dismissed = localStorage.getItem('pwaPromptDismissed');
+        if (!dismissed) {
+            setTimeout(() => { this.showPwaPrompt = true; }, 2000);
+        }
+    }
+});
 
-            // 2. Show the banner for EVERYONE on mobile (iOS & Android)
-            // We moved this OUTSIDE the event listener so it works on iPhones too
-            if (this.isMobile && !isPWA) {
-                // Check if they dismissed it previously
-                const dismissed = localStorage.getItem('pwaPromptDismissed');
-                
-                // If not dismissed, show it after 2 seconds
-                if (!dismissed) {
-                    setTimeout(() => { this.showPwaPrompt = true; }, 2000);
-                }
-            }
+// Detect if app is already installed
+window.addEventListener('appinstalled', () => {
+    this.showPwaPrompt = false;
+    console.log('App installed successfully');
+});
 
             // VIP & Challenger Logic
             const params = new URLSearchParams(window.location.search);
