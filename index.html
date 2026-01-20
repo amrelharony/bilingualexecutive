@@ -544,10 +544,7 @@
         
         <!-- INPUT: The "Project Mindset" -->
         <div class="bg-card border border-slate-700 p-8 rounded-xl relative overflow-hidden">
-            <!-- Watermark -->
-            <div class="absolute -right-4 -top-4 text-slate-800 opacity-50">
-                <i class="fa-solid fa-industry text-9xl"></i>
-            </div>
+            <div class="absolute -right-4 -top-4 text-slate-800 opacity-50"><i class="fa-solid fa-industry text-9xl"></i></div>
 
             <label class="block font-mono text-xs text-slate-500 uppercase mb-2">The "Project" Goal (Output)</label>
             <p class="text-sm text-textMuted mb-4">What did the business ask you to build?</p>
@@ -557,34 +554,31 @@
                        placeholder="e.g. We need a new Mobile App..." 
                        class="w-full bg-dark border border-slate-600 rounded-lg p-4 text-white focus:border-green-400 focus:outline-none transition-colors">
                 
-                <!-- Quick Selects -->
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <button @click="kpiDesigner.input='Migrate Core to Cloud'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded transition-colors">Cloud Migration</button>
-                    <button @click="kpiDesigner.input='Launch AI Chatbot'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded transition-colors">AI Chatbot</button>
-                    <button @click="kpiDesigner.input='New Data Warehouse'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-2 py-1 rounded transition-colors">Data Lake</button>
+                <!-- Quick Selects (Expanded) -->
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span class="text-[10px] text-slate-500 w-full uppercase font-bold">Try Examples:</span>
+                    <button @click="kpiDesigner.input='Migrate Core to Cloud'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded border border-slate-700">Cloud Migration</button>
+                    <button @click="kpiDesigner.input='Launch AI Chatbot'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded border border-slate-700">AI Chatbot</button>
+                    <button @click="kpiDesigner.input='Build Data Lake'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded border border-slate-700">Data Lake</button>
+                    <button @click="kpiDesigner.input='Refactor to Microservices'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded border border-slate-700">Microservices</button>
+                    <button @click="kpiDesigner.input='Implement 2FA Security'" class="text-[10px] bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded border border-slate-700">Cyber Security</button>
                 </div>
             </div>
 
             <button @click="kpiDesigner.generate()" 
                     :disabled="kpiDesigner.loading || !kpiDesigner.input"
-                    class="mt-8 w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all">
+                    class="mt-8 w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg flex items-center justify-center gap-2 transition-all shadow-glow">
                 <span x-show="!kpiDesigner.loading">CONVERT TO OUTCOME <i class="fa-solid fa-arrow-right ml-1"></i></span>
                 <span x-show="kpiDesigner.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> REFRAMING...</span>
             </button>
         </div>
 
-        <!-- OUTPUT: The "Product Mindset" -->
-        <div class="relative min-h-[300px]">
+        <!-- OUTPUT COLUMN -->
+        <div class="space-y-6">
             
-            <!-- Empty State -->
-            <div x-show="!kpiDesigner.result" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-600">
-                <i class="fa-solid fa-wand-magic-sparkles text-4xl mb-3"></i>
-                <p class="text-xs font-mono">Waiting for input...</p>
-            </div>
-
             <!-- Result Card -->
             <div x-show="kpiDesigner.result" x-transition:enter="transition ease-out duration-500 transform" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
-                 class="bg-gradient-to-br from-green-900/20 to-card border border-green-500/50 p-8 rounded-xl shadow-glow relative">
+                 class="bg-gradient-to-br from-green-900/20 to-card border border-green-500/50 p-8 rounded-xl shadow-glow relative min-h-[300px]">
                 
                 <div class="absolute top-0 left-0 w-full h-1 bg-green-500"></div>
 
@@ -603,14 +597,20 @@
                         <span class="text-sm font-mono text-green-300" x-text="kpiDesigner.result?.lagging"></span>
                     </div>
                 </div>
-                
-                <div class="mt-6 pt-4 border-t border-slate-700/50 flex justify-between items-center">
-                    <span class="text-[10px] text-slate-500">KPI Dashboard Blueprint</span>
-                    <button class="text-xs text-green-400 hover:text-white font-bold" @click="navigator.clipboard.writeText(`Goal: ${kpiDesigner.result.outcome}\nMetric: ${kpiDesigner.result.lagging}`); alert('KPIs copied!')">
-                        <i class="fa-regular fa-copy mr-1"></i> COPY
+            </div>
+
+            <!-- The Prompt Generator (New Feature) -->
+            <div x-show="kpiDesigner.result" x-transition class="bg-card border border-slate-700 p-4 rounded-xl">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-[10px] font-mono text-slate-400 uppercase font-bold"><i class="fa-solid fa-robot mr-2"></i>Bilingual Prompt</span>
+                    <button @click="kpiDesigner.copyPrompt()" class="text-[10px] bg-slate-800 hover:bg-white hover:text-dark text-white px-2 py-1 rounded transition-colors">
+                        COPY FOR CHATGPT
                     </button>
                 </div>
+                <div class="bg-dark p-3 rounded text-[10px] font-mono text-slate-400 whitespace-pre-wrap border border-slate-800" x-text="kpiDesigner.generatedPrompt"></div>
+                <p class="text-[9px] text-slate-500 mt-2 text-center">If the example above isn't specific enough, copy this prompt and paste it into your company AI.</p>
             </div>
+
         </div>
 
     </div>
