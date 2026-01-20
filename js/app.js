@@ -889,6 +889,7 @@ teamManager: {
             { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox' }, 
             { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
+            { id: 'kpi', label: 'KPI Designer', icon: 'fa-solid fa-bullseye' },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } 
         ],
@@ -905,6 +906,7 @@ teamManager: {
             { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, 
             { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
+            { id: 'kpi', label: 'Outcome vs. Output', desc: 'Convert vague "Project" goals into measurable "Product" value.', icon: 'fa-solid fa-chart-line', color: 'text-green-400' },
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
         ],
