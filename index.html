@@ -4,12 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>The Bilingual Executive Toolkit v0.1</title>
-
-
-    <style>
-    [x-cloak] { display: none !important; }
-   </style>
-
     
     <!-- PWA Manifest & Meta -->
     <meta name="theme-color" content="#0f172a">
@@ -22,37 +16,39 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-   <!-- Libraries -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- CSS Libraries -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
-
-    <!-- YOUR LOCAL FILES -->
+    
+    <!-- LOCAL CSS FIRST -->
     <link rel="stylesheet" href="css/styles.css">
-    <script src="js/app.js"></script>
 
+    <!-- Inline Tailwind Config (MUST come before Tailwind) -->
     <script>
-        tailwind.config = {
+        // Minimal Tailwind config - inline to avoid CDN warning
+        window.tailwindConfig = {
             theme: {
                 extend: {
                     colors: {
-                        dark: '#0f172a', card: '#1e293b', primary: '#4ade80', risk: '#f87171', warn: '#fbbf24', hotpink: '#f472b6', textMain: '#f1f5f9', textMuted: '#94a3b8',
+                        dark: '#0f172a', card: '#1e293b', primary: '#4ade80', 
+                        risk: '#f87171', warn: '#fbbf24', hotpink: '#f472b6', 
+                        textMain: '#f1f5f9', textMuted: '#94a3b8',
                     },
-                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'], sans: ['"Inter"', 'sans-serif'], },
-                    boxShadow: { 'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 'glow-vip': '0 0 20px rgba(244, 114, 182, 0.2)' },
+                    fontFamily: { 
+                        mono: ['"JetBrains Mono"', 'monospace'], 
+                        sans: ['"Inter"', 'sans-serif'] 
+                    },
+                    boxShadow: { 
+                        'glow': '0 0 15px rgba(74, 222, 128, 0.1)', 
+                        'glow-vip': '0 0 20px rgba(244, 114, 182, 0.2)' 
+                    },
                     animation: { 'glitch': 'glitch 1s linear infinite' }
                 }
             }
         }
     </script>
-    
 </head>
+    
+<body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
 <body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
 
     <div x-data="toolkit" class="flex w-full h-full relative">
@@ -1363,7 +1359,6 @@
             </div>
         </nav>
 
-
         <!-- MOBILE MENU OVERLAY -->
         <div x-show="mobileMenuOpen" x-transition x-cloak class="fixed inset-0 z-[60] bg-dark flex flex-col p-6 pt-safe overflow-y-auto mobile-scroll-fix">
             <div class="flex justify-between items-center mb-8"><h2 class="text-primary font-mono text-xl font-bold">Tools Menu</h2><button @click="mobileMenuOpen=false"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
@@ -1378,22 +1373,46 @@
 
     </div>
 
+    <!-- ALL SCRIPTS LOADED AT THE BOTTOM - IN CORRECT ORDER -->
     
+    <!-- 1. Load Alpine.js and dependencies FIRST -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js" defer></script>
+    
+    <!-- 2. Load other libraries (non-critical) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
+    
+    <!-- 3. Load Tailwind CSS via CDN (or use local build) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Apply config after Tailwind loads
+        if (window.tailwindConfig) {
+            tailwind.config = window.tailwindConfig;
+        }
+    </script>
+    
+    <!-- 4. Load YOUR App.js LAST -->
+    <script src="js/app.js"></script>
 
-<!-- Service Worker - Fixed Version -->
-<script>
-    // Register service worker for PWA
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('sw.js')
-                .then(function(registration) {
-                    console.log('SW registered: ', registration.scope);
-                })
-                .catch(function(err) {
-                    console.log('SW registration failed: ', err);
-                });
-        });
-    }
-</script>
+    <!-- Service Worker - Fixed Version -->
+    <script>
+        // Register service worker for PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('sw.js')
+                    .then(function(registration) {
+                        console.log('SW registered: ', registration.scope);
+                    })
+                    .catch(function(err) {
+                        console.log('SW registration failed: ', err);
+                    });
+            });
+        }
+    </script>
 </body>
 </html>
+       
