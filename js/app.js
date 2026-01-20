@@ -1454,7 +1454,7 @@ async submitAndBenchmark() {
         get filteredGlossary() { 
             const q = this.glossarySearch.toLowerCase(); 
             return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); 
-        }
+        },
 
 
         // ------------------------------------------------------------------
