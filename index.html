@@ -1295,61 +1295,17 @@
 
         </main>
 
-        <!-- CHAT INTERFACE WITH API SETTINGS -->
-        <div x-show="isChatOpen" class="fixed inset-0 z-50 md:inset-auto md:bottom-24 md:right-6 md:w-96 md:h-[550px] bg-dark flex flex-col md:rounded-2xl border-l md:border border-primary shadow-2xl overflow-hidden font-sans" x-transition>
-            <div class="bg-card p-4 border-b border-slate-700 flex justify-between items-center pt-safe">
-                <div class="flex items-center gap-3">
-                    <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary"><i class="fa-solid fa-bolt text-sm"></i></div>
-                    <div><h3 class="font-bold text-white text-sm">Bilingual AI Assistant</h3><p class="text-[10px] text-textMuted uppercase tracking-tighter">Gemini 1.5 Flash / 2.0 Failover</p></div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button @click="showKeyModal = true" class="text-slate-400 hover:text-primary p-2" title="API Settings"><i class="fa-solid fa-key"></i></button>
-                    <button @click="isChatOpen = false" class="text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-            </div>
-            
-            <div class="flex-1 overflow-y-auto p-4 flex flex-col space-y-4 bg-dark" id="chat-messages-container">
-                <div class="chat-bubble chat-bot">Hello. I translate IT jargon into P&L impact. How can I help you today?</div>
-                <template x-for="msg in chatMessages"><div class="chat-bubble" :class="msg.role === 'user' ? 'chat-user' : 'chat-bot'" x-html="msg.text"></div></template>
-                <div x-show="isTyping" class="chat-bubble chat-bot flex gap-1 items-center w-16"><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div></div>
-            </div>
-
-            <div class="p-4 bg-card border-t border-slate-800 pb-safe">
-                <div class="relative flex gap-2">
-                    <input type="text" x-model="chatInput" @keydown.enter="sendMessage()" placeholder="Ask a question..." class="flex-1 bg-dark text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-slate-700">
-                    <button @click="sendMessage()" class="w-12 h-12 bg-primary rounded-full text-dark flex items-center justify-center active:scale-90 transition-transform"><i class="fa-solid fa-paper-plane"></i></button>
-                </div>
-            </div>
-        </div>
-
-        <!-- API KEY MODAL -->
-        <div x-show="showKeyModal" class="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm" x-cloak>
-            <div class="bg-card border border-slate-600 p-6 rounded-lg max-w-sm w-full shadow-2xl">
-                <h3 class="text-white font-bold mb-2">API Settings</h3>
-                <p class="text-xs text-slate-400 mb-4">Enter your Google Gemini API Key. Keys are stored safely in your browser's local memory.</p>
-                <input type="password" x-model="userApiKey" placeholder="AIzaSy..." class="w-full bg-dark border border-slate-600 rounded p-2 text-white mb-4 font-mono text-sm">
-                <div class="flex justify-end gap-2">
-                    <button @click="showKeyModal = false" class="text-xs text-slate-400 px-3 py-2">Close</button>
-                    <button @click="saveApiKey()" class="bg-primary text-dark text-xs font-bold px-4 py-2 rounded">Save Key</button>
-                </div>
-            </div>
-        </div>
 
         <!-- MOBILE NAV -->
         <nav class="md:hidden fixed bottom-0 w-full bg-dark/95 backdrop-blur-lg border-t border-slate-800 z-50 pb-safe">
-            <div class="grid grid-cols-5 h-16 items-center">
+            <div class="grid grid-cols-4 h-16 items-center">
                 <button @click="handleNavClick('dashboard')" class="flex flex-col items-center" :class="currentTab === 'dashboard' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-home text-lg"></i><span class="text-[9px] font-mono mt-1">Home</span></button>
                 <button @click="handleNavClick('assessment')" class="flex flex-col items-center" :class="currentTab === 'assessment' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-clipboard-check text-lg"></i><span class="text-[9px] font-mono mt-1">Audit</span></button>
-                <div class="relative -top-5"><button @click="isChatOpen = !isChatOpen" class="w-14 h-14 bg-primary rounded-full shadow-glow flex items-center justify-center text-dark border-4 border-dark"><i class="fa-solid fa-bolt text-xl"></i></button></div>
                 <button @click="handleNavClick('translator')" class="flex flex-col items-center" :class="currentTab === 'translator' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-language text-lg"></i><span class="text-[9px] font-mono mt-1">Trans</span></button>
                 <button @click="mobileMenuOpen = !mobileMenuOpen" class="flex flex-col items-center" :class="mobileMenuOpen ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-bars-staggered text-lg"></i><span class="text-[9px] font-mono mt-1">Menu</span></button>
             </div>
         </nav>
 
-        <!-- FLOATING CHAT BUTTON (Desktop) -->
-        <button @click="isChatOpen = !isChatOpen" class="hidden md:flex fixed bottom-8 right-8 w-16 h-16 bg-primary rounded-full shadow-glow items-center justify-center text-dark text-2xl z-40 transition-transform hover:scale-110">
-            <i class="fa-solid" :class="isChatOpen ? 'fa-xmark' : 'fa-robot'"></i>
-        </button>
 
         <!-- MOBILE MENU OVERLAY -->
         <div x-show="mobileMenuOpen" x-transition x-cloak class="fixed inset-0 z-[60] bg-dark flex flex-col p-6 pt-safe overflow-y-auto mobile-scroll-fix">
