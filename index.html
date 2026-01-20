@@ -343,139 +343,6 @@
                 </div>
 
             </div>
-
-            <!-- LIGHTHOUSE ROI CALCULATOR TAB -->
-<div x-show="currentTab === 'roi'" x-cloak class="max-w-5xl mx-auto">
-    
-    <div class="text-center mb-8">
-        <h2 class="font-mono text-3xl font-bold text-white mb-2">Lighthouse ROI Calculator</h2>
-        <p class="text-textMuted text-sm">Translate "Agile Success" into the only language the Board speaks: Money.</p>
-    </div>
-
-    <div class="grid lg:grid-cols-12 gap-8">
-        
-        <!-- LEFT: INPUTS -->
-        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
-            <h3 class="font-mono text-xs text-green-400 uppercase border-b border-slate-700 pb-2">Pilot Parameters</h3>
-            
-            <div>
-                <label class="text-xs text-white block mb-1">Project Name</label>
-                <input type="text" x-model="lighthouseROI.inputs.name" placeholder="e.g. Instant SME Loan" class="w-full bg-dark border border-slate-600 rounded p-2 text-white focus:border-green-400 focus:outline-none">
-            </div>
-
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[10px] text-slate-400 block mb-1">Duration (Weeks)</label>
-                    <input type="number" x-model="lighthouseROI.inputs.duration_weeks" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-                </div>
-                <div>
-                    <label class="text-[10px] text-slate-400 block mb-1">Squad Cost ($/Wk)</label>
-                    <input type="number" x-model="lighthouseROI.inputs.squad_cost_per_week" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-                </div>
-            </div>
-
-            <h3 class="font-mono text-xs text-green-400 uppercase border-b border-slate-700 pb-2 pt-2">Financial Impact</h3>
-            
-            <div>
-                <label class="text-[10px] text-slate-400 block mb-1">Revenue Generated ($)</label>
-                <input type="number" x-model="lighthouseROI.inputs.revenue_generated" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-            </div>
-            <div>
-                <label class="text-[10px] text-slate-400 block mb-1">Cost Avoided ($)</label>
-                <p class="text-[9px] text-slate-500 mb-1">(e.g. fines, legacy maintenance saved)</p>
-                <input type="number" x-model="lighthouseROI.inputs.cost_avoided" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-            </div>
-
-            <h3 class="font-mono text-xs text-purple-400 uppercase border-b border-slate-700 pb-2 pt-2">Soft Metrics</h3>
-            
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-[10px] text-slate-400 block mb-1">Old Speed (Weeks)</label>
-                    <input type="number" x-model="lighthouseROI.inputs.old_cycle_time" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-                </div>
-                <div>
-                    <label class="text-[10px] text-slate-400 block mb-1">New Speed (Weeks)</label>
-                    <input type="number" x-model="lighthouseROI.inputs.new_cycle_time" class="w-full bg-dark border border-slate-600 rounded p-2 text-white">
-                </div>
-            </div>
-
-            <button @click="lighthouseROI.calculate()" 
-                    :disabled="!lighthouseROI.inputs.name"
-                    class="w-full bg-white hover:bg-gray-200 text-dark font-bold py-3 rounded-lg shadow-glow transition-all mt-4 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                <i class="fa-solid fa-calculator"></i> CALCULATE ROI
-            </button>
-        </div>
-
-        <!-- RIGHT: RESULTS -->
-        <div class="lg:col-span-7 space-y-6">
-            
-            <!-- Empty State -->
-            <div x-show="!lighthouseROI.results" class="h-full border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-500 p-10">
-                <i class="fa-solid fa-chart-pie text-4xl mb-4 opacity-20"></i>
-                <p class="text-xs font-mono">Enter data to prove value.</p>
-            </div>
-
-            <!-- Results Dashboard -->
-            <div x-show="lighthouseROI.results" x-transition>
-                
-                <!-- 1. The Big Numbers -->
-                <div class="grid grid-cols-2 gap-4 mb-6">
-                    <div class="bg-card border border-slate-700 p-6 rounded-xl text-center shadow-lg">
-                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">NET FINANCIAL IMPACT</p>
-                        <h3 class="text-3xl font-bold font-mono my-2" 
-                            :class="lighthouseROI.results?.netProfit > 0 ? 'text-green-400' : 'text-red-400'"
-                            x-text="'$' + lighthouseROI.results?.netProfit.toLocaleString()"></h3>
-                        <span class="text-xs bg-slate-800 px-3 py-1 rounded border border-slate-600" x-text="lighthouseROI.results?.roiPercent + '% ROI'"></span>
-                    </div>
-                    <div class="bg-card border border-slate-700 p-6 rounded-xl text-center shadow-lg">
-                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">VELOCITY GAIN</p>
-                        <h3 class="text-3xl font-bold font-mono text-purple-400 my-2" x-text="lighthouseROI.results?.speedFactor + 'x'"></h3>
-                        <span class="text-xs text-slate-400">Faster than legacy</span>
-                    </div>
-                </div>
-
-                <!-- 2. Breakdown -->
-                <div class="bg-slate-800/50 border border-slate-700 p-6 rounded-xl mb-6">
-                    <h4 class="font-mono text-xs text-slate-400 uppercase mb-4">Financial Breakdown</h4>
-                    <div class="space-y-4">
-                        <div class="flex justify-between text-sm">
-                            <span class="text-slate-300">Total Investment (Cost)</span>
-                            <span class="text-white font-mono" x-text="'$' + lighthouseROI.results?.totalInvestment.toLocaleString()"></span>
-                        </div>
-                        <div class="flex justify-between text-sm">
-                            <span class="text-slate-300">Total Value (Revenue + Savings)</span>
-                            <span class="text-green-400 font-mono" x-text="'$' + lighthouseROI.results?.totalValue.toLocaleString()"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. THE PROMPT GENERATOR (New Feature) -->
-                <div class="bg-card border-2 border-indigo-500/30 p-1 rounded-xl">
-                    <div class="bg-slate-900 p-4 rounded-lg border border-slate-800">
-                        <div class="flex justify-between items-start mb-3">
-                            <div>
-                                <span class="text-[10px] font-mono text-indigo-400 uppercase font-bold"><i class="fa-solid fa-robot mr-2"></i>Board Defense Strategy</span>
-                                <p class="text-[9px] text-slate-500 mt-1">Use this prompt to generate your Board Presentation script.</p>
-                            </div>
-                            <button @click="lighthouseROI.copyPrompt()" class="group text-[10px] bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-2 rounded font-bold transition-all shadow-glow flex items-center gap-2">
-                                <i class="fa-regular fa-copy"></i> <span>COPY PROMPT</span>
-                            </button>
-                        </div>
-                        
-                        <!-- Visual "Code" Block -->
-                        <div class="bg-black p-3 rounded text-[10px] font-mono text-slate-300 whitespace-pre-wrap border-l-2 border-indigo-500 overflow-y-auto max-h-32 opacity-80 hover:opacity-100 transition-opacity" x-text="lighthouseROI.generatedPrompt">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 4. Export PDF -->
-                <button @click="lighthouseROI.generatePDF()" class="w-full mt-6 border border-slate-600 hover:bg-slate-800 text-slate-300 py-3 rounded-lg text-xs font-bold transition-all">
-                    <i class="fa-solid fa-file-pdf mr-2"></i> DOWNLOAD ONE-PAGER PDF
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
             
 <!-- ROLE-PLAY DOJO TAB -->
             <div x-show="currentTab === 'roleplay'" x-cloak class="max-w-4xl mx-auto">
@@ -1071,7 +938,7 @@
         <p class="text-xs text-slate-500 mt-2 font-mono">Based on <span x-text="totalBenchmarks"></span> verified audits.</p>
     </div>
 </template>        
-         </div>       
+                
             <div class="hidden md:block opacity-30">
                 <i class="fa-solid fa-ranking-star text-6xl"></i>
             </div>
@@ -1082,7 +949,7 @@
                             <button @click="copyChallengeLink()" class="text-xs text-textMuted hover:text-white underline"><i class="fa-solid fa-link mr-2"></i><span x-text="copyBtnText"></span></button>
                         </div>
                     </div>
-
+                </div>
             
 <!-- TRANSLATOR TAB -->
             <div x-show="currentTab === 'translator'" x-cloak class="max-w-5xl mx-auto h-full flex flex-col">
@@ -1237,7 +1104,7 @@
 
         <!-- MOBILE NAV -->
         <nav class="md:hidden fixed bottom-0 w-full bg-dark/95 backdrop-blur-lg border-t border-slate-800 z-50 pb-safe">
-            <div class="grid grid-cols-4 h-16 items-center">
+        <div class="grid grid-cols-4 h-16 items-center">
                 <button @click="handleNavClick('dashboard')" class="flex flex-col items-center" :class="currentTab === 'dashboard' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-home text-lg"></i><span class="text-[9px] font-mono mt-1">Home</span></button>
                 <button @click="handleNavClick('assessment')" class="flex flex-col items-center" :class="currentTab === 'assessment' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-clipboard-check text-lg"></i><span class="text-[9px] font-mono mt-1">Audit</span></button>
                 <button @click="handleNavClick('translator')" class="flex flex-col items-center" :class="currentTab === 'translator' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-language text-lg"></i><span class="text-[9px] font-mono mt-1">Trans</span></button>
