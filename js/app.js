@@ -1,29 +1,7 @@
 // js/app.js
 
-// FIX: Ensure Alpine is loaded before we define components
-function waitForAlpine() {
-    return new Promise((resolve) => {
-        if (typeof Alpine !== 'undefined') {
-            resolve();
-        } else {
-            const checkAlpine = setInterval(() => {
-                if (typeof Alpine !== 'undefined') {
-                    clearInterval(checkAlpine);
-                    resolve();
-                }
-            }, 50);
-        }
-    });
-}
-
-// Start everything when Alpine is ready
-waitForAlpine().then(() => {
-    console.log('Alpine.js loaded, initializing toolkit...');
-    
-    // Your existing Alpine initialization code starts here
-    document.addEventListener('alpine:init', () => {
-        Alpine.data('toolkit', () => ({
-
+document.addEventListener('alpine:init', () => {
+    Alpine.data('toolkit', () => ({
         // ------------------------------------------------------------------
         // INITIALIZATION
         // ------------------------------------------------------------------
@@ -43,30 +21,26 @@ waitForAlpine().then(() => {
             }
 
             
-          // PWA & Install Logic
-const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
-             window.navigator.standalone || 
-             document.referrer.includes('android-app://');
+            // PWA & Install Logic
+            const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
 
-// Capture install prompt
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    this.deferredPrompt = e;
-    
-    // Show install prompt for mobile users
-    if (this.isMobile && !isPWA) {
-        const dismissed = localStorage.getItem('pwaPromptDismissed');
-        if (!dismissed) {
-            setTimeout(() => { this.showPwaPrompt = true; }, 2000);
-        }
-    }
-});
+            // 1. Capture the event for Android/Chrome (so we can trigger it later)
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                this.deferredPrompt = e;
+            });
 
-// Detect if app is already installed
-window.addEventListener('appinstalled', () => {
-    this.showPwaPrompt = false;
-    console.log('App installed successfully');
-});
+            // 2. Show the banner for EVERYONE on mobile (iOS & Android)
+            // We moved this OUTSIDE the event listener so it works on iPhones too
+            if (this.isMobile && !isPWA) {
+                // Check if they dismissed it previously
+                const dismissed = localStorage.getItem('pwaPromptDismissed');
+                
+                // If not dismissed, show it after 2 seconds
+                if (!dismissed) {
+                    setTimeout(() => { this.showPwaPrompt = true; }, 2000);
+                }
+            }
 
             // VIP & Challenger Logic
             const params = new URLSearchParams(window.location.search);
@@ -157,7 +131,12 @@ window.addEventListener('appinstalled', () => {
         vipJson: '{\n  "product_id": "DP-PAY-001",\n  "domain": "Payments_Processing",\n  "owner": "Sarah_Connor@meridian.com",\n  "slo": { "freshness": "200ms", "accuracy": "99.999%" }\n}',
         vipPrompt: 'Act as a CDO presenting to a skeptical Board. \nWe need $5M for Cloud Migration. Draft a 2-minute response using the "House Analogy". Focus on Risk, not just Speed.',
 
-        
+        isChatOpen: false,
+        chatInput: '',
+        chatMessages: [],
+        isTyping: false,
+        userApiKey: '',
+        showKeyModal: false,
 
         searchQuery: '',
         glossarySearch: '',
@@ -602,94 +581,6 @@ window.addEventListener('appinstalled', () => {
             }
         },
 
-// ------------------------------------------------------------------
-        // KPI DESIGNER (The Prompt Architect Wizard)
-        // ------------------------------------------------------------------
-        kpiDesigner: {
-            step: 1,
-            loading: false,
-            
-            // The Wizard Data
-            form: {
-                project: '', // What are we building?
-                who: '',     // Who is the customer?
-                pain: '',    // What is their problem?
-                value: ''    // What is the business value?
-            },
-
-            generatedPrompt: '',
-
-            // Offline Cheat Sheet (Quick-fill)
-            presets: [
-                { label: 'Mobile App', project: 'New Retail App', who: 'Gen-Z Customers', pain: 'Current app is too slow/clunky', value: 'Retention' },
-                { label: 'Cloud Migration', project: 'Move Core to AWS', who: 'Internal Dev Team', pain: 'Server provisioning takes 6 weeks', value: 'OpEx Savings & Speed' },
-                { label: 'Data Lake', project: 'Snowflake Implementation', who: 'Risk Analysts', pain: 'Reports take 3 days to run', value: 'Real-time Decisioning' },
-                { label: 'AI Chatbot', project: 'GenAI Support Agent', who: 'Frustrated Callers', pain: 'Hold times are 45 minutes', value: 'Reduce Call Volume' }
-            ],
-
-            // Actions
-            next() {
-                if (this.step === 1 && !this.form.project) return alert("Define the project first.");
-                if (this.step === 2 && !this.form.who) return alert("Who is this for?");
-                if (this.step === 3 && !this.form.pain) return alert("What is the pain point?");
-                if (this.step < 4) this.step++;
-            },
-
-            back() {
-                this.step--;
-            },
-
-            quickFill(preset) {
-                this.form.project = preset.project;
-                this.form.who = preset.who;
-                this.form.pain = preset.pain;
-                this.form.value = preset.value;
-                this.step = 4; // Jump to end confirmation
-            },
-
-            generate() {
-                if (!this.form.value) return alert("Define the business value.");
-                
-                this.loading = true;
-                this.step = 5; // Result Screen
-
-                // --- THE MEGA-PROMPT CONSTRUCTION ---
-                this.generatedPrompt = `ACT AS: A Product Strategy Coach (Silicon Valley Style).
-
-I need you to critique my initiative and help me define "Outcome-based KPIs" instead of "Output-based Deliverables".
-
-HERE IS MY CONTEXT:
-1. THE OUTPUT (What I am building): "${this.form.project}"
-2. THE USER (Who is it for): "${this.form.who}"
-3. THE PAIN (Why they struggle now): "${this.form.pain}"
-4. THE GOAL (Business Value): "${this.form.value}"
-
-YOUR TASK:
-1. THE ROAST: Briefly explain why building "${this.form.project}" is a waste of money if it doesn't solve "${this.form.pain}". Be ruthless.
-2. THE NORTH STAR: Rewrite my goal into a single, measurable Outcome Statement (e.g., "Reduce Time-to-Cash by 40%").
-3. THE METRICS TREE:
-   - Leading Indicator (Behavioral): What will "${this.form.who}" DO differently in week 1? (e.g. usage freq).
-   - Lagging Indicator (Financial): What is the hard P&L impact in 6 months? (e.g. cost savings).
-   - Counter-Metric: What might go wrong? (e.g. "We reduce call volume but Customer Satisfaction tanks").
-
-TONE: High agency, executive, mathematically precise. No corporate fluff.`;
-
-                // Simulate processing
-                setTimeout(() => { this.loading = false; }, 600);
-            },
-
-            copyPrompt() {
-                navigator.clipboard.writeText(this.generatedPrompt);
-                alert("Prompt copied! Paste this into your AI tool.");
-            },
-
-            reset() {
-                this.step = 1;
-                this.form = { project: '', who: '', pain: '', value: '' };
-                this.generatedPrompt = '';
-            }
-        },
-        
         // ------------------------------------------------------------------
 // TEAM COLLABORATION MANAGER
 // ------------------------------------------------------------------
@@ -998,8 +889,6 @@ teamManager: {
             { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox' }, 
             { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
             { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
-            { id: 'kpi', label: 'KPI Designer', icon: 'fa-solid fa-bullseye' },
-            { id: 'roi', label: 'ROI Calculator', icon: 'fa-solid fa-calculator', vip: false },
             { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
             { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } 
         ],
@@ -1016,9 +905,7 @@ teamManager: {
             { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, 
             { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
-            { id: 'kpi', label: 'Outcome vs. Output', desc: 'Convert vague "Project" goals into measurable "Product" value.', icon: 'fa-solid fa-chart-line', color: 'text-green-400' },
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
-            { id: 'roi', label: 'Lighthouse ROI', desc: 'Quantify Hard & Soft value. Generate Board Defense script.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
         ],
         
@@ -1063,7 +950,84 @@ teamManager: {
             });
         },
 
+        saveApiKey() {
+            try { 
+                localStorage.setItem('bilingual_api_key', this.userApiKey); 
+                this.showKeyModal = false; 
+                alert("API Key saved securely to your device.");
+            } 
+            catch (e) { alert("Storage Error: Private Browsing may be enabled."); }
+        },
 
+        async sendMessage() {
+            if (!this.chatInput.trim()) return;
+            if (typeof DOMPurify === 'undefined') { this.chatMessages.push({ role: 'bot', text: "Error: Security module missing." }); return; }
+
+            const API_KEY = this.userApiKey; 
+            if (!API_KEY) { 
+                this.chatMessages.push({ role: 'bot', text: "Please set your Gemini API key in settings (Key icon)." }); 
+                this.showKeyModal = true; 
+                return; 
+            }
+
+            const userText = DOMPurify.sanitize(this.chatInput);
+            this.chatMessages.push({ role: 'user', text: userText });
+            this.chatInput = '';
+            this.isTyping = true;
+            this.scrollToBottom();
+
+            const systemPrompt = "You are 'The Translator', a Bilingual Executive Assistant. Translate technical jargon into business impact (P&L, Risk, Speed). Rules: Technical Debt->Financial leverage; Refactoring->Renovation; Microservices->Legos; API->Universal Adapter. Tone: Concise, executive.";
+            
+            const tryFetch = async (model, version) => {
+                const response = await fetch(`https://generativelanguage.googleapis.com/${version}/models/${model}:generateContent?key=${API_KEY}`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt + "\n\nInput: " + userText }] }] })
+                });
+                if (!response.ok) throw new Error(`${response.status}`);
+                return response.json();
+            };
+
+           try {
+                let data;
+                // First, try the new Gemini 3 Flash model
+                try { 
+                    data = await tryFetch("gemini-3-flash-preview", "v1beta"); 
+                } catch (e) { 
+                    // Fallback to the stable Gemini 2.5 Flash model
+                    data = await tryFetch("gemini-2.5-flash", "v1beta"); 
+                }
+
+                let botText = "I couldn't process that.";
+                if (data.candidates && data.candidates[0].content) botText = data.candidates[0].content.parts[0].text;
+                
+                this.isTyping = false;
+                
+                let parsedText = botText;
+                try {
+                    if (typeof marked !== 'undefined') parsedText = marked.parse(botText);
+                } catch (e) {
+                    console.warn("Markdown Parse Error", e);
+                    parsedText = botText.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                }
+                
+                const cleanHtml = DOMPurify.sanitize(parsedText);
+                this.chatMessages.push({ role: 'bot', text: cleanHtml });
+                this.scrollToBottom();
+            } catch (error) {
+                this.isTyping = false;
+                let msg = "Connection Error.";
+                if (error.message.includes("403")) msg = "Invalid API Key. Please check settings.";
+                if (error.message.includes("429")) msg = "Quota exceeded. Try again later.";
+                this.chatMessages.push({ role: 'bot', text: msg });
+            }
+        },
+
+        scrollToBottom() { 
+            this.$nextTick(() => { 
+                const c = document.getElementById('chat-messages-container'); 
+                if (c) c.scrollTop = c.scrollHeight; 
+            }); 
+        },
 
         copyToClipboard(text, type) {
             if (navigator.clipboard && window.isSecureContext) {
@@ -1600,106 +1564,9 @@ async submitAndBenchmark() {
             return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); 
         }
 
-        // ------------------------------------------------------------------
-        // LIGHTHOUSE ROI CALCULATOR (Math + Prompt Generator)
-        // ------------------------------------------------------------------
-        lighthouseROI: {
-            inputs: {
-                name: '',
-                duration_weeks: 12,
-                squad_cost_per_week: 15000, 
-                software_cost: 25000,       
-                revenue_generated: 0,       
-                cost_avoided: 150000,       
-                old_cycle_time: 20,         
-                new_cycle_time: 2           
-            },
-            results: null,
-            generatedPrompt: '',
-
-            calculate() {
-                if (!this.inputs.name) return alert("Please enter a Project Name.");
-
-                const i = this.inputs;
-                
-                // 1. Hard Costs
-                const laborCost = i.duration_weeks * i.squad_cost_per_week;
-                const totalInvestment = laborCost + parseInt(i.software_cost);
-                
-                // 2. Hard Benefits
-                const totalValue = parseInt(i.revenue_generated) + parseInt(i.cost_avoided);
-                const netProfit = totalValue - totalInvestment;
-                
-                let roiPercent = 0;
-                if (totalInvestment > 0) roiPercent = Math.round(((totalValue - totalInvestment) / totalInvestment) * 100);
-
-                // 3. Speed Differential
-                let speedFactor = 0;
-                if (i.new_cycle_time > 0) speedFactor = (i.old_cycle_time / i.new_cycle_time).toFixed(1);
-
-                this.results = {
-                    totalInvestment: totalInvestment,
-                    totalValue: totalValue,
-                    netProfit: netProfit,
-                    roiPercent: roiPercent,
-                    speedFactor: speedFactor
-                };
-
-                // --- GENERATE THE ADVANCED SYSTEM PROMPT ---
-                this.generatedPrompt = `ACT AS: A CFO & Chief Strategy Officer (Boardroom Level).
-
-CONTEXT:
-I need to defend a "Lighthouse Pilot" project we just completed. 
-Project Name: "${i.name}".
-
-THE HARD DATA (We just calculated this):
-1. Total Spend: $${totalInvestment.toLocaleString()}
-2. Immediate Financial Impact: $${netProfit.toLocaleString()} (ROI: ${roiPercent}%)
-3. Velocity Gain: ${speedFactor}x faster than our legacy process.
-
-YOUR TASK:
-Write a "Board Briefing Note" that justifies this investment.
-
-SPECIFIC INSTRUCTIONS:
-1. THE FINANCIAL VERDICT: Summarize the ROI. If it's negative, frame it as "R&D Tuition" for a new capability. If positive, frame it as "Scalable Value".
-2. THE VELOCITY MULTIPLIER: Explain that the ${speedFactor}x speed gain is the *real* asset. Calculate the "Cost of Delay" we are now avoiding.
-3. THE SKEPTIC'S DEFENSE: Write a verbatim script for me to answer this specific objection: "Why did we spend $${totalInvestment.toLocaleString()} on such a small pilot?"
-
-TONE: High agency, financially literate, forward-looking. No tech jargon.`;
-            },
-
-            copyPrompt() {
-                navigator.clipboard.writeText(this.generatedPrompt);
-                alert("Boardroom Strategy Prompt copied! Paste into ChatGPT/Claude.");
-            },
-
-            generatePDF() {
-                // (Existing PDF Logic goes here - kept brief for this snippet)
-                if (!window.jspdf) { alert("PDF Lib missing"); return; }
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                doc.setFont("helvetica", "bold");
-                doc.text(`ROI REPORT: ${this.inputs.name}`, 20, 20);
-                doc.setFont("helvetica", "normal");
-                doc.text(`Net Profit: $${this.results.netProfit}`, 20, 30);
-                doc.text(`Speed Gain: ${this.results.speedFactor}x`, 20, 40);
-                doc.save(`${this.inputs.name}_ROI.pdf`);
-            }
-        },
-        
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
-
-        // Force Alpine to initialize
-    if (typeof Alpine !== 'undefined') {
-        Alpine.start();
-    }
-}).catch(error => {
-    console.error('Failed to load Alpine.js:', error);
-    // Fallback: Show a basic message
-    document.body.innerHTML = '<div class="p-10 text-center text-white">Error loading application. Please refresh the page.</div>';
-});
 
     // ------------------------------------------------------------------
 // OFFLINE BENCHMARK DATA (Fallback if Database fails)
