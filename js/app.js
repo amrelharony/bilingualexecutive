@@ -9,17 +9,6 @@ document.addEventListener('alpine:init', () => {
             this.isMobile = window.innerWidth < 768;
             window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
 
-                        // Initialize Supabase Client
-            if (window.supabase) {
-                const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
-                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
-                this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-                 this.teamManager.supabase = this.supabase; 
-
-            } else {
-                console.error("Supabase library not loaded.");
-            }
-
             
             // PWA & Install Logic
             const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
@@ -135,32 +124,16 @@ document.addEventListener('alpine:init', () => {
 
         },
 
+    this.aiNarrative = {
+        headline: "Analysis Complete",
+        financial_verdict: "Calculations based on standard industry inputs.",
+        strategic_verdict: "Review manual inputs for accuracy.",
+        defense: "ROI is based on FTE savings."
+    };
+    this.loading = false;
+},
+
         
-        async askSecureAI(systemPrompt, userInput, model = "gemini-3-flash-preview") {
-            // Check if Supabase is initialized
-            if (!this.supabase) {
-                console.error("Supabase not initialized");
-                return "System Error: Database connection missing.";
-            }
-
-            try {
-                // Calls the Edge Function named 'bilingual-ai'
-                const { data, error } = await this.supabase.functions.invoke('bilingual-ai', {
-                    body: { 
-                        system: systemPrompt, 
-                        input: userInput,
-                        model: model 
-                    }
-                });
-
-                if (error) throw error;
-                return data.text;
-
-            } catch (err) {
-                console.error("AI Error:", err);
-                return "I apologize, but I cannot connect to the neural core right now.";
-            }
-        },
 
         // ------------------------------------------------------------------
         // STATE VARIABLES
@@ -601,9 +574,9 @@ rolePlay: {
         }, 100);
     }
 },
-        
-// ------------------------------------------------------------------
-        // [REVAMPED] CULTURAL DEBT THERMOMETER (AI-POWERED)
+
+        // ------------------------------------------------------------------
+        // [REVAMPED] CULTURAL DEBT THERMOMETER (CORE ONLY - NO AI)
         // ------------------------------------------------------------------
         culturalMonitor: {
             history: [],
@@ -611,8 +584,7 @@ rolePlay: {
             currentQuestions: [],
             answers: {}, 
             chartInstance: null,
-            aiReport: null,
-            loadingAI: false,
+            // Removed: aiReport, loadingAI
 
             // The Question Bank (Categorized)
             questionBank: [
@@ -633,27 +605,20 @@ rolePlay: {
                 } catch (e) { console.error("Load Error", e); }
             },
 
-
-                        checkSchedule() {
-                // If notification not supported, stop
+            checkSchedule() {
                 if (!("Notification" in window)) return;
 
-                // Get last survey time
                 const lastEntry = this.history.length > 0 
                     ? this.history[this.history.length - 1].timestamp 
                     : 0;
                 
                 const now = Date.now();
-                const oneWeek = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
-                // For testing, you can change oneWeek to 10000 (10 seconds)
+                const oneWeek = 7 * 24 * 60 * 60 * 1000; 
 
-                // If more than a week has passed, or no history exists
                 if (now - lastEntry > oneWeek) {
                     if (Notification.permission === "granted") {
                         this.sendNotification();
                     } else if (Notification.permission !== "denied") {
-                        // We can't request permission automatically on load (browsers block it),
-                        // but we can flag UI to ask for it.
                         this.showNotificationPrompt = true; 
                     }
                 }
@@ -669,99 +634,55 @@ rolePlay: {
             },
 
             sendNotification() {
-                // The actual PWA notification
-                if (document.hidden) { // Only notify if user isn't looking
+                if (document.hidden) { 
                      new Notification("Cultural Pulse Check", {
                         body: "It's been a week. Time for your 2-minute culture check-in.",
-                        icon: "https://cdn-icons-png.flaticon.com/512/3208/3208726.png", // Generic thermometer icon
-                        tag: "culture-check" // Prevents duplicate notifications
+                        icon: "https://cdn-icons-png.flaticon.com/512/3208/3208726.png", 
+                        tag: "culture-check" 
                     });
                 }
             },
-
-
             
             startCheckin() {
-                // Select 2 random questions + 1 fixed sentiment question
                 const shuffled = this.questionBank.sort(() => 0.5 - Math.random());
                 this.currentQuestions = shuffled.slice(0, 2);
-                this.answers = { q1: null, q2: null, sentiment: 50 }; // Sentiment is a slider
+                this.answers = { q1: null, q2: null, sentiment: 50 }; 
                 this.isCheckinOpen = true;
-                this.aiReport = null;
             },
 
             async submitCheckin() {
-                // Calculate Daily Debt Score (0-100, Higher is worse)
                 let debt = 0;
                 let tags = [];
 
-                // Score the 2 random questions
                 this.currentQuestions.forEach((q, idx) => {
                     const ans = idx === 0 ? this.answers.q1 : this.answers.q2;
                     if (ans === q.badAnswer) {
-                        debt += 30; // High penalty for cultural friction
+                        debt += 30; 
                         tags.push(q.category);
                     }
                 });
 
-                // Score Sentiment (Slider 0-100 where 100 is great. Invert for Debt)
                 debt += (100 - this.answers.sentiment) * 0.4;
 
                 const entry = {
                     date: new Date().toLocaleDateString(),
                     score: Math.min(100, Math.round(debt)),
-                    tags: tags, // Track what specific issues arose
+                    tags: tags,
                     timestamp: Date.now()
                 };
 
                 this.history.push(entry);
-                if (this.history.length > 12) this.history.shift(); // Keep last 12 weeks
+                if (this.history.length > 12) this.history.shift(); 
                 
                 localStorage.setItem('bilingual_culture_history', JSON.stringify(this.history));
                 
-                // Trigger AI Analysis immediately
-                await this.generateCultureReport(entry);
+                // Removed: await this.generateCultureReport(entry);
                 
                 this.isCheckinOpen = false;
                 this.renderChart();
             },
 
-            async generateCultureReport(latestEntry) {
-                this.loadingAI = true;
-                
-                // Calculate Trend
-                const prevScore = this.history.length > 1 ? this.history[this.history.length - 2].score : 0;
-                const trend = latestEntry.score > prevScore ? "Worsening (Debt Increasing)" : "Improving";
-
-                const prompt = `
-                    ACT AS: An Organizational Psychologist and Agile Coach.
-                    TASK: Analyze this week's "Cultural Debt" Pulse Check for a Bank.
-                    
-                    DATA:
-                    - Current Debt Score: ${latestEntry.score}/100 (0 is perfect, 100 is toxic).
-                    - Trend: ${trend}
-                    - Pain Points Flagged: ${latestEntry.tags.join(', ') || "None specifically flagged, general malaise"}
-                    
-                    OUTPUT JSON ONLY:
-                    {
-                        "diagnosis": "1 punchy sentence summarizing the cultural state.",
-                        "risk_level": "Low" | "Medium" | "Critical",
-                        "industry_benchmark": "How this compares to Top Quartile Fintechs.",
-                        "prescription": "1 specific, unconventional 'Bilingual Move' to fix this (e.g., 'Kill the SteerCo', 'Gemba Walk', 'Failure Party')."
-                    }
-                `;
-
-                try {
-                    const response = await this.askSecureAI(prompt, "Cultural Audit");
-                    const cleanText = response.replace(/```json/g, '').replace(/```/g, '').trim();
-                    this.aiReport = JSON.parse(cleanText);
-                } catch (e) {
-                    console.error(e);
-                    this.aiReport = { diagnosis: "AI Offline. Culture requires human empathy today.", prescription: "Talk to your team." };
-                } finally {
-                    this.loadingAI = false;
-                }
-            },
+            // Removed: generateCultureReport() function
 
             get currentScore() {
                 if (this.history.length === 0) return 0;
@@ -770,27 +691,26 @@ rolePlay: {
 
             get thermometerColor() {
                 const s = this.currentScore;
-                if (s < 30) return 'bg-primary shadow-[0_0_20px_rgba(74,222,128,0.6)]'; // Cool/Good
-                if (s < 60) return 'bg-warn shadow-[0_0_20px_rgba(251,191,36,0.6)]';    // Warm/Caution
-                return 'bg-risk shadow-[0_0_20px_rgba(248,113,113,0.8)] animate-pulse'; // Hot/Toxic
+                if (s < 30) return 'bg-primary shadow-[0_0_20px_rgba(74,222,128,0.6)]'; 
+                if (s < 60) return 'bg-warn shadow-[0_0_20px_rgba(251,191,36,0.6)]';    
+                return 'bg-risk shadow-[0_0_20px_rgba(248,113,113,0.8)] animate-pulse'; 
             },
 
             reset() {
                 if(confirm("Clear cultural history?")) {
                     this.history = [];
-                    this.aiReport = null;
                     localStorage.removeItem('bilingual_culture_history');
                     if(this.chartInstance) this.chartInstance.destroy();
                 }
             },
 
-renderChart() {
+            renderChart() {
                 setTimeout(() => {
                     const ctx = document.getElementById('debtChart');
                     if (!ctx) return;
                     if (this.chartInstance) this.chartInstance.destroy();
 
-                    const labels = this.history.map(h => h.date.substring(0,5)); // Short date
+                    const labels = this.history.map(h => h.date.substring(0,5)); 
                     const data = this.history.map(h => h.score);
 
                     this.chartInstance = new Chart(ctx, {
@@ -809,25 +729,12 @@ renderChart() {
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
-                            // 1. ADD LAYOUT PADDING TO FIX CLIPPING
-                            layout: {
-                                padding: {
-                                    bottom: 10, 
-                                    left: 5
-                                }
-                            },
+                            layout: { padding: { bottom: 10, left: 5 } },
                             scales: { 
                                 y: { 
-                                    min: 0, 
-                                    max: 100, 
-                                    grid: { 
-                                        color: '#334155',
-                                        drawBorder: false // 2. Removes the bottom line so "0" floats freely
-                                    },
-                                    ticks: {
-                                        color: '#94a3b8',
-                                        padding: 8 // 3. Adds space between numbers and chart
-                                    }
+                                    min: 0, max: 100, 
+                                    grid: { color: '#334155', drawBorder: false },
+                                    ticks: { color: '#94a3b8', padding: 8 }
                                 }, 
                                 x: { 
                                     display: true,
@@ -841,6 +748,7 @@ renderChart() {
                 }, 100);
             }
         },
+        
         // ------------------------------------------------------------------
 // TEAM COLLABORATION MANAGER
 // ------------------------------------------------------------------
