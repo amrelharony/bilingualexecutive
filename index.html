@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>The Bilingual Executive Toolkit v2.0 (Offline)</title>
+    <title>The Bilingual Executive Toolkit v0.1</title>
     
     <!-- PWA Manifest & Meta -->
     <meta name="theme-color" content="#0f172a">
@@ -27,7 +27,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
 
-    <!-- LOCAL FILES -->
+    <!-- YOUR LOCAL FILES -->
     <link rel="stylesheet" href="css/styles.css">
     <script src="js/app.js"></script>
 
@@ -45,23 +45,14 @@
             }
         }
     </script>
-    <style>
-        [x-cloak] { display: none !important; }
-        .pt-safe { padding-top: env(safe-area-inset-top); }
-        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-        /* Chat Bubbles */
-        .chat-bubble { max-width: 80%; padding: 12px 16px; border-radius: 12px; font-size: 0.9rem; line-height: 1.5; margin-bottom: 8px; animation: popIn 0.2s ease-out; }
-        .chat-user { background: #3b82f6; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
-        .chat-bot { background: #334155; color: #f1f5f9; align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid #475569; }
-        @keyframes popIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    </style>
+    
 </head>
 <body class="bg-dark text-textMain font-sans h-screen overflow-hidden flex flex-col md:flex-row selection:bg-primary selection:text-dark">
 
     <div x-data="toolkit" class="flex w-full h-full relative">
 
         <!-- VIP BOOT SEQUENCE -->
-        <div x-show="showVipIntro" x-transition.opacity.duration.500ms class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center font-mono text-hotpink cursor-wait" x-cloak>
+        <div x-show="showVipIntro" x-transition.opacity.duration.500ms class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center font-mono text-hotpink cursor-wait">
             <div class="max-w-md w-full p-6">
                 <div class="text-xs text-slate-500 mb-2 font-bold tracking-widest">NFC SIGNAL DETECTED...</div>
                 <h1 class="text-4xl font-bold mb-4 animate-pulse">WELCOME, ARCHITECT.</h1>
@@ -76,6 +67,30 @@
             </div>
         </div>
 
+        <!-- PWA INSTALL PROMPT -->
+        <div x-show="showPwaPrompt && isMobile" x-cloak x-transition 
+             class="md:hidden fixed top-0 left-0 w-full bg-slate-900 text-white p-4 pt-safe z-[100] border-b border-primary/30 flex justify-between items-center shadow-2xl">
+            <button @click="installPwa()" class="flex items-center gap-4 text-left flex-1">
+                <div class="bg-primary/20 w-10 h-10 rounded-full flex items-center justify-center text-primary shrink-0 animate-pulse">
+                    <i class="fa-solid fa-download"></i>
+                </div>
+                <div>
+                    <p class="font-bold text-sm">Install Application</p>
+                    <p class="text-xs text-slate-400">Tap here to add to Home Screen</p>
+                </div>
+            </button>
+            <button @click.stop="dismissPwa()" class="text-slate-500 hover:text-white px-4 py-2">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Gap Analysis Banner -->
+        <template x-if="challengerData">
+            <div x-cloak class="absolute top-0 left-0 w-full bg-hotpink/10 border-b border-hotpink z-40 p-2 text-center backdrop-blur-md pt-safe">
+                <p class="font-mono text-hotpink text-xs md:text-sm font-bold truncate px-2"><i class="fa-solid fa-people-arrows mr-2"></i>GAP MODE: Comparing against <span x-text="challengerData?.title || 'Colleague'"></span></p>
+            </div>
+        </template>
+
         <!-- SIDEBAR (Desktop) -->
         <aside class="hidden md:flex w-64 bg-dark border-r border-slate-800 flex-col pt-10 h-full">
             <div class="p-6 border-b border-slate-800">
@@ -83,15 +98,13 @@
                     <i class="fa-solid" :class="isVipMode ? 'fa-microchip' : 'fa-terminal'"></i> BILINGUAL<br>EXEC
                 </h1>
                 <p class="text-[10px] text-textMuted font-mono mt-1 uppercase tracking-widest flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> 
-                    <span>OFFLINE MODE</span>
+                    <span class="w-1.5 h-1.5 rounded-full" :class="isVipMode ? 'bg-hotpink animate-pulse' : 'bg-primary'"></span> 
+                    <span x-text="isVipMode ? 'ARCHITECT MODE' : 'v22.1 // PATCHED'"></span>
                 </p>
             </div>
-            <nav class="flex-1 overflow-y-auto py-4 custom-scrollbar">
+            <nav class="flex-1 overflow-y-auto py-4">
                 <template x-for="item in navItems" :key="item.id">
-                    <button @click="handleNavClick(item.id)" x-show="!item.vip || isVipMode" 
-                            :class="currentTab === item.id ? 'bg-slate-800 text-white border-l-4 border-primary' : 'text-textMuted hover:text-textMain hover:bg-slate-800/50'" 
-                            class="w-full text-left px-6 py-3 font-mono text-xs transition-all duration-200 border-l-4 border-transparent flex items-center group">
+                    <button @click="handleNavClick(item.id)" x-show="!item.vip || isVipMode" :class="currentTab === item.id ? (item.vip ? 'nav-active-vip' : 'nav-active') : 'text-textMuted hover:text-textMain hover:bg-slate-800/50'" class="w-full text-left px-6 py-3 font-mono text-xs transition-all duration-200 border-l-4 border-transparent flex items-center group">
                         <i :class="item.icon" class="w-5 mr-3 opacity-70 group-hover:opacity-100 transition-opacity"></i>
                         <span x-text="item.label"></span>
                         <i x-show="item.vip" class="ml-auto fa-solid fa-lock-open text-[10px] text-hotpink"></i>
@@ -101,7 +114,7 @@
         </aside>
 
         <!-- MAIN CONTENT -->
-        <main class="flex-1 h-full overflow-y-auto bg-dark p-4 md:p-12 pt-6 md:pt-12 pb-32 md:pb-12 relative scroll-smooth w-full">
+        <main class="flex-1 h-full overflow-y-auto bg-dark p-4 md:p-12 pt-24 md:pt-12 pb-32 md:pb-12 relative scroll-smooth w-full">
             
             <!-- DASHBOARD -->
             <div x-show="currentTab === 'dashboard'" x-transition.opacity class="max-w-6xl mx-auto">
@@ -121,211 +134,1091 @@
                 </div>
             </div>
 
-            <!-- CULTURAL DEBT MONITOR (FIXED) -->
-            <div x-show="currentTab === 'culture'" x-cloak class="max-w-5xl mx-auto h-full flex flex-col">
-                <div class="flex justify-between items-end mb-8">
-                    <div>
-                        <h2 class="text-3xl font-mono font-bold text-white"><i class="fa-solid fa-temperature-half mr-3 text-red-500"></i>Cultural Thermometer</h2>
-                        <p class="text-textMuted text-sm mt-1">Continuous pulse-check on "The Clay Layer".</p>
+            <!-- SIMULATOR TAB -->
+            <div x-show="currentTab === 'simulator'" x-cloak class="max-w-4xl mx-auto">
+                
+                <!-- Intro Screen -->
+                <div x-show="!caseStudy.active" class="text-center py-10">
+                    <div class="inline-block p-6 rounded-full bg-card border border-primary/30 mb-6">
+                        <i class="fa-solid fa-chess-knight text-5xl text-primary"></i>
                     </div>
-                    <button @click="culturalMonitor.startCheckin()" class="bg-gradient-to-r from-red-500 to-orange-500 text-white font-bold py-2 px-6 rounded-full shadow-glow transition-all flex items-center gap-2">
-                        <i class="fa-solid fa-stethoscope"></i> TAKE PULSE
+                    <h2 class="text-4xl font-mono font-bold text-white mb-4">The Meridian Trust Protocol</h2>
+                    <p class="text-textMuted max-w-xl mx-auto mb-8">
+                        Step into the shoes of Sarah, the new CDO. You have 90 days to save a failing bank.
+                        Your decisions will impact Political Capital, Velocity, and Risk.
+                    </p>
+                    <button @click="caseStudy.start()" class="bg-primary hover:bg-green-400 text-dark font-bold py-4 px-8 rounded-lg shadow-glow transition-all">
+                        START SIMULATION
                     </button>
                 </div>
 
-                <div class="grid md:grid-cols-2 gap-8 w-full max-w-4xl mx-auto">
-                    <!-- Thermometer Visual -->
-                    <div class="bg-card border border-slate-700 p-8 rounded-2xl flex flex-col items-center justify-center relative h-[400px]">
-                        <h3 class="font-mono text-xs text-slate-400 uppercase mb-6 tracking-widest">Friction Heat Index</h3>
-                        <div class="w-16 h-64 bg-slate-800 rounded-full border-4 border-slate-600 relative flex items-end p-1">
-                            <div class="w-full rounded-full transition-all duration-1000 ease-out" :class="culturalMonitor.thermometerColor" :style="`height: ${culturalMonitor.currentScore}%`"></div>
-                        </div>
-                        <div class="mt-6 text-center">
-                            <span class="block text-4xl font-bold font-mono text-white" x-text="culturalMonitor.currentScore"></span>
-                            <span class="text-[10px] uppercase text-slate-400">Debt Score</span>
-                        </div>
+                <!-- QUIZ / FLASHCARDS TAB -->
+            <div x-show="currentTab === 'quiz'" x-cloak class="max-w-2xl mx-auto">
+                
+                <!-- 1. Start Screen -->
+                <div x-show="!quiz.active" class="text-center py-12">
+                    <div class="w-24 h-24 bg-card rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-cyan-400 shadow-glow">
+                        <i class="fa-solid fa-brain text-4xl text-cyan-400"></i>
+                    </div>
+                    <h2 class="text-3xl font-mono font-bold text-white mb-4">The Bilingual Dictionary</h2>
+                    <p class="text-textMuted max-w-md mx-auto mb-8">
+                        Can you translate "Technologist" into "Business Value"? Test your fluency with 5 rapid-fire flashcards.
+                    </p>
+                    <button @click="quiz.start()" class="bg-cyan-400 hover:bg-cyan-300 text-dark font-bold py-4 px-10 rounded-full transition-all active:scale-95 shadow-lg">
+                        START QUIZ
+                    </button>
+                </div>
+
+                <!-- 2. Gameplay Screen -->
+                <div x-show="quiz.active && !quiz.finished" class="relative">
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-800 h-2 rounded-full mb-6">
+                        <div class="bg-cyan-400 h-2 rounded-full transition-all duration-300" 
+                             :style="`width: ${((quiz.currentQuestion + 1) / quiz.questions.length) * 100}%`"></div>
                     </div>
 
-                    <!-- Chart & Controls -->
-                    <div class="flex flex-col h-[400px] gap-4">
-                        <div class="bg-card border border-slate-700 p-4 rounded-2xl flex-1 relative">
-                            <h4 class="text-xs font-bold text-slate-500 uppercase mb-2">Trend History</h4>
-                            <div class="relative w-full h-[250px]">
-                                <canvas id="debtChart"></canvas>
+                    <!-- The Flashcard -->
+                    <div class="bg-card border border-slate-700 p-8 rounded-2xl shadow-2xl relative overflow-hidden min-h-[400px] flex flex-col justify-center">
+                        
+                        <!-- Flashcard Content -->
+                        <div class="text-center mb-8">
+                            <span class="text-[10px] font-mono text-cyan-400 tracking-widest uppercase mb-2 block">
+                                TERM TO TRANSLATE
+                            </span>
+                            <h3 class="text-3xl md:text-4xl font-bold text-white" x-text="quiz.questions[quiz.currentQuestion].term"></h3>
+                        </div>
+
+                        <!-- Options -->
+                        <div class="space-y-3">
+                            <template x-for="(option, index) in quiz.questions[quiz.currentQuestion].options" :key="index">
+                                <button @click="quiz.submitAnswer(option.correct)"
+                                        :class="{
+                                            'hover:border-cyan-400 hover:bg-slate-800': !quiz.feedback,
+                                            'border-green-500 bg-green-500/10': quiz.feedback && option.correct,
+                                            'border-red-500 bg-red-500/10 opacity-50': quiz.feedback && !option.correct
+                                        }"
+                                        class="w-full p-4 rounded-xl border border-slate-600 text-left transition-all duration-200">
+                                    <span class="text-sm md:text-base text-slate-200" x-text="option.text"></span>
+                                </button>
+                            </template>
+                        </div>
+
+                        <!-- Feedback Overlay (Popup) -->
+                        <div x-show="quiz.feedback" x-transition.opacity 
+                             class="absolute inset-0 flex items-center justify-center backdrop-blur-sm z-10 rounded-2xl">
+                            <div class="p-6 rounded-full shadow-2xl transform scale-110" 
+                                 :class="quiz.feedback === 'correct' ? 'bg-green-500' : 'bg-red-500'">
+                                <i class="fa-solid text-4xl text-white" 
+                                   :class="quiz.feedback === 'correct' ? 'fa-check' : 'fa-xmark'"></i>
                             </div>
                         </div>
-                        <div class="bg-slate-800/50 border border-slate-700 p-4 rounded-2xl text-center">
-                            <button @click="culturalMonitor.reset()" class="text-xs text-red-400 hover:text-white underline"><i class="fa-solid fa-trash mr-1"></i> Clear Data</button>
-                        </div>
+
                     </div>
                 </div>
 
-                <!-- Survey Modal -->
-                <div x-show="culturalMonitor.isCheckinOpen" class="fixed inset-0 z-[70] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div class="bg-card border border-slate-500 p-8 rounded-2xl max-w-lg w-full shadow-2xl relative">
-                        <button @click="culturalMonitor.isCheckinOpen = false" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark text-xl"></i></button>
-                        <h3 class="text-xl font-bold text-white mb-6">Weekly Micro-Survey</h3>
-                        
-                        <div class="space-y-6">
-                            <template x-for="(q, idx) in culturalMonitor.currentQuestions" :key="q.id">
-                                <div>
-                                    <p class="text-sm text-white font-medium mb-3" x-text="q.text"></p>
-                                    <div class="grid grid-cols-2 gap-3">
-                                        <button @click="culturalMonitor.answers['q'+(idx+1)] = 'yes'" :class="culturalMonitor.answers['q'+(idx+1)] === 'yes' ? 'bg-primary text-dark' : 'bg-slate-800 text-slate-400'" class="p-3 rounded border border-slate-600 text-sm font-bold">YES</button>
-                                        <button @click="culturalMonitor.answers['q'+(idx+1)] = q.badAnswer" :class="culturalMonitor.answers['q'+(idx+1)] === q.badAnswer ? 'bg-primary text-dark' : 'bg-slate-800 text-slate-400'" class="p-3 rounded border border-slate-600 text-sm font-bold">NO / OTHER</button>
-                                    </div>
-                                </div>
-                            </template>
-                            <div>
-                                <label class="block text-xs font-mono text-slate-400 uppercase mb-2">Vibe Check (0-100)</label>
-                                <input type="range" x-model="culturalMonitor.answers.sentiment" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer">
-                            </div>
-                        </div>
-                        <button @click="culturalMonitor.submitCheckin()" class="w-full mt-8 bg-white text-dark font-bold py-3 rounded-lg">SAVE CHECK-IN</button>
+                <!-- 3. Results Screen -->
+                <div x-show="quiz.finished" class="text-center py-10">
+                    <h2 class="text-2xl font-mono text-white mb-2">SESSION COMPLETE</h2>
+                    <div class="text-6xl font-bold mb-4" :class="quiz.score === 5 ? 'text-primary' : 'text-cyan-400'">
+                        <span x-text="quiz.score"></span>/<span x-text="quiz.questions.length"></span>
                     </div>
+                    
+                    <p class="text-textMuted mb-8" x-show="quiz.score === 5">Perfect Score! You are a Bilingual Executive.</p>
+                    <p class="text-textMuted mb-8" x-show="quiz.score < 5">Keep practicing. Fluency takes time.</p>
+
+                    <button @click="quiz.start()" class="border border-slate-500 hover:bg-slate-800 text-white py-3 px-8 rounded-full transition-all">
+                        <i class="fa-solid fa-rotate-right mr-2"></i> Play Again
+                    </button>
                 </div>
             </div>
 
-            <!-- SIMULATOR TAB -->
-            <div x-show="currentTab === 'simulator'" x-cloak class="max-w-4xl mx-auto">
-                <div x-show="!caseStudy.active" class="text-center py-10">
-                    <h2 class="text-4xl font-mono font-bold text-white mb-4">Meridian Trust Protocol</h2>
-                    <p class="text-textMuted max-w-xl mx-auto mb-8">Step into the shoes of the CDO. 90 Days to fix the bank.</p>
-                    <button @click="caseStudy.start()" class="bg-primary text-dark font-bold py-4 px-8 rounded-lg shadow-glow">START SIMULATION</button>
-                </div>
+                <!-- Game Interface -->
                 <div x-show="caseStudy.active && !caseStudy.gameOver" class="grid md:grid-cols-3 gap-6">
+                    
+                    <!-- Left: The Situation -->
                     <div class="md:col-span-2 space-y-6">
-                        <div class="bg-card border-l-4 border-primary p-6 rounded-r-lg">
+                        <div class="bg-card border-l-4 border-primary p-6 rounded-r-lg shadow-lg relative overflow-hidden">
+                            <span class="text-[10px] font-mono text-primary tracking-widest uppercase mb-2 block">
+                                Decision Point <span x-text="caseStudy.step + 1"></span>/3
+                            </span>
                             <h3 class="text-2xl font-bold text-white mb-4" x-text="caseStudy.scenarios[caseStudy.step].title"></h3>
                             <p class="text-slate-300 leading-relaxed text-lg" x-text="caseStudy.scenarios[caseStudy.step].context"></p>
+                            
                             <div class="mt-8 p-4 bg-dark/50 rounded border border-slate-700">
+                                <p class="font-mono text-warn text-sm mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>THE DILEMMA</p>
                                 <p class="text-white font-bold italic" x-text="caseStudy.scenarios[caseStudy.step].question"></p>
                             </div>
                         </div>
+
+                        <!-- Choices -->
                         <div class="grid gap-4">
                             <template x-for="(choice, index) in caseStudy.scenarios[caseStudy.step].choices" :key="index">
-                                <button @click="caseStudy.makeChoice(index)" class="text-left p-5 rounded-lg border border-slate-600 hover:border-primary hover:bg-slate-800 transition-all">
+                                <button @click="caseStudy.makeChoice(index)" 
+                                        class="text-left p-5 rounded-lg border border-slate-600 hover:border-primary hover:bg-slate-800 transition-all group relative">
+                                    <div class="absolute top-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity text-primary">
+                                        <i class="fa-solid fa-arrow-right"></i>
+                                    </div>
+                                    <span class="font-mono text-xs text-slate-500 block mb-1">OPTION <span x-text="index + 1"></span></span>
                                     <span class="text-white font-medium" x-text="choice.text"></span>
                                 </button>
                             </template>
                         </div>
                     </div>
-                    <div class="bg-card border border-slate-700 p-6 rounded-xl h-fit">
-                        <h4 class="font-mono text-xs text-slate-400 uppercase mb-6">Telemetry</h4>
-                        <div class="space-y-4">
-                            <div><span class="text-xs text-white">Political Capital</span><div class="w-full bg-dark h-2 rounded-full mt-1"><div class="bg-primary h-full" :style="`width: ${caseStudy.metrics.politicalCapital}%`"></div></div></div>
-                            <div><span class="text-xs text-white">Velocity</span><div class="w-full bg-dark h-2 rounded-full mt-1"><div class="bg-purple-400 h-full" :style="`width: ${caseStudy.metrics.velocity}%`"></div></div></div>
+
+                    <!-- Right: The Dashboard -->
+                    <div class="bg-card border border-slate-700 p-6 rounded-xl h-fit sticky top-6">
+                        <h4 class="font-mono text-xs text-slate-400 uppercase mb-6 border-b border-slate-700 pb-2">Live Telemetry</h4>
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-xs text-white">Political Capital</span>
+                                    <span class="text-xs font-mono" :class="caseStudy.metrics.politicalCapital < 30 ? 'text-risk' : 'text-primary'" x-text="caseStudy.metrics.politicalCapital + '%'"></span>
+                                </div>
+                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
+                                    <div class="h-full transition-all duration-500" 
+                                         :class="caseStudy.metrics.politicalCapital < 30 ? 'bg-risk' : 'bg-primary'"
+                                         :style="`width: ${caseStudy.metrics.politicalCapital}%`"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-xs text-white">Velocity</span>
+                                    <span class="text-xs font-mono text-purple-400" x-text="caseStudy.metrics.velocity"></span>
+                                </div>
+                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
+                                    <div class="bg-purple-400 h-full transition-all duration-500" :style="`width: ${caseStudy.metrics.velocity}%`"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between mb-1">
+                                    <span class="text-xs text-white">Risk Exposure</span>
+                                    <span class="text-xs font-mono" :class="caseStudy.metrics.risk > 70 ? 'text-risk' : 'text-blue-400'" x-text="caseStudy.metrics.risk + '%'"></span>
+                                </div>
+                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
+                                    <div class="h-full transition-all duration-500" 
+                                         :class="caseStudy.metrics.risk > 70 ? 'bg-risk' : 'bg-blue-400'"
+                                         :style="`width: ${caseStudy.metrics.risk}%`"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-8 pt-6 border-t border-slate-700">
+                            <p class="text-[10px] text-textMuted text-center italic">
+                                "The Bilingual Executive trades Scale for Speed."
+                            </p>
                         </div>
                     </div>
                 </div>
-                <div x-show="caseStudy.gameOver" class="text-center py-10">
-                    <h2 class="text-3xl font-bold text-white mb-2">SIMULATION END</h2>
+
+                <!-- Game Over / Success Screen -->
+                <div x-show="caseStudy.gameOver" class="max-w-2xl mx-auto text-center">
+                    <div class="mb-6">
+                        <i class="fa-solid fa-flag-checkered text-6xl" :class="caseStudy.metrics.politicalCapital > 0 ? 'text-primary' : 'text-risk'"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-white mb-2" x-text="caseStudy.metrics.politicalCapital > 0 ? 'MISSION COMPLETE' : 'TERMINATED'"></h2>
                     <p class="text-xl text-slate-300 mb-8" x-text="caseStudy.finalMessage"></p>
-                    <button @click="caseStudy.start()" class="text-slate-400 underline">Replay</button>
-                </div>
-            </div>
 
-            <!-- CHAT INTERFACE (Offline Mode) -->
-            <div x-show="isChatOpen" class="fixed inset-0 z-[60] md:inset-auto md:bottom-24 md:right-6 md:w-96 md:h-[550px] bg-dark flex flex-col md:rounded-2xl border-l md:border border-primary shadow-2xl overflow-hidden font-sans" x-transition x-cloak>
-                <div class="bg-card p-4 border-b border-slate-700 flex justify-between items-center pt-safe">
-                    <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary"><i class="fa-solid fa-bolt text-sm"></i></div>
-                        <div>
-                            <h3 class="font-bold text-white text-sm">Bilingual Assistant</h3>
-                            <p class="text-[10px] text-textMuted uppercase tracking-tighter">OFFLINE MODE</p>
-                        </div>
-                    </div>
-                    <button @click="isChatOpen = false" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
-                </div>
-                
-                <div class="flex-1 overflow-y-auto p-4 flex flex-col space-y-4 bg-dark" id="chat-messages-container">
-                    <div class="chat-bubble chat-bot">Hello. I am operating in offline mode. Ask me to translate a term like "API" or "Technical Debt".</div>
-                    <template x-for="msg in chatMessages"><div class="chat-bubble" :class="msg.role === 'user' ? 'chat-user' : 'chat-bot'" x-html="msg.text"></div></template>
-                    <div x-show="isTyping" class="chat-bubble chat-bot flex gap-1 items-center w-16"><div class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce"></div><div class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce delay-75"></div><div class="w-1.5 h-1.5 bg-primary rounded-full animate-bounce delay-150"></div></div>
-                </div>
-
-                <div class="p-4 bg-card border-t border-slate-800 pb-safe">
-                    <div class="relative flex gap-2">
-                        <input type="text" x-model="chatInput" @keydown.enter="sendMessage()" placeholder="Lookup a term..." class="flex-1 bg-dark text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-slate-700">
-                        <button @click="sendMessage()" class="w-12 h-12 bg-primary rounded-full text-dark flex items-center justify-center active:scale-90 transition-transform"><i class="fa-solid fa-paper-plane"></i></button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TALENT RADAR -->
-            <div x-show="currentTab === 'talent'" x-cloak class="max-w-6xl mx-auto h-full">
-                <div class="grid lg:grid-cols-12 gap-8 h-full">
-                    <div class="lg:col-span-5 flex flex-col gap-6">
-                        <div class="bg-card border border-hotpink/30 p-6 rounded-2xl relative overflow-hidden">
-                            <h2 class="font-mono text-2xl font-bold text-white mb-1">Leadership Radar</h2>
-                            <div class="mt-6 flex items-end gap-3">
-                                <div class="text-6xl font-bold text-hotpink font-mono" x-text="talentMaturityScore"></div>
-                                <div class="text-sm font-bold text-white mb-2">/ 5.0</div>
-                            </div>
-                        </div>
-                        <div class="bg-card border border-slate-700 p-6 rounded-2xl flex-1 overflow-y-auto">
-                            <div class="space-y-6">
-                                <template x-for="(skill, idx) in talentSkills" :key="idx">
-                                    <div class="group">
-                                        <div class="flex justify-between items-end mb-2">
-                                            <label class="font-bold text-white text-sm" x-text="skill.label"></label>
-                                            <span class="font-mono text-hotpink font-bold" x-text="skill.val"></span>
+                    <div class="bg-card text-left p-6 rounded-xl border border-slate-700 mb-8">
+                        <h4 class="font-mono text-sm text-primary mb-4 border-b border-slate-700 pb-2">MISSION DEBRIEF</h4>
+                        <div class="space-y-4">
+                            <template x-for="log in caseStudy.history">
+                                <div class="text-sm">
+                                    <p class="font-bold text-white text-xs mb-1" x-text="log.scenario"></p>
+                                    <div class="flex gap-2">
+                                        <div class="w-1 bg-slate-600 shrink-0"></div>
+                                        <div>
+                                            <p class="text-slate-400 italic mb-1" x-text="log.decision"></p>
+                                            <p :class="log.result === 'success' ? 'text-primary' : 'text-warn'" x-text="log.feedback"></p>
                                         </div>
-                                        <input type="range" min="1" max="5" step="1" x-model.number="skill.val" @input="updateTalentChart()" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-hotpink">
                                     </div>
-                                </template>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <button @click="caseStudy.start()" class="text-slate-400 hover:text-white underline">Replay Simulation</button>
+                </div>
+
+            </div>
+            
+<!-- ROLE-PLAY DOJO TAB -->
+            <div x-show="currentTab === 'roleplay'" x-cloak class="max-w-4xl mx-auto">
+                
+                <!-- 1. Selection Screen -->
+                <div x-show="!rolePlay.active">
+                    <div class="text-center mb-10 pt-4">
+                        <h2 class="text-3xl font-mono font-bold text-white mb-2">The Negotiation Dojo</h2>
+                        <p class="text-textMuted">Choose a scenario. Convince the skeptic. Don't use jargon.</p>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <template x-for="(scenario, index) in rolePlay.scenarios" :key="index">
+                            <button @click="rolePlay.start(index)" 
+                                    class="bg-card border border-slate-700 hover:border-warn p-6 rounded-xl text-left group transition-all hover:-translate-y-1">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div class="bg-slate-800 p-3 rounded-lg group-hover:bg-warn group-hover:text-dark transition-colors">
+                                        <i class="fa-solid fa-comments text-xl"></i>
+                                    </div>
+                                    <span class="text-[10px] font-mono border border-slate-600 px-2 py-1 rounded text-slate-400">HARD</span>
+                                </div>
+                                <h3 class="text-lg font-bold text-white mb-1" x-text="scenario.title"></h3>
+                                <p class="text-xs text-textMuted mb-4">VS <span x-text="scenario.opponent"></span></p>
+                                <p class="text-sm text-slate-300 line-clamp-3 italic">"<span x-text="scenario.intro"></span>"</p>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- 2. Active Simulation Screen -->
+                <div x-show="rolePlay.active" class="flex flex-col h-[600px] bg-card rounded-xl border border-slate-700 shadow-2xl relative overflow-hidden">
+                    
+                    <!-- Header -->
+                    <div class="p-4 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-warn/20 flex items-center justify-center text-warn">
+                                <i class="fa-solid fa-user-tie"></i>
                             </div>
-                            <button @click="analyzeGap()" :disabled="isAnalyzingTalent" class="w-full mt-8 bg-gradient-to-r from-pink-600 to-purple-600 text-white font-bold py-4 rounded-xl shadow-glow-vip">
-                                <span x-show="!isAnalyzingTalent">GENERATE COACHING PLAN</span>
-                                <span x-show="isAnalyzingTalent">ANALYZING...</span>
+                            <div>
+                                <h3 class="font-bold text-white text-sm" x-text="rolePlay.scenario?.opponent"></h3>
+                                <p class="text-[10px] text-textMuted">Topic: <span x-text="rolePlay.scenario?.topic"></span></p>
+                            </div>
+                        </div>
+                        <button @click="rolePlay.stop()" class="text-slate-400 hover:text-white text-xs px-3 py-1 border border-slate-600 rounded">
+                            End Session
+                        </button>
+                    </div>
+
+                    <!-- Chat Area -->
+                    <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-dark/50" id="rp-chat-box">
+                        <template x-for="msg in rolePlay.messages">
+                            <div class="flex flex-col" :class="msg.role === 'user' ? 'items-end' : 'items-start'">
+                                <div class="max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed"
+                                     :class="msg.role === 'user' ? 'bg-primary text-dark rounded-br-none' : (msg.role === 'system' ? 'bg-red-900/50 text-red-200 border border-red-500' : 'bg-card border border-slate-600 text-white rounded-bl-none')">
+                                    <span x-text="msg.text"></span>
+                                </div>
+                                <span class="text-[10px] text-slate-500 mt-1 uppercase font-mono" x-text="msg.role === 'user' ? 'You' : (msg.role === 'system' ? 'System' : rolePlay.scenario?.opponent)"></span>
+                            </div>
+                        </template>
+                        
+                        <!-- Typing Indicator -->
+                        <div x-show="rolePlay.loading" class="flex items-center gap-2 text-slate-500 text-xs ml-2">
+                            <i class="fa-solid fa-circle-notch fa-spin"></i> Opponent is thinking...
+                        </div>
+                    </div>
+
+                    <!-- Input Area -->
+                    <div class="p-4 bg-card border-t border-slate-700">
+                        <div class="relative">
+                            <input type="text" 
+                                   x-model="rolePlay.input" 
+                                   @keydown.enter="rolePlay.send()"
+                                   :disabled="rolePlay.loading"
+                                   placeholder="Type your response (Focus on business value)..." 
+                                   class="w-full bg-dark text-white rounded-lg pl-4 pr-12 py-4 focus:outline-none focus:border-warn border border-slate-600 font-mono text-sm disabled:opacity-50">
+                            
+                            <button @click="rolePlay.send()" 
+                                    :disabled="rolePlay.loading"
+                                    class="absolute right-2 top-2 bottom-2 bg-warn text-dark w-10 rounded flex items-center justify-center hover:bg-yellow-400 transition-colors disabled:opacity-50">
+                                <i class="fa-solid fa-paper-plane"></i>
                             </button>
                         </div>
                     </div>
-                    <div class="lg:col-span-7 flex flex-col gap-6">
-                        <div class="bg-dark border border-slate-800 p-4 rounded-2xl flex items-center justify-center min-h-[400px] relative">
-                            <div class="relative z-10 w-full h-full max-h-[500px]">
-                                <canvas id="talentChart"></canvas>
+                </div>
+            </div>
+
+            <!-- CULTURAL DEBT MONITOR TAB -->
+            <div x-show="currentTab === 'culture'" x-cloak class="max-w-4xl mx-auto">
+                
+                <div class="flex justify-between items-end mb-6">
+                    <div>
+                        <h2 class="text-3xl font-mono font-bold text-white">Cultural Debt Monitor</h2>
+                        <p class="text-textMuted text-sm mt-1">Intangible friction, measured.</p>
+                    </div>
+                    <button @click="culturalMonitor.isCheckinOpen = true" class="bg-primary hover:bg-green-400 text-dark font-bold py-2 px-6 rounded-full shadow-glow transition-all">
+                        <i class="fa-solid fa-plus mr-2"></i>Log Check-In
+                    </button>
+                </div>
+
+                <!-- EMPTY STATE -->
+                <div x-show="culturalMonitor.history.length === 0" class="text-center py-12 bg-card border border-slate-700 rounded-xl border-dashed">
+                    <i class="fa-solid fa-chart-line text-4xl text-slate-500 mb-4"></i>
+                    <p class="text-slate-400">No data points yet. Log your first weekly check-in.</p>
+                </div>
+
+                <!-- DASHBOARD (Visible if history exists) -->
+                <div x-show="culturalMonitor.history.length > 0">
+                    
+                    <!-- The Meter -->
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden">
+                            <h3 class="font-mono text-xs text-slate-400 uppercase mb-2">Current Debt Level</h3>
+                            <div class="flex items-baseline gap-2">
+                                <span class="text-6xl font-bold font-mono" :class="culturalMonitor.status.color" x-text="culturalMonitor.currentScore + '%'"></span>
+                                <span class="text-sm font-bold uppercase tracking-widest" :class="culturalMonitor.status.color" x-text="culturalMonitor.status.label"></span>
+                            </div>
+                            <p class="text-xs text-slate-300 mt-2" x-text="culturalMonitor.status.desc"></p>
+                            
+                            <!-- Background Pulse -->
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-white opacity-5 rounded-full blur-2xl"></div>
+                        </div>
+
+                        <div class="bg-card border border-slate-700 p-6 rounded-xl flex flex-col justify-center">
+                            <h3 class="font-mono text-xs text-slate-400 uppercase mb-2"><i class="fa-solid fa-user-doctor mr-2"></i>Prescription</h3>
+                            <p class="text-white text-sm leading-relaxed font-medium">"<span x-text="culturalMonitor.recommendation"></span>"</p>
+                        </div>
+                    </div>
+
+                    <!-- The Chart -->
+                    <div class="bg-card border border-slate-700 p-6 rounded-xl shadow-lg mb-8">
+                        <h3 class="font-mono text-xs text-slate-400 uppercase mb-4">Trend Analysis (Last 10 Check-ins)</h3>
+                        <div class="h-64 w-full">
+                            <canvas id="debtChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="text-center">
+                        <button @click="culturalMonitor.reset()" class="text-xs text-red-400 hover:text-red-300 underline">Reset History</button>
+                    </div>
+                </div>
+
+                <!-- CHECK-IN MODAL -->
+                <div x-show="culturalMonitor.isCheckinOpen" x-transition.opacity 
+                     class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div class="bg-card border border-slate-600 p-8 rounded-2xl max-w-md w-full shadow-2xl relative">
+                        <button @click="culturalMonitor.isCheckinOpen = false" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+                        
+                        <h3 class="text-2xl font-bold text-white mb-1">Weekly Pulse</h3>
+                        <p class="text-xs text-textMuted mb-6 uppercase tracking-widest">Honesty required</p>
+
+                        <div class="space-y-6">
+                            <!-- Q1 -->
+                            <div>
+                                <p class="text-sm text-white mb-2 font-bold">1. Did anyone share "Bad News" openly this week?</p>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button @click="culturalMonitor.answers.q1 = 'yes'" :class="culturalMonitor.answers.q1 === 'yes' ? 'bg-primary text-dark ring-2 ring-primary' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">Yes (Safety)</button>
+                                    <button @click="culturalMonitor.answers.q1 = 'no'" :class="culturalMonitor.answers.q1 === 'no' ? 'bg-risk text-dark ring-2 ring-risk' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">No (Fear)</button>
+                                </div>
+                            </div>
+
+                            <!-- Q2 -->
+                            <div>
+                                <p class="text-sm text-white mb-2 font-bold">2. Did a senior opinion override data?</p>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button @click="culturalMonitor.answers.q2 = 'yes'" :class="culturalMonitor.answers.q2 === 'yes' ? 'bg-risk text-dark ring-2 ring-risk' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">Yes (HiPPO)</button>
+                                    <button @click="culturalMonitor.answers.q2 = 'no'" :class="culturalMonitor.answers.q2 === 'no' ? 'bg-primary text-dark ring-2 ring-primary' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">No (Data)</button>
+                                </div>
+                            </div>
+
+                            <!-- Q3 -->
+                            <div>
+                                <p class="text-sm text-white mb-2 font-bold">3. Did your team ship value to a customer?</p>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <button @click="culturalMonitor.answers.q3 = 'yes'" :class="culturalMonitor.answers.q3 === 'yes' ? 'bg-primary text-dark ring-2 ring-primary' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">Yes (Flow)</button>
+                                    <button @click="culturalMonitor.answers.q3 = 'no'" :class="culturalMonitor.answers.q3 === 'no' ? 'bg-risk text-dark ring-2 ring-risk' : 'bg-slate-800 text-slate-400'" class="p-3 rounded-lg text-sm font-bold transition-all">No (Stuck)</button>
+                                </div>
                             </div>
                         </div>
-                        <div x-show="aiCoachResponse" class="bg-slate-800/50 border border-slate-600 p-6 rounded-2xl flex-1" x-html="aiCoachResponse"></div>
+
+                        <button @click="culturalMonitor.submitCheckin()" 
+                                :disabled="!culturalMonitor.answers.q1 || !culturalMonitor.answers.q2 || !culturalMonitor.answers.q3"
+                                class="w-full mt-8 bg-white hover:bg-slate-200 text-dark font-bold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                            CALCULATE DEBT
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- API SANDBOX TAB -->
+            <div x-show="currentTab === 'sandbox'" x-cloak class="max-w-5xl mx-auto">
+                
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-mono font-bold text-white">The Architecture Sandbox</h2>
+                    <p class="text-textMuted text-sm mt-2">Build a data pipeline. See how "Legacy" slows you down and "Caching" speeds you up.</p>
+                </div>
+
+                <!-- THE CANVAS (Visualization Area) -->
+                <div class="bg-dark border-2 border-dashed border-slate-700 rounded-xl p-8 min-h-[250px] relative flex flex-col justify-center items-center overflow-hidden mb-8">
+                    
+                    <!-- Placeholder Text -->
+                    <div x-show="apiSandbox.pipeline.length === 0" class="text-slate-600 font-mono text-sm text-center">
+                        <i class="fa-solid fa-arrow-pointer mb-2 text-2xl"></i><br>
+                        Click components below to build your stack.<br>
+                        (e.g., App -> Cache -> API -> Core)
+                    </div>
+
+                    <!-- The Pipeline -->
+                    <div class="flex flex-wrap justify-center items-center gap-2 z-10 w-full">
+                        
+                        <!-- The "User" (Start Point) -->
+                        <div x-show="apiSandbox.pipeline.length > 0" class="flex items-center">
+                            <div class="bg-white text-dark p-3 rounded-lg font-bold text-xs">USER</div>
+                            <div class="w-8 h-1 bg-slate-600 mx-2"></div>
+                        </div>
+
+                        <!-- The Blocks -->
+                        <template x-for="(block, index) in apiSandbox.pipeline" :key="block.uid">
+                            <div class="flex items-center animate-glitch">
+                                <!-- The Component Card -->
+                                <div @click="apiSandbox.removeComponent(index)" 
+                                     class="relative group cursor-pointer bg-card border-2 p-4 rounded-lg w-32 h-32 flex flex-col items-center justify-center text-center transition-all hover:scale-105 hover:bg-slate-800"
+                                     :class="block.color">
+                                    
+                                    <!-- Delete Icon on Hover -->
+                                    <div class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </div>
+
+                                    <i :class="block.icon" class="text-2xl mb-2"></i>
+                                    <span class="text-[10px] font-bold uppercase" x-text="block.label"></span>
+                                    <span class="text-[9px] mt-1 opacity-70" x-text="'+' + block.latency + 'ms'"></span>
+                                </div>
+
+                                <!-- Connecting Arrow (if not last) -->
+                                <div x-show="index < apiSandbox.pipeline.length - 1" class="text-slate-600 mx-2">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </div>
+                            </div>
+                        </template>
+
+                    </div>
+
+                    <!-- Simulation Animation (The moving dot) -->
+                    <div x-show="apiSandbox.isRunning" class="absolute inset-0 z-0 flex items-center">
+                        <div class="w-full h-1 bg-slate-800/50"></div>
+                        <div class="absolute left-0 w-3 h-3 bg-primary rounded-full shadow-glow"
+                             style="animation: moveRight 2s linear infinite;"></div>
+                    </div>
+                </div>
+
+                <!-- CONTROLS -->
+                <div class="grid md:grid-cols-4 gap-6">
+                    
+                    <!-- Component Catalog -->
+                    <div class="md:col-span-3">
+                        <h3 class="font-mono text-xs text-slate-400 uppercase mb-3">Available Components</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <template x-for="item in apiSandbox.catalog" :key="item.id">
+                                <button @click="apiSandbox.addComponent(item)" 
+                                        :disabled="apiSandbox.isRunning"
+                                        class="flex items-center gap-2 bg-card border border-slate-600 px-4 py-3 rounded-lg hover:border-white transition-all active:scale-95 disabled:opacity-50">
+                                    <i :class="item.icon" class="text-slate-400"></i>
+                                    <span class="text-sm font-bold text-white" x-text="item.label"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex flex-col gap-3 justify-end">
+                        <button @click="apiSandbox.runSimulation()" 
+                                :disabled="apiSandbox.pipeline.length === 0 || apiSandbox.isRunning"
+                                class="w-full bg-primary hover:bg-green-400 text-dark font-bold py-3 rounded-lg shadow-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!apiSandbox.isRunning"><i class="fa-solid fa-play mr-2"></i>RUN TEST</span>
+                            <span x-show="apiSandbox.isRunning"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i>TESTING...</span>
+                        </button>
+                        <button @click="apiSandbox.reset()" class="w-full border border-slate-600 text-slate-400 hover:text-white py-2 rounded-lg text-xs">
+                            Reset Board
+                        </button>
+                    </div>
+                </div>
+
+                <!-- RESULTS PANEL -->
+                <div x-show="apiSandbox.result" x-transition.opacity class="mt-8 bg-card border-l-4 p-6 rounded-r-lg shadow-2xl"
+                     :class="apiSandbox.result?.time < 300 ? 'border-primary' : (apiSandbox.result?.time < 1500 ? 'border-warn' : 'border-risk')">
+                    
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="font-mono text-xs uppercase tracking-widest mb-1">Total Round-Trip Time</p>
+                            <h3 class="text-4xl font-bold font-mono text-white mb-2">
+                                <span x-text="apiSandbox.result?.time"></span> ms
+                            </h3>
+                            <p class="text-sm font-medium" 
+                               :class="apiSandbox.result?.time < 300 ? 'text-primary' : (apiSandbox.result?.time < 1500 ? 'text-warn' : 'text-risk')"
+                               x-text="apiSandbox.result?.message"></p>
+                        </div>
+                        <div class="text-right">
+                             <div class="text-xs text-slate-400 mb-1">Customer Experience</div>
+                             <div class="text-2xl">
+                                 <i x-show="apiSandbox.result?.time < 300" class="fa-solid fa-face-laugh-beam text-primary"></i>
+                                 <i x-show="apiSandbox.result?.time >= 300 && apiSandbox.result?.time < 1500" class="fa-solid fa-face-meh text-warn"></i>
+                                 <i x-show="apiSandbox.result?.time >= 1500" class="fa-solid fa-face-dizzy text-risk"></i>
+                             </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- WHAT-IF SCENARIO PLANNER TAB -->
+            <div x-show="currentTab === 'whatif'" x-cloak class="max-w-4xl mx-auto">
+                
+                <div class="text-center mb-8">
+                    <h2 class="text-3xl font-mono font-bold text-white">Strategic Scenario Simulator</h2>
+                    <p class="text-textMuted text-sm mt-2">Test your hypothesis before spending the budget. AI-driven Bilingual Analysis.</p>
+                </div>
+
+                <!-- Input Console -->
+                <div class="bg-card border border-slate-700 p-6 rounded-xl shadow-lg mb-8">
+                    <label class="block font-mono text-xs text-primary uppercase mb-2">Enter Strategic Hypothesis</label>
+                    <div class="relative">
+                        <textarea x-model="whatIf.input" 
+                                  placeholder="e.g., What if we shut down the physical branches and went 100% digital?" 
+                                  class="w-full bg-dark text-white rounded-lg p-4 font-mono text-sm border border-slate-600 focus:border-primary focus:outline-none h-32"></textarea>
+                        
+                        <!-- Quick Prompts -->
+                        <div class="mt-3 flex flex-wrap gap-2">
+                            <span class="text-[10px] text-slate-500 uppercase">Try:</span>
+                            <template x-for="example in whatIf.examples">
+                                <button @click="whatIf.setInput(example)" class="text-[10px] bg-slate-800 text-slate-300 px-2 py-1 rounded hover:bg-slate-700 hover:text-white transition-colors">
+                                    <span x-text="example"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 flex justify-end">
+                        <button @click="whatIf.analyze()" 
+                                :disabled="whatIf.loading || !whatIf.input"
+                                class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-lg shadow-glow transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span x-show="!whatIf.loading"><i class="fa-solid fa-microchip"></i> SIMULATE OUTCOME</span>
+                            <span x-show="whatIf.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> ANALYZING...</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Memo (The Document) -->
+                <div x-show="whatIf.result" x-transition.opacity class="relative">
+                    
+                    <!-- Paper Design -->
+                    <div class="bg-white text-slate-900 p-8 md:p-12 rounded-lg shadow-2xl relative overflow-hidden min-h-[400px]">
+                        
+                        <!-- Watermark -->
+                        <div class="absolute top-10 right-10 opacity-5 pointer-events-none">
+                            <i class="fa-solid fa-chess-king text-9xl"></i>
+                        </div>
+
+                        <!-- Header -->
+                        <div class="border-b-2 border-slate-900 pb-4 mb-6 flex justify-between items-end">
+                            <div>
+                                <h3 class="font-bold text-2xl uppercase tracking-tighter">Board Briefing Note</h3>
+                                <p class="text-xs font-mono text-slate-500 mt-1">CONFIDENTIAL // SIMULATION RESULTS</p>
+                            </div>
+                            <div class="text-right hidden md:block">
+                                <p class="text-[10px] font-mono text-slate-500">DATE: <span x-text="new Date().toLocaleDateString()"></span></p>
+                                <p class="text-[10px] font-mono text-slate-500">SOURCE: BILINGUAL AI</p>
+                            </div>
+                        </div>
+
+                        <!-- The AI Content -->
+                        <div class="prose prose-slate max-w-none prose-headings:font-bold prose-headings:uppercase prose-h3:text-sm prose-h3:text-slate-500 prose-p:text-sm md:prose-p:text-base prose-li:text-sm"
+                             x-html="whatIf.result">
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="mt-12 pt-4 border-t border-slate-200 flex justify-between items-center">
+                            <p class="font-mono text-[10px] text-slate-400">Generated by The Bilingual Executive Toolkit</p>
+                            <button @click="whatIf.result = null" class="text-slate-500 hover:text-red-600 text-xs font-bold uppercase">
+                                <i class="fa-solid fa-trash mr-1"></i> Clear Memo
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Glow Effect behind the paper -->
+                    <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg blur opacity-20 -z-10"></div>
+                </div>
+
+            </div>
+
+            <!-- ARCHITECT CONSOLE (VIP ONLY) -->
+            <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
+                <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-microchip text-9xl text-hotpink"></i></div>
+                    <h2 class="font-mono text-3xl font-bold text-hotpink mb-2 flex items-center"><i class="fa-solid fa-user-secret mr-3"></i>VIP ARCHITECT CONSOLE</h2>
+                    <p class="text-sm text-slate-300 font-mono max-w-2xl relative z-10">ACCESS GRANTED. Welcome to the Command Center.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
+                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">JSON: Data Product Contract</h3>
+                        <div class="bg-black p-4 rounded text-xs text-green-400 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner">
+                            <pre x-text="vipJson"></pre>
+                        </div>
+                        <button @click="copyToClipboard(vipJson, 'Schema')" class="w-full border border-slate-600 hover:bg-slate-700 text-slate-300 text-xs font-mono py-3 rounded transition-colors flex items-center justify-center gap-2"><i class="fa-regular fa-copy"></i> COPY SCHEMA</button>
+                    </div>
+                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
+                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">PROMPT: The Boardroom Script</h3>
+                        <div class="bg-black p-4 rounded text-xs text-blue-300 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner h-32">
+                            <pre x-text="vipPrompt"></pre>
+                        </div>
+                        <button @click="copyToClipboard(vipPrompt, 'Prompt')" class="w-full bg-hotpink hover:bg-pink-600 text-white font-bold py-3 rounded text-xs font-mono transition-all flex items-center justify-center gap-2 shadow-glow-vip"><i class="fa-solid fa-robot"></i> COPY PROMPT</button>
                     </div>
                 </div>
             </div>
+            <!-- QUIZ / FLASHCARDS TAB -->
+            <div x-show="currentTab === 'quiz'" x-cloak class="max-w-2xl mx-auto">
+                
+                <!-- 1. Start Screen -->
+                <div x-show="!quiz.active" class="text-center py-12">
+                    <div class="w-24 h-24 bg-card rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-cyan-400 shadow-glow">
+                        <i class="fa-solid fa-brain text-4xl text-cyan-400"></i>
+                    </div>
+                    <h2 class="text-3xl font-mono font-bold text-white mb-4">The Bilingual Dictionary</h2>
+                    <p class="text-textMuted max-w-md mx-auto mb-8">
+                        Can you translate "Technologist" into "Business Value"? Test your fluency with 5 rapid-fire flashcards.
+                    </p>
+                    <button @click="quiz.start()" class="bg-cyan-400 hover:bg-cyan-300 text-dark font-bold py-4 px-10 rounded-full transition-all active:scale-95 shadow-lg">
+                        START QUIZ
+                    </button>
+                </div>
 
-            <!-- Add other tabs like What-If, Risk Sim, etc using the same x-show patterns -->
-            <!-- GENERIC PLACEHOLDER FOR REMAINING TABS TO KEEP FILE SHORT -->
-            <!-- In production, copy the specific HTML blocks for 'whatif', 'risksim', 'sandbox', etc here -->
-            
-            <div x-show="currentTab === 'whatif'" x-cloak class="max-w-4xl mx-auto">
-                <div class="bg-card border border-slate-700 p-6 rounded-xl">
-                    <h2 class="text-2xl font-bold text-white mb-4">Scenario Planner</h2>
-                    <input type="text" x-model="whatIf.input" placeholder="e.g. Outsource Core Banking" class="w-full bg-dark border border-slate-600 p-4 rounded text-white mb-4">
-                    <button @click="whatIf.analyze()" class="bg-purple-600 text-white px-6 py-3 rounded font-bold">Simulate</button>
-                    <div x-show="whatIf.result" class="mt-6 p-4 bg-dark rounded border border-slate-600" x-html="whatIf.result"></div>
+                <!-- 2. Gameplay Screen -->
+                <div x-show="quiz.active && !quiz.finished" class="relative">
+                    <!-- Progress Bar -->
+                    <div class="w-full bg-slate-800 h-2 rounded-full mb-6">
+                        <div class="bg-cyan-400 h-2 rounded-full transition-all duration-300" 
+                             :style="`width: ${((quiz.currentQuestion + 1) / quiz.questions.length) * 100}%`"></div>
+                    </div>
+
+                    <!-- The Flashcard -->
+                    <div class="bg-card border border-slate-700 p-8 rounded-2xl shadow-2xl relative overflow-hidden min-h-[400px] flex flex-col justify-center">
+                        
+                        <!-- Flashcard Content -->
+                        <div class="text-center mb-8">
+                            <span class="text-[10px] font-mono text-cyan-400 tracking-widest uppercase mb-2 block">
+                                TERM TO TRANSLATE
+                            </span>
+                            <h3 class="text-3xl md:text-4xl font-bold text-white" x-text="quiz.questions[quiz.currentQuestion].term"></h3>
+                        </div>
+
+                        <!-- Options -->
+                        <div class="space-y-3">
+                            <template x-for="(option, index) in quiz.questions[quiz.currentQuestion].options" :key="index">
+                                <button @click="quiz.submitAnswer(option.correct)"
+                                        :class="{
+                                            'hover:border-cyan-400 hover:bg-slate-800': !quiz.feedback,
+                                            'border-green-500 bg-green-500/10': quiz.feedback && option.correct,
+                                            'border-red-500 bg-red-500/10 opacity-50': quiz.feedback && !option.correct
+                                        }"
+                                        class="w-full p-4 rounded-xl border border-slate-600 text-left transition-all duration-200">
+                                    <span class="text-sm md:text-base text-slate-200" x-text="option.text"></span>
+                                </button>
+                            </template>
+                        </div>
+
+                        <!-- Feedback Overlay (Popup) -->
+                        <div x-show="quiz.feedback" x-transition.opacity 
+                             class="absolute inset-0 flex items-center justify-center backdrop-blur-sm z-10 rounded-2xl">
+                            <div class="p-6 rounded-full shadow-2xl transform scale-110" 
+                                 :class="quiz.feedback === 'correct' ? 'bg-green-500' : 'bg-red-500'">
+                                <i class="fa-solid text-4xl text-white" 
+                                   :class="quiz.feedback === 'correct' ? 'fa-check' : 'fa-xmark'"></i>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 3. Results Screen -->
+                <div x-show="quiz.finished" class="text-center py-10">
+                    <h2 class="text-2xl font-mono text-white mb-2">SESSION COMPLETE</h2>
+                    <div class="text-6xl font-bold mb-4" :class="quiz.score === 5 ? 'text-primary' : 'text-cyan-400'">
+                        <span x-text="quiz.score"></span>/<span x-text="quiz.questions.length"></span>
+                    </div>
+                    
+                    <p class="text-textMuted mb-8" x-show="quiz.score === 5">Perfect Score! You are a Bilingual Executive.</p>
+                    <p class="text-textMuted mb-8" x-show="quiz.score < 5">Keep practicing. Fluency takes time.</p>
+
+                    <button @click="quiz.start()" class="border border-slate-500 hover:bg-slate-800 text-white py-3 px-8 rounded-full transition-all">
+                        <i class="fa-solid fa-rotate-right mr-2"></i> Play Again
+                    </button>
                 </div>
             </div>
 
-            <div x-show="currentTab === 'risksim'" x-cloak class="max-w-4xl mx-auto">
-                <div class="bg-card border border-risk p-6 rounded-xl">
-                    <h2 class="text-2xl font-bold text-white mb-4">Risk Negotiation</h2>
-                    <div class="h-64 overflow-y-auto bg-dark p-4 rounded mb-4 border border-slate-700">
-                        <template x-for="msg in riskSim.messages">
-                            <div class="mb-2 text-sm" :class="msg.role==='user'?'text-right text-blue-400':'text-left text-white'"><span x-text="msg.text"></span></div>
+
+            <!-- ASSESSMENT -->
+            <div x-show="currentTab === 'assessment'" x-cloak class="max-w-4xl mx-auto">
+
+                                <!-- TEAM COLLABORATION INTERFACE -->
+                <div class="mb-8 border-b border-slate-700 pb-8">
+                    
+                    <!-- State 0: Intro (Join or Create) -->
+                    <div x-show="!teamManager.activeTeam" class="bg-gradient-to-r from-slate-800 to-slate-900 p-6 rounded-xl border border-slate-700 flex flex-col md:flex-row items-center justify-between gap-6">
+                        <div class="flex-1">
+                            <h3 class="font-mono text-xl font-bold text-white mb-2"><i class="fa-solid fa-users mr-2 text-hotpink"></i>Team Mode</h3>
+                            <p class="text-sm text-textMuted">Align your Board. Compare scores with your colleagues to find the "Reality Gap."</p>
+                        </div>
+                        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                            <div class="flex">
+                                <input type="text" x-model="teamManager.joinInput" placeholder="Enter Code" class="bg-dark border border-slate-600 rounded-l px-3 py-2 w-28 text-sm focus:outline-none uppercase font-mono">
+                                <button @click="teamManager.joinTeam()" class="bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-r text-sm font-bold border border-l-0 border-slate-600">JOIN</button>
+                            </div>
+                            <div class="text-xs text-slate-500 flex items-center font-mono">OR</div>
+                            <div class="flex">
+                                <input type="text" x-model="teamManager.createInput" placeholder="New Team Name" class="bg-dark border border-slate-600 rounded-l px-3 py-2 w-32 text-sm focus:outline-none">
+                                <button @click="teamManager.createTeam()" class="bg-hotpink hover:bg-pink-600 text-white px-4 py-2 rounded-r text-sm font-bold shadow-glow-vip">CREATE</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- State 1: Active Team Dashboard -->
+                    <div x-show="teamManager.activeTeam" class="bg-card border border-hotpink/30 p-6 rounded-xl relative overflow-hidden">
+                        <!-- Header -->
+                        <div class="flex justify-between items-start mb-6 relative z-10">
+                            <div>
+                                <span class="text-[10px] font-mono text-hotpink uppercase tracking-widest">ACTIVE SESSION</span>
+                                <h3 class="text-2xl font-bold text-white flex items-center gap-3">
+                                    <span x-text="teamManager.activeTeam?.name"></span>
+                                    <span class="bg-slate-800 text-xs px-2 py-1 rounded font-mono text-slate-300" x-text="teamManager.activeTeam?.join_code"></span>
+                                </h3>
+                            </div>
+                            <div class="flex gap-2">
+                                <button @click="teamManager.copyInvite()" class="text-xs bg-slate-800 hover:bg-slate-700 text-white px-3 py-2 rounded transition-colors"><i class="fa-solid fa-share-nodes mr-2"></i>Invite</button>
+                                <button @click="teamManager.logout()" class="text-xs bg-slate-800 hover:bg-red-900/50 text-slate-400 hover:text-red-400 px-3 py-2 rounded transition-colors"><i class="fa-solid fa-power-off"></i></button>
+                            </div>
+                        </div>
+
+                        <!-- Stats Grid -->
+                        <div x-show="teamManager.memberResults.length > 0" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 relative z-10">
+                            <div class="bg-dark/50 p-4 rounded-lg border border-slate-700">
+                                <div class="text-xs text-slate-400 font-mono uppercase mb-1">Respondents</div>
+                                <div class="text-2xl font-bold text-white" x-text="teamManager.memberResults.length"></div>
+                            </div>
+                            <div class="bg-dark/50 p-4 rounded-lg border border-slate-700">
+                                <div class="text-xs text-slate-400 font-mono uppercase mb-1">Avg Score</div>
+                                <div class="text-2xl font-bold text-primary">
+                                    <span x-text="Math.round(teamManager.memberResults.reduce((a,b)=>a+b.total_score,0)/teamManager.memberResults.length)"></span>/75
+                                </div>
+                            </div>
+                            <div class="bg-dark/50 p-4 rounded-lg border border-slate-700">
+                                <div class="text-xs text-slate-400 font-mono uppercase mb-1">Alignment</div>
+                                <div class="text-2xl font-bold" :class="teamManager.alignmentScore > 80 ? 'text-primary' : 'text-warn'" x-text="teamManager.alignmentScore + '%'"></div>
+                            </div>
+                        </div>
+
+                        <div x-show="teamManager.memberResults.length === 0" class="text-center py-6 text-slate-500 font-mono text-sm relative z-10">
+                            Waiting for team members to submit...
+                        </div>
+
+                        <!-- Team List -->
+                        <div x-show="teamManager.memberResults.length > 0" class="relative z-10">
+                            <h4 class="font-mono text-xs text-slate-400 uppercase mb-3">Submission Log</h4>
+                            <div class="space-y-2 max-h-40 overflow-y-auto pr-2">
+                                <template x-for="member in teamManager.memberResults" :key="member.id">
+                                    <div class="flex justify-between items-center text-sm p-2 rounded bg-slate-800/50">
+                                        <span x-text="member.role" class="font-bold text-white"></span>
+                                        <span class="font-mono" :class="member.total_score < 40 ? 'text-risk' : 'text-primary'" x-text="member.total_score"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Background Decoration -->
+                        <div class="absolute -right-10 -bottom-10 opacity-10">
+                            <i class="fa-solid fa-people-group text-9xl text-hotpink"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div x-show="!assessmentSubmitted">
+                    <div class="flex justify-between items-center mb-6"><h2 class="font-mono text-2xl font-bold text-primary flex items-center"><i class="fa-solid fa-clipboard-check mr-3"></i>Agile Readiness Assessment</h2><button @click="resetAssessment()" class="text-xs text-textMuted underline hover:text-white"><i class="fa-solid fa-rotate-left mr-1"></i>Reset</button></div>
+                      <div class="bg-card border border-slate-700 rounded-xl p-6 mb-6 border-l-4 border-blue-400">
+        <label class="block text-sm font-mono text-white font-bold mb-4 uppercase">Step 0: Profile & Context</label>
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <label class="block text-xs font-mono text-textMuted mb-2">ORGANIZATION TYPE</label>
+                <select x-model="selectedIndustry" class="w-full bg-dark border border-slate-600 rounded p-3 text-white font-mono focus:border-primary focus:outline-none">
+                    <option value="" disabled selected>Select Organization...</option>
+                    <option value="Tier-1 Bank">Tier-1 Bank (Global)</option>
+                    <option value="Regional Bank">Regional Bank</option>
+                    <option value="Fintech">Fintech / Scale-up</option>
+                    <option value="Neobank">Neobank</option>
+                    <option value="Regulator">Regulator / Central Bank</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs font-mono text-textMuted mb-2">YOUR ROLE</label>
+                <select x-model="selectedTitle" class="w-full bg-dark border border-slate-600 rounded p-3 text-white font-mono focus:border-primary focus:outline-none">
+                    <option value="" disabled selected>Select Your Role...</option>
+                    <option value="C-Suite / Executive">C-Suite / Executive</option>
+                    <option value="Head of Business / Product">Head of Business / Product</option>
+                    <option value="Head of Technology">Head of Technology</option>
+                    <option value="Architecture / Data">Architecture / Data</option>
+                    <option value="Risk / Compliance">Risk / Compliance</option>
+                </select>
+            </div>
+        </div>
+    </div>
+                    <div class="space-y-12 mb-20">
+                        <template x-for="(section, sIdx) in assessmentData" :key="sIdx">
+                            <div class="bg-card/50 p-6 rounded-xl border border-slate-800"><h3 class="font-mono text-xl text-white mb-6 border-l-4 border-primary pl-3" x-text="section.title"></h3><div class="space-y-8"><template x-for="(q, qIdx) in section.questions" :key="qIdx"><div class="bg-dark/50 p-5 rounded border border-slate-700"><div class="flex justify-between items-start mb-2"><label class="font-mono font-bold text-slate-200 text-sm uppercase tracking-wide" x-text="q.text"></label><span class="font-mono text-primary font-bold text-lg" x-text="q.score"></span></div><p class="text-xs text-textMuted mb-2" x-text="q.desc"></p><input type="range" min="1" max="5" step="1" x-model.number="q.score" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer"></div></template></div></div>
+                        </template>
+                        <button @click="finishAssessment()" class="w-full py-4 bg-primary text-dark font-mono font-bold rounded-lg shadow-glow hover:bg-green-400 transition-colors flex justify-center items-center gap-2">CALCULATE SCORE <i class="fa-solid fa-calculator"></i></button>
+                    </div>
+                </div>
+
+                <!-- Results -->
+               <div x-show="calculateScore.isSafetyVeto" class="mb-4 p-4 border border-risk bg-risk/10 rounded flex items-start gap-3 text-left max-w-lg mx-auto"><i class="fa-solid fa-ban text-risk mt-1"></i><div><h4 class="font-mono font-bold text-risk text-sm">SAFETY VETO APPLIED</h4><p class="text-xs text-slate-300 mt-1">Low Safety score. Agility is impossible in fear. Score capped at 40.</p></div></div>
+                        <div x-show="calculateScore.isManualDrag" class="mb-6 p-4 border border-warn bg-warn/10 rounded flex items-start gap-3 text-left max-w-lg mx-auto"><i class="fa-solid fa-hand text-warn mt-1"></i><div><h4 class="font-mono font-bold text-warn text-sm">MANUAL DRAG PENALTY</h4><p class="text-xs text-slate-300 mt-1">Manual compliance reduces velocity. -20% final score reduction applied.</p></div></div>
+
+                        <!-- NEW ROADMAP GENERATOR UI -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
+                            
+                            <!-- Standard PDF Report -->
+                            <button @click="generatePDF()" class="bg-card hover:bg-slate-700 border border-slate-600 text-white p-4 rounded-xl flex items-center justify-center gap-3 transition-all group">
+                                <div class="bg-slate-700 group-hover:bg-slate-600 w-10 h-10 rounded-full flex items-center justify-center">
+                                    <i class="fa-solid fa-file-pdf"></i>
+                                </div>
+                                <div class="text-left">
+                                    <span class="block font-bold text-xs">DOWNLOAD REPORT</span>
+                                    <span class="block text-[10px] text-textMuted">Standard Audit Certificate</span>
+                                </div>
+                            </button>
+
+                            <!-- The New Roadmap Generator -->
+                            <button @click="generateRoadmap()" class="bg-primary/10 hover:bg-primary/20 border border-primary text-primary p-4 rounded-xl flex items-center justify-center gap-3 transition-all group shadow-glow">
+                                <div class="bg-primary text-dark w-10 h-10 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                    <i class="fa-solid fa-map-location-dot"></i>
+                                </div>
+                                <div class="text-left">
+                                    <span class="block font-bold text-xs">GENERATE PLAYBOOK</span>
+                                    <span class="block text-[10px] opacity-80">90-Day Action Plan</span>
+                                </div>
+                            </button>
+                        </div>
+
+                    <div class="mt-8 bg-card border border-slate-700 rounded-xl p-6 shadow-glow border-l-4 border-blue-400">
+        <div class="flex justify-between items-start">
+            <div>
+                <h3 class="font-mono text-xl font-bold text-white mb-2 flex items-center">
+                    <i class="fa-solid fa-globe mr-2 text-blue-400"></i>THE INDUSTRY INDEX
+                </h3>
+                
+                <!-- State 1: Ready to Benchmark -->
+                <div x-show="!percentileResult && !benchmarkLoading">
+                    <p class="text-sm text-textMuted mb-3">Compare your score against the global database.</p>
+                    <button @click="submitAndBenchmark()" class="px-6 py-2 bg-blue-500 hover:bg-blue-400 text-white font-mono text-sm font-bold rounded shadow-glow transition-all">
+                        CALCULATE BENCHMARK
+                    </button>
+                </div>
+
+                <!-- State 2: Loading -->
+                <div x-show="benchmarkLoading" class="flex items-center gap-2 text-blue-400 font-mono text-sm py-2">
+                    <i class="fa-solid fa-circle-notch fa-spin"></i> CONNECTING TO SATELLITE...
+                </div>
+
+                <!-- State 3: Result -->
+<template x-if="percentileResult">
+    <div class="mt-2" x-transition>
+        <span class="text-xs font-mono text-slate-400 uppercase tracking-widest">MARKET POSITION</span>
+        <div class="text-4xl font-mono font-bold text-blue-400 my-1" x-text="percentileResult.rank"></div>
+        <p class="text-sm text-white font-medium" x-text="percentileResult.msg"></p>
+        <p class="text-xs text-slate-500 mt-2 font-mono">Based on <span x-text="totalBenchmarks"></span> verified audits.</p>
+    </div>
+</template>        
+                
+            <div class="hidden md:block opacity-30">
+                <i class="fa-solid fa-ranking-star text-6xl"></i>
+            </div>
+        </div>
+    </div>
+
+                        <div class="mt-6">
+                            <button @click="copyChallengeLink()" class="text-xs text-textMuted hover:text-white underline"><i class="fa-solid fa-link mr-2"></i><span x-text="copyBtnText"></span></button>
+                        </div>
+                    </div>
+            
+<!-- TRANSLATOR TAB -->
+            <div x-show="currentTab === 'translator'" x-cloak class="max-w-5xl mx-auto h-full flex flex-col">
+                
+                <!-- Header with Toggles -->
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6">
+                    <h2 class="font-mono text-2xl font-bold text-blue-400 flex items-center">
+                        <i class="fa-solid fa-language mr-3"></i>The Translator
+                    </h2>
+                    <div class="flex space-x-4 mt-4 md:mt-0 font-mono text-sm border-b border-slate-700 pb-2 md:border-0 md:pb-0">
+                        <button @click="translatorView = 'dict'" 
+                                :class="translatorView === 'dict' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500 hover:text-white transition-colors'">
+                            Dictionary
+                        </button>
+                        <button @click="translatorView = 'reporting'" 
+                                :class="translatorView === 'reporting' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500 hover:text-white transition-colors'">
+                            Reporting Guide
+                        </button>
+                    </div>
+                </div>
+
+                <!-- VIEW 1: DICTIONARY -->
+                <div x-show="translatorView === 'dict'" class="flex-1 flex flex-col">
+                    <div class="mb-6 relative">
+                        <input type="text" x-model="searchQuery" placeholder="Search technical or business terms..." class="w-full bg-card border border-slate-700 rounded-lg py-4 pl-12 pr-4 text-white focus:outline-none focus:border-blue-400 font-mono">
+                        <i class="fa-solid fa-search absolute left-4 top-5 text-slate-500"></i>
+                    </div>
+                    <div class="grid gap-4 pb-20">
+                        <template x-for="row in filteredDictionary" :key="row.banker">
+                            <div class="bg-card border border-slate-800 p-5 rounded-lg hover:border-blue-400/50 transition-colors">
+                                <div class="grid md:grid-cols-3 gap-4">
+                                    <div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Banker Says</span><p class="font-bold text-white" x-text="row.banker"></p></div>
+                                    <div><span class="text-[10px] text-textMuted font-mono block uppercase mb-1">Engineer Says</span><p class="font-mono text-blue-300 text-sm" x-text="row.tech"></p></div>
+                                    <div class="md:border-l border-slate-700 md:pl-4"><span class="text-[10px] text-primary font-mono block uppercase mb-1">True Meaning</span><p class="text-sm text-slate-300 italic" x-text="row.translation"></p></div>
+                                </div>
+                            </div>
                         </template>
                     </div>
-                    <div class="flex gap-2">
-                        <input type="text" x-model="riskSim.input" @keydown.enter="riskSim.sendReply()" class="flex-1 bg-dark border border-slate-600 p-2 rounded text-white">
-                        <button @click="riskSim.sendReply()" class="bg-risk text-dark font-bold px-4 rounded">Send</button>
+                </div>
+
+                <!-- VIEW 2: REPORTING GUIDE -->
+                <div x-show="translatorView === 'reporting'" class="pb-20 space-y-8">
+                    <div class="bg-card border border-slate-700 rounded-xl p-6 border-l-4 border-blue-400">
+                        <h3 class="font-mono text-lg font-bold text-white mb-2">The Rosetta Stone for Board Reporting</h3>
+                        <p class="text-sm text-textMuted">Never present a raw technical metric to the Board. Always translate it into a financial outcome.</p>
                     </div>
+
+                    <div class="grid gap-6">
+                        <template x-for="item in reportingData" :key="item.metric">
+                            <div class="bg-dark p-5 rounded-lg border border-slate-700 hover:border-blue-400 transition-colors">
+                                <div class="grid md:grid-cols-12 gap-4 items-start">
+                                    <div class="md:col-span-3">
+                                        <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">IF YOU MEASURE...</span>
+                                        <span class="font-mono text-sm font-bold text-blue-300" x-text="item.metric"></span>
+                                    </div>
+                                    <div class="hidden md:flex md:col-span-1 justify-center items-center pt-3">
+                                        <i class="fa-solid fa-arrow-right text-slate-600"></i>
+                                    </div>
+                                    <div class="md:col-span-3">
+                                        <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">TRANSLATE TO...</span>
+                                        <span class="font-mono text-sm font-bold text-primary" x-text="item.financial"></span>
+                                    </div>
+                                    <div class="md:col-span-5 bg-slate-800/50 p-3 rounded border border-slate-700/50">
+                                        <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">THE SCRIPT</span>
+                                        <p class="text-sm italic text-slate-300 leading-relaxed">
+                                            <i class="fa-solid fa-quote-left text-slate-600 text-xs mr-1"></i>
+                                            <span x-text="item.script"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- MATRIX -->
+            <div x-show="currentTab === 'matrix'" x-cloak class="max-w-4xl mx-auto">
+                <h2 class="font-mono text-2xl font-bold mb-6 text-purple-400 flex items-center"><i class="fa-solid fa-chess-board mr-3"></i>Execution Strategy Matrix</h2>
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="bg-card p-6 rounded-xl border border-slate-800 space-y-8"><div><label class="block font-mono text-xs text-textMuted mb-4 uppercase">Strategic Importance (<span x-text="matrixCoords.y"></span>%)</label><input type="range" min="0" max="100" x-model="matrixCoords.y" class="w-full"></div><div><label class="block font-mono text-xs text-textMuted mb-4 uppercase">Technical Complexity (<span x-text="matrixCoords.x"></span>%)</label><input type="range" min="0" max="100" x-model="matrixCoords.x" class="w-full"></div></div>
+                    <div class="bg-card border border-slate-700 rounded-xl relative aspect-square flex items-center justify-center overflow-hidden"><div class="absolute inset-0 grid grid-cols-2 grid-rows-2"><div class="border-r border-b border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase">Build (In-house)</div><div class="border-b border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase text-right">Buy / Partner</div><div class="border-r border-slate-800 p-4 text-[10px] font-mono text-slate-600 uppercase flex items-end">Ignore</div><div class="p-4 text-[10px] font-mono text-slate-600 uppercase text-right flex items-end justify-end">Outsource</div></div><div class="absolute w-6 h-6 bg-primary rounded-full shadow-glow transition-all duration-300" :style="`left: ${matrixCoords.x}%; bottom: ${matrixCoords.y}%`" style="transform: translate(-50%, 50%)"></div><div class="z-10 bg-dark/90 p-4 rounded-lg border border-primary text-center"><p class="font-mono text-xl font-bold text-primary" x-text="getMatrixResult().strategy"></p><p class="text-[10px] text-white mt-1" x-text="getMatrixResult().desc"></p></div></div>
+                </div>
+            </div>
+
+            <!-- COMPASS -->
+            <div x-show="currentTab === 'compass'" x-cloak class="max-w-4xl mx-auto">
+                <h2 class="font-mono text-2xl font-bold mb-6 text-cyan-400 flex items-center"><i class="fa-regular fa-compass mr-3"></i>The Bilingual Compass</h2>
+                <div class="grid md:grid-cols-2 gap-8"><div class="bg-card p-6 rounded-xl border border-slate-800 space-y-6"><p class="text-sm text-textMuted">Balance your leadership focus.</p><div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">NORTH (Growth) vs SOUTH (Cost)</label></div><input type="range" min="0" max="100" x-model="compassCoords.y" class="w-full"></div><div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white">WEST (Risk) vs EAST (Speed)</label></div><input type="range" min="0" max="100" x-model="compassCoords.x" class="w-full"></div></div><div class="bg-card border border-slate-700 rounded-xl relative aspect-square flex items-center justify-center overflow-hidden"><div class="absolute top-4 text-[10px] font-mono text-slate-500">VALUE (N)</div><div class="absolute bottom-4 text-[10px] font-mono text-slate-500">COST (S)</div><div class="absolute left-4 text-[10px] font-mono text-slate-500">RISK (W)</div><div class="absolute right-4 text-[10px] font-mono text-slate-500">SPEED (E)</div><div class="absolute inset-0 flex items-center justify-center"><div class="w-full h-px bg-slate-800"></div><div class="h-full w-px bg-slate-800 absolute"></div></div><div class="absolute w-6 h-6 bg-cyan-400 border-2 border-white rounded-full shadow-glow transform -translate-x-1/2 -translate-y-1/2 transition-all duration-100 ease-out z-10" :style="`left: ${compassCoords.x}%; bottom: ${compassCoords.y}%`"></div><div class="z-10 bg-dark/90 p-4 rounded-lg border border-cyan-400 text-center"><h3 class="font-mono text-xl font-bold mb-1 text-cyan-400" x-text="getCompassResult().title"></h3><p class="text-[10px] text-white" x-text="getCompassResult().desc"></p></div></div></div>
+            </div>
+
+            <!-- CANVAS -->
+            <div x-show="currentTab === 'canvas'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-white flex items-center"><i class="fa-solid fa-file-contract mr-3 text-blue-400"></i>Data Product Canvas</h2><div class="grid md:grid-cols-2 gap-8"><div class="space-y-4"><div><label class="text-xs font-mono text-textMuted">PRODUCT NAME</label><input type="text" x-model="canvasData.name" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono"></div><div><label class="text-xs font-mono text-textMuted">OWNER</label><input type="text" x-model="canvasData.owner" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono"></div><div><label class="text-xs font-mono text-textMuted">JOBS TO BE DONE</label><textarea x-model="canvasData.jobs" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono h-20"></textarea></div><div><label class="text-xs font-mono text-textMuted">SLO: FRESHNESS</label><input type="text" x-model="canvasData.slo1" class="w-full bg-card border border-slate-700 rounded p-2 text-white font-mono"></div></div><div class="bg-white text-dark p-6 rounded-lg shadow-2xl relative font-sans"><div class="absolute top-0 left-0 w-full h-2 bg-blue-500 rounded-t-lg"></div><div class="flex justify-between items-start mb-6 mt-2"><div><h3 class="font-bold text-2xl uppercase tracking-tighter" x-text="canvasData.name || 'PRODUCT NAME'"></h3><p class="text-xs text-slate-500 font-mono mt-1">OWNER: <span x-text="canvasData.owner || '---'"></span></p></div><div class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">CERTIFIED</div></div><div class="grid grid-cols-2 gap-4 mb-4"><div class="border border-slate-200 p-3 rounded"><p class="text-[10px] text-slate-400 font-bold uppercase mb-1">CONSUMER JOB</p><p class="text-sm font-medium leading-tight" x-text="canvasData.jobs || '---'"></p></div><div class="border border-slate-200 p-3 rounded bg-slate-50"><p class="text-[10px] text-slate-400 font-bold uppercase mb-1">GUARANTEE (SLO)</p><ul class="text-sm font-mono space-y-1"><li class="flex items-center"><i class="fa-solid fa-clock mr-2 text-blue-500"></i> <span x-text="canvasData.slo1 || '---'"></span></li></ul></div></div></div></div></div>
+
+            <!-- TALENT -->
+            <div x-show="currentTab === 'talent'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-hotpink flex items-center"><i class="fa-solid fa-fingerprint mr-3"></i>Agile Talent Radar</h2><div class="grid md:grid-cols-2 gap-10"><div class="space-y-6"><template x-for="(skill, idx) in talentSkills" :key="idx"><div><div class="flex justify-between mb-2"><label class="font-mono text-xs text-white uppercase" x-text="skill.label"></label><span class="font-mono text-hotpink" x-text="skill.val"></span></div><input type="range" min="1" max="5" step="1" x-model.number="skill.val" @input="updateTalentChart()" class="w-full"></div></template></div><div class="bg-card border border-slate-800 p-4 rounded-xl flex items-center justify-center h-80"><canvas id="talentChart"></canvas></div></div></div>
+
+            <!-- LIGHTHOUSE -->
+            <div x-show="currentTab === 'lighthouse'" x-cloak class="max-w-3xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-warn flex items-center"><i class="fa-solid fa-lightbulb mr-3"></i>Lighthouse Selection</h2><div class="bg-card border border-slate-700 rounded-xl p-6 mb-8"><p class="text-textMuted mb-6 font-mono text-sm border-l-2 border-warn pl-4">WARNING: If you cannot check all 10 boxes, choose a different project.</p><div class="space-y-3"><template x-for="(item, index) in lighthouseData" :key="index"><label class="flex items-start space-x-4 p-3 rounded hover:bg-slate-800 cursor-pointer transition-colors"><input type="checkbox" x-model="item.checked" class="mt-1 h-4 w-4 rounded border-slate-500 text-primary bg-dark"><div><span class="font-mono text-[10px] text-slate-500 block mb-0.5" x-text="item.category"></span><span class="text-sm text-slate-200" x-text="item.text"></span></div></label></template></div></div><div class="p-6 rounded-xl border-2 text-center transition-colors duration-300" :class="getLighthouseStatus().border"><h3 class="font-mono text-3xl font-bold mb-2" :class="getLighthouseStatus().text" x-text="getLighthouseStatus().title"></h3><p class="text-slate-300" x-text="getLighthouseStatus().desc"></p><div class="mt-4 font-mono text-sm opacity-75"><span x-text="lighthouseCount"></span> / 10 CHECKS CLEARED</div></div></div>
+
+            <!-- BOARD -->
+            <div x-show="currentTab === 'board'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-risk flex items-center"><i class="fa-solid fa-chess-king mr-3"></i>The Board Director's Guide</h2><div class="space-y-6"><template x-for="risk in boardRisks" :key="risk.title"><div class="bg-card border border-slate-700 border-l-4 border-l-risk rounded-r-xl overflow-hidden"><div class="bg-risk/10 p-4 border-b border-slate-700"><h3 class="font-mono font-bold text-risk" x-text="risk.title"></h3><p class="text-white font-bold" x-text="risk.subtitle"></p></div><div class="p-6 grid md:grid-cols-2 gap-8"><div><div class="mb-4"><span class="text-[10px] font-mono text-risk bg-risk/10 px-2 py-1 rounded">THE LIE</span><p class="mt-2 text-slate-300 italic text-sm" x-text="risk.lie"></p></div><div><span class="text-[10px] font-mono text-primary bg-primary/10 px-2 py-1 rounded">THE TRUTH</span><p class="mt-2 text-white font-medium text-sm" x-text="risk.truth"></p></div></div><div class="bg-dark p-4 rounded border border-slate-700 flex flex-col justify-center"><span class="text-[10px] font-mono text-slate-500 mb-2 uppercase">The Question for the CEO</span><p class="font-mono text-sm text-primary leading-relaxed"><i class="fa-solid fa-quote-left text-slate-600 mr-2"></i><span x-text="risk.question"></span></p></div></div></div></template></div></div>
+
+            <!-- REPAIR -->
+            <div x-show="currentTab === 'repair'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-risk flex items-center"><i class="fa-solid fa-toolbox mr-3"></i>Transformation Repair Kit</h2><div class="space-y-4"><template x-for="(item, index) in repairKitData" :key="index"><div class="bg-card border border-slate-700 rounded-xl overflow-hidden"><button @click="activeRepair = activeRepair === index ? null : index" class="w-full flex justify-between items-center p-5 text-left hover:bg-slate-800 transition-colors"><div><span class="font-mono text-[10px] text-risk mb-1 block">SYMPTOM</span><span class="font-bold text-lg text-slate-200" x-text="item.symptom"></span></div><i class="fa-solid fa-chevron-down text-slate-500 transition-transform duration-300" :class="activeRepair === index ? 'rotate-180' : ''"></i></button><div x-show="activeRepair === index" x-collapse><div class="p-5 border-t border-slate-700 bg-dark/30"><div class="mb-4"><h4 class="font-mono text-primary text-xs font-bold mb-2">// DIAGNOSIS</h4><p class="text-slate-300 text-sm" x-text="item.diagnosis"></p></div><div class="p-4 bg-slate-800/50 rounded border-l-2 border-primary"><h4 class="font-mono text-white text-xs font-bold mb-2">RX: PRESCRIPTION</h4><ul class="list-disc list-inside text-slate-400 text-sm space-y-1"><template x-for="step in item.prescription" :key="step"><li x-text="step"></li></template></ul></div></div></div></div></template></div></div>
+            
+            <!-- GLOSSARY -->
+            <div x-show="currentTab === 'glossary'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-purple-400 flex items-center"><i class="fa-solid fa-book-open mr-3"></i>The Glossary</h2><div class="mb-6"><input type="text" x-model="glossarySearch" placeholder="Filter terms..." class="w-full bg-card border border-slate-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-purple-400 font-mono"></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4 pb-20"><template x-for="term in filteredGlossary" :key="term.term"><div class="bg-card border border-slate-700 p-5 rounded-lg hover:border-purple-400/50 transition-colors"><h3 class="font-mono text-primary font-bold mb-2" x-text="term.term"></h3><p class="text-sm text-slate-300 leading-relaxed" x-text="term.def"></p></div></template></div></div>
+
+            <!-- RESOURCES -->
+            <div x-show="currentTab === 'resources'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-green-300 flex items-center"><i class="fa-solid fa-book-bookmark mr-3"></i>Recommended Resources</h2><div class="bg-card border border-slate-700 rounded-xl p-6"><ul class="space-y-4"><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Project to Product (Mik Kersten)</h4><p class="text-sm text-textMuted">Definitive guide to the "Flow Framework".</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Team Topologies (Skelton & Pais)</h4><p class="text-sm text-textMuted">Blueprint for structuring squads.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Sooner Safer Happier (Jonathan Smart)</h4><p class="text-sm text-textMuted">Agile for regulated banks.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Data Mesh (Zhamak Dehghani)</h4><p class="text-sm text-textMuted">Data as a Product.</p></li></ul></div></div>
+
+            <!-- COMMUNITY -->
+            <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
+                <div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl relative overflow-hidden">
+                    
+                    <!-- WhatsApp Brand Icon -->
+                    <div class="mb-6">
+                        <i class="fa-brands fa-whatsapp text-6xl text-[#25D366]"></i>
+                    </div>
+
+                    <h2 class="font-mono text-3xl font-bold text-white mb-4">The Fintech Bilinguals</h2>
+                    <p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders. Access exclusive playbooks and peer support.</p>
+
+                    <!-- DESKTOP VIEW: Show QR Code -->
+                    <div class="hidden md:flex flex-col items-center">
+                        <div class="bg-white p-4 rounded-xl shadow-lg mb-4">
+                            <!-- QR Code Generated from your URL -->
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://chat.whatsapp.com/DgFrhnzrKpAJnmLM1Oqmgg" 
+                                 alt="WhatsApp QR Code" 
+                                 class="w-40 h-40">
+                        </div>
+                        <p class="text-xs text-textMuted font-mono uppercase tracking-widest">Scan with your phone to join</p>
+                    </div>
+
+                    <!-- MOBILE VIEW: Show Clickable Button -->
+                    <div class="md:hidden">
+                        <a href="https://chat.whatsapp.com/DgFrhnzrKpAJnmLM1Oqmgg" target="_blank" 
+                           class="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#128c7e] text-white font-bold py-4 px-6 rounded-full shadow-glow transition-all active:scale-95">
+                            <i class="fa-brands fa-whatsapp text-2xl"></i>
+                            <span class="font-mono text-sm">JOIN COMMUNITY</span>
+                        </a>
+                        <p class="text-[10px] text-textMuted mt-4">Opens directly in WhatsApp</p>
+                    </div>
+
                 </div>
             </div>
 
         </main>
 
-        <!-- FLOATING CHAT BUTTON (Desktop) -->
-        <button @click="isChatOpen = !isChatOpen" class="hidden md:flex fixed bottom-8 right-8 w-16 h-16 bg-primary rounded-full shadow-glow items-center justify-center text-dark text-2xl z-40 transition-transform hover:scale-110">
-            <i class="fa-solid" :class="isChatOpen ? 'fa-xmark' : 'fa-robot'"></i>
-        </button>
+        <!-- CHAT INTERFACE WITH API SETTINGS -->
+        <div x-show="isChatOpen" class="fixed inset-0 z-50 md:inset-auto md:bottom-24 md:right-6 md:w-96 md:h-[550px] bg-dark flex flex-col md:rounded-2xl border-l md:border border-primary shadow-2xl overflow-hidden font-sans" x-transition>
+            <div class="bg-card p-4 border-b border-slate-700 flex justify-between items-center pt-safe">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary"><i class="fa-solid fa-bolt text-sm"></i></div>
+                    <div><h3 class="font-bold text-white text-sm">Bilingual AI Assistant</h3><p class="text-[10px] text-textMuted uppercase tracking-tighter">Gemini 1.5 Flash / 2.0 Failover</p></div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button @click="showKeyModal = true" class="text-slate-400 hover:text-primary p-2" title="API Settings"><i class="fa-solid fa-key"></i></button>
+                    <button @click="isChatOpen = false" class="text-slate-400 hover:text-white p-2"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+            </div>
+            
+            <div class="flex-1 overflow-y-auto p-4 flex flex-col space-y-4 bg-dark" id="chat-messages-container">
+                <div class="chat-bubble chat-bot">Hello. I translate IT jargon into P&L impact. How can I help you today?</div>
+                <template x-for="msg in chatMessages"><div class="chat-bubble" :class="msg.role === 'user' ? 'chat-user' : 'chat-bot'" x-html="msg.text"></div></template>
+                <div x-show="isTyping" class="chat-bubble chat-bot flex gap-1 items-center w-16"><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div><div class="w-1.5 h-1.5 bg-primary rounded-full typing-dot"></div></div>
+            </div>
+
+            <div class="p-4 bg-card border-t border-slate-800 pb-safe">
+                <div class="relative flex gap-2">
+                    <input type="text" x-model="chatInput" @keydown.enter="sendMessage()" placeholder="Ask a question..." class="flex-1 bg-dark text-white rounded-full px-5 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary border border-slate-700">
+                    <button @click="sendMessage()" class="w-12 h-12 bg-primary rounded-full text-dark flex items-center justify-center active:scale-90 transition-transform"><i class="fa-solid fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- API KEY MODAL -->
+        <div x-show="showKeyModal" class="fixed inset-0 z-[70] bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm" x-cloak>
+            <div class="bg-card border border-slate-600 p-6 rounded-lg max-w-sm w-full shadow-2xl">
+                <h3 class="text-white font-bold mb-2">API Settings</h3>
+                <p class="text-xs text-slate-400 mb-4">Enter your Google Gemini API Key. Keys are stored safely in your browser's local memory.</p>
+                <input type="password" x-model="userApiKey" placeholder="AIzaSy..." class="w-full bg-dark border border-slate-600 rounded p-2 text-white mb-4 font-mono text-sm">
+                <div class="flex justify-end gap-2">
+                    <button @click="showKeyModal = false" class="text-xs text-slate-400 px-3 py-2">Close</button>
+                    <button @click="saveApiKey()" class="bg-primary text-dark text-xs font-bold px-4 py-2 rounded">Save Key</button>
+                </div>
+            </div>
+        </div>
 
         <!-- MOBILE NAV -->
         <nav class="md:hidden fixed bottom-0 w-full bg-dark/95 backdrop-blur-lg border-t border-slate-800 z-50 pb-safe">
@@ -338,8 +1231,13 @@
             </div>
         </nav>
 
+        <!-- FLOATING CHAT BUTTON (Desktop) -->
+        <button @click="isChatOpen = !isChatOpen" class="hidden md:flex fixed bottom-8 right-8 w-16 h-16 bg-primary rounded-full shadow-glow items-center justify-center text-dark text-2xl z-40 transition-transform hover:scale-110">
+            <i class="fa-solid" :class="isChatOpen ? 'fa-xmark' : 'fa-robot'"></i>
+        </button>
+
         <!-- MOBILE MENU OVERLAY -->
-        <div x-show="mobileMenuOpen" x-transition x-cloak class="fixed inset-0 z-[60] bg-dark flex flex-col p-6 pt-safe overflow-y-auto">
+        <div x-show="mobileMenuOpen" x-transition x-cloak class="fixed inset-0 z-[60] bg-dark flex flex-col p-6 pt-safe overflow-y-auto mobile-scroll-fix">
             <div class="flex justify-between items-center mb-8"><h2 class="text-primary font-mono text-xl font-bold">Tools Menu</h2><button @click="mobileMenuOpen=false"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
             <div class="grid grid-cols-2 gap-4 pb-20">
                 <template x-for="item in navItems" :key="item.id">
@@ -352,11 +1250,22 @@
 
     </div>
 
+    
+
     <!-- Service Worker -->
+
     <script>
         if ('serviceWorker' in navigator && window.location.protocol === 'https:') {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(() => {});
+                fetch('sw.js')
+                    .then(response => {
+                        if (response.status === 200) {
+                            navigator.serviceWorker.register('sw.js')
+                                .then(r => console.log('SW Registered'))
+                                .catch(e => console.log('SW Fail:', e));
+                        }
+                    })
+                    .catch(() => {});
             });
         }
     </script>
