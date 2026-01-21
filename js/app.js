@@ -1014,33 +1014,92 @@ talentManager: {
                 return { label: "GROWTH PROFILE", icon: "fa-solid fa-seedling", desc: "Developing specific spikes." };
             },
 
-            // 3. Squad Architect Prompt (NOW ACCEPTS SKILLS AS ARGUMENT)
-            generateSystemPrompt(skills) {
-                if(!skills) return "";
-                const arch = this.getArchetype(skills);
-                
-                return `ACT AS: An Agile Talent Architect and Squad Designer.
-        
-CONTEXT: We are building a "Bilingual Bank". We adhere to the "Rule of Spikes": We do not hire Mediocre Generalists (3/5 everywhere). We hire complementary spikes.
+// In talentManager object, replace generateSystemPrompt method:
+generateSystemPrompt(skills) {
+    if(!skills) return "";
+    const arch = this.getArchetype(skills);
+    
+    return `## 🎯 MISSION: Build a Bilingual Fintech Execution Squad
 
-CANDIDATE RADAR PROFILE:
-1. Tech Fluency: ${skills[0].val}/5
-2. Business Acumen: ${skills[1].val}/5
-3. Data Literacy: ${skills[2].val}/5
-4. Empathy/EQ: ${skills[3].val}/5
-5. Change Tolerance: ${skills[4].val}/5
+## CONTEXT
+We are designing a "Bilingual Bank" - an organization that speaks both Tech and Business fluently. 
+We operate on the "Rule of Spikes": We do NOT hire Mediocre Generalists (3/5 in everything). 
+We hire complementary spikes and build squads that cover each other's gaps.
 
-DETECTED ARCHETYPE: ${arch.label}
+## CANDIDATE RADAR PROFILE
+\`\`\`
+Talent Shape Analysis:
+┌─────────────────┬─────┬──────────────────────────────────────┐
+│ Dimension       │Score│ Interpretation                        │
+├─────────────────┼─────┼──────────────────────────────────────┤
+│ Tech Fluency    │ ${skills[0].val}/5 │ ${skills[0].val >= 4 ? "Can architect & code" : (skills[0].val <= 2 ? "Relies on translators" : "Conversant")} │
+│ Business Acumen │ ${skills[1].val}/5 │ ${skills[1].val >= 4 ? "Models unit economics" : (skills[1].val <= 2 ? "Cost center mindset" : "Budget aware")} │
+│ Data Literacy   │ ${skills[2].val}/5 │ ${skills[2].val >= 4 ? "Builds data products" : (skills[2].val <= 2 ? "Reads reports only" : "SQL capable")} │
+│ Empathy/EQ      │ ${skills[3].val}/5 │ ${skills[3].val >= 4 ? "Rewires org culture" : (skills[3].val <= 2 ? "Political friction" : "Navigates politics")} │
+│ Change Tolerance│ ${skills[4].val}/5 │ ${skills[4].val >= 4 ? "Thrives in chaos" : (skills[4].val <= 2 ? "Prefers stability" : "Adapts to change")} │
+└─────────────────┴─────┴──────────────────────────────────────┘
+\`\`\`
 
-YOUR TASK:
-1. The Verdict: Is this a "Spiky Profile" worth hiring, or a "Mediocre Generalist"?
-2. Squad Fit: If we hire this person, who MUST be in the squad to complement them? (e.g., "This Product Owner is a 5 on Biz but a 2 on Tech. They require a Tech Lead who is a 5 on Tech to balance the risk.")
-3. Interview Question: Give me one "Killer Question" to verify their strongest spike is real and not just a CV claim.
+## DETECTED ARCHETYPE: **${arch.label}**
+${arch.desc}
 
-TONE: Decisive, Analytical, No Fluff.`;
-            }
-        },
-        
+## STRATEGIC IMPLICATIONS
+
+### 1. SQUAD ARCHITECTURE REQUIREMENTS
+Based on this profile's spikes and gaps, the 3-person squad MUST include:
+
+**Required Complementary Role 1:** ${skills[0].val <= 3 ? "• Senior Tech Lead (5/5 Tech) to handle architectural decisions" : ""}${skills[1].val <= 3 ? "• Business Value Translator (5/5 Biz) to connect tech to P&L" : ""}${skills[3].val <= 3 ? "• Cultural Integrator (5/5 EQ) to manage stakeholder politics" : ""}
+
+**Required Complementary Role 2:** ${skills[4].val <= 3 ? "• Change Agent (5/5 Change) to drive transformation velocity" : "• Execution Specialist to convert vision into shipped code"}
+
+### 2. HIRING DECISION FRAMEWORK
+
+**GREEN LIGHT IF:** 
+- ${arch.label === "THE BILINGUAL" ? "This is a unicorn. Hire immediately as squad lead." : ""}
+- ${arch.label === "TECHNICAL SPIKE" ? "We have a strong Product Owner already in place." : ""}
+- ${arch.label === "BUSINESS SPIKE" ? "We have a Tech Lead who can build what they envision." : ""}
+- ${arch.label === "CULTURAL GLUE" ? "We are experiencing political deadlock in transformation." : ""}
+
+**RED FLAGS (Reject If):**
+- Claims expertise in area where they scored ≤2 without concrete evidence
+- Cannot articulate "The Last Time I Failed" in their spike area
+- Uses buzzwords without connecting to business outcomes
+
+### 3. INTERVIEW BATTLE PLAN
+
+**Primary Spike Verification (${skills.find(s => s.val >= 4)?.label || "Highest Skill"}):**
+"Walk me through the last time your ${skills.find(s => s.val >= 4)?.label || "primary skill"} saved the company money or made money. Give me numbers."
+
+**Gap Probing (${skills.find(s => s.val <= 2)?.label || "Lowest Skill"}):**
+"When you encounter a situation requiring strong ${skills.find(s => s.val <= 2)?.label || "weak area"}, what's your go-to mitigation strategy? Be specific."
+
+**Bilingual Test:**
+"Translate this technical concept [choose: API, Microservice, Cloud Native] into a Board-ready value proposition in 30 seconds."
+
+### 4. 90-DAY ONBOARDING CHECKPOINTS
+
+**Month 1:** Pair with complementary spike. Assign first win.
+**Month 2:** Give autonomy in spike area, support in gap area.
+**Month 3:** Measure impact via business metric tied to their spike.
+
+## EXECUTIVE SUMMARY
+${this.getVerdict(skills)}
+
+---
+*Generated by The Bilingual Executive Toolkit v0.1*
+*For Bilingual Bank transformation strategy*`;
+},
+
+// Add this helper method to talentManager:
+getVerdict(skills) {
+    const isSpiky = skills.some(s => s.val >= 4) && skills.some(s => s.val <= 2);
+    const isFlat = skills.every(s => s.val === 3);
+    
+    if (isFlat) return "🚫 REJECT: This is a Mediocre Generalist profile. In a regulated industry facing Fintech disruption, we need decisive spikes, not balanced mediocrity.";
+    if (isSpiky) return "✅ HIRE WITH CONDITIONS: This profile has clear spikes that can be weaponized. Build the complementary squad around their gaps.";
+    return "⚠️ PROCEED WITH CAUTION: Profile lacks extreme spikes. Validate claims thoroughly.";
+},
+    
         // ------------------------------------------------------------------
         //  API SANDBOX
         // ------------------------------------------------------------------
@@ -1400,6 +1459,7 @@ toggleVideoMute() {
     }, 60000); // 60 second fallback
 }, 
 
+        
         // Set up event listeners for activity tracking
 setupActivityTracking() {
     // Reset any previous tracking
@@ -1432,7 +1492,57 @@ setupActivityTracking() {
 
         
 
+
+        // Add this method to your main Alpine data object (around other methods)
+copyToClipboard(text, label = "Content") {
+    if (!text || text.trim() === '') {
+        alert(`Nothing to copy for ${label}`);
+        return;
+    }
+    
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                // Show a success message
+                const originalText = this.copyBtnText;
+                this.copyBtnText = `✓ Copied ${label}`;
+                setTimeout(() => {
+                    this.copyBtnText = originalText;
+                }, 2000);
+                
+                // Optional: Haptic feedback on mobile
+                if (navigator.vibrate) navigator.vibrate(50);
+            })
+            .catch((err) => {
+                console.error('Clipboard write failed:', err);
+                alert(`Failed to copy ${label}. Please copy manually:\n\n${text}`);
+            });
+    } else {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
         
+        try {
+            document.execCommand('copy');
+            const originalText = this.copyBtnText;
+            this.copyBtnText = `✓ Copied ${label}`;
+            setTimeout(() => {
+                this.copyBtnText = originalText;
+            }, 2000);
+        } catch (err) {
+            console.error('Fallback copy failed:', err);
+            prompt(`Please copy this ${label}:`, text);
+        }
+        
+        document.body.removeChild(textArea);
+    }
+},
 
 
         triggerVipSequence() {
