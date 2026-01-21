@@ -151,12 +151,17 @@ initYouTubePlayer() {
                         this.videoPlaying = true;
                         
                         // Start updating current time every second
-                        this.updateTimeInterval = setInterval(() => {
-                            if (this.player && this.player.getCurrentTime) {
-                                this.videoCurrentTime = this.player.getCurrentTime();
-                            }
-                        }, 1000);
-                    } 
+    this.updateTimeInterval = setInterval(() => {
+        if (this.player && this.player.getCurrentTime) {
+            this.videoCurrentTime = this.player.getCurrentTime();
+            
+            // Also update duration if not set
+            if (!this.videoDuration && this.player.getDuration) {
+                this.videoDuration = this.player.getDuration();
+            }
+        }
+    }, 200); // Update every 200ms for smoother animation
+}
                     // When video is paused, buffering, or ended
                     else if (event.data === YT.PlayerState.PAUSED || 
                              event.data === YT.PlayerState.BUFFERING || 
