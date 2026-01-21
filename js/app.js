@@ -2005,3 +2005,5 @@ const offlineBenchmarks = [
     {"score":75,"industry":"Neobank"}
 ];
 
+// End of JavaScript file
+
