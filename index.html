@@ -165,6 +165,22 @@
             </div>
 
                 <div class="flex items-center gap-3 text-xs text-white">
+
+                    <!-- Volume Controls -->
+<div class="flex items-center gap-2" x-data="{ showVolumeSlider: false }" @mouseenter="showVolumeSlider = true" @mouseleave="showVolumeSlider = false">
+    <button @click="toggleVideoMute()" class="text-white">
+        <i class="fa-solid" :class="videoMuted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
+    </button>
+    <!-- Volume Slider (shown on hover) -->
+    <input type="range"
+           x-show="showVolumeSlider"
+           x-model="videoVolume"
+           @input="setPlayerVolume($event.target.value)"
+           min="0"
+           max="100"
+           class="w-20 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+</div>
+                    
                     
     <!-- Current Time Display -->
     <span x-text="formatTime(videoCurrentTime)"></span>
