@@ -68,7 +68,7 @@ document.addEventListener('alpine:init', () => {
     window.onYouTubeIframeAPIReady = () => {
         this.initVideoPlayer();
     };
-},
+                
             }
 
 
