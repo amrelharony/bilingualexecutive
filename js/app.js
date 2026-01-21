@@ -1723,12 +1723,6 @@ updateTalentChart() {
             } 
         });
 
-                // Add resize listener for mobile
-        window.addEventListener('resize', () => {
-            if (this.talentChartInstance) {
-                this.talentChartInstance.resize();
-            }
-        });
     });
 },
 
