@@ -129,7 +129,8 @@ if (hasEnteredBefore) {
                 'modestbranding': 1,
                 'loop': 1,
                 'playlist': '8GvrODrkQ7M',
-                'playsinline': 1
+                'playsinline': 1,
+                'enablejsapi': 1 
             },
             events: {
                 'onReady': (event) => {
@@ -191,6 +192,7 @@ if (hasEnteredBefore) {
         player: null, 
         videoCurrentTime: 0,
         videoDuration: 0,
+        videoVolume: 50, // Default volume
 
 
 
@@ -1142,16 +1144,17 @@ seekVideo(sliderValue) {
     }
 },
 
-        toggleVideoMute() {
-            if (this.player && this.player.mute) {
-                if (this.videoMuted) {
-                    this.player.unMute();
-                    this.videoMuted = false;
-                } else {
-                    this.player.mute();
-                    this.videoMuted = true;
-                }
-            }
+toggleVideoMute() {
+    if (this.player && this.player.mute) {
+        if (this.videoMuted) {
+            this.player.unMute();
+            this.player.setVolume(this.videoVolume || 50); // Restore to last volume
+            this.videoMuted = false;
+        } else {
+            this.player.mute();
+            this.videoMuted = true;
+        }
+    }
         },
 
    enterApp() {
@@ -1205,6 +1208,15 @@ setupActivityTracking() {
     // Watch for Alpine.js updates to currentTab
     this.$watch('currentTab', trackToolChange);
     this.$watch('currentGroup', trackToolChange);
+},
+
+        setPlayerVolume(newVolume) {
+    this.videoVolume = newVolume;
+    if (this.player && this.player.setVolume) {
+        this.player.setVolume(parseInt(newVolume));
+        // Update mute state based on volume
+        this.videoMuted = (newVolume == 0);
+    }
 },
 
         
