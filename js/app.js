@@ -969,33 +969,6 @@ tools: {
         // METHODS
         // ------------------------------------------------------------------
   
-    // --- VIDEO PLAYER STATE ---
-    ytPlayer: null,
-    videoMuted: true,
-    videoPlaying: true, // Auto-plays by default
-
-    initVideoPlayer() {
-        this.ytPlayer = new YT.Player('bilingual-player', {
-            videoId: 'dQw4w9WgXcQ', // REPLACE THIS with your video ID
-            playerVars: {
-                'autoplay': 1,
-                'controls': 0, // Hide default YouTube controls
-                'modestbranding': 1,
-                'rel': 0,
-                'fs': 0,
-                'playsinline': 1,
-                'loop': 1,
-                'playlist': 'dQw4w9WgXcQ' // Required for loop to work
-            },
-            events: {
-                'onReady': (event) => {
-                    event.target.mute(); // Ensure mute on start
-                    event.target.playVideo();
-                }
-            }
-        });
-    },
-
         toggleVideoPlay() {
             if (this.player && this.player.getPlayerState) {
                 if (this.videoPlaying) {
