@@ -127,11 +127,20 @@
                 AND SURVIVE THE FINTECH TSUNAMI
             </p>
 
-<!-- Replace your current video player container with this -->
+        <!-- Video Player Container -->
 <div class="w-full h-[50vh] md:h-[60vh] max-h-[600px] bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] mb-8 relative group">
     
-    <!-- Custom Controls Bar (NOW ABOVE THE VIDEO) -->
-    <div class="absolute top-0 left-0 right-0 z-30 video-controls-bar p-4 opacity-90 group-hover:opacity-100 transition-opacity duration-300">
+    <!-- YouTube Player -->
+    <div id="youtube-player" class="w-full h-full"></div>
+
+    <!-- Video Overlay for Click-to-Play (covers entire video area) -->
+    <div class="absolute inset-0 video-overlay z-20" 
+         @click="toggleVideoPlay()"
+         :title="videoPlaying ? 'Pause video' : 'Play video'">
+    </div>
+
+    <!-- Custom Controls Bar (NOW AT BOTTOM) -->
+    <div class="absolute bottom-0 left-0 right-0 z-30 video-controls-bar p-4 opacity-90 group-hover:opacity-100 transition-opacity duration-300">
         <div class="flex items-center gap-3 md:gap-4">
             
             <!-- Play/Pause Button -->
@@ -166,7 +175,7 @@
                 </button>
                 
                 <!-- Volume Slider -->
-                  <input type="range"
+                <input type="range"
                        x-model="videoVolume"
                        @input="setPlayerVolume($event.target.value)"
                        min="0"
@@ -177,37 +186,9 @@
             
         </div>
     </div>
-    
-    <!-- 1. The YouTube API requires a specific DIV ID to latch onto -->
-    <div id="youtube-player" class="w-full h-full"></div>
 
-    <!-- 2. Video Overlay for Click-to-Play (covers entire video area) -->
-    <div class="absolute inset-0 video-overlay z-20" 
-         @click="toggleVideoPlay()"
-         :title="videoPlaying ? 'Pause video' : 'Play video'">
-    </div>
-
-    <!-- Remove the old controls at bottom right if they exist -->
 </div>
-
-
-            <!-- Enter Button -->
-            <button @click="enterApp()" 
-                    class="group relative px-8 py-3 bg-white text-black font-bold font-mono text-xs md:text-sm tracking-widest uppercase rounded-full hover:bg-red-600 hover:text-white transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] mb-8">
-                <span class="relative z-10 flex items-center gap-2">
-                    Initialize Operations <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                </span>
-            </button>
-
-            <!-- Footer Info -->
-            <div class="text-[10px] text-slate-500 font-mono tracking-widest">
-                &copy; Amr Elharony 2026
-            </div>
-
-        </div>
-    </div>
-</div>
-        
+            
         <!-- Main Content Area -->
 <main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pb-32 md:pb-24">
 
