@@ -977,129 +977,58 @@ teamManager: {
                 // ---------------------------------------------------------
         //  THE NEW TALENT MANAGER 
         // ---------------------------------------------------------
+
 talentManager: {
-            // 1. Behaviors
-            getBehavior(index, val) {
-                const descriptions = [
-                    ["I fear developers.", "I rely on translators.", "I speak to developers.", "I challenge the architecture.", "I write code."], 
-                        return "⚠️ PROCEED WITH CAUTION: ...";
-    ["I ignore the money.", "I know the budget.", "I understand the P&L.", "I link Code to Cash.", "I model unit economics."], 
-                    ["I trust gut feel.", "I read reports.", "I query data (SQL).", "I interpret patterns.", "I build data products."], 
-                    ["I am a robot.", "I avoid friction.", "I navigate politics.", "I manage stakeholders.", "I rewire the org culture."], 
-                    ["I panic in ambiguity.", "I prefer stability.", "I adapt to change.", "I drive the change.", "I thrive in chaos."] 
-                ];
-                return descriptions[index][val - 1];
-            },
-
-            // 2. Archetype Logic (NOW ACCEPTS SKILLS AS ARGUMENT)
-            getArchetype(skills) {
-                if(!skills) return { label: "Loading...", icon: "" };
-
-                // Use the passed argument, not 'this'
-                const tech = skills[0].val; 
-                const biz = skills[1].val;  
-                const eq = skills[3].val;
-                
-                const allScores = skills.map(s => s.val);
-                const isFlat = allScores.every(val => val === 3); 
-                
-                if (isFlat) return { label: "MEDIOCRE GENERALIST", icon: "fa-solid fa-circle-pause", desc: "Warning: Jack of all trades, master of none." };
-
-                if (tech >= 4 && biz >= 4) return { label: "THE BILINGUAL", icon: "fa-solid fa-crown", desc: "Unicorn. Can lead the entire unit." };
-                if (tech >= 4 && eq <= 2) return { label: "TECHNICAL SPIKE", icon: "fa-solid fa-code", desc: "Great implementer. Needs a Product Owner partner." };
-                if (biz >= 4 && tech <= 2) return { label: "BUSINESS SPIKE", icon: "fa-solid fa-briefcase", desc: "Great vision. Needs a strong Tech Lead." };
-                if (eq >= 4 && biz >= 3) return { label: "CULTURAL GLUE", icon: "fa-solid fa-handshake", desc: "Essential for unblocking political friction." };
-                
-                return { label: "GROWTH PROFILE", icon: "fa-solid fa-seedling", desc: "Developing specific spikes." };
-            },
-
-// In talentManager object, replace generateSystemPrompt method:
-generateSystemPrompt(skills) {
-    if(!skills) return "";
-    const arch = this.getArchetype(skills);
-    
-    return `## 🎯 MISSION: Build a Bilingual Fintech Execution Squad
-
-## CONTEXT
-We are designing a "Bilingual Bank" - an organization that speaks both Tech and Business fluently. 
-We operate on the "Rule of Spikes": We do NOT hire Mediocre Generalists (3/5 in everything). 
-We hire complementary spikes and build squads that cover each other's gaps.
-
-## CANDIDATE RADAR PROFILE
-\`\`\`
-Talent Shape Analysis:
-┌─────────────────┬─────┬──────────────────────────────────────┐
-│ Dimension       │Score│ Interpretation                        │
-├─────────────────┼─────┼──────────────────────────────────────┤
-│ Tech Fluency    │ ${skills[0].val}/5 │ ${skills[0].val >= 4 ? "Can architect & code" : (skills[0].val <= 2 ? "Relies on translators" : "Conversant")} │
-│ Business Acumen │ ${skills[1].val}/5 │ ${skills[1].val >= 4 ? "Models unit economics" : (skills[1].val <= 2 ? "Cost center mindset" : "Budget aware")} │
-│ Data Literacy   │ ${skills[2].val}/5 │ ${skills[2].val >= 4 ? "Builds data products" : (skills[2].val <= 2 ? "Reads reports only" : "SQL capable")} │
-│ Empathy/EQ      │ ${skills[3].val}/5 │ ${skills[3].val >= 4 ? "Rewires org culture" : (skills[3].val <= 2 ? "Political friction" : "Navigates politics")} │
-│ Change Tolerance│ ${skills[4].val}/5 │ ${skills[4].val >= 4 ? "Thrives in chaos" : (skills[4].val <= 2 ? "Prefers stability" : "Adapts to change")} │
-└─────────────────┴─────┴──────────────────────────────────────┘
-\`\`\`
-
-## DETECTED ARCHETYPE: **${arch.label}**
-${arch.desc}
-
-## STRATEGIC IMPLICATIONS
-
-### 1. SQUAD ARCHITECTURE REQUIREMENTS
-Based on this profile's spikes and gaps, the 3-person squad MUST include:
-
-**Required Complementary Role 1:** ${skills[0].val <= 3 ? "• Senior Tech Lead (5/5 Tech) to handle architectural decisions" : ""}${skills[1].val <= 3 ? "• Business Value Translator (5/5 Biz) to connect tech to P&L" : ""}${skills[3].val <= 3 ? "• Cultural Integrator (5/5 EQ) to manage stakeholder politics" : ""}
-
-**Required Complementary Role 2:** ${skills[4].val <= 3 ? "• Change Agent (5/5 Change) to drive transformation velocity" : "• Execution Specialist to convert vision into shipped code"}
-
-### 2. HIRING DECISION FRAMEWORK
-
-**GREEN LIGHT IF:** 
-- ${arch.label === "THE BILINGUAL" ? "This is a unicorn. Hire immediately as squad lead." : ""}
-- ${arch.label === "TECHNICAL SPIKE" ? "We have a strong Product Owner already in place." : ""}
-- ${arch.label === "BUSINESS SPIKE" ? "We have a Tech Lead who can build what they envision." : ""}
-- ${arch.label === "CULTURAL GLUE" ? "We are experiencing political deadlock in transformation." : ""}
-
-**RED FLAGS (Reject If):**
-- Claims expertise in area where they scored ≤2 without concrete evidence
-- Cannot articulate "The Last Time I Failed" in their spike area
-- Uses buzzwords without connecting to business outcomes
-
-### 3. INTERVIEW BATTLE PLAN
-
-**Primary Spike Verification (${skills.find(s => s.val >= 4)?.label || "Highest Skill"}):**
-"Walk me through the last time your ${skills.find(s => s.val >= 4)?.label || "primary skill"} saved the company money or made money. Give me numbers."
-
-**Gap Probing (${skills.find(s => s.val <= 2)?.label || "Lowest Skill"}):**
-"When you encounter a situation requiring strong ${skills.find(s => s.val <= 2)?.label || "weak area"}, what's your go-to mitigation strategy? Be specific."
-
-**Bilingual Test:**
-"Translate this technical concept [choose: API, Microservice, Cloud Native] into a Board-ready value proposition in 30 seconds."
-
-### 4. 90-DAY ONBOARDING CHECKPOINTS
-
-**Month 1:** Pair with complementary spike. Assign first win.
-**Month 2:** Give autonomy in spike area, support in gap area.
-**Month 3:** Measure impact via business metric tied to their spike.
-
-## EXECUTIVE SUMMARY
-${this.getVerdict(skills)}
-
----
-*Generated by The Bilingual Executive Toolkit v0.1*
-*For Bilingual Bank transformation strategy*`;
-},
-
-// Add this helper method to talentManager:
-getVerdict(skills) {
-    const isSpiky = skills.some(s => s.val >= 4) && skills.some(s => s.val <= 2);
-    const isFlat = skills.every(s => s.val === 3);
-    
-    if (isFlat) return "🚫 REJECT: This is a Mediocre Generalist profile. In a regulated industry facing Fintech disruption, we need decisive spikes, not balanced mediocrity.";
-    if (isSpiky) return "✅ HIRE WITH CONDITIONS: This profile has clear spikes that can be weaponized. Build the complementary squad around their gaps.";
-    return "⚠️ PROCEED WITH CAUTION: Profile lacks extreme spikes. Validate claims thoroughly.";
-}
+    // 1. Behaviors
+    getBehavior(index, val) {
+        const descriptions = [
+            ["I fear developers.", "I rely on translators.", "I speak to developers.", "I challenge the architecture.", "I write code."], 
+            ["I ignore the money.", "I know the budget.", "I understand the P&L.", "I link Code to Cash.", "I model unit economics."], 
+            ["I trust gut feel.", "I read reports.", "I query data (SQL).", "I interpret patterns.", "I build data products."], 
+            ["I am a robot.", "I avoid friction.", "I navigate politics.", "I manage stakeholders.", "I rewire the org culture."], 
+            ["I panic in ambiguity.", "I prefer stability.", "I adapt to change.", "I drive the change.", "I thrive in chaos."] 
+        ];
+        return descriptions[index][val - 1];
     },
-    
+
+    // 2. Archetype Logic
+    getArchetype(skills) {
+        if(!skills) return { label: "Loading...", icon: "" };
+
+        const tech = skills[0].val; 
+        const biz = skills[1].val;  
+        const eq = skills[3].val;
+        
+        const allScores = skills.map(s => s.val);
+        const isFlat = allScores.every(val => val === 3); 
+        
+        if (isFlat) return { label: "MEDIOCRE GENERALIST", icon: "fa-solid fa-circle-pause", desc: "Warning: Jack of all trades, master of none." };
+
+        if (tech >= 4 && biz >= 4) return { label: "THE BILINGUAL", icon: "fa-solid fa-crown", desc: "Unicorn. Can lead the entire unit." };
+        if (tech >= 4 && eq <= 2) return { label: "TECHNICAL SPIKE", icon: "fa-solid fa-code", desc: "Great implementer. Needs a Product Owner partner." };
+        if (biz >= 4 && tech <= 2) return { label: "BUSINESS SPIKE", icon: "fa-solid fa-briefcase", desc: "Great vision. Needs a strong Tech Lead." };
+        if (eq >= 4 && biz >= 3) return { label: "CULTURAL GLUE", icon: "fa-solid fa-handshake", desc: "Essential for unblocking political friction." };
+        
+        return { label: "GROWTH PROFILE", icon: "fa-solid fa-seedling", desc: "Developing specific spikes." };
+    },
+
+    generateSystemPrompt(skills) {
+        if(!skills) return "";
+        const arch = this.getArchetype(skills);
+        
+        return `## 🎯 MISSION: Build a Bilingual Fintech Execution Squad\n\n## CANDIDATE RADAR PROFILE\n- Tech: ${skills[0].val}/5\n- Business: ${skills[1].val}/5\n- EQ: ${skills[3].val}/5\n\n## DETECTED ARCHETYPE: **${arch.label}**\n${arch.desc}\n\n## EXECUTIVE SUMMARY\n${this.getVerdict(skills)}`;
+    },
+
+    getVerdict(skills) {
+        const isSpiky = skills.some(s => s.val >= 4) && skills.some(s => s.val <= 2);
+        const isFlat = skills.every(s => s.val === 3);
+        
+        if (isFlat) return "🚫 REJECT: This is a Mediocre Generalist profile.";
+        if (isSpiky) return "✅ HIRE WITH CONDITIONS: Profile has clear spikes to weaponize.";
+        return "⚠️ PROCEED WITH CAUTION: Profile lacks extreme spikes.";
+    }
+},
+        
         // ------------------------------------------------------------------
         //  API SANDBOX
         // ------------------------------------------------------------------
