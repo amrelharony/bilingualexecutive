@@ -138,23 +138,6 @@
         </div>
     </div>
 
-    <div class="flex items-center gap-3 text-xs text-white">
-    <!-- Current Time Display -->
-    <span x-text="formatTime(videoCurrentTime)"></span>
-
-    <!-- Custom Seek Bar -->
-    <input type="range"
-           x-model="videoCurrentTime"
-           @input="seekVideo($event.target.value)"
-           :max="videoDuration"
-           step="1"
-           class="flex-1 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer">
-
-    <!-- Duration Display -->
-    <span x-text="formatTime(videoDuration)"></span>
-</div>
-
-
     <!-- 1. The YouTube API requires a specific DIV ID to latch onto -->
      <div id="youtube-player" class="w-full h-full"></div>
 
@@ -180,6 +163,25 @@
                 <!-- Cinematic Vignette Overlay -->
                 <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-0"></div>
             </div>
+
+                <div class="flex items-center gap-3 text-xs text-white">
+    <!-- Current Time Display -->
+    <span x-text="formatTime(videoCurrentTime)"></span>
+
+    <!-- Custom Seek Bar -->
+    <input type="range"
+           x-model="videoCurrentTime"
+           @input="seekVideo($event.target.value)"
+           :max="videoDuration"
+           step="1"
+           class="flex-1 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer">
+
+    <!-- Duration Display -->
+    <span x-text="formatTime(videoDuration)"></span>
+</div>
+
+
+
 
             <!-- Enter Button -->
             <button @click="enterApp()" 
