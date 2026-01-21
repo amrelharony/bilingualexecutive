@@ -36,17 +36,6 @@ document.addEventListener('alpine:init', () => {
                 this.deferredPrompt = e;
             });
 
-            // 2. Show the banner for EVERYONE on mobile (iOS & Android)
-            // We moved this OUTSIDE the event listener so it works on iPhones too
-            if (this.isMobile && !isPWA) {
-                // Check if they dismissed it previously
-                const dismissed = localStorage.getItem('pwaPromptDismissed');
-                
-                // If not dismissed, show it after 2 seconds
-                if (!dismissed) {
-                    setTimeout(() => { this.showPwaPrompt = true; }, 2000);
-                }
-            }
 
             // VIP & Challenger Logic
             const params = new URLSearchParams(window.location.search);
@@ -114,6 +103,12 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        
+// If user directly enters app (not from landing), start tracking
+if (!this.showLanding) {
+    this.setupActivityTracking();
+}
+    
         // YouTube Player Initialization Method
         initYouTubePlayer() {
     const initPlayer = () => {
@@ -1111,6 +1106,37 @@ tools: {
     }, 60000); // 60 second fallback
 },
 
+        // Set up event listeners for activity tracking
+setupActivityTracking() {
+    // Reset any previous tracking
+    this.resetActivityTracking();
+    
+    // Track clicks (anywhere on the page)
+    document.addEventListener('click', () => {
+        this.trackUserActivity();
+    }, { passive: true });
+    
+    // Track scrolling
+    document.addEventListener('scroll', () => {
+        this.trackUserActivity();
+    }, { passive: true });
+    
+    // Track keyboard input
+    document.addEventListener('keydown', () => {
+        this.trackUserActivity();
+    }, { passive: true });
+    
+    // Track tool changes (when user selects different tools)
+    const trackToolChange = () => {
+        this.trackUserActivity();
+    };
+    
+    // Watch for Alpine.js updates to currentTab
+    this.$watch('currentTab', trackToolChange);
+    this.$watch('currentGroup', trackToolChange);
+},
+
+        
 
 
         triggerVipSequence() {
@@ -1123,23 +1149,31 @@ tools: {
         },
 
         dismissPwa() { 
-            this.showPwaPrompt = false; 
-            try { localStorage.setItem('pwaPromptDismissed', 'true'); } catch(e){}
-        },
+    this.showPwaPrompt = false; 
+    this.isPwaPromptActive = false;
+    try { 
+        localStorage.setItem('pwaPromptDismissed', 'true'); 
+    } catch(e){}
+    
+    // Reset activity tracking so it doesn't trigger again
+    this.resetActivityTracking();
+},
+
 
         async installPwa() {
-            if (this.deferredPrompt) {
-                this.deferredPrompt.prompt();
-                const { outcome } = await this.deferredPrompt.userChoice;
-                if (outcome === 'accepted') {
-                    this.deferredPrompt = null;
-                    this.showPwaPrompt = false;
-                }
-            } else {
-                alert("To install on iPhone:\n1. Tap the 'Share' button (square with arrow)\n2. Scroll down and tap 'Add to Home Screen'");
-                this.dismissPwa();
-            }
-        },
+    if (this.deferredPrompt) {
+        this.deferredPrompt.prompt();
+        const { outcome } = await this.deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            this.deferredPrompt = null;
+            this.showPwaPrompt = false;
+            this.isPwaPromptActive = false;
+        }
+    } else {
+        alert("To install on iPhone:\n1. Tap the 'Share' button (square with arrow)\n2. Scroll down and tap 'Add to Home Screen'");
+        this.dismissPwa();
+    }
+},
 
         handleNavClick(tab) {
             this.currentTab = tab;
