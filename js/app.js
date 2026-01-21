@@ -136,11 +136,25 @@ if (hasEnteredBefore) {
                     event.target.mute(); // Still mute by default
                     // REMOVED: event.target.playVideo(); - No autoplay
                     this.videoPlaying = false; // CHANGED FROM true TO false
-                    this.videoMuted = true;
+                                        // Get the total duration
+                    this.videoDuration = event.target.getDuration();
+                },
+                'onStateChange': (event) => {
+                    // Update current time while playing
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        this.updateTimeInterval = setInterval(() => {
+                            if (this.player && this.player.getCurrentTime) {
+                                this.videoCurrentTime = this.player.getCurrentTime();
+                            }
+                        }, 1000);
+                    } else {
+                        clearInterval(this.updateTimeInterval);
+                    }
                 }
             }
         });
     };
+
 
 
             // Scenario A: API is already ready (e.g. cached or reload)
@@ -175,6 +189,9 @@ if (hasEnteredBefore) {
         videoPlaying: true,
         videoMuted: true,
         player: null, 
+        videoCurrentTime: 0,
+        videoDuration: 0,
+
 
 
         // Activity Tracking
@@ -1113,6 +1130,17 @@ tools: {
                 }
             }
         },
+
+        formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+},
+seekVideo(sliderValue) {
+    if (this.player && this.player.seekTo) {
+        this.player.seekTo(parseFloat(sliderValue));
+    }
+},
 
         toggleVideoMute() {
             if (this.player && this.player.mute) {
