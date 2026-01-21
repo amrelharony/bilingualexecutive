@@ -363,3 +363,19 @@ input[type="range"]::-moz-range-thumb { /* Added for Firefox */
     display: none !important;
 }
 
+/* Radar Chart Container */
+#talentChart {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Ensure proper sizing */
+.h-56, .md\:h-64 {
+    position: relative;
+}
+
+/* Make sure canvas takes full space */
+#talentChart {
+    max-width: 100%;
+    max-height: 100%;
+}
