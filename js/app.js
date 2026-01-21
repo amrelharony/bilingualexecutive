@@ -57,53 +57,49 @@ document.addEventListener('alpine:init', () => {
                 });
 
 // --- YOUTUBE API LOADER (FIXED) ---
-// Only initialize if we're on the landing page
-if (this.showLanding) {
-    const initPlayer = () => {
-        this.player = new YT.Player('youtube-player', {
-            videoId: 'dQw4w9WgXcQ',
-            playerVars: {
-                'autoplay': 1,
-                'controls': 0,
-                'rel': 0,
-                'modestbranding': 1,
-                'loop': 1,
-                'playlist': 'dQw4w9WgXcQ',
-                'playsinline': 1 // Crucial for mobile autoplay
-            },
-            events: {
-                'onReady': (event) => {
-                    event.target.mute(); // Mute is required for autoplay
-                    event.target.playVideo();
-                    this.videoPlaying = true;
-                    this.videoMuted = true;
-                }
+const initPlayer = () => {
+    this.player = new YT.Player('youtube-player', {
+        videoId: 'dQw4w9WgXcQ',
+        playerVars: {
+            'autoplay': 1,
+            'controls': 0,
+            'rel': 0,
+            'modestbranding': 1,
+            'loop': 1,
+            'playlist': 'dQw4w9WgXcQ',
+            'playsinline': 1 // Crucial for mobile autoplay
+        },
+        events: {
+            'onReady': (event) => {
+                event.target.mute(); // Mute is required for autoplay
+                event.target.playVideo();
+                this.videoPlaying = true;
+                this.videoMuted = true;
             }
-        });
+        }
+    });
+};
+
+// Scenario A: API is already ready (e.g. cached or reload)
+if (window.YT && window.YT.Player) {
+    initPlayer();
+} 
+// Scenario B: API needs to be loaded
+else {
+    // Define the global callback
+    window.onYouTubeIframeAPIReady = () => {
+        initPlayer();
     };
 
-    // Scenario A: API is already ready (e.g. cached or reload)
-    if (window.YT && window.YT.Player) {
-        initPlayer();
-    } 
-    // Scenario B: API needs to be loaded
-    else {
-        // Define the global callback
-        window.onYouTubeIframeAPIReady = () => {
-            initPlayer();
-        };
-
-        // Inject script only if it's not there
-        if (!document.getElementById('yt-api-script')) {
-            const tag = document.createElement('script');
-            tag.src = "https://www.youtube.com/iframe_api";
-            tag.id = "yt-api-script"; // Prevent duplicate injection
-            const firstScriptTag = document.getElementsByTagName('script')[0];
-            firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-        }
+    // Inject script only if it's not there
+    if (!document.getElementById('yt-api-script')) {
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        tag.id = "yt-api-script"; // Prevent duplicate injection
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
 }
-
             const challenger = params.get('challenger');
             if (challenger) {
                 try {
