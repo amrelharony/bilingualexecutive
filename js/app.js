@@ -102,10 +102,6 @@ document.addEventListener('alpine:init', () => {
                 this.initYouTubePlayer();
             }
 
-            // If user directly enters app (not from landing), start tracking
-if (!this.showLanding) {
-    this.setupActivityTracking();
-}
         },
 
         
