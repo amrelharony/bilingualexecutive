@@ -126,10 +126,18 @@
             </p>
 
             <!-- VIDEO PLAYER CONTAINER -->
-            <div class="w-full aspect-video bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] mb-8 relative group">
+<div class="w-full h-[50vh] md:h-[60vh] max-h-[600px] bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] mb-8 relative group">
                 
-                <!-- 1. The YouTube API requires a specific DIV ID to latch onto -->
-                <div id="youtube-player"></div>
+                   <!-- Video loading placeholder -->
+    <div x-show="!player" class="absolute inset-0 flex items-center justify-center z-0">
+        <div class="text-center">
+            <i class="fa-solid fa-circle-notch fa-spin text-slate-600 text-3xl mb-2"></i>
+            <p class="text-xs text-slate-500 font-mono">Loading video...</p>
+        </div>
+    </div>
+
+    <!-- 1. The YouTube API requires a specific DIV ID to latch onto -->
+     <div id="youtube-player" class="w-full h-full"></div>
 
                 <!-- 2. Transparent Shield (Blocks clicking through to YouTube) -->
                 <div class="absolute inset-0 z-10"></div>
