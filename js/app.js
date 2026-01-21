@@ -1718,11 +1718,21 @@ updateTalentChart() {
                             font: { size: 10, family: '"JetBrains Mono", monospace' } 
                         }
                     } 
-                } 
+                }
+                
             } 
+        });
+
+                // Add resize listener for mobile
+        window.addEventListener('resize', () => {
+            if (this.talentChartInstance) {
+                this.talentChartInstance.resize();
+            }
         });
     });
 },
+
+    
 
         updateGapChart() {
             this.$nextTick(() => {
