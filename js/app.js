@@ -56,7 +56,8 @@ document.addEventListener('alpine:init', () => {
                     }
                 });
 
-                 // 1. Load YouTube API
+         // --- YOUTUBE API LOADER ---
+    // This loads the YouTube code from the internet automatically
     if (!window.YT) {
         const tag = document.createElement('script');
         tag.src = "https://www.youtube.com/iframe_api";
@@ -64,10 +65,29 @@ document.addEventListener('alpine:init', () => {
         firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
     }
 
-    // 2. Setup Global Callback for when API is ready
+    // Define what happens when YouTube is ready
     window.onYouTubeIframeAPIReady = () => {
-        this.initVideoPlayer();
+        this.player = new YT.Player('youtube-player', {
+            videoId: 'dQw4w9WgXcQ', // REPLACE THIS with your Video ID
+            playerVars: {
+                'autoplay': 1,      // Try to autoplay
+                'controls': 0,      // Hide default YouTube controls
+                'rel': 0,           // No related videos
+                'modestbranding': 1,
+                'loop': 1,          // Loop video
+                'playlist': 'dQw4w9WgXcQ' // Required for looping
+            },
+            events: {
+                'onReady': (event) => {
+                    event.target.mute(); // Start muted to allow autoplay
+                    event.target.playVideo();
+                    this.videoPlaying = true;
+                    this.videoMuted = true;
+                }
+            }
+        });
     };
+
                 
             }
 
@@ -127,7 +147,10 @@ document.addEventListener('alpine:init', () => {
 
             // --- LANDING PAGE STATE ---
         showLanding: true,
-      videoMuted: true, // <--- ADD THIS LINE
+        videoPlaying: true,
+        videoMuted: true,
+        player: null, 
+
 
         currentTab: 'dashboard',
         supabase: null,
@@ -973,36 +996,38 @@ tools: {
         });
     },
 
-    toggleVideoPlay() {
-        if (!this.ytPlayer) return;
-        if (this.videoPlaying) {
-            this.ytPlayer.pauseVideo();
-            this.videoPlaying = false;
-        } else {
-            this.ytPlayer.playVideo();
-            this.videoPlaying = true;
-        }
-    },
+        toggleVideoPlay() {
+            if (this.player && this.player.getPlayerState) {
+                if (this.videoPlaying) {
+                    this.player.pauseVideo();
+                    this.videoPlaying = false;
+                } else {
+                    this.player.playVideo();
+                    this.videoPlaying = true;
+                }
+            }
+        },
 
-    toggleVideoMute() {
-        if (!this.ytPlayer) return;
-        if (this.videoMuted) {
-            this.ytPlayer.unMute();
-            this.videoMuted = false;
-        } else {
-            this.ytPlayer.mute();
-            this.videoMuted = true;
-        }
-    },
+        toggleVideoMute() {
+            if (this.player && this.player.mute) {
+                if (this.videoMuted) {
+                    this.player.unMute();
+                    this.videoMuted = false;
+                } else {
+                    this.player.mute();
+                    this.videoMuted = true;
+                }
+            }
+        },
 
-    enterApp() {
-        this.showLanding = false;
-        // Stop video to save resources/audio
-        if (this.ytPlayer && this.ytPlayer.pauseVideo) {
-            this.ytPlayer.pauseVideo();
-        }
-        if (navigator.vibrate) navigator.vibrate(50);
-    },
+        enterApp() {
+            this.showLanding = false;
+            // Stop the video completely to save battery/data
+            if (this.player && this.player.stopVideo) {
+                this.player.stopVideo();
+            }
+            if (navigator.vibrate) navigator.vibrate(50);
+        },
 
 
         triggerVipSequence() {
