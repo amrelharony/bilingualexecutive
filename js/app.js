@@ -110,8 +110,11 @@ document.addEventListener('alpine:init', () => {
         // ------------------------------------------------------------------
         // STATE VARIABLES
         // ------------------------------------------------------------------
-        
-        showLanding: true, 
+
+            // --- LANDING PAGE STATE ---
+        showLanding: true,
+      videoMuted: true, // <--- ADD THIS LINE
+
         currentTab: 'dashboard',
         supabase: null,
         selectedIndustry: "",
@@ -928,12 +931,13 @@ tools: {
         // ------------------------------------------------------------------
         // METHODS
         // ------------------------------------------------------------------
-           enterApp() {
+    enterApp() {
         this.showLanding = false;
-        // Optional: Trigger a sound effect or haptic feedback here
+        // Stop video audio when entering app
+        this.videoMuted = true; 
         if (navigator.vibrate) navigator.vibrate(50);
     },
-        
+
         triggerVipSequence() {
             this.isVipMode = true;
             this.showVipIntro = true;
