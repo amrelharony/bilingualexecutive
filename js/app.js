@@ -101,13 +101,15 @@ document.addEventListener('alpine:init', () => {
             if (this.showLanding) {
                 this.initYouTubePlayer();
             }
-        },
 
-        
-// If user directly enters app (not from landing), start tracking
+            // If user directly enters app (not from landing), start tracking
 if (!this.showLanding) {
     this.setupActivityTracking();
 }
+        },
+
+        
+
     
         // YouTube Player Initialization Method
         initYouTubePlayer() {
