@@ -2084,6 +2084,55 @@ async submitAndBenchmark() {
             if (y > 50 && x <= 50) return { title: "RISK TAKER (NW)", desc: "High value but high control. Hard to sustain." };
             return { title: "DIGITAL FACTORY (SE)", desc: "Fast execution, but are you building the right thing?" };
         },
+
+        // --- NEW: COMPASS AI PROMPT GENERATOR ---
+        generateCompassPrompt() {
+            const x = this.compassCoords.x; // Risk vs Speed
+            const y = this.compassCoords.y; // Value vs Cost
+            const result = this.getCompassResult(); // Re-use existing logic
+
+            // 1. Diagnose the specific quadrant problem
+            let diagnosis = "";
+            let strategy = "";
+
+            if (y > 50 && x > 50) { 
+                // NE: Innovation Leader
+                diagnosis = "We are moving fast and building high-value products, BUT we risk 'Burnout' or 'reckless scaling'.";
+                strategy = "Focus on 'Sustainable Pace' and 'Platform Stability' to ensure we don't crash.";
+            } else if (y <= 50 && x <= 50) {
+                // SW: Traditional Banker
+                diagnosis = "We are stuck in 'Analysis Paralysis'. Low speed, cost-cutting focus. We are slowly becoming irrelevant.";
+                strategy = "We need a 'Regulatory Sandbox' to test ideas faster without waiting for permission.";
+            } else if (y > 50 && x <= 50) {
+                // NW: The Perfectionist / Risk Taker
+                diagnosis = "We build great things, but we build them too slowly. We are gold-plating features.";
+                strategy = "Adopt 'MVP Mindset'. Ship imperfect code faster to get market feedback.";
+            } else {
+                // SE: Digital Factory
+                diagnosis = "We are shipping features fast, but they don't move the P&L needle. We are a 'Feature Factory'.";
+                strategy = "Stop measuring 'Velocity'. Start measuring 'Outcome'. Kill low-value projects.";
+            }
+
+            return `ACT AS: A Chief Digital Officer and Strategy Consultant.
+
+## THE TELEMETRY (MY COMPASS POSITION)
+I have plotted my organization's execution style on a matrix:
+- **Vertical Axis (North/South):** ${y > 50 ? "High Business Value" : "Cost Center Focus"} (${y}%)
+- **Horizontal Axis (West/East):** ${x > 50 ? "High Speed/Velocity" : "Risk Averse/Control"} (${x}%)
+
+## THE DIAGNOSIS: "${result.title}"
+${result.desc}
+${diagnosis}
+
+## YOUR MISSION
+Draft a **Strategic Pivot Memo** for the Executive Committee.
+1. **The Reality Check:** Explain why our current position of "${result.title}" is dangerous in the long run.
+2. **The Pivot:** Detail the specific ${strategy}
+3. **The Culture Hack:** Give me one specific phrase to ban in meetings (e.g., "We've always done it this way") and one phrase to start using.
+
+TONE: Visionary, urgent, but grounded in banking reality.`;
+        },
+
         
         getLighthouseStatus() { 
             const c = this.lighthouseData.filter(i=>i.checked).length; 
