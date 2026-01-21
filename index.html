@@ -180,7 +180,7 @@
 </div>
         
         <!-- Main Content Area -->
-<main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pb-32">
+<main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pb-24">
 
     <!-- Header Area -->
     <div class="mb-8 pt-8">
@@ -237,7 +237,28 @@
 </main>
 
         <!-- Floating Navigation Dock -->
-<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto">
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden">
+
+    <!-- Mobile Navigation Dock -->
+<div class="md:hidden fixed bottom-4 left-0 right-0 z-40 px-4">
+    <div class="flex items-center justify-center gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-1 shadow-2xl shadow-black/50 mx-auto max-w-md">
+        <template x-for="group in navGroups" :key="group.id">
+            <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
+                    class="relative px-4 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1 flex-1 min-w-0"
+                    :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+                
+                <i :class="group.icon" class="text-lg mb-0.5 transition-transform group-active:scale-90"></i>
+                <span class="text-[9px] font-bold uppercase tracking-widest truncate w-full text-center" x-text="group.label"></span>
+                
+                <!-- Active Indicator Dot -->
+                <div x-show="currentGroup === group.id" 
+                     class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
+            </button>
+        </template>
+    </div>
+</div>
+    
+
     <div class="flex items-center gap-1 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl shadow-black/50">
         
         <template x-for="group in navGroups" :key="group.id">
@@ -1338,28 +1359,6 @@
         </main>
 
 
-        <!-- MOBILE NAV -->
-        <nav class="md:hidden fixed bottom-0 w-full bg-dark/95 backdrop-blur-lg border-t border-slate-800 z-50 pb-safe">
-        <div class="grid grid-cols-4 h-16 items-center">
-                <button @click="handleNavClick('dashboard')" class="flex flex-col items-center" :class="currentTab === 'dashboard' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-home text-lg"></i><span class="text-[9px] font-mono mt-1">Home</span></button>
-                <button @click="handleNavClick('assessment')" class="flex flex-col items-center" :class="currentTab === 'assessment' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-clipboard-check text-lg"></i><span class="text-[9px] font-mono mt-1">Audit</span></button>
-                <button @click="handleNavClick('translator')" class="flex flex-col items-center" :class="currentTab === 'translator' ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-language text-lg"></i><span class="text-[9px] font-mono mt-1">Trans</span></button>
-                <button @click="mobileMenuOpen = !mobileMenuOpen" class="flex flex-col items-center" :class="mobileMenuOpen ? 'text-primary' : 'text-slate-500'"><i class="fa-solid fa-bars-staggered text-lg"></i><span class="text-[9px] font-mono mt-1">Menu</span></button>
-            </div>
-        </nav>
-
-
-        <!-- MOBILE MENU OVERLAY -->
-        <div x-show="mobileMenuOpen" x-transition x-cloak class="fixed inset-0 z-[60] bg-dark flex flex-col p-6 pt-safe overflow-y-auto mobile-scroll-fix">
-            <div class="flex justify-between items-center mb-8"><h2 class="text-primary font-mono text-xl font-bold">Tools Menu</h2><button @click="mobileMenuOpen=false"><i class="fa-solid fa-xmark text-2xl"></i></button></div>
-            <div class="grid grid-cols-2 gap-4 pb-20">
-                <template x-for="item in navItems" :key="item.id">
-                    <button @click="handleNavClick(item.id); mobileMenuOpen=false" x-show="!item.vip || isVipMode" class="bg-card p-4 rounded-xl border border-slate-800 flex flex-col items-center gap-2">
-                        <i :class="item.icon" class="text-xl text-slate-400"></i><span x-text="item.label" class="text-[10px] font-mono text-white text-center"></span>
-                    </button>
-                </template>
-            </div>
-        </div>
 
     </div>
 
