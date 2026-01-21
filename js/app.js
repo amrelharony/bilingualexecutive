@@ -46,6 +46,10 @@ if (hasEnteredBefore) {
                 this.deferredPrompt = e;
             });
 
+                this.$nextTick(() => {
+        this.updateTalentChart();
+    });
+
 
             // VIP & Challenger Logic
             const params = new URLSearchParams(window.location.search);
@@ -104,7 +108,24 @@ if (hasEnteredBefore) {
                 if (value) document.body.classList.add('mobile-menu-open');
                 else document.body.classList.remove('mobile-menu-open');
             });
-          
+
+            // NEW: Talent chart watchers
+this.$watch('currentTab', (value) => {
+    if (value === 'talent') {
+        // Give DOM time to render
+        setTimeout(() => {
+            this.updateTalentChart();
+        }, 200);
+    }
+});
+
+// Also watch for skill changes
+this.$watch('talentSkills', () => {
+    if (this.currentTab === 'talent') {
+        this.updateTalentChart();
+    }
+}, { deep: true });
+
             this.culturalMonitor.init(); 
 
             // Initialize YouTube Player if on landing page
@@ -1661,69 +1682,86 @@ setupActivityTracking() {
         },
 
 updateTalentChart() {
-    this.$nextTick(() => {
+    // Wait for DOM to be ready
+    setTimeout(() => {
         const ctx = document.getElementById('talentChart');
-        if (!ctx) return;
+        if (!ctx) {
+            console.error("Talent chart canvas not found");
+            return;
+        }
         
-        // Destroy old chart
+        // Destroy old chart if exists
         if (this.talentChartInstance) {
             this.talentChartInstance.destroy();
         }
         
-        // Define the "Standard" (Target State)
-        const bilingualStandard = [4, 5, 5, 4, 4]; // The ideal shape
-
+        // Get current skill values
+        const labels = this.talentSkills.map(s => s.label);
+        const values = this.talentSkills.map(s => s.val);
+        const bilingualStandard = [4, 5, 5, 4, 4]; // Ideal shape
+        
         // Create new chart
-        this.talentChartInstance = new Chart(ctx, { 
-            type: 'radar', 
-            data: { 
-                labels: this.talentSkills.map(s => s.label), 
+        this.talentChartInstance = new Chart(ctx, {
+            type: 'radar',
+            data: {
+                labels: labels,
                 datasets: [
-                    { 
+                    {
                         label: 'You',
-                        data: this.talentSkills.map(s => s.val), 
-                        backgroundColor: 'rgba(244, 114, 182, 0.2)', // Hotpink low opacity
-                        borderColor: '#f472b6', 
+                        data: values,
+                        backgroundColor: 'rgba(244, 114, 182, 0.2)',
+                        borderColor: '#f472b6',
                         borderWidth: 2,
                         pointBackgroundColor: '#fff',
-                        pointBorderColor: '#f472b6'
+                        pointBorderColor: '#f472b6',
+                        pointRadius: 4
                     },
-                    { 
+                    {
                         label: 'Bilingual Standard',
-                        data: bilingualStandard, 
-                        backgroundColor: 'rgba(148, 163, 184, 0.1)', // Slate low opacity
-                        borderColor: '#475569', 
+                        data: bilingualStandard,
+                        backgroundColor: 'rgba(148, 163, 184, 0.1)',
+                        borderColor: '#475569',
                         borderWidth: 2,
-                        borderDash: [5, 5], // Dashed line for target
+                        borderDash: [5, 5],
                         pointRadius: 0
                     }
-                ] 
-            }, 
-            options: { 
+                ]
+            },
+            options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                animation: false, 
-                plugins: { 
-                    legend: { display: false } // Custom legend in HTML
-                }, 
-                scales: { 
-                    r: { 
-                        min: 0, 
-                        max: 5, 
-                        ticks: { display: false, stepSize: 1 }, 
-                        grid: { color: '#334155', circular: true }, 
-                        angleLines: { color: '#334155' },
-                        pointLabels: { 
-                            color: '#f1f5f9', 
-                            font: { size: 10, family: '"JetBrains Mono", monospace' } 
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        min: 0,
+                        max: 5,
+                        ticks: {
+                            stepSize: 1,
+                            display: false
+                        },
+                        grid: {
+                            color: '#334155'
+                        },
+                        angleLines: {
+                            color: '#334155'
+                        },
+                        pointLabels: {
+                            color: '#f1f5f9',
+                            font: {
+                                size: 10,
+                                family: '"JetBrains Mono", monospace'
+                            }
                         }
-                    } 
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
                 }
-                
-            } 
+            }
         });
-
-    });
+    }, 100);
 },
 
     
