@@ -931,7 +931,7 @@ currentGroup: 'radar', // Default view
 
 // New Navigation Groups
 navGroups: [
-    { id: 'radar', label: 'Radar', icon: 'fa-solid fa-radar', desc: 'Diagnostics & Metrics' },
+    { id: 'radar', label: 'Radar', icon: 'fa-solid fa-bullseye', desc: 'Diagnostics & Metrics' }
     { id: 'academy', label: 'Academy', icon: 'fa-solid fa-graduation-cap', desc: 'Learning & Audio' },
     { id: 'forge', label: 'Forge', icon: 'fa-solid fa-hammer', desc: 'Builders & Tools' },
     { id: 'sims', label: 'Sims', icon: 'fa-solid fa-gamepad', desc: 'Roleplay & Scenarios' }
