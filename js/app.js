@@ -948,6 +948,65 @@ teamManager: {
         // (Implementation depends on where we render the team chart, addressed in HTML)
     }
 },
+
+                // ---------------------------------------------------------
+        //  THE NEW TALENT MANAGER 
+        // ---------------------------------------------------------
+        talentManager: {
+            getBehavior(index, val) {
+                const descriptions = [
+                    ["I delegate all tech decisions.", "I know buzzwords (AI, Cloud).", "I understand API vs Batch.", "I catch 'BS' in tech plans.", "I can Architect systems."], 
+                    ["What is CapEx?", "I track the budget.", "I calculate ROI.", "I manage Unit Economics.", "I run FinOps."], 
+                    ["I trust the PowerPoint.", "I look at dashboards.", "I ask 'Where is the data?'", "I define Data Products.", "I code my own SQL."], 
+                    ["I hide from politics.", "I attend meetings.", "I build coalitions.", "I map the power/interest grid.", "I orchestrate org change."], 
+                    ["Zero risk allowed.", "Compliance first.", "Controlled pilots.", "Fail fast, fix fast.", "Risk is a competitive edge."] 
+                ];
+                return descriptions[index][val - 1];
+            },
+
+            getArchetype() {
+                const skills = this.talentSkills; 
+                if(!skills) return { label: "Loading...", icon: "" };
+
+                const tech = skills[0].val; 
+                const biz = skills[1].val;  
+                const pol = skills[3].val;  
+
+                if (tech >= 4 && biz >= 4) return { label: "THE BILINGUAL", icon: "fa-solid fa-crown", desc: "Rare. Unicorn status." };
+                if (tech >= 4 && biz <= 2) return { label: "THE TECHNOCRAT", icon: "fa-solid fa-robot", desc: "Brilliant coder, ignored by Board." };
+                if (tech <= 2 && biz >= 4) return { label: "THE TRADITIONALIST", icon: "fa-solid fa-briefcase", desc: "Safe pair of hands. Slow mover." };
+                if (pol >= 4 && tech <= 2) return { label: "THE DIPLOMAT", icon: "fa-solid fa-dove", desc: "Survives layoffs, ships nothing." };
+                if (tech === 3 && biz === 3) return { label: "THE GENERALIST", icon: "fa-solid fa-user", desc: "Good at everything, master of none." };
+                
+                return { label: "DEVELOPING", icon: "fa-solid fa-seedling", desc: "Keep growing." };
+            },
+
+            generateSystemPrompt() {
+                const skills = this.talentSkills;
+                const arch = this.getArchetype();
+                
+                return `ACT AS: An Executive Coach for a Digital Transformation Leader.
+                
+MY PROFILE DATA:
+- Role Archetype: ${arch.label}
+- Tech Fluency: ${skills[0].val}/5 (${this.talentManager.getBehavior(0, skills[0].val)})
+- Financial IQ: ${skills[1].val}/5
+- Data Culture: ${skills[2].val}/5
+- Political EQ: ${skills[3].val}/5
+- Risk Appetite: ${skills[4].val}/5
+
+THE BILINGUAL STANDARD (TARGET):
+- Target is 4/5 or 5/5 in all categories.
+
+YOUR TASK:
+1. Brutal Feedback: In 2 sentences, explain why my current profile (${arch.label}) is dangerous for a modern bank.
+2. The Gap: Identify my weakest link.
+3. 30-Day Learning Plan: Give me 3 specific, non-obvious actions to improve my score. (Do not say "read a book". Give me exercises like "Sit with the DevOps team for 1 hour").
+
+TONE: Machiavellian, Pragmatic, High-Agency.`;
+            }
+        }, 
+
         
         // ------------------------------------------------------------------
         //  API SANDBOX
@@ -1589,52 +1648,69 @@ setupActivityTracking() {
             doc.save("Bilingual_Transformation_Map.pdf");
         },
 
-     updateTalentChart() {
-            this.$nextTick(() => {
-                const ctx = document.getElementById('talentChart');
-                if (!ctx) return;
-                
-                // 1. Destroy existing global instance to prevent memory leaks
-                if (window.myTalentChart) {
-                    window.myTalentChart.destroy();
-                }
-                
-                // 2. Configure Font
-                Chart.defaults.font.family = '"JetBrains Mono", monospace';
-                Chart.defaults.color = '#94a3b8';
+updateTalentChart() {
+    this.$nextTick(() => {
+        const ctx = document.getElementById('talentChart');
+        if (!ctx) return;
+        
+        // Destroy old chart
+        if (this.talentChartInstance) {
+            this.talentChartInstance.destroy();
+        }
+        
+        // Define the "Standard" (Target State)
+        const bilingualStandard = [4, 5, 5, 4, 4]; // The ideal shape
 
-                // 3. Create new instance attached to Window (bypassing Alpine Proxy)
-                window.myTalentChart = new Chart(ctx, { 
-                    type: 'radar', 
-                    data: { 
-                        labels: this.talentSkills.map(s => s.label), 
-                        datasets: [{ 
-                            label: 'Candidate Shape',
-                            data: this.talentSkills.map(s => s.val), 
-                            backgroundColor: 'rgba(244, 114, 182, 0.2)', 
-                            borderColor: '#f472b6', 
-                            pointBackgroundColor: '#fff',
-                            pointBorderColor: '#f472b6'
-                        }] 
-                    }, 
-                    options: { 
-                        animation: false, // Disable animation for instant slider feedback
-                        plugins: { legend: { display: false } }, 
-                        scales: { 
-                            r: { 
-                                min: 0, 
-                                max: 5, 
-                                ticks: { display: false }, 
-                                grid: { color: '#334155' }, 
-                                angleLines: { color: '#334155' },
-                                pointLabels: { color: '#f1f5f9', font: { size: 11 } }
-                            } 
-                        } 
+        // Create new chart
+        this.talentChartInstance = new Chart(ctx, { 
+            type: 'radar', 
+            data: { 
+                labels: this.talentSkills.map(s => s.label), 
+                datasets: [
+                    { 
+                        label: 'You',
+                        data: this.talentSkills.map(s => s.val), 
+                        backgroundColor: 'rgba(244, 114, 182, 0.2)', // Hotpink low opacity
+                        borderColor: '#f472b6', 
+                        borderWidth: 2,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#f472b6'
+                    },
+                    { 
+                        label: 'Bilingual Standard',
+                        data: bilingualStandard, 
+                        backgroundColor: 'rgba(148, 163, 184, 0.1)', // Slate low opacity
+                        borderColor: '#475569', 
+                        borderWidth: 2,
+                        borderDash: [5, 5], // Dashed line for target
+                        pointRadius: 0
+                    }
+                ] 
+            }, 
+            options: { 
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false, 
+                plugins: { 
+                    legend: { display: false } // Custom legend in HTML
+                }, 
+                scales: { 
+                    r: { 
+                        min: 0, 
+                        max: 5, 
+                        ticks: { display: false, stepSize: 1 }, 
+                        grid: { color: '#334155', circular: true }, 
+                        angleLines: { color: '#334155' },
+                        pointLabels: { 
+                            color: '#f1f5f9', 
+                            font: { size: 10, family: '"JetBrains Mono", monospace' } 
+                        }
                     } 
-                });
-            });
-        },
-
+                } 
+            } 
+        });
+    });
+},
 
         updateGapChart() {
             this.$nextTick(() => {
