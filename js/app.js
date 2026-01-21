@@ -1898,42 +1898,33 @@ updateTalentChart() {
 
             // 2. Identify the "Burning Platform" (Lowest Score)
             const scores = [
-                { id: 'Data', val: dataScore, msg: "Our Data is a swamp. Developers cannot get access." },
-                { id: 'Delivery', val: deliveryScore, msg: "Our Time-to-Market is too slow. Manual release gates." },
-                { id: 'Culture', val: cultureScore, msg: "Our Culture is toxic. Bad news is hidden from leadership." }
+                { id: 'Data Velocity', val: dataScore, msg: "Data is a bottleneck. We cannot get insights fast enough." },
+                { id: 'Agile Delivery', val: deliveryScore, msg: "Time-to-Market is too slow. Manual gates are killing velocity." },
+                { id: 'Organizational Culture', val: cultureScore, msg: "Culture is fear-based. Information flow is blocked." }
             ];
-            // Sort by lowest score
             const weakness = scores.sort((a,b) => a.val - b.val)[0];
 
-            // 3. Determine Market Position
-            let status = "";
-            if (total <= 40) status = "CRISIS MODE. We are a legacy bank drowning in tech debt.";
-            else if (total <= 60) status = "STUCK IN THE MIDDLE. We have agile teams but waterfall governance.";
-            else status = "MARKET LEADER. We are fast, but need to defend against complacency.";
+            // 3. Build the Generic Prompt
+            return `ACT AS: A Chief Strategy Officer presenting to the Board.
 
-            // 4. Build the Prompt
-            return `ACT AS: A Crisis Turnaround CEO for a Bank.
+## THE CONTEXT (AUDIT DATA)
+I have assessed our maturity (Scale 0-75).
+- **TOTAL SCORE:** ${total}/75
+- **Data Score:** ${dataScore}/25
+- **Delivery Score:** ${deliveryScore}/25
+- **Culture Score:** ${cultureScore}/25
 
-## THE SITUATION (AGILE AUDIT RESULTS)
-I have just audited my organization's maturity (Scale 0-75).
-- **TOTAL SCORE:** ${total}/75 (${status})
+## THE CRITICAL BOTTLENECK
+The assessment identifies **${weakness.id}** as our primary risk factor.
+Context: ${weakness.msg}
 
-## THE BREAKDOWN
-- **Data Velocity:** ${dataScore}/25
-- **Agile Delivery:** ${deliveryScore}/25
-- **Culture/Leadership:** ${cultureScore}/25
+## YOUR TASK
+Generate a **Strategic Executive Brief** (Structured Report).
+1. **The Executive Summary:** State the problem in financial terms (Cost of Delay, Risk Exposure), avoiding technical jargon.
+2. **The Strategic Pivot:** Propose 1 radical structural change to fix ${weakness.id}.
+3. **The 30-Day Roadmap:** Bullet points for immediate execution.
 
-## THE BURNING PLATFORM (Primary Bottleneck)
-The data shows our biggest failure is **${weakness.id}**.
-${weakness.msg}
-
-## YOUR MISSION
-Draft a "Monday Morning Memo" to the Board of Directors.
-1. **The Brutal Truth:** Summarize our failure in ${weakness.id} using financial terms (Cost of Delay, Risk), not tech jargon.
-2. **The Intervention:** Propose 1 radical move to fix this bottleneck (e.g., if Data is low, do we fire the Data Governance Committee?).
-3. **The 90-Day Target:** Define one metric that MUST improve by next quarter.
-
-TONE: Urgent, authoritative, and financially literate. No "Agile" buzzwords allowed.`;
+TONE: Professional, objective, high-agency.`;
         },
         
         
