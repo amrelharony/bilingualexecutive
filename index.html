@@ -1220,13 +1220,41 @@
                     <canvas id="talentChart" width="400" height="400"></canvas>
                 </div>
             </div>
-            <!-- Squad Architect (Desktop Only) -->
-            <div class="hidden md:block bg-gradient-to-br from-slate-900 to-black border border-hotpink/30 p-4 md:p-6 rounded-xl">
-                <button @click="copyToClipboard(talentManager.generateSystemPrompt(talentSkills), 'Hiring Prompt')" 
-                        class="w-full py-3 bg-hotpink hover:bg-pink-600 text-white font-bold rounded-lg transition-all flex items-center justify-center gap-2 text-xs font-mono uppercase">
-                    <i class="fa-regular fa-copy"></i> Copy Analysis Prompt
-                </button>
-            </div>
+            <!-- NEW DYNAMIC PROMPT AREA (Replaces Desktop Button) -->
+<div class="mt-6 bg-slate-900 border border-slate-700 p-6 rounded-xl relative overflow-hidden group">
+    
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4">
+        <h3 class="font-mono text-white font-bold flex items-center gap-2">
+            <i class="fa-solid fa-robot text-hotpink"></i> 
+            AI CO-PILOT PROMPT
+        </h3>
+        <span class="text-[10px] uppercase bg-hotpink/20 text-hotpink px-2 py-1 rounded border border-hotpink/30">
+            Based on your Radar
+        </span>
+    </div>
+
+    <!-- Preview Text (Truncated) -->
+    <div class="font-mono text-xs text-slate-400 bg-black/50 p-4 rounded border border-slate-800 mb-4 h-24 overflow-hidden relative">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+        <pre class="whitespace-pre-wrap font-sans" x-text="talentManager.generateSystemPrompt(talentSkills)"></pre>
+    </div>
+
+    <!-- Interactive Copy Button -->
+    <button @click="
+            copyToClipboard(talentManager.generateSystemPrompt(talentSkills), 'AI Coach Prompt');
+            $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED TO CLIPBOARD';
+            setTimeout(() => $el.innerHTML = '<i class=\'fa-solid fa-copy\'></i> COPY FULL PROMPT FOR CHATGPT', 2000)
+            " 
+            class="w-full py-4 bg-hotpink hover:bg-pink-600 text-white font-bold rounded-lg transition-all shadow-glow-vip flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest">
+        <i class="fa-regular fa-copy"></i> COPY FULL PROMPT FOR CHATGPT
+    </button>
+    
+    <p class="text-center text-[10px] text-slate-500 mt-3">
+        Paste this into ChatGPT, Claude, or Gemini to get a personalized career strategy.
+    </p>
+
+</div>
         </div>
 
         <!-- SLIDERS (Bottom on Mobile) -->
@@ -1259,11 +1287,6 @@
                     </div>
                 </div>
             </template>
-            <!-- Mobile Button -->
-            <button class="md:hidden w-full py-4 mt-4 bg-slate-800 border border-hotpink/30 text-white font-bold rounded-lg flex items-center justify-center gap-2 text-xs font-mono uppercase"
-                    @click="copyToClipboard(talentManager.generateSystemPrompt(talentSkills), 'Hiring Prompt')">
-                <i class="fa-solid fa-users-viewfinder text-hotpink"></i> Generate Squad Plan
-            </button>
         </div>
     </div>
 </div>
