@@ -1887,6 +1887,55 @@ updateTalentChart() {
             if(safety <= 2) total = Math.min(total, 40);
             return { total, isSafetyVeto: safety<=2, isManualDrag: compliance<=2 };
         },
+
+        // --- NEW: GENERATE STRATEGIC AUDIT PROMPT ---
+        generateAuditPrompt() {
+            // 1. Get Section Scores
+            const dataScore = this.assessmentData[0].questions.reduce((a,b)=>a+b.score,0);
+            const deliveryScore = this.assessmentData[1].questions.reduce((a,b)=>a+b.score,0);
+            const cultureScore = this.assessmentData[2].questions.reduce((a,b)=>a+b.score,0);
+            const total = dataScore + deliveryScore + cultureScore;
+
+            // 2. Identify the "Burning Platform" (Lowest Score)
+            const scores = [
+                { id: 'Data', val: dataScore, msg: "Our Data is a swamp. Developers cannot get access." },
+                { id: 'Delivery', val: deliveryScore, msg: "Our Time-to-Market is too slow. Manual release gates." },
+                { id: 'Culture', val: cultureScore, msg: "Our Culture is toxic. Bad news is hidden from leadership." }
+            ];
+            // Sort by lowest score
+            const weakness = scores.sort((a,b) => a.val - b.val)[0];
+
+            // 3. Determine Market Position
+            let status = "";
+            if (total <= 40) status = "CRISIS MODE. We are a legacy bank drowning in tech debt.";
+            else if (total <= 60) status = "STUCK IN THE MIDDLE. We have agile teams but waterfall governance.";
+            else status = "MARKET LEADER. We are fast, but need to defend against complacency.";
+
+            // 4. Build the Prompt
+            return `ACT AS: A Crisis Turnaround CEO for a Bank.
+
+## THE SITUATION (AGILE AUDIT RESULTS)
+I have just audited my organization's maturity (Scale 0-75).
+- **TOTAL SCORE:** ${total}/75 (${status})
+
+## THE BREAKDOWN
+- **Data Velocity:** ${dataScore}/25
+- **Agile Delivery:** ${deliveryScore}/25
+- **Culture/Leadership:** ${cultureScore}/25
+
+## THE BURNING PLATFORM (Primary Bottleneck)
+The data shows our biggest failure is **${weakness.id}**.
+${weakness.msg}
+
+## YOUR MISSION
+Draft a "Monday Morning Memo" to the Board of Directors.
+1. **The Brutal Truth:** Summarize our failure in ${weakness.id} using financial terms (Cost of Delay, Risk), not tech jargon.
+2. **The Intervention:** Propose 1 radical move to fix this bottleneck (e.g., if Data is low, do we fire the Data Governance Committee?).
+3. **The 90-Day Target:** Define one metric that MUST improve by next quarter.
+
+TONE: Urgent, authoritative, and financially literate. No "Agile" buzzwords allowed.`;
+        },
+        
         
         getAssessmentResult() {
             const s = this.calculateScore.total;
@@ -1894,6 +1943,7 @@ updateTalentChart() {
             if (s <= 60) return { title: "TRANSITIONING", desc: "Pockets of agility exist but are crushed by legacy governance." };
             return { title: "AGILE BANK", desc: "Market Leader capability. Data flows fast." };
         },
+
         
         getAssessmentColor() { 
             const s = this.calculateScore.total; 
