@@ -24,11 +24,30 @@ html, body { overscroll-behavior-y: none; height: 100%; }
 }
 
 /* Range Sliders */
-input[type="range"] { -webkit-appearance: none; height: 8px; background: #334155; border-radius: 5px; }
+input[type="range"] { 
+    -webkit-appearance: none; 
+    appearance: none; /* Added for Firefox */
+    height: 8px; 
+    background: #334155; 
+    border-radius: 5px; 
+}
 input[type="range"]::-webkit-slider-thumb { 
-    -webkit-appearance: none; height: 20px; width: 20px; 
-    border-radius: 50%; background: #4ade80; cursor: pointer; 
-    border: 2px solid #0f172a; margin-top: -6px;
+    -webkit-appearance: none; 
+    height: 20px; 
+    width: 20px; 
+    border-radius: 50%; 
+    background: #4ade80; 
+    cursor: pointer; 
+    border: 2px solid #0f172a; 
+    margin-top: -6px;
+}
+input[type="range"]::-moz-range-thumb { /* Added for Firefox */
+    height: 20px; 
+    width: 20px; 
+    border-radius: 50%; 
+    background: #4ade80; 
+    cursor: pointer; 
+    border: 2px solid #0f172a; 
 }
 
 @keyframes moveRight {
@@ -83,3 +102,221 @@ input[type="range"]::-webkit-slider-thumb {
     }
 }
 
+/* ===== VIDEO PLAYER CONTROLS STYLING ===== */
+
+/* Custom Controls Bar (above video) */
+.video-controls-bar {
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
+    backdrop-filter: blur(8px);
+    transition: opacity 0.3s ease;
+    z-index: 30;
+}
+
+/* Group hover effect - show controls when hovering video container */
+.group:hover .video-controls-bar {
+    opacity: 1 !important;
+}
+
+/* Time display styling */
+.video-time-display {
+    font-feature-settings: "tnum";
+    font-variant-numeric: tabular-nums;
+    min-width: 50px;
+}
+
+/* Seek bar specific styling */
+.seek-bar {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    background-image: linear-gradient(to right, #4ade80 var(--seek-progress, 0%), rgba(255, 255, 255, 0.2) var(--seek-progress, 0%));
+}
+
+.seek-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 14px;
+    width: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+    border: 2px solid #0f172a;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.seek-bar:hover::-webkit-slider-thumb {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.seek-bar::-moz-range-thumb {
+    height: 14px;
+    width: 14px;
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+    border: 2px solid #0f172a;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+}
+
+.seek-bar:hover::-moz-range-thumb {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+/* Volume slider specific styling */
+.volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    width: 80px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 2px;
+    background-image: linear-gradient(to right, #4ade80 var(--volume-level, 50%), rgba(255, 255, 255, 0.2) var(--volume-level, 50%));
+}
+
+.volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+    border: 2px solid #0f172a;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.volume-slider:hover::-webkit-slider-thumb {
+    opacity: 1;
+}
+
+.volume-slider::-moz-range-thumb {
+    height: 12px;
+    width: 12px;
+    border-radius: 50%;
+    background: #ffffff;
+    cursor: pointer;
+    border: 2px solid #0f172a;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.volume-slider:hover::-moz-range-thumb {
+    opacity: 1;
+}
+
+/* Control buttons */
+.video-control-btn {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.2s ease;
+}
+
+.video-control-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.video-control-btn:active {
+    transform: scale(0.95);
+}
+
+/* Video overlay for click-to-play */
+.video-overlay {
+    cursor: pointer;
+    z-index: 20;
+    transition: background-color 0.2s;
+}
+
+.video-overlay:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* ===== RESPONSIVE ADJUSTMENTS ===== */
+
+/* Tablet and smaller */
+@media (max-width: 1024px) {
+    .video-controls-bar {
+        padding: 12px !important;
+    }
+    
+    .volume-slider {
+        width: 60px;
+    }
+    
+    .video-time-display {
+        font-size: 11px;
+        min-width: 40px;
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .video-controls-bar {
+        padding: 10px !important;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.6) 70%, transparent 100%);
+    }
+    
+    .video-control-btn {
+        width: 36px !important;
+        height: 36px !important;
+    }
+    
+    .seek-bar {
+        height: 3px;
+    }
+    
+    .seek-bar::-webkit-slider-thumb {
+        height: 12px;
+        width: 12px;
+    }
+    
+    .volume-slider {
+        width: 50px;
+        height: 3px;
+    }
+    
+    .volume-slider::-webkit-slider-thumb {
+        height: 10px;
+        width: 10px;
+    }
+}
+
+/* Very small screens (480px and below) */
+@media (max-width: 480px) {
+    .volume-slider {
+        display: none;
+    }
+    
+    .video-time-display {
+        font-size: 10px;
+        min-width: 35px;
+    }
+}
+
+/* Dark mode adjustments (if needed) */
+@media (prefers-color-scheme: dark) {
+    .video-controls-bar {
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
+    }
+}
+
+/* For iOS Safari - ensure controls are accessible */
+@supports (-webkit-touch-callout: none) {
+    .video-controls-bar {
+        padding-top: env(safe-area-inset-top, 12px);
+    }
+    
+    .seek-bar::-webkit-slider-thumb {
+        -webkit-touch-callout: none;
+    }
+}
