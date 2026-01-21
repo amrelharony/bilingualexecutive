@@ -59,14 +59,14 @@ document.addEventListener('alpine:init', () => {
 // --- YOUTUBE API LOADER (FIXED) ---
 const initPlayer = () => {
     this.player = new YT.Player('youtube-player', {
-        videoId: 'dQw4w9WgXcQ',
+        videoId: '8GvrODrkQ7M',
         playerVars: {
             'autoplay': 1,
             'controls': 0,
             'rel': 0,
             'modestbranding': 1,
             'loop': 1,
-            'playlist': 'dQw4w9WgXcQ',
+            'playlist': '8GvrODrkQ7M',
             'playsinline': 1 // Crucial for mobile autoplay
         },
         events: {
