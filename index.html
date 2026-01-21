@@ -182,6 +182,13 @@
                        max="100"
                        class="volume-slider"
                        :style="'--volume-level: ' + videoVolume + '%'">
+                
+                <!-- NEW: Fullscreen Button -->
+                                <button @click="toggleFullscreen()" 
+                        class="video-control-btn w-8 h-8 rounded-full flex items-center justify-center text-white ml-2">
+                    <i class="fa-solid text-sm" :class="isFullscreen ? 'fa-compress' : 'fa-expand'"></i>
+                </button>
+
             </div>
             
         </div>
