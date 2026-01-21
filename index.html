@@ -90,6 +90,73 @@
                 <p class="font-mono text-hotpink text-xs md:text-sm font-bold truncate px-2"><i class="fa-solid fa-people-arrows mr-2"></i>GAP MODE: Comparing against <span x-text="challengerData?.title || 'Colleague'"></span></p>
             </div>
         </template>
+
+        <!-- LANDING PAGE / COVER SIMULATOR -->
+<div x-show="showLanding" 
+     x-transition:leave="transition ease-in duration-700"
+     x-transition:leave-start="opacity-100 transform scale-100"
+     x-transition:leave-end="opacity-0 transform scale-110"
+     class="fixed inset-0 z-[200] bg-black flex flex-col items-center justify-center p-6 text-center cursor-default">
+
+    <!-- Background Texture (Subtle Noise) -->
+    <div class="absolute inset-0 opacity-20 pointer-events-none" 
+         style="background-image: url('https://www.transparenttextures.com/patterns/stardust.png');">
+    </div>
+
+    <!-- The "Book Cover" Layout -->
+    <div class="relative z-10 max-w-2xl w-full flex flex-col items-center">
+        
+        <!-- Top Label -->
+        <p class="text-xs font-mono text-slate-400 tracking-[0.3em] uppercase mb-6 animate-pulse">
+            System Initializing...
+        </p>
+
+        <!-- THE TITLE (Stark Typography) -->
+        <h1 class="text-6xl md:text-8xl font-sans font-extrabold tracking-tighter leading-none text-white mb-2">
+            THE<br>
+            <span class="text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-500">BILINGUAL</span><br>
+            EXECUTIVE
+        </h1>
+
+        <!-- The Subtitle (Red/Accent for contrast) -->
+        <div class="h-1 w-24 bg-red-600 my-6"></div>
+        <p class="font-mono text-sm md:text-base text-slate-300 max-w-md mx-auto leading-relaxed mb-10">
+            HOW TO BUILD THE <span class="text-white font-bold">AGILE BANK</span><br> 
+            AND SURVIVE THE FINTECH TSUNAMI
+        </p>
+
+        <!-- The Video Container (Cinematic Aspect Ratio) -->
+        <div class="w-full aspect-video bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] mb-10 relative group">
+            
+            <!-- YouTube Embed -->
+            <!-- REPLACE 'YOUR_VIDEO_ID' with your actual YouTube ID -->
+            <iframe class="w-full h-full" 
+                    src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&controls=0&modestbranding=1&loop=1&playlist=dQw4w9WgXcQ" 
+                    title="The Bilingual Executive Trailer" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen>
+            </iframe>
+
+            <!-- Overlay to prevent interaction until they enter (Optional) -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
+        </div>
+
+        <!-- The "Enter" Button -->
+        <button @click="enterApp()" 
+                class="group relative px-10 py-4 bg-white text-black font-bold font-mono text-sm tracking-widest uppercase rounded-full hover:bg-red-600 hover:text-white transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)]">
+            <span class="relative z-10 flex items-center gap-2">
+                Initialize Operations <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+            </span>
+        </button>
+
+        <!-- Footer Info -->
+        <div class="absolute bottom-[-60px] text-[10px] text-slate-600 font-mono">
+            v1.0 // AMR ELHARONY // CAIRO, EGYPT
+        </div>
+
+    </div>
+</div>
         
         <!-- Main Content Area -->
 <main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pb-32">
