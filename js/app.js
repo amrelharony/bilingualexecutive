@@ -118,44 +118,66 @@ if (hasEnteredBefore) {
 
     
         // YouTube Player Initialization Method
-        initYouTubePlayer() {
+initYouTubePlayer() {
     const initPlayer = () => {
         this.player = new YT.Player('youtube-player', {
             videoId: '8GvrODrkQ7M',
             playerVars: {
-                'autoplay': 0,  // CHANGED FROM 1 TO 0
-                'controls': 0,
+                'autoplay': 0,
+                'controls': 0,           // Hide YouTube's native controls
                 'rel': 0,
                 'modestbranding': 1,
                 'loop': 1,
                 'playlist': '8GvrODrkQ7M',
                 'playsinline': 1,
-                'enablejsapi': 1 
+                'enablejsapi': 1         // CRITICAL: Enable JavaScript API
             },
             events: {
                 'onReady': (event) => {
-                    event.target.mute(); // Still mute by default
-                    // REMOVED: event.target.playVideo(); - No autoplay
-                    this.videoPlaying = false; // CHANGED FROM true TO false
-                                        // Get the total duration
+                    event.target.mute(); // Start muted
+                    this.videoMuted = true;
+                    this.videoPlaying = false;
+                    
+                    // Get video duration
                     this.videoDuration = event.target.getDuration();
+                    
+                    // Set initial volume
+                    this.videoVolume = 50;
+                    event.target.setVolume(50);
                 },
                 'onStateChange': (event) => {
-                    // Update current time while playing
+                    // When video starts playing
                     if (event.data === YT.PlayerState.PLAYING) {
+                        this.videoPlaying = true;
+                        
+                        // Start updating current time every second
                         this.updateTimeInterval = setInterval(() => {
                             if (this.player && this.player.getCurrentTime) {
                                 this.videoCurrentTime = this.player.getCurrentTime();
                             }
                         }, 1000);
-                    } else {
-                        clearInterval(this.updateTimeInterval);
+                    } 
+                    // When video is paused, buffering, or ended
+                    else if (event.data === YT.PlayerState.PAUSED || 
+                             event.data === YT.PlayerState.BUFFERING || 
+                             event.data === YT.PlayerState.ENDED) {
+                        this.videoPlaying = false;
+                        
+                        // Clear the interval
+                        if (this.updateTimeInterval) {
+                            clearInterval(this.updateTimeInterval);
+                            this.updateTimeInterval = null;
+                        }
+                        
+                        // Update time one last time
+                        if (this.player && this.player.getCurrentTime) {
+                            this.videoCurrentTime = this.player.getCurrentTime();
+                        }
                     }
                 }
             }
         });
     };
-
 
 
             // Scenario A: API is already ready (e.g. cached or reload)
@@ -187,12 +209,15 @@ if (hasEnteredBefore) {
 
             // --- LANDING PAGE STATE ---
         showLanding: true,
-        videoPlaying: true,
+        videoPlaying: false,
         videoMuted: true,
         player: null, 
         videoCurrentTime: 0,
         videoDuration: 0,
         videoVolume: 50, // Default volume
+        volumeBeforeMute: 50, // Store volume before muting
+        updateTimeInterval: null, // For updating the seek bar
+
 
 
 
@@ -1121,41 +1146,89 @@ tools: {
         // METHODS
         // ------------------------------------------------------------------
   
-        toggleVideoPlay() {
-            if (this.player && this.player.getPlayerState) {
-                if (this.videoPlaying) {
-                    this.player.pauseVideo();
-                    this.videoPlaying = false;
-                } else {
-                    this.player.playVideo();
-                    this.videoPlaying = true;
-                }
-            }
-        },
 
-        formatTime(seconds) {
+formatTime(seconds) {
+    if (!seconds || isNaN(seconds)) return "0:00";
+    
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 },
+        
+// Seek to specific time
 seekVideo(sliderValue) {
+    const newTime = parseFloat(sliderValue);
+    
     if (this.player && this.player.seekTo) {
-        this.player.seekTo(parseFloat(sliderValue));
+        this.player.seekTo(newTime, true); // true = allowSeekAhead
+        this.videoCurrentTime = newTime; // Update immediately
+        
+        // If video was paused, play it after seeking
+        if (!this.videoPlaying && this.player.playVideo) {
+            this.player.playVideo();
+        }
     }
 },
 
-toggleVideoMute() {
-    if (this.player && this.player.mute) {
-        if (this.videoMuted) {
-            this.player.unMute();
-            this.player.setVolume(this.videoVolume || 50); // Restore to last volume
-            this.videoMuted = false;
-        } else {
-            this.player.mute();
+        // Set volume (0-100)
+setPlayerVolume(newVolume) {
+    const volume = parseInt(newVolume);
+    this.videoVolume = volume;
+    
+    if (this.player && this.player.setVolume) {
+        this.player.setVolume(volume);
+        
+        // Update mute state
+        if (volume === 0) {
             this.videoMuted = true;
+        } else {
+            this.videoMuted = false;
+            this.volumeBeforeMute = volume; // Remember volume when unmuting
         }
     }
-        },
+},
+
+// Updated toggleVideoPlay method (keep existing but add interval logic)
+toggleVideoPlay() {
+    if (this.player && this.player.getPlayerState) {
+        if (this.videoPlaying) {
+            this.player.pauseVideo();
+            this.videoPlaying = false;
+            
+            // Clear interval when paused
+            if (this.updateTimeInterval) {
+                clearInterval(this.updateTimeInterval);
+                this.updateTimeInterval = null;
+            }
+        } else {
+            this.player.playVideo();
+            this.videoPlaying = true;
+        }
+    }
+},
+
+
+// Updated toggleVideoMute method
+toggleVideoMute() {
+    if (this.player) {
+        if (this.videoMuted) {
+            // Unmute and restore previous volume
+            if (this.player.unMute) this.player.unMute();
+            if (this.player.setVolume) this.player.setVolume(this.volumeBeforeMute || 50);
+            
+            this.videoMuted = false;
+            this.videoVolume = this.volumeBeforeMute || 50;
+        } else {
+            // Mute and remember current volume
+            this.volumeBeforeMute = this.videoVolume;
+            
+            if (this.player.mute) this.player.mute();
+            
+            this.videoMuted = true;
+            this.videoVolume = 0;
+        }
+    }
+},
 
    enterApp() {
     this.showLanding = false;
@@ -1210,14 +1283,7 @@ setupActivityTracking() {
     this.$watch('currentGroup', trackToolChange);
 },
 
-        setPlayerVolume(newVolume) {
-    this.videoVolume = newVolume;
-    if (this.player && this.player.setVolume) {
-        this.player.setVolume(parseInt(newVolume));
-        // Update mute state based on volume
-        this.videoMuted = (newVolume == 0);
-    }
-},
+        
 
         
 
