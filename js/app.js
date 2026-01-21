@@ -646,21 +646,12 @@ setupActivityTracking() {
             chartInstance: null,
 
             // Initialize: Load history from LocalStorage
-            init() 
-                // check if user previously entered
-    const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
-
-    // If they entered before, skip landing page
-    if (hasEnteredBefore) {
-        this.showLanding = false;
-        this.setupActivityTracking(); // This line ensures tracking starts
-    }
-
-                try {
-                    const saved = localStorage.getItem('bilingual_culture_history');
-                    if (saved) this.history = JSON.parse(saved);
-                } catch (e) { console.error("Load Error", e); }
-            },
+           init() {
+    try {
+        const saved = localStorage.getItem('bilingual_culture_history');
+        if (saved) this.history = JSON.parse(saved);
+    } catch (e) { console.error("Load Error", e); }
+},
 
             // The Check-In Logic
             submitCheckin() {
