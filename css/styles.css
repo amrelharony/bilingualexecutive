@@ -314,3 +314,51 @@ input[type="range"]::-moz-range-thumb { /* Added for Firefox */
         -webkit-touch-callout: none;
     }
 }
+
+/* Fullscreen styles */
+:fullscreen .video-controls-bar {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
+}
+
+:-webkit-full-screen .video-controls-bar {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
+}
+
+:-moz-full-screen .video-controls-bar {
+    padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
+}
+
+/* Make video container fill the screen when in fullscreen */
+:fullscreen .group {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+}
+
+:-webkit-full-screen .group {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+}
+
+:-moz-full-screen .group {
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+}
+
+/* Optional: Hide other UI elements when in fullscreen */
+:fullscreen .fixed,
+:-webkit-full-screen .fixed,
+:-moz-full-screen .fixed {
+    display: none !important;
+}
