@@ -16,7 +16,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-<script src="https://cdn.tailwindcss.com"></script>
 
    <!-- Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -263,56 +262,6 @@
 
         <!-- Tool Content Container -->
         <div class="flex-1 overflow-y-auto p-4 md:p-8">
-            <!-- PASTE YOUR EXISTING TOOL DIVS HERE (Simulator, Assessment, etc.) -->
-            <!-- Ensure they all use x-show="currentTab === '...'" -->
-        </div>
-    </div>
-
-</main>
-
-        
-            <!-- Floating Navigation Dock for Desktop/Tablet -->
-<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden">
-    <div class="flex items-center gap-1 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl shadow-black/50">
-        
-        <template x-for="group in navGroups" :key="group.id">
-            <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
-                    class="relative px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
-                    :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
-                
-                <i :class="group.icon" class="text-lg mb-0.5 transition-transform group-active:scale-90"></i>
-                <span class="text-[9px] font-bold uppercase tracking-widest" x-text="group.label"></span>
-                
-                <!-- Active Indicator Dot -->
-                <div x-show="currentGroup === group.id" 
-                     class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
-            </button>
-        </template>
-
-    </div>
-</div>
-
-<!-- Mobile Navigation Dock -->
-<div class="md:hidden fixed bottom-4 left-0 right-0 z-40 px-4 pb-safe">
-    <div class="flex items-center justify-center gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-1 shadow-2xl shadow-black/50 mx-auto max-w-md">
-        <template x-for="group in navGroups" :key="group.id">
-            <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
-                    class="relative px-3 py-2.5 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0"
-                    :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
-                
-                <i :class="group.icon" class="text-sm mb-0.5 transition-transform group-active:scale-90"></i>
-                <span class="text-[8px] font-bold uppercase tracking-widest truncate w-full text-center" x-text="group.label"></span>
-                
-                <!-- Active Indicator Dot -->
-                <div x-show="currentGroup === group.id" 
-                     class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
-            </button>
-        </template>
-    </div>
-</div>
-        
-      
-
             <!-- SIMULATOR TAB -->
             <div x-show="currentTab === 'simulator'" x-cloak class="max-w-4xl mx-auto">
                 
@@ -910,34 +859,7 @@
                     <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg blur opacity-20 -z-10"></div>
                 </div>
 
-            </div>
-
-            <!-- ARCHITECT CONSOLE (VIP ONLY) -->
-            <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
-                <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-microchip text-9xl text-hotpink"></i></div>
-                    <h2 class="font-mono text-3xl font-bold text-hotpink mb-2 flex items-center"><i class="fa-solid fa-user-secret mr-3"></i>VIP ARCHITECT CONSOLE</h2>
-                    <p class="text-sm text-slate-300 font-mono max-w-2xl relative z-10">ACCESS GRANTED. Welcome to the Command Center.</p>
-                </div>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
-                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">JSON: Data Product Contract</h3>
-                        <div class="bg-black p-4 rounded text-xs text-green-400 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner">
-                            <pre x-text="vipJson"></pre>
-                        </div>
-                        <button @click="copyToClipboard(vipJson, 'Schema')" class="w-full border border-slate-600 hover:bg-slate-700 text-slate-300 text-xs font-mono py-3 rounded transition-colors flex items-center justify-center gap-2"><i class="fa-regular fa-copy"></i> COPY SCHEMA</button>
-                    </div>
-                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
-                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">PROMPT: The Boardroom Script</h3>
-                        <div class="bg-black p-4 rounded text-xs text-blue-300 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner h-32">
-                            <pre x-text="vipPrompt"></pre>
-                        </div>
-                        <button @click="copyToClipboard(vipPrompt, 'Prompt')" class="w-full bg-hotpink hover:bg-pink-600 text-white font-bold py-3 rounded text-xs font-mono transition-all flex items-center justify-center gap-2 shadow-glow-vip"><i class="fa-solid fa-robot"></i> COPY PROMPT</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ASSESSMENT -->
+                                <!-- ASSESSMENT -->
             <div x-show="currentTab === 'assessment'" x-cloak class="max-w-4xl mx-auto">
 
                                 <!-- TEAM COLLABORATION INTERFACE -->
@@ -1385,16 +1307,79 @@
                         <p class="text-[10px] text-textMuted mt-4">Opens directly in WhatsApp</p>
                     </div>
 
+
+                    <!-- ARCHITECT CONSOLE (VIP ONLY) -->
+            <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
+                <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-microchip text-9xl text-hotpink"></i></div>
+                    <h2 class="font-mono text-3xl font-bold text-hotpink mb-2 flex items-center"><i class="fa-solid fa-user-secret mr-3"></i>VIP ARCHITECT CONSOLE</h2>
+                    <p class="text-sm text-slate-300 font-mono max-w-2xl relative z-10">ACCESS GRANTED. Welcome to the Command Center.</p>
                 </div>
-            </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
+                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">JSON: Data Product Contract</h3>
+                        <div class="bg-black p-4 rounded text-xs text-green-400 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner">
+                            <pre x-text="vipJson"></pre>
+                        </div>
+                        <button @click="copyToClipboard(vipJson, 'Schema')" class="w-full border border-slate-600 hover:bg-slate-700 text-slate-300 text-xs font-mono py-3 rounded transition-colors flex items-center justify-center gap-2"><i class="fa-regular fa-copy"></i> COPY SCHEMA</button>
+                    </div>
+                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
+                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">PROMPT: The Boardroom Script</h3>
+                        <div class="bg-black p-4 rounded text-xs text-blue-300 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner h-32">
+                            <pre x-text="vipPrompt"></pre>
+                        </div>
+                        <button @click="copyToClipboard(vipPrompt, 'Prompt')" class="w-full bg-hotpink hover:bg-pink-600 text-white font-bold py-3 rounded text-xs font-mono transition-all flex items-center justify-center gap-2 shadow-glow-vip"><i class="fa-solid fa-robot"></i> COPY PROMPT</button>
+                    </div>
+                </div>
+            
+        </div>  
+    </div>  
+    
+</main>  
 
-        </main>
-
-
+        
+            <!-- Floating Navigation Dock for Desktop/Tablet -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden">
+    <div class="flex items-center gap-1 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl shadow-black/50">
+        
+        <template x-for="group in navGroups" :key="group.id">
+            <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
+                    class="relative px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
+                    :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+                
+                <i :class="group.icon" class="text-lg mb-0.5 transition-transform group-active:scale-90"></i>
+                <span class="text-[9px] font-bold uppercase tracking-widest" x-text="group.label"></span>
+                
+                <!-- Active Indicator Dot -->
+                <div x-show="currentGroup === group.id" 
+                     class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
+            </button>
+        </template>
 
     </div>
+</div>
 
-     
+<!-- Mobile Navigation Dock -->
+<div class="md:hidden fixed bottom-4 left-0 right-0 z-40 px-4 pb-safe">
+    <div class="flex items-center justify-center gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-1 shadow-2xl shadow-black/50 mx-auto max-w-md">
+        <template x-for="group in navGroups" :key="group.id">
+            <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
+                    class="relative px-3 py-2.5 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0"
+                    :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+                
+                <i :class="group.icon" class="text-sm mb-0.5 transition-transform group-active:scale-90"></i>
+                <span class="text-[8px] font-bold uppercase tracking-widest truncate w-full text-center" x-text="group.label"></span>
+                
+                <!-- Active Indicator Dot -->
+                <div x-show="currentGroup === group.id" 
+                     class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
+            </button>
+        </template>
+    </div>
+</div>
+        
+      
+
     <!-- Service Worker -->
 
     <script>
