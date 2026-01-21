@@ -1064,6 +1064,115 @@
             <!-- RESOURCES -->
             <div x-show="currentTab === 'resources'" x-cloak class="max-w-4xl mx-auto"><h2 class="font-mono text-2xl font-bold mb-6 text-green-300 flex items-center"><i class="fa-solid fa-book-bookmark mr-3"></i>Recommended Resources</h2><div class="bg-card border border-slate-700 rounded-xl p-6"><ul class="space-y-4"><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Project to Product (Mik Kersten)</h4><p class="text-sm text-textMuted">Definitive guide to the "Flow Framework".</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Team Topologies (Skelton & Pais)</h4><p class="text-sm text-textMuted">Blueprint for structuring squads.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Sooner Safer Happier (Jonathan Smart)</h4><p class="text-sm text-textMuted">Agile for regulated banks.</p></li><li class="p-4 border-b border-slate-700 last:border-0"><h4 class="text-white font-bold">Data Mesh (Zhamak Dehghani)</h4><p class="text-sm text-textMuted">Data as a Product.</p></li></ul></div></div>
 
+          <!-- KPI DESIGNER TAB -->
+<div x-show="currentTab === 'kpi'" x-cloak class="max-w-3xl mx-auto">
+    
+    <div class="text-center mb-8">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">Outcome Generator</h2>
+        <p class="text-textMuted text-sm">Don't write the prompt. Let the machine build the prompt.</p>
+    </div>
+
+    <!-- MAIN CARD -->
+    <div class="bg-card border border-slate-700 rounded-xl p-8 relative overflow-hidden shadow-2xl min-h-[450px] flex flex-col">
+        
+        <!-- Progress Bar (Visible only on Steps 1-4) -->
+        <div x-show="kpiDesigner.step < 5" class="flex gap-2 mb-8">
+            <template x-for="i in 4">
+                <div class="h-1 flex-1 rounded-full transition-all duration-500" 
+                     :class="kpiDesigner.step >= i ? 'bg-green-500' : 'bg-slate-700'"></div>
+            </template>
+        </div>
+
+        <!-- STEP 1: THE PROJECT (Output) -->
+        <div x-show="kpiDesigner.step === 1" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-x-10" x-transition:enter-end="opacity-100 translate-x-0">
+            <label class="block text-xs font-mono text-green-400 font-bold uppercase mb-2">Step 1/4: The Output</label>
+            <h3 class="text-xl font-bold text-white mb-4">What are you being asked to build?</h3>
+            <input type="text" x-model="kpiDesigner.form.project" @keydown.enter="kpiDesigner.next()"
+                   placeholder="e.g. A new Mobile Banking App" 
+                   class="w-full bg-dark border border-slate-600 rounded p-4 text-white focus:border-green-400 focus:outline-none mb-6">
+            
+            <div class="grid grid-cols-2 gap-3">
+                <template x-for="preset in kpiDesigner.presets">
+                    <button @click="kpiDesigner.quickFill(preset)" class="text-left text-xs p-3 rounded border border-slate-700 bg-slate-800/50 hover:border-green-500 hover:text-white text-slate-400 transition-all">
+                        <span class="block font-bold text-white" x-text="preset.label"></span>
+                        <span class="opacity-50 text-[10px]">Autofill Demo</span>
+                    </button>
+                </template>
+            </div>
+        </div>
+
+        <!-- STEP 2: THE WHO (User) -->
+        <div x-show="kpiDesigner.step === 2" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-x-10" x-transition:enter-end="opacity-100 translate-x-0">
+            <label class="block text-xs font-mono text-green-400 font-bold uppercase mb-2">Step 2/4: The Customer</label>
+            <h3 class="text-xl font-bold text-white mb-4">Who is going to use this?</h3>
+            <p class="text-xs text-slate-400 mb-4">Be specific. "Everyone" is the wrong answer.</p>
+            <input type="text" x-model="kpiDesigner.form.who" @keydown.enter="kpiDesigner.next()"
+                   placeholder="e.g. Small Business Owners needing cashflow" 
+                   class="w-full bg-dark border border-slate-600 rounded p-4 text-white focus:border-green-400 focus:outline-none">
+        </div>
+
+        <!-- STEP 3: THE PAIN (Problem) -->
+        <div x-show="kpiDesigner.step === 3" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-x-10" x-transition:enter-end="opacity-100 translate-x-0">
+            <label class="block text-xs font-mono text-green-400 font-bold uppercase mb-2">Step 3/4: The Friction</label>
+            <h3 class="text-xl font-bold text-white mb-4">Why do they hate the current process?</h3>
+            <textarea x-model="kpiDesigner.form.pain" 
+                      placeholder="e.g. It takes 3 weeks to get approved and they have to fax documents." 
+                      class="w-full h-32 bg-dark border border-slate-600 rounded p-4 text-white focus:border-green-400 focus:outline-none"></textarea>
+        </div>
+
+        <!-- STEP 4: THE VALUE (Goal) -->
+        <div x-show="kpiDesigner.step === 4" x-transition:enter="transition ease-out duration-300 transform" x-transition:enter-start="opacity-0 translate-x-10" x-transition:enter-end="opacity-100 translate-x-0">
+            <label class="block text-xs font-mono text-green-400 font-bold uppercase mb-2">Step 4/4: The Business Value</label>
+            <h3 class="text-xl font-bold text-white mb-4">What does the Bank get out of this?</h3>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <button @click="kpiDesigner.form.value = 'Reduce Cost to Serve'" :class="kpiDesigner.form.value === 'Reduce Cost to Serve' ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-3 rounded border border-slate-600 text-xs font-bold transition-all">Reduce Cost</button>
+                <button @click="kpiDesigner.form.value = 'Increase Revenue / Sales'" :class="kpiDesigner.form.value === 'Increase Revenue / Sales' ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-3 rounded border border-slate-600 text-xs font-bold transition-all">Increase Revenue</button>
+                <button @click="kpiDesigner.form.value = 'Reduce Compliance Risk'" :class="kpiDesigner.form.value === 'Reduce Compliance Risk' ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-3 rounded border border-slate-600 text-xs font-bold transition-all">Reduce Risk</button>
+                <button @click="kpiDesigner.form.value = 'Increase Velocity (Speed)'" :class="kpiDesigner.form.value === 'Increase Velocity (Speed)' ? 'bg-green-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-3 rounded border border-slate-600 text-xs font-bold transition-all">Increase Speed</button>
+            </div>
+            <input type="text" x-model="kpiDesigner.form.value" placeholder="Or type custom value..." class="w-full bg-dark border border-slate-600 rounded p-3 text-white text-sm focus:border-green-400 focus:outline-none">
+        </div>
+
+        <!-- STEP 5: THE RESULT (The Prompt) -->
+        <div x-show="kpiDesigner.step === 5" x-transition:enter="transition ease-out duration-500 transform" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" class="h-full flex flex-col">
+            
+            <div x-show="kpiDesigner.loading" class="flex-1 flex flex-col items-center justify-center text-green-400">
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
+                <p class="font-mono text-xs">ENGINEERING PROMPT...</p>
+            </div>
+
+            <div x-show="!kpiDesigner.loading" class="flex-1 flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-white text-lg"><i class="fa-solid fa-robot mr-2 text-green-400"></i>Prompt Generated</h3>
+                    <button @click="kpiDesigner.reset()" class="text-xs text-slate-500 hover:text-white">Start Over</button>
+                </div>
+
+                <div class="bg-black p-4 rounded-lg border-l-4 border-green-500 flex-1 overflow-y-auto max-h-[300px] font-mono text-xs text-slate-300 whitespace-pre-wrap leading-relaxed shadow-inner" x-text="kpiDesigner.generatedPrompt"></div>
+
+                <button @click="kpiDesigner.copyPrompt()" class="mt-6 w-full bg-green-600 hover:bg-green-500 text-white font-bold py-4 rounded-lg shadow-glow transition-all flex items-center justify-center gap-2 group">
+                    <i class="fa-regular fa-copy group-hover:scale-110 transition-transform"></i> COPY TO CLIPBOARD
+                </button>
+                <p class="text-center text-[10px] text-slate-500 mt-2">Ready to paste into ChatGPT / Claude / Gemini.</p>
+            </div>
+        </div>
+
+        <!-- NAV BUTTONS (Bottom) -->
+        <div x-show="kpiDesigner.step < 5" class="mt-auto pt-8 flex justify-between border-t border-slate-700/50">
+            <button @click="kpiDesigner.back()" x-show="kpiDesigner.step > 1" class="text-slate-400 hover:text-white text-sm font-mono flex items-center gap-2">
+                <i class="fa-solid fa-arrow-left"></i> Back
+            </button>
+            <div x-show="kpiDesigner.step === 1"></div> <!-- Spacer -->
+            
+            <button @click="kpiDesigner.step === 4 ? kpiDesigner.generate() : kpiDesigner.next()" 
+                    class="bg-white hover:bg-slate-200 text-dark font-bold px-6 py-2 rounded-lg text-sm transition-all flex items-center gap-2">
+                <span x-text="kpiDesigner.step === 4 ? 'GENERATE PROMPT' : 'NEXT'"></span>
+                <i class="fa-solid" :class="kpiDesigner.step === 4 ? 'fa-wand-magic-sparkles' : 'fa-arrow-right'"></i>
+            </button>
+        </div>
+
+    </div>
+</div>
+            
             <!-- COMMUNITY -->
             <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
                 <div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl relative overflow-hidden">
