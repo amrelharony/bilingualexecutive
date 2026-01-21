@@ -864,30 +864,48 @@ teamManager: {
         // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
         // ------------------------------------------------------------------
-        navItems: [ 
-            { id: 'dashboard', label: 'Dashboard', icon: 'fa-solid fa-home' }, 
-            { id: 'simulator', label: 'Meridian Sim', icon: 'fa-solid fa-chess-knight' }, 
-            { id: 'whatif', label: 'Scenario Planner', icon: 'fa-solid fa-chess-rook' },
-            { id: 'roleplay', label: 'Role-Play Dojo', icon: 'fa-solid fa-user-tie' },
-            { id: 'sandbox', label: 'Architecture Sim', icon: 'fa-solid fa-shapes' },
-            { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse' },
-            { id: 'quiz', label: 'Flashcards', icon: 'fa-solid fa-graduation-cap' },
-            { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check' }, 
-            { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language' }, 
-            { id: 'matrix', label: 'Strategy Matrix', icon: 'fa-solid fa-chess-board' }, 
-            { id: 'compass', label: 'Compass', icon: 'fa-regular fa-compass' }, 
-            { id: 'canvas', label: 'Data Canvas', icon: 'fa-solid fa-file-contract' }, 
-            { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint' }, 
-            { id: 'lighthouse', label: 'Lighthouse', icon: 'fa-solid fa-lightbulb' }, 
-            { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king' }, 
-            { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox' }, 
-            { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book-open' }, 
-            { id: 'resources', label: 'Resources', icon: 'fa-solid fa-book-bookmark' }, 
-            { id: 'roi', label: 'ROI Calculator', icon: 'fa-solid fa-calculator', vip: false },
-            { id: 'kpi', label: 'Outcome Generator', icon: 'fa-solid fa-wand-magic-sparkles' },
-            { id: 'community', label: 'Community', icon: 'fa-solid fa-users' }, 
-            { id: 'architect', label: 'Architect Console', icon: 'fa-solid fa-microchip text-hotpink', vip: true } 
-        ],
+       // Inside Alpine.data('toolkit', ...)
+
+currentGroup: 'radar', // Default view
+
+// New Navigation Groups
+navGroups: [
+    { id: 'radar', label: 'Radar', icon: 'fa-solid fa-radar', desc: 'Diagnostics & Metrics' },
+    { id: 'academy', label: 'Academy', icon: 'fa-solid fa-graduation-cap', desc: 'Learning & Audio' },
+    { id: 'forge', label: 'Forge', icon: 'fa-solid fa-hammer', desc: 'Builders & Tools' },
+    { id: 'sims', label: 'Sims', icon: 'fa-solid fa-gamepad', desc: 'Roleplay & Scenarios' }
+],
+
+// Group the tools
+tools: {
+    radar: [
+        { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check', color: 'text-primary' },
+        { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
+        { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' },
+        { id: 'compass', label: 'Strategy Compass', icon: 'fa-regular fa-compass', color: 'text-purple-400' },
+        { id: 'matrix', label: 'Decision Matrix', icon: 'fa-solid fa-chess-board', color: 'text-blue-400' }
+    ],
+    academy: [
+        { id: 'manual', label: 'Field Manual', icon: 'fa-solid fa-headphones', color: 'text-white' }, // NotebookLM Feature
+        { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language', color: 'text-blue-300' },
+        { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king', color: 'text-yellow-400' },
+        { id: 'quiz', label: 'Flashcards', icon: 'fa-solid fa-layer-group', color: 'text-cyan-400' },
+        { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book', color: 'text-slate-400' }
+    ],
+    forge: [
+        { id: 'kpi', label: 'Outcome Gen', icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400' },
+        { id: 'lighthouse', label: 'Lighthouse Kit', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
+        { id: 'canvas', label: 'Data Product', icon: 'fa-solid fa-file-contract', color: 'text-blue-500' },
+        { id: 'roi', label: 'ROI Calc', icon: 'fa-solid fa-calculator', color: 'text-green-500' },
+        { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox', color: 'text-red-400' }
+    ],
+    sims: [
+        { id: 'simulator', label: 'Case Study', icon: 'fa-solid fa-chess-knight', color: 'text-white' },
+        { id: 'roleplay', label: 'Negotiation Dojo', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
+        { id: 'whatif', label: 'War Games', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
+        { id: 'sandbox', label: 'Arch Sandbox', icon: 'fa-solid fa-shapes', color: 'text-cyan-500' }
+    ]
+},
         
         dashboardTools: [ 
             { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
