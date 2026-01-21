@@ -125,31 +125,43 @@
                 AND SURVIVE THE FINTECH TSUNAMI
             </p>
 
-            <!-- VIDEO PLAYER CONTAINER -->
-            <div class="w-full aspect-video bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] mb-8 relative group">
-                
-                <!-- The YouTube Iframe -->
-                <!-- Note: x-bind:src swaps the URL to unmute/mute -->
-                <iframe class="w-full h-full pointer-events-none" 
-                        :src="`https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=${videoMuted ? 1 : 0}&controls=0&modestbranding=1&loop=1&playlist=dQw4w9WgXcQ`" 
-                        title="Book Trailer" 
-                        frameborder="0" 
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                        allowfullscreen>
-                </iframe>
+          <!-- VIDEO PLAYER CONTAINER -->
+<div class="w-full aspect-video bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] mb-8 relative group">
+    
+    <!-- 1. The API Target Div -->
+    <div id="bilingual-player" class="w-full h-full"></div>
 
-                <!-- 1. Transparent Shield: Blocks clicks to YouTube -->
-                <div class="absolute inset-0 z-10"></div>
+    <!-- 2. Transparent Shield (Blocks clicks to YouTube) -->
+    <!-- We allow clicks to pass through ONLY to our custom buttons via z-index -->
+    <div class="absolute inset-0 z-10 bg-transparent" @click="toggleVideoPlay()"></div>
 
-                <!-- 2. Custom Sound Toggle Button (Sits on top of shield) -->
-                <button @click="videoMuted = !videoMuted" 
-                        class="absolute bottom-4 right-4 z-20 bg-black/50 hover:bg-red-600 text-white w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all border border-white/20">
-                    <i class="fa-solid" :class="videoMuted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
-                </button>
+    <!-- 3. Custom Controls Overlay (Sits on top of shield) -->
+    <div class="absolute bottom-4 right-4 z-20 flex gap-3">
+        
+        <!-- Play/Pause Button -->
+        <button @click.stop="toggleVideoPlay()" 
+                class="bg-black/50 hover:bg-white hover:text-black text-white w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all border border-white/20">
+            <i class="fa-solid" :class="videoPlaying ? 'fa-pause' : 'fa-play'"></i>
+        </button>
 
-                <!-- Cinematic Vignette Overlay -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-0"></div>
-            </div>
+        <!-- Mute/Unmute Button -->
+        <button @click.stop="toggleVideoMute()" 
+                class="bg-black/50 hover:bg-white hover:text-black text-white w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all border border-white/20">
+            <i class="fa-solid" :class="videoMuted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
+        </button>
+    </div>
+
+    <!-- Big Center Play Button (Only shows when paused) -->
+    <div x-show="!videoPlaying" 
+         class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+        <div class="bg-black/50 p-6 rounded-full border border-white/20 backdrop-blur-sm">
+            <i class="fa-solid fa-play text-4xl text-white pl-1"></i>
+        </div>
+    </div>
+
+    <!-- Cinematic Vignette Overlay -->
+    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-0"></div>
+</div>
 
             <!-- Enter Button -->
             <button @click="enterApp()" 
