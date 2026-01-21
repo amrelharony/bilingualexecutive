@@ -127,7 +127,7 @@ initYouTubePlayer() {
                 'controls': 0,           // Hide YouTube's native controls
                 'rel': 0,
                 'modestbranding': 1,
-                'loop': 1,
+                'loop': 0,
                 'playlist': '8GvrODrkQ7M',
                 'playsinline': 1,
                 'enablejsapi': 1         // CRITICAL: Enable JavaScript API
