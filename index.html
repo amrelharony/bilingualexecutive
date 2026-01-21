@@ -1046,6 +1046,51 @@
                             </button>
                         </div>
 
+                <!-- STRATEGIC AI PROMPT BOX -->
+<div x-show="assessmentSubmitted" class="mt-8 bg-slate-900 border border-primary/30 p-6 rounded-xl relative overflow-hidden group">
+    
+    <!-- Decorative Background Element -->
+    <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+        <i class="fa-solid fa-brain text-9xl text-primary"></i>
+    </div>
+
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-4 relative z-10">
+        <h3 class="font-mono text-white font-bold flex items-center gap-2">
+            <i class="fa-solid fa-microchip text-primary"></i> 
+            STRATEGIC AI ANALYSIS
+        </h3>
+        <span class="text-[10px] uppercase bg-primary/20 text-primary px-2 py-1 rounded border border-primary/30 font-bold tracking-wider">
+            Generated from your Audit
+        </span>
+    </div>
+
+    <!-- The Prompt Preview -->
+    <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-28 overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+        <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="generateAuditPrompt()"></pre>
+    </div>
+
+    <!-- Interactive Copy Button -->
+    <button @click="
+            copyToClipboard(generateAuditPrompt(), 'Board Strategy Prompt');
+            $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> PROMPT COPIED!';
+            $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
+            setTimeout(() => {
+                $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> COPY PROMPT FOR CHATGPT';
+                $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+            }, 2000)
+            " 
+            class="relative z-10 w-full py-4 bg-transparent border border-primary text-primary hover:bg-primary hover:text-dark font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest group-hover:shadow-glow">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> COPY PROMPT FOR CHATGPT
+    </button>
+    
+    <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
+        Takes your specific weak points (Data, Delivery, or Culture) and builds a Board-level defense strategy.
+    </p>
+
+</div>
+                
                     <div class="mt-8 bg-card border border-slate-700 rounded-xl p-6 shadow-glow border-l-4 border-blue-400">
         <div class="flex justify-between items-start">
             <div>
