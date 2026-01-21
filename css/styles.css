@@ -69,3 +69,17 @@ input[type="range"]::-webkit-slider-thumb {
         max-height: 350px !important;
     }
 }
+
+@supports(padding: max(0px)) {
+    .pb-safe {
+        padding-bottom: max(1rem, env(safe-area-inset-bottom));
+    }
+}
+
+/* Mobile-specific grid adjustments */
+@media (max-width: 767px) {
+    .tool-grid-item {
+        min-height: 110px; /* Reduced from default */
+    }
+}
+
