@@ -959,52 +959,46 @@ teamManager: {
         //  THE NEW TALENT MANAGER 
         // ---------------------------------------------------------
 talentManager: {
-    // 1. Behaviors based on the 5 Axes Guide
-    getBehavior(index, val) {
-        const descriptions = [
-            // Tech Fluency
-            ["I fear developers.", "I rely on translators.", "I speak to developers.", "I challenge the architecture.", "I write code."], 
-            // Business Acumen
-            ["I ignore the money.", "I know the budget.", "I understand the P&L.", "I link Code to Cash.", "I model unit economics."], 
-            // Data Literacy
-            ["I trust gut feel.", "I read reports.", "I query data (SQL).", "I interpret patterns.", "I build data products."], 
-            // Empathy / EQ
-            ["I am a robot.", "I avoid friction.", "I navigate politics.", "I manage stakeholders.", "I rewire the org culture."], 
-            // Change Tolerance
-            ["I panic in ambiguity.", "I prefer stability.", "I adapt to change.", "I drive the change.", "I thrive in chaos."] 
-        ];
-        return descriptions[index][val - 1];
-    },
+            // 1. Behaviors
+            getBehavior(index, val) {
+                const descriptions = [
+                    ["I fear developers.", "I rely on translators.", "I speak to developers.", "I challenge the architecture.", "I write code."], 
+                    ["I ignore the money.", "I know the budget.", "I understand the P&L.", "I link Code to Cash.", "I model unit economics."], 
+                    ["I trust gut feel.", "I read reports.", "I query data (SQL).", "I interpret patterns.", "I build data products."], 
+                    ["I am a robot.", "I avoid friction.", "I navigate politics.", "I manage stakeholders.", "I rewire the org culture."], 
+                    ["I panic in ambiguity.", "I prefer stability.", "I adapt to change.", "I drive the change.", "I thrive in chaos."] 
+                ];
+                return descriptions[index][val - 1];
+            },
 
-    // 2. Archetype Logic: The Rule of Spikes
-    getArchetype() {
-        const skills = this.talentSkills; 
-        if(!skills) return { label: "Loading...", icon: "" };
+            // 2. Archetype Logic (NOW ACCEPTS SKILLS AS ARGUMENT)
+            getArchetype(skills) {
+                if(!skills) return { label: "Loading...", icon: "" };
 
-        const tech = skills[0].val; 
-        const biz = skills[1].val;  
-        const eq = skills[3].val;
-        
-        // Calculate Average and Variance to find "Spikes" vs "Generalists"
-        const allScores = skills.map(s => s.val);
-        const isFlat = allScores.every(val => val === 3); // The dreaded 3/5
-        
-        if (isFlat) return { label: "MEDIOCRE GENERALIST", icon: "fa-solid fa-circle-pause", desc: "Warning: Jack of all trades, master of none." };
+                // Use the passed argument, not 'this'
+                const tech = skills[0].val; 
+                const biz = skills[1].val;  
+                const eq = skills[3].val;
+                
+                const allScores = skills.map(s => s.val);
+                const isFlat = allScores.every(val => val === 3); 
+                
+                if (isFlat) return { label: "MEDIOCRE GENERALIST", icon: "fa-solid fa-circle-pause", desc: "Warning: Jack of all trades, master of none." };
 
-        if (tech >= 4 && biz >= 4) return { label: "THE BILINGUAL", icon: "fa-solid fa-crown", desc: "Unicorn. Can lead the entire unit." };
-        if (tech >= 4 && eq <= 2) return { label: "TECHNICAL SPIKE", icon: "fa-solid fa-code", desc: "Great implementer. Needs a Product Owner partner." };
-        if (biz >= 4 && tech <= 2) return { label: "BUSINESS SPIKE", icon: "fa-solid fa-briefcase", desc: "Great vision. Needs a strong Tech Lead." };
-        if (eq >= 4 && biz >= 3) return { label: "CULTURAL GLUE", icon: "fa-solid fa-handshake", desc: "Essential for unblocking political friction." };
-        
-        return { label: "GROWTH PROFILE", icon: "fa-solid fa-seedling", desc: "Developing specific spikes." };
-    },
+                if (tech >= 4 && biz >= 4) return { label: "THE BILINGUAL", icon: "fa-solid fa-crown", desc: "Unicorn. Can lead the entire unit." };
+                if (tech >= 4 && eq <= 2) return { label: "TECHNICAL SPIKE", icon: "fa-solid fa-code", desc: "Great implementer. Needs a Product Owner partner." };
+                if (biz >= 4 && tech <= 2) return { label: "BUSINESS SPIKE", icon: "fa-solid fa-briefcase", desc: "Great vision. Needs a strong Tech Lead." };
+                if (eq >= 4 && biz >= 3) return { label: "CULTURAL GLUE", icon: "fa-solid fa-handshake", desc: "Essential for unblocking political friction." };
+                
+                return { label: "GROWTH PROFILE", icon: "fa-solid fa-seedling", desc: "Developing specific spikes." };
+            },
 
-    // 3. Squad Architect Prompt
-    generateSystemPrompt() {
-        const skills = this.talentSkills;
-        const arch = this.getArchetype();
-        
-        return `ACT AS: An Agile Talent Architect and Squad Designer.
+            // 3. Squad Architect Prompt (NOW ACCEPTS SKILLS AS ARGUMENT)
+            generateSystemPrompt(skills) {
+                if(!skills) return "";
+                const arch = this.getArchetype(skills);
+                
+                return `ACT AS: An Agile Talent Architect and Squad Designer.
         
 CONTEXT: We are building a "Bilingual Bank". We adhere to the "Rule of Spikes": We do not hire Mediocre Generalists (3/5 everywhere). We hire complementary spikes.
 
@@ -1023,8 +1017,8 @@ YOUR TASK:
 3. Interview Question: Give me one "Killer Question" to verify their strongest spike is real and not just a CV claim.
 
 TONE: Decisive, Analytical, No Fluff.`;
-    }
-},
+            }
+        },
         
         // ------------------------------------------------------------------
         //  API SANDBOX
