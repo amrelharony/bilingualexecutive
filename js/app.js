@@ -982,7 +982,8 @@ talentManager: {
             getBehavior(index, val) {
                 const descriptions = [
                     ["I fear developers.", "I rely on translators.", "I speak to developers.", "I challenge the architecture.", "I write code."], 
-                    ["I ignore the money.", "I know the budget.", "I understand the P&L.", "I link Code to Cash.", "I model unit economics."], 
+                        return "⚠️ PROCEED WITH CAUTION: ...";
+    ["I ignore the money.", "I know the budget.", "I understand the P&L.", "I link Code to Cash.", "I model unit economics."], 
                     ["I trust gut feel.", "I read reports.", "I query data (SQL).", "I interpret patterns.", "I build data products."], 
                     ["I am a robot.", "I avoid friction.", "I navigate politics.", "I manage stakeholders.", "I rewire the org culture."], 
                     ["I panic in ambiguity.", "I prefer stability.", "I adapt to change.", "I drive the change.", "I thrive in chaos."] 
@@ -1096,7 +1097,8 @@ getVerdict(skills) {
     if (isFlat) return "🚫 REJECT: This is a Mediocre Generalist profile. In a regulated industry facing Fintech disruption, we need decisive spikes, not balanced mediocrity.";
     if (isSpiky) return "✅ HIRE WITH CONDITIONS: This profile has clear spikes that can be weaponized. Build the complementary squad around their gaps.";
     return "⚠️ PROCEED WITH CAUTION: Profile lacks extreme spikes. Validate claims thoroughly.";
-},
+}
+    },
     
         // ------------------------------------------------------------------
         //  API SANDBOX
@@ -1790,6 +1792,13 @@ copyToClipboard(text, label = "Content") {
         },
 
 updateTalentChart() {
+    // FIX: Stop if Chart.js isn't loaded yet
+    if (typeof Chart === 'undefined') {
+        console.warn("Chart.js not loaded yet. Retrying...");
+        setTimeout(() => this.updateTalentChart(), 500);
+        return;
+    }
+
     // Wait for DOM to be ready
     setTimeout(() => {
         const ctx = document.getElementById('talentChart');
