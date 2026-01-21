@@ -174,6 +174,13 @@ document.addEventListener('alpine:init', () => {
         player: null, 
 
 
+        // Activity Tracking
+        userActivityCount: 0,
+        pwaTimer: null,
+       isPwaPromptActive: false,
+       userLastActive: Date.now(),
+
+
         currentTab: 'dashboard',
         supabase: null,
         selectedIndustry: "",
@@ -533,6 +540,75 @@ document.addEventListener('alpine:init', () => {
             isCheckinOpen: false,
             answers: { q1: null, q2: null, q3: null },
             chartInstance: null,
+
+
+            // ------------------------------------------------------------------
+// USER ACTIVITY TRACKING FOR PWA PROMPT
+// ------------------------------------------------------------------
+
+// Method to increment activity count
+trackUserActivity() {
+    // Increment the activity counter
+    this.userActivityCount++;
+    
+    // Update last active timestamp
+    this.userLastActive = Date.now();
+    
+    console.log(`User activity count: ${this.userActivityCount}`); // Optional: for debugging
+    
+    // If user has interacted at least 3 times, start the timer
+    if (this.userActivityCount >= 3 && !this.pwaTimer && !this.isPwaPromptActive) {
+        this.startPwaTimer();
+    }
+},
+
+// Start the delayed timer
+startPwaTimer() {
+    // Clear any existing timer
+    if (this.pwaTimer) {
+        clearTimeout(this.pwaTimer);
+    }
+    
+    // Set new timer for 5 seconds after 3rd interaction
+    this.pwaTimer = setTimeout(() => {
+        this.showDelayedPwaPrompt();
+    }, 5000); // 5 seconds after 3rd interaction
+},
+
+// Method to show the PWA prompt after conditions are met
+showDelayedPwaPrompt() {
+    // Check if already showing or dismissed
+    if (this.isPwaPromptActive || this.showPwaPrompt) {
+        return;
+    }
+    
+    const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                 window.navigator.standalone || 
+                 document.referrer.includes('android-app://');
+    const dismissed = localStorage.getItem('pwaPromptDismissed');
+    
+    // Conditions for showing prompt
+    if (this.isMobile && !isPWA && !dismissed) {
+        this.showPwaPrompt = true;
+        this.isPwaPromptActive = true;
+        console.log("Showing delayed PWA prompt"); // Optional: for debugging
+    }
+    
+    // Reset timer
+    this.pwaTimer = null;
+},
+
+// Reset activity tracking (if needed)
+resetActivityTracking() {
+    this.userActivityCount = 0;
+    this.userLastActive = Date.now();
+    this.isPwaPromptActive = false;
+    
+    if (this.pwaTimer) {
+        clearTimeout(this.pwaTimer);
+        this.pwaTimer = null;
+    }
+},
 
             // Initialize: Load history from LocalStorage
             init() {
@@ -1015,14 +1091,26 @@ tools: {
             }
         },
 
-        enterApp() {
-            this.showLanding = false;
-            // Stop the video completely to save battery/data
-            if (this.player && this.player.stopVideo) {
-                this.player.stopVideo();
-            }
-            if (navigator.vibrate) navigator.vibrate(50);
-        },
+     enterApp() {
+    this.showLanding = false;
+    // Stop the video completely to save battery/data
+    if (this.player && this.player.stopVideo) {
+        this.player.stopVideo();
+    }
+    if (navigator.vibrate) navigator.vibrate(50);
+    
+    // Start tracking user activity
+    this.setupActivityTracking();
+    
+    // Also set a fallback timer (in case user is not active enough)
+    // This ensures prompt shows after 60 seconds regardless of activity
+    setTimeout(() => {
+        if (!this.isPwaPromptActive && !this.showPwaPrompt) {
+            this.showDelayedPwaPrompt();
+        }
+    }, 60000); // 60 second fallback
+},
+
 
 
         triggerVipSequence() {
