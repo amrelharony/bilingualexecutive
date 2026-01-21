@@ -55,6 +55,20 @@ document.addEventListener('alpine:init', () => {
                         this.teamManager.joinByLink(teamCode);
                     }
                 });
+
+                 // 1. Load YouTube API
+    if (!window.YT) {
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    }
+
+    // 2. Setup Global Callback for when API is ready
+    window.onYouTubeIframeAPIReady = () => {
+        this.initVideoPlayer();
+    };
+},
             }
 
 
@@ -931,12 +945,65 @@ tools: {
         // ------------------------------------------------------------------
         // METHODS
         // ------------------------------------------------------------------
+  
+    // --- VIDEO PLAYER STATE ---
+    ytPlayer: null,
+    videoMuted: true,
+    videoPlaying: true, // Auto-plays by default
+
+    initVideoPlayer() {
+        this.ytPlayer = new YT.Player('bilingual-player', {
+            videoId: 'dQw4w9WgXcQ', // REPLACE THIS with your video ID
+            playerVars: {
+                'autoplay': 1,
+                'controls': 0, // Hide default YouTube controls
+                'modestbranding': 1,
+                'rel': 0,
+                'fs': 0,
+                'playsinline': 1,
+                'loop': 1,
+                'playlist': 'dQw4w9WgXcQ' // Required for loop to work
+            },
+            events: {
+                'onReady': (event) => {
+                    event.target.mute(); // Ensure mute on start
+                    event.target.playVideo();
+                }
+            }
+        });
+    },
+
+    toggleVideoPlay() {
+        if (!this.ytPlayer) return;
+        if (this.videoPlaying) {
+            this.ytPlayer.pauseVideo();
+            this.videoPlaying = false;
+        } else {
+            this.ytPlayer.playVideo();
+            this.videoPlaying = true;
+        }
+    },
+
+    toggleVideoMute() {
+        if (!this.ytPlayer) return;
+        if (this.videoMuted) {
+            this.ytPlayer.unMute();
+            this.videoMuted = false;
+        } else {
+            this.ytPlayer.mute();
+            this.videoMuted = true;
+        }
+    },
+
     enterApp() {
         this.showLanding = false;
-        // Stop video audio when entering app
-        this.videoMuted = true; 
+        // Stop video to save resources/audio
+        if (this.ytPlayer && this.ytPlayer.pauseVideo) {
+            this.ytPlayer.pauseVideo();
+        }
         if (navigator.vibrate) navigator.vibrate(50);
     },
+
 
         triggerVipSequence() {
             this.isVipMode = true;
