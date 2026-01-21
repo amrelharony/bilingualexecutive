@@ -9,17 +9,15 @@ document.addEventListener('alpine:init', () => {
             this.isMobile = window.innerWidth < 768;
             window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
 
-                        // Initialize Supabase Client
+            // Initialize Supabase Client
             if (window.supabase) {
                 const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
                 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
                 this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-                 this.teamManager.supabase = this.supabase; 
-
+                this.teamManager.supabase = this.supabase; 
             } else {
                 console.error("Supabase library not loaded.");
             }
-
             
             // PWA & Install Logic
             const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
@@ -55,51 +53,8 @@ document.addEventListener('alpine:init', () => {
                         this.teamManager.joinByLink(teamCode);
                     }
                 });
-
-// --- YOUTUBE API LOADER (FIXED) ---
-const initPlayer = () => {
-    this.player = new YT.Player('youtube-player', {
-        videoId: '8GvrODrkQ7M',
-        playerVars: {
-            'autoplay': 1,
-            'controls': 0,
-            'rel': 0,
-            'modestbranding': 1,
-            'loop': 1,
-            'playlist': '8GvrODrkQ7M',
-            'playsinline': 1 // Crucial for mobile autoplay
-        },
-        events: {
-            'onReady': (event) => {
-                event.target.mute(); // Mute is required for autoplay
-                event.target.playVideo();
-                this.videoPlaying = true;
-                this.videoMuted = true;
             }
-        }
-    });
-};
 
-// Scenario A: API is already ready (e.g. cached or reload)
-if (window.YT && window.YT.Player) {
-    initPlayer();
-} 
-// Scenario B: API needs to be loaded
-else {
-    // Define the global callback
-    window.onYouTubeIframeAPIReady = () => {
-        initPlayer();
-    };
-
-    // Inject script only if it's not there
-    if (!document.getElementById('yt-api-script')) {
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        tag.id = "yt-api-script"; // Prevent duplicate injection
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-    }
-}
             const challenger = params.get('challenger');
             if (challenger) {
                 try {
@@ -121,7 +76,7 @@ else {
                     });
                 }
                 
-             const savedTeam = localStorage.getItem('bilingual_active_team');
+                const savedTeam = localStorage.getItem('bilingual_active_team');
                 if (savedTeam) {
                     this.teamManager.activeTeam = JSON.parse(savedTeam);
                     this.teamManager.view = 'dashboard';
@@ -130,7 +85,6 @@ else {
                         this.teamManager.fetchResults();
                     });
                 }
-   
             } catch(e) {}
 
             // Watchers
@@ -146,7 +100,59 @@ else {
           
             this.culturalMonitor.init(); 
 
+            // Initialize YouTube Player if on landing page
+            if (this.showLanding) {
+                this.initYouTubePlayer();
+            }
         },
+
+        // YouTube Player Initialization Method
+        initYouTubePlayer() {
+            const initPlayer = () => {
+                this.player = new YT.Player('youtube-player', {
+                    videoId: '8GvrODrkQ7M',
+                    playerVars: {
+                        'autoplay': 1,
+                        'controls': 0,
+                        'rel': 0,
+                        'modestbranding': 1,
+                        'loop': 1,
+                        'playlist': '8GvrODrkQ7M',
+                        'playsinline': 1 // Crucial for mobile autoplay
+                    },
+                    events: {
+                        'onReady': (event) => {
+                            event.target.mute(); // Mute is required for autoplay
+                            event.target.playVideo();
+                            this.videoPlaying = true;
+                            this.videoMuted = true;
+                        }
+                    }
+                });
+            };
+
+            // Scenario A: API is already ready (e.g. cached or reload)
+            if (window.YT && window.YT.Player) {
+                initPlayer();
+            } 
+            // Scenario B: API needs to be loaded
+            else {
+                // Define the global callback
+                window.onYouTubeIframeAPIReady = () => {
+                    initPlayer();
+                };
+
+                // Inject script only if it's not there
+                if (!document.getElementById('yt-api-script')) {
+                    const tag = document.createElement('script');
+                    tag.src = "https://www.youtube.com/iframe_api";
+                    tag.id = "yt-api-script"; // Prevent duplicate injection
+                    const firstScriptTag = document.getElementsByTagName('script')[0];
+                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                }
+            }
+        },
+
 
         // ------------------------------------------------------------------
         // STATE VARIABLES
