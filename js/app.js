@@ -133,21 +133,22 @@ initYouTubePlayer() {
                 'enablejsapi': 1         // CRITICAL: Enable JavaScript API
             },
             events: {
-                'onReady': (event) => {
-                    event.target.mute(); // Start muted
-                    this.videoMuted = true;
-                    this.videoPlaying = false;
-                    
-                    // Get video duration
-                    this.videoDuration = event.target.getDuration();
-                    
-                    // Set initial volume
-                    this.videoVolume = 50;
-                    event.target.setVolume(50);
+'onReady': (event) => {
+    // Do not mute on start
+    this.videoMuted = false;
+    this.videoPlaying = false;
+    
+    // Get video duration
+    this.videoDuration = event.target.getDuration();
+    
+    // Set initial volume
+    this.videoVolume = 50;
+    event.target.setVolume(50);
 
-                     // Initialize fullscreen listeners
-                    this.initFullscreenListeners();
-                },
+    // Initialize fullscreen listeners
+    this.initFullscreenListeners();
+},
+
                 'onStateChange': (event) => {
                     // When video starts playing
                     if (event.data === YT.PlayerState.PLAYING) {
