@@ -111,7 +111,7 @@ document.addEventListener('alpine:init', () => {
         // STATE VARIABLES
         // ------------------------------------------------------------------
         
-        
+        showLanding: true, 
         currentTab: 'dashboard',
         supabase: null,
         selectedIndustry: "",
@@ -928,6 +928,12 @@ tools: {
         // ------------------------------------------------------------------
         // METHODS
         // ------------------------------------------------------------------
+           enterApp() {
+        this.showLanding = false;
+        // Optional: Trigger a sound effect or haptic feedback here
+        if (navigator.vibrate) navigator.vibrate(50);
+    },
+        
         triggerVipSequence() {
             this.isVipMode = true;
             this.showVipIntro = true;
