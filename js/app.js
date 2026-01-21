@@ -14,6 +14,16 @@ document.addEventListener('alpine:init', () => {
         // INITIALIZATION
         // ------------------------------------------------------------------
         init() {
+
+            // check if user previously entered
+const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
+
+// If they entered before, skip landing page
+if (hasEnteredBefore) {
+    this.showLanding = false;
+    this.setupActivityTracking();
+}
+
             this.isMobile = window.innerWidth < 768;
             window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
 
@@ -1086,6 +1096,8 @@ tools: {
 
      enterApp() {
     this.showLanding = false;
+     //  mark that they've entered
+             localStorage.setItem('app_entered', 'true');
     // Stop the video completely to save battery/data
     if (this.player && this.player.stopVideo) {
         this.player.stopVideo();
