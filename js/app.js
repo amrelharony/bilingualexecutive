@@ -218,7 +218,7 @@ initYouTubePlayer() {
             // --- LANDING PAGE STATE ---
         showLanding: true,
         videoPlaying: false,
-        videoMuted: true,
+        videoMuted: false,
         player: null, 
         videoCurrentTime: 0,
         videoDuration: 0,
