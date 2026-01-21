@@ -131,46 +131,48 @@
 <div class="w-full h-[50vh] md:h-[60vh] max-h-[600px] bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] mb-8 relative group">
     
     <!-- Custom Controls Bar (NOW ABOVE THE VIDEO) -->
-    <div class="absolute top-0 left-0 right-0 z-30 bg-gradient-to-b from-black/80 to-transparent p-4">
-        <div class="flex items-center gap-4">
+    <div class="absolute top-0 left-0 right-0 z-30 video-controls-bar p-4 opacity-90 group-hover:opacity-100 transition-opacity duration-300">
+        <div class="flex items-center gap-3 md:gap-4">
             
             <!-- Play/Pause Button -->
             <button @click="toggleVideoPlay()" 
-                    class="bg-white/10 hover:bg-white/20 text-white w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all border border-white/20">
-                <i class="fa-solid" :class="videoPlaying ? 'fa-pause' : 'fa-play'"></i>
+                    class="video-control-btn w-10 h-10 rounded-full flex items-center justify-center text-white">
+                <i class="fa-solid text-sm" :class="videoPlaying ? 'fa-pause' : 'fa-play'"></i>
             </button>
             
             <!-- Time Display -->
-            <div class="flex items-center gap-2 text-xs text-white font-mono">
+            <div class="video-time-display flex items-center gap-1 text-xs text-white font-mono">
                 <span x-text="formatTime(videoCurrentTime)"></span>
                 <span>/</span>
                 <span x-text="formatTime(videoDuration)"></span>
             </div>
             
             <!-- Seek Bar -->
-            <div class="flex-1">
+            <div class="flex-1 mx-2">
                 <input type="range" 
                        x-model="videoCurrentTime"
                        @input="seekVideo($event.target.value)"
                        :max="videoDuration"
                        step="1"
-                       class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white">
+                       class="seek-bar w-full"
+                       :style="'--seek-progress: ' + (videoDuration > 0 ? (videoCurrentTime / videoDuration * 100) : 0) + '%'">
             </div>
             
             <!-- Volume Controls -->
             <div class="flex items-center gap-2">
                 <button @click="toggleVideoMute()" 
-                        class="text-white hover:text-primary">
-                    <i class="fa-solid" :class="videoMuted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
+                        class="video-control-btn w-8 h-8 rounded-full flex items-center justify-center text-white">
+                    <i class="fa-solid text-sm" :class="videoMuted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
                 </button>
                 
                 <!-- Volume Slider -->
-                <input type="range"
+                  <input type="range"
                        x-model="videoVolume"
                        @input="setPlayerVolume($event.target.value)"
                        min="0"
                        max="100"
-                       class="w-20 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white">
+                       class="volume-slider"
+                       :style="'--volume-level: ' + videoVolume + '%'">
             </div>
             
         </div>
@@ -180,7 +182,7 @@
     <div id="youtube-player" class="w-full h-full"></div>
 
     <!-- 2. Video Overlay for Click-to-Play (covers entire video area) -->
-    <div class="absolute inset-0 z-20 cursor-pointer" 
+    <div class="absolute inset-0 video-overlay z-20" 
          @click="toggleVideoPlay()"
          :title="videoPlaying ? 'Pause video' : 'Play video'">
     </div>
