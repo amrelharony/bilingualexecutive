@@ -27,15 +27,17 @@ if (hasEnteredBefore) {
             this.isMobile = window.innerWidth < 768;
             window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
 
+
             // Initialize Supabase Client
-            if (window.supabase) {
-                const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
-                const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
-                this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-                this.teamManager.supabase = this.supabase; 
-            } else {
-                console.error("Supabase library not loaded.");
-            }
+const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
+    
+if (window.supabase) {
+    this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    this.teamManager.supabase = this.supabase; 
+} else {
+    console.error("Supabase library not loaded.");
+}
             
             // PWA & Install Logic
             const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
@@ -128,10 +130,6 @@ this.$watch('talentSkills', () => {
 
             this.culturalMonitor.init(); 
 
-            // Initialize YouTube Player if on landing page
-            if (this.showLanding) {
-                this.initYouTubePlayer();
-            }
 
         },
 
