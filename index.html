@@ -1361,7 +1361,13 @@
     </div>
 
     
-
+<!-- DEBUG: Activity Monitor (remove in production) -->
+<div x-show="false" class="fixed top-20 left-4 bg-black/80 p-2 rounded text-xs font-mono z-[1000]">
+    <div>Activity: <span x-text="userActivityCount"></span></div>
+    <div>Timer: <span x-text="!!pwaTimer"></span></div>
+    <div>Active: <span x-text="isPwaPromptActive"></span></div>
+</div>
+ 
     <!-- Service Worker -->
 
     <script>
