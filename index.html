@@ -280,13 +280,14 @@
     <!-- ACTIVE TOOL RENDERER -->
     <!-- Only show the specific tool UI if one is selected, overlaying the grid -->
     <div x-show="currentTab !== 'dashboard'" 
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="opacity-0 scale-95"
-         x-transition:enter-end="opacity-100 scale-100"
-        class="fixed inset-0 z-50 bg-dark/95 backdrop-blur-xl flex flex-col h-[100dvh] overflow-hidden">
+     x-transition:enter="transition ease-out duration-200"
+     x-transition:enter-start="opacity-0 scale-95"
+     x-transition:enter-end="opacity-100 scale-100"
+     class="fixed inset-0 z-50 bg-dark/95 backdrop-blur-xl overflow-y-auto touch-pan-y">
+
         
         <!-- Tool Header (Sticky) -->
-        <div class="p-4 border-b border-white/10 flex justify-between items-center bg-dark/50">
+        <div class="sticky top-0 z-[60] p-4 border-b border-white/10 flex justify-between items-center bg-slate-900/90 backdrop-blur-md">
             <button @click="currentTab = 'dashboard'" class="text-slate-400 hover:text-white flex items-center gap-2 font-mono text-xs uppercase">
                 <i class="fa-solid fa-chevron-left"></i> Back to Hub
             </button>
@@ -295,8 +296,9 @@
         </div>
 
         <!-- Tool Content Container -->
-        <div class="flex-1 overflow-y-auto p-4 md:p-8">
-            <!-- SIMULATOR TAB -->
+        <div class="min-h-screen p-4 md:p-8 pb-32">
+
+             <!-- SIMULATOR TAB -->
             <div x-show="currentTab === 'simulator'" x-cloak class="max-w-4xl mx-auto">
                 
                 <!-- Intro Screen -->
