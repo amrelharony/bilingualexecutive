@@ -272,7 +272,13 @@ initYouTubePlayer() {
         matrixCoords: { x: 50, y: 50 },
         compassCoords: { x: 50, y: 50 },
         canvasData: { name: '', owner: '', jobs: '', slo1: '' },
-        talentSkills: [ { label: "Tech Fluency", val: 3 }, { label: "P&L Literacy", val: 3 }, { label: "Data Culture", val: 3 }, { label: "Squad Autonomy", val: 3 }, { label: "Change EQ", val: 3 } ],
+talentSkills: [ 
+    { label: "Tech Fluency", val: 3, icon: "fa-solid fa-code" }, 
+    { label: "Business Acumen", val: 3, icon: "fa-solid fa-sack-dollar" }, // Renamed from Financial IQ
+    { label: "Data Literacy", val: 2, icon: "fa-solid fa-table" }, // Renamed from Data Culture
+    { label: "Empathy / EQ", val: 4, icon: "fa-solid fa-heart" }, // Renamed from Political EQ
+    { label: "Change Tolerance", val: 3, icon: "fa-solid fa-wind" } // Renamed from Risk Appetite
+],
         
         talentChartInstance: null,
         gapChartInstance: null,
@@ -952,61 +958,73 @@ teamManager: {
                 // ---------------------------------------------------------
         //  THE NEW TALENT MANAGER 
         // ---------------------------------------------------------
-        talentManager: {
-            getBehavior(index, val) {
-                const descriptions = [
-                    ["I delegate all tech decisions.", "I know buzzwords (AI, Cloud).", "I understand API vs Batch.", "I catch 'BS' in tech plans.", "I can Architect systems."], 
-                    ["What is CapEx?", "I track the budget.", "I calculate ROI.", "I manage Unit Economics.", "I run FinOps."], 
-                    ["I trust the PowerPoint.", "I look at dashboards.", "I ask 'Where is the data?'", "I define Data Products.", "I code my own SQL."], 
-                    ["I hide from politics.", "I attend meetings.", "I build coalitions.", "I map the power/interest grid.", "I orchestrate org change."], 
-                    ["Zero risk allowed.", "Compliance first.", "Controlled pilots.", "Fail fast, fix fast.", "Risk is a competitive edge."] 
-                ];
-                return descriptions[index][val - 1];
-            },
+talentManager: {
+    // 1. Behaviors based on the 5 Axes Guide
+    getBehavior(index, val) {
+        const descriptions = [
+            // Tech Fluency
+            ["I fear developers.", "I rely on translators.", "I speak to developers.", "I challenge the architecture.", "I write code."], 
+            // Business Acumen
+            ["I ignore the money.", "I know the budget.", "I understand the P&L.", "I link Code to Cash.", "I model unit economics."], 
+            // Data Literacy
+            ["I trust gut feel.", "I read reports.", "I query data (SQL).", "I interpret patterns.", "I build data products."], 
+            // Empathy / EQ
+            ["I am a robot.", "I avoid friction.", "I navigate politics.", "I manage stakeholders.", "I rewire the org culture."], 
+            // Change Tolerance
+            ["I panic in ambiguity.", "I prefer stability.", "I adapt to change.", "I drive the change.", "I thrive in chaos."] 
+        ];
+        return descriptions[index][val - 1];
+    },
 
-            getArchetype() {
-                const skills = this.talentSkills; 
-                if(!skills) return { label: "Loading...", icon: "" };
+    // 2. Archetype Logic: The Rule of Spikes
+    getArchetype() {
+        const skills = this.talentSkills; 
+        if(!skills) return { label: "Loading...", icon: "" };
 
-                const tech = skills[0].val; 
-                const biz = skills[1].val;  
-                const pol = skills[3].val;  
+        const tech = skills[0].val; 
+        const biz = skills[1].val;  
+        const eq = skills[3].val;
+        
+        // Calculate Average and Variance to find "Spikes" vs "Generalists"
+        const allScores = skills.map(s => s.val);
+        const isFlat = allScores.every(val => val === 3); // The dreaded 3/5
+        
+        if (isFlat) return { label: "MEDIOCRE GENERALIST", icon: "fa-solid fa-circle-pause", desc: "Warning: Jack of all trades, master of none." };
 
-                if (tech >= 4 && biz >= 4) return { label: "THE BILINGUAL", icon: "fa-solid fa-crown", desc: "Rare. Unicorn status." };
-                if (tech >= 4 && biz <= 2) return { label: "THE TECHNOCRAT", icon: "fa-solid fa-robot", desc: "Brilliant coder, ignored by Board." };
-                if (tech <= 2 && biz >= 4) return { label: "THE TRADITIONALIST", icon: "fa-solid fa-briefcase", desc: "Safe pair of hands. Slow mover." };
-                if (pol >= 4 && tech <= 2) return { label: "THE DIPLOMAT", icon: "fa-solid fa-dove", desc: "Survives layoffs, ships nothing." };
-                if (tech === 3 && biz === 3) return { label: "THE GENERALIST", icon: "fa-solid fa-user", desc: "Good at everything, master of none." };
-                
-                return { label: "DEVELOPING", icon: "fa-solid fa-seedling", desc: "Keep growing." };
-            },
+        if (tech >= 4 && biz >= 4) return { label: "THE BILINGUAL", icon: "fa-solid fa-crown", desc: "Unicorn. Can lead the entire unit." };
+        if (tech >= 4 && eq <= 2) return { label: "TECHNICAL SPIKE", icon: "fa-solid fa-code", desc: "Great implementer. Needs a Product Owner partner." };
+        if (biz >= 4 && tech <= 2) return { label: "BUSINESS SPIKE", icon: "fa-solid fa-briefcase", desc: "Great vision. Needs a strong Tech Lead." };
+        if (eq >= 4 && biz >= 3) return { label: "CULTURAL GLUE", icon: "fa-solid fa-handshake", desc: "Essential for unblocking political friction." };
+        
+        return { label: "GROWTH PROFILE", icon: "fa-solid fa-seedling", desc: "Developing specific spikes." };
+    },
 
-            generateSystemPrompt() {
-                const skills = this.talentSkills;
-                const arch = this.getArchetype();
-                
-                return `ACT AS: An Executive Coach for a Digital Transformation Leader.
-                
-MY PROFILE DATA:
-- Role Archetype: ${arch.label}
-- Tech Fluency: ${skills[0].val}/5 (${this.talentManager.getBehavior(0, skills[0].val)})
-- Financial IQ: ${skills[1].val}/5
-- Data Culture: ${skills[2].val}/5
-- Political EQ: ${skills[3].val}/5
-- Risk Appetite: ${skills[4].val}/5
+    // 3. Squad Architect Prompt
+    generateSystemPrompt() {
+        const skills = this.talentSkills;
+        const arch = this.getArchetype();
+        
+        return `ACT AS: An Agile Talent Architect and Squad Designer.
+        
+CONTEXT: We are building a "Bilingual Bank". We adhere to the "Rule of Spikes": We do not hire Mediocre Generalists (3/5 everywhere). We hire complementary spikes.
 
-THE BILINGUAL STANDARD (TARGET):
-- Target is 4/5 or 5/5 in all categories.
+CANDIDATE RADAR PROFILE:
+1. Tech Fluency: ${skills[0].val}/5
+2. Business Acumen: ${skills[1].val}/5
+3. Data Literacy: ${skills[2].val}/5
+4. Empathy/EQ: ${skills[3].val}/5
+5. Change Tolerance: ${skills[4].val}/5
+
+DETECTED ARCHETYPE: ${arch.label}
 
 YOUR TASK:
-1. Brutal Feedback: In 2 sentences, explain why my current profile (${arch.label}) is dangerous for a modern bank.
-2. The Gap: Identify my weakest link.
-3. 30-Day Learning Plan: Give me 3 specific, non-obvious actions to improve my score. (Do not say "read a book". Give me exercises like "Sit with the DevOps team for 1 hour").
+1. The Verdict: Is this a "Spiky Profile" worth hiring, or a "Mediocre Generalist"?
+2. Squad Fit: If we hire this person, who MUST be in the squad to complement them? (e.g., "This Product Owner is a 5 on Biz but a 2 on Tech. They require a Tech Lead who is a 5 on Tech to balance the risk.")
+3. Interview Question: Give me one "Killer Question" to verify their strongest spike is real and not just a CV claim.
 
-TONE: Machiavellian, Pragmatic, High-Agency.`;
-            }
-        }, 
-
+TONE: Decisive, Analytical, No Fluff.`;
+    }
+},
         
         // ------------------------------------------------------------------
         //  API SANDBOX
