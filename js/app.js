@@ -144,6 +144,9 @@ initYouTubePlayer() {
                     // Set initial volume
                     this.videoVolume = 50;
                     event.target.setVolume(50);
+
+                     // Initialize fullscreen listeners
+                    this.initFullscreenListeners();
                 },
                 'onStateChange': (event) => {
                     // When video starts playing
@@ -222,6 +225,8 @@ initYouTubePlayer() {
         videoVolume: 50, // Default volume
         volumeBeforeMute: 50, // Store volume before muting
         updateTimeInterval: null, // For updating the seek bar
+        isFullscreen: false,
+        fullscreenElement: null,
 
 
 
@@ -1212,7 +1217,51 @@ toggleVideoPlay() {
     }
 },
 
+// Toggle Fullscreen
+toggleFullscreen() {
+    const videoContainer = document.querySelector('.group'); // The video container div
+    
+    if (!this.isFullscreen) {
+        // Enter fullscreen
+        if (videoContainer.requestFullscreen) {
+            videoContainer.requestFullscreen();
+        } else if (videoContainer.webkitRequestFullscreen) { /* Safari */
+            videoContainer.webkitRequestFullscreen();
+        } else if (videoContainer.msRequestFullscreen) { /* IE11 */
+            videoContainer.msRequestFullscreen();
+        }
+        
+        this.isFullscreen = true;
+    } else {
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari */
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { /* IE11 */
+            document.msExitFullscreen();
+        }
+        
+        this.isFullscreen = false;
+    }
+},
 
+// Listen for fullscreen changes
+initFullscreenListeners() {
+    document.addEventListener('fullscreenchange', () => {
+        this.isFullscreen = !!document.fullscreenElement;
+    });
+    
+    document.addEventListener('webkitfullscreenchange', () => {
+        this.isFullscreen = !!document.webkitFullscreenElement;
+    });
+    
+    document.addEventListener('msfullscreenchange', () => {
+        this.isFullscreen = !!document.msFullscreenElement;
+    });
+},
+
+        
 // Updated toggleVideoMute method
 toggleVideoMute() {
     if (this.player) {
