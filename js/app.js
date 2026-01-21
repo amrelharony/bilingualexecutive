@@ -536,17 +536,7 @@ if (hasEnteredBefore) {
         },
 
         // ------------------------------------------------------------------
-        // CULTURAL DEBT MONITOR
-        // ------------------------------------------------------------------
-        culturalMonitor: {
-            history: [],
-            isCheckinOpen: false,
-            answers: { q1: null, q2: null, q3: null },
-            chartInstance: null,
-
-
-            // ------------------------------------------------------------------
-// USER ACTIVITY TRACKING FOR PWA PROMPT
+// USER ACTIVITY TRACKING FOR PWA PROMPT (Move to main scope)
 // ------------------------------------------------------------------
 
 // Method to increment activity count
@@ -557,7 +547,7 @@ trackUserActivity() {
     // Update last active timestamp
     this.userLastActive = Date.now();
     
-    console.log(`User activity count: ${this.userActivityCount}`); // Optional: for debugging
+    console.log(`User activity count: ${this.userActivityCount}`);
     
     // If user has interacted at least 3 times, start the timer
     if (this.userActivityCount >= 3 && !this.pwaTimer && !this.isPwaPromptActive) {
@@ -575,7 +565,7 @@ startPwaTimer() {
     // Set new timer for 5 seconds after 3rd interaction
     this.pwaTimer = setTimeout(() => {
         this.showDelayedPwaPrompt();
-    }, 5000); // 5 seconds after 3rd interaction
+    }, 5000);
 },
 
 // Method to show the PWA prompt after conditions are met
@@ -594,7 +584,7 @@ showDelayedPwaPrompt() {
     if (this.isMobile && !isPWA && !dismissed) {
         this.showPwaPrompt = true;
         this.isPwaPromptActive = true;
-        console.log("Showing delayed PWA prompt"); // Optional: for debugging
+        console.log("Showing delayed PWA prompt");
     }
     
     // Reset timer
@@ -613,8 +603,59 @@ resetActivityTracking() {
     }
 },
 
+// Update setupActivityTracking method to use the correct context
+setupActivityTracking() {
+    // Reset any previous tracking
+    this.resetActivityTracking();
+    
+    // Store reference to this for use in event listeners
+    const self = this;
+    
+    // Track clicks (anywhere on the page)
+    document.addEventListener('click', () => {
+        self.trackUserActivity();
+    }, { passive: true });
+    
+    // Track scrolling
+    document.addEventListener('scroll', () => {
+        self.trackUserActivity();
+    }, { passive: true });
+    
+    // Track keyboard input
+    document.addEventListener('keydown', () => {
+        self.trackUserActivity();
+    }, { passive: true });
+    
+    // Track tool changes (when user selects different tools)
+    const trackToolChange = () => {
+        self.trackUserActivity();
+    };
+    
+    // Watch for Alpine.js updates to currentTab
+    this.$watch('currentTab', trackToolChange);
+    this.$watch('currentGroup', trackToolChange);
+},
+
+        // ------------------------------------------------------------------
+        // CULTURAL DEBT MONITOR
+        // ------------------------------------------------------------------
+        culturalMonitor: {
+            history: [],
+            isCheckinOpen: false,
+            answers: { q1: null, q2: null, q3: null },
+            chartInstance: null,
+
             // Initialize: Load history from LocalStorage
-            init() {
+            init() 
+                // check if user previously entered
+    const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
+
+    // If they entered before, skip landing page
+    if (hasEnteredBefore) {
+        this.showLanding = false;
+        this.setupActivityTracking(); // This line ensures tracking starts
+    }
+
                 try {
                     const saved = localStorage.getItem('bilingual_culture_history');
                     if (saved) this.history = JSON.parse(saved);
@@ -1094,10 +1135,11 @@ tools: {
             }
         },
 
-     enterApp() {
+   enterApp() {
     this.showLanding = false;
-     //  mark that they've entered
-             localStorage.setItem('app_entered', 'true');
+    // mark that they've entered
+    localStorage.setItem('app_entered', 'true');
+    
     // Stop the video completely to save battery/data
     if (this.player && this.player.stopVideo) {
         this.player.stopVideo();
@@ -1114,7 +1156,7 @@ tools: {
             this.showDelayedPwaPrompt();
         }
     }, 60000); // 60 second fallback
-},
+}, 
 
         // Set up event listeners for activity tracking
 setupActivityTracking() {
