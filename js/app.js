@@ -116,28 +116,29 @@ document.addEventListener('alpine:init', () => {
 
         // YouTube Player Initialization Method
         initYouTubePlayer() {
-            const initPlayer = () => {
-                this.player = new YT.Player('youtube-player', {
-                    videoId: '8GvrODrkQ7M',
-                    playerVars: {
-                        'autoplay': 1,
-                        'controls': 0,
-                        'rel': 0,
-                        'modestbranding': 1,
-                        'loop': 1,
-                        'playlist': '8GvrODrkQ7M',
-                        'playsinline': 1 // Crucial for mobile autoplay
-                    },
-                    events: {
-                        'onReady': (event) => {
-                            event.target.mute(); // Mute is required for autoplay
-                            event.target.playVideo();
-                            this.videoPlaying = true;
-                            this.videoMuted = true;
-                        }
-                    }
-                });
-            };
+    const initPlayer = () => {
+        this.player = new YT.Player('youtube-player', {
+            videoId: '8GvrODrkQ7M',
+            playerVars: {
+                'autoplay': 0,  // CHANGED FROM 1 TO 0
+                'controls': 0,
+                'rel': 0,
+                'modestbranding': 1,
+                'loop': 1,
+                'playlist': '8GvrODrkQ7M',
+                'playsinline': 1
+            },
+            events: {
+                'onReady': (event) => {
+                    event.target.mute(); // Still mute by default
+                    // REMOVED: event.target.playVideo(); - No autoplay
+                    this.videoPlaying = false; // CHANGED FROM true TO false
+                    this.videoMuted = true;
+                }
+            }
+        });
+    };
+
 
             // Scenario A: API is already ready (e.g. cached or reload)
             if (window.YT && window.YT.Player) {
