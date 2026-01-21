@@ -96,57 +96,62 @@
      x-transition:leave="transition ease-in duration-700"
      x-transition:leave-start="opacity-100 transform scale-100"
      x-transition:leave-end="opacity-0 transform scale-110"
-     class="fixed inset-0 z-[200] bg-black overflow-y-auto"> <!-- Added scroll support -->
+     class="fixed inset-0 z-[200] bg-black overflow-y-auto">
 
     <!-- Background Texture -->
     <div class="fixed inset-0 opacity-20 pointer-events-none" 
          style="background-image: url('https://www.transparenttextures.com/patterns/stardust.png');">
     </div>
 
-    <!-- Centering Container -->
-    <!-- min-h-screen ensures it centers vertically if there's space, but allows scrolling if not -->
+    <!-- Main Container -->
     <div class="min-h-screen w-full flex flex-col items-center justify-center p-6 text-center relative z-10">
         
-        <!-- Content Wrapper: Reduced max-width from 2xl to xl to shrink the video height -->
         <div class="max-w-xl w-full flex flex-col items-center py-10 md:py-0">
             
-            <!-- Top Label -->
             <p class="text-[10px] md:text-xs font-mono text-slate-400 tracking-[0.3em] uppercase mb-4 animate-pulse">
                 System Initializing...
             </p>
 
-            <!-- THE TITLE: Reduced size for better fit -->
-            <!-- Changed md:text-8xl to md:text-7xl -->
             <h1 class="text-5xl md:text-7xl font-sans font-extrabold tracking-tighter leading-none text-white mb-2">
                 THE<br>
                 <span class="text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-500">BILINGUAL</span><br>
                 EXECUTIVE
             </h1>
 
-            <!-- The Subtitle -->
             <div class="h-1 w-16 md:w-24 bg-red-600 my-4 md:my-6"></div>
+            
             <p class="font-mono text-xs md:text-sm text-slate-300 max-w-md mx-auto leading-relaxed mb-6 md:mb-8">
                 HOW TO BUILD THE <span class="text-white font-bold">AGILE BANK</span><br> 
                 AND SURVIVE THE FINTECH TSUNAMI
             </p>
 
-            <!-- The Video Container -->
-            <!-- Reduced margins and max-width ensures it doesn't dominate the screen -->
+            <!-- VIDEO PLAYER CONTAINER -->
             <div class="w-full aspect-video bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] mb-8 relative group">
                 
-                <iframe class="w-full h-full" 
-                        src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&controls=0&modestbranding=1&loop=1&playlist=dQw4w9WgXcQ" 
-                        title="The Bilingual Executive Trailer" 
+                <!-- The YouTube Iframe -->
+                <!-- Note: x-bind:src swaps the URL to unmute/mute -->
+                <iframe class="w-full h-full pointer-events-none" 
+                        :src="`https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=${videoMuted ? 1 : 0}&controls=0&modestbranding=1&loop=1&playlist=dQw4w9WgXcQ`" 
+                        title="Book Trailer" 
                         frameborder="0" 
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
                         allowfullscreen>
                 </iframe>
 
-                <!-- Overlay to prevent interaction -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none"></div>
+                <!-- 1. Transparent Shield: Blocks clicks to YouTube -->
+                <div class="absolute inset-0 z-10"></div>
+
+                <!-- 2. Custom Sound Toggle Button (Sits on top of shield) -->
+                <button @click="videoMuted = !videoMuted" 
+                        class="absolute bottom-4 right-4 z-20 bg-black/50 hover:bg-red-600 text-white w-10 h-10 rounded-full backdrop-blur-md flex items-center justify-center transition-all border border-white/20">
+                    <i class="fa-solid" :class="videoMuted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
+                </button>
+
+                <!-- Cinematic Vignette Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none z-0"></div>
             </div>
 
-            <!-- The "Enter" Button -->
+            <!-- Enter Button -->
             <button @click="enterApp()" 
                     class="group relative px-8 py-3 bg-white text-black font-bold font-mono text-xs md:text-sm tracking-widest uppercase rounded-full hover:bg-red-600 hover:text-white transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] mb-8">
                 <span class="relative z-10 flex items-center gap-2">
@@ -155,8 +160,8 @@
             </button>
 
             <!-- Footer Info -->
-            <div class="text-[9px] md:text-[10px] text-slate-600 font-mono">
-                v1.0 // AMR ELHARONY // CAIRO, EGYPT
+            <div class="text-[10px] text-slate-500 font-mono tracking-widest">
+                &copy; Amr Elharony 2026
             </div>
 
         </div>
