@@ -104,12 +104,13 @@ input[type="range"]::-moz-range-thumb { /* Added for Firefox */
 
 /* ===== VIDEO PLAYER CONTROLS STYLING ===== */
 
-/* Custom Controls Bar (above video) */
+/* Custom Controls Bar (NOW AT BOTTOM) */
 .video-controls-bar {
-    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, rgba(0, 0, 0, 0.4) 70%, transparent 100%);
     backdrop-filter: blur(8px);
     transition: opacity 0.3s ease;
     z-index: 30;
+    bottom: 0; /* Ensure it's at bottom */
 }
 
 /* Group hover effect - show controls when hovering video container */
@@ -263,7 +264,7 @@ input[type="range"]::-moz-range-thumb { /* Added for Firefox */
 @media (max-width: 768px) {
     .video-controls-bar {
         padding: 10px !important;
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.6) 70%, transparent 100%);
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.6) 70%, transparent 100%);
     }
     
     .video-control-btn {
@@ -303,17 +304,10 @@ input[type="range"]::-moz-range-thumb { /* Added for Firefox */
     }
 }
 
-/* Dark mode adjustments (if needed) */
-@media (prefers-color-scheme: dark) {
-    .video-controls-bar {
-        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.7) 70%, transparent 100%);
-    }
-}
-
 /* For iOS Safari - ensure controls are accessible */
 @supports (-webkit-touch-callout: none) {
     .video-controls-bar {
-        padding-top: env(safe-area-inset-top, 12px);
+        padding-bottom: max(12px, env(safe-area-inset-bottom, 12px));
     }
     
     .seek-bar::-webkit-slider-thumb {
