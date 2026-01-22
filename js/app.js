@@ -446,101 +446,6 @@ TONE: Senior, direct, mentorship-focused.`;
         },
         
         // ------------------------------------------------------------------
-        // BILINGUAL FLASHCARD QUIZ
-        // ------------------------------------------------------------------
-        quiz: {
-            active: false,
-            finished: false,
-            currentQuestion: 0,
-            score: 0,
-            feedback: null, // 'correct' or 'incorrect'
-            
-            // The Question Bank
-            questions: [
-                {
-                    term: "Technical Debt",
-                    type: "Tech -> Business",
-                    options: [
-                        { text: "Money we owe to technology vendors for cloud servers.", correct: false },
-                        { text: "The implied cost of future rework caused by choosing an easy solution now.", correct: true }, // The Business Impact
-                        { text: "A bug in the code that causes the app to crash.", correct: false }
-                    ]
-                },
-                {
-                    term: "API (Application Programming Interface)",
-                    type: "Tech -> Business",
-                    options: [
-                        { text: "The 'Universal Adapter' that allows our systems to talk to partners like Fintechs.", correct: true },
-                        { text: "A specific type of database used for high-speed trading.", correct: false },
-                        { text: "A graphical user interface for the mobile app.", correct: false }
-                    ]
-                },
-                {
-                    term: "The Monolith",
-                    type: "Tech -> Business",
-                    options: [
-                        { text: "A large, successful bank with a dominant market share.", correct: false },
-                        { text: "The 'Anchor' system. A unified legacy codebase that is stable but very hard to change.", correct: true },
-                        { text: "A physical server located in the basement.", correct: false }
-                    ]
-                },
-                {
-                    term: "Zero Trust",
-                    type: "Security -> Business",
-                    options: [
-                        { text: "A culture where employees do not trust management.", correct: false },
-                        { text: "A security model that assumes the breach has already occurred and verifies every request.", correct: true },
-                        { text: "A policy that stops us from hiring external consultants.", correct: false }
-                    ]
-                },
-                {
-                    term: "Microservices",
-                    type: "Architecture -> Business",
-                    options: [
-                        { text: "Small banking services offered to retail customers.", correct: false },
-                        { text: "A department with fewer than 10 employees.", correct: false },
-                        { text: "Lego Blocks. Breaking a system into small parts so we can update one without breaking the others.", correct: true }
-                    ]
-                }
-            ],
-
-            start() {
-                this.active = true;
-                this.finished = false;
-                this.currentQuestion = 0;
-                this.score = 0;
-                this.feedback = null;
-                this.shuffleQuestions();
-            },
-
-            shuffleQuestions() {
-                // Simple shuffle to keep it fresh
-                this.questions.sort(() => Math.random() - 0.5);
-            },
-
-            submitAnswer(isCorrect) {
-                if (this.feedback) return; // Prevent double clicks
-
-                if (isCorrect) {
-                    this.score++;
-                    this.feedback = 'correct';
-                } else {
-                    this.feedback = 'incorrect';
-                }
-
-                // Auto-advance after 1.5 seconds
-                setTimeout(() => {
-                    if (this.currentQuestion < this.questions.length - 1) {
-                        this.currentQuestion++;
-                        this.feedback = null;
-                    } else {
-                        this.finished = true;
-                    }
-                }, 1500);
-            }
-        },
-
-        // ------------------------------------------------------------------
         // NEGOTIATION DOJO (Deterministic Logic + AI Debrief)
         // ------------------------------------------------------------------
         negotiationDojo: {
@@ -1410,7 +1315,6 @@ tools: {
         { id: 'manual', label: 'Field Manual', icon: 'fa-solid fa-headphones', color: 'text-white' }, // NotebookLM Feature
         { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language', color: 'text-blue-300' },
         { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king', color: 'text-yellow-400' },
-        { id: 'quiz', label: 'Flashcards', icon: 'fa-solid fa-layer-group', color: 'text-cyan-400' },
         { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book', color: 'text-slate-400' }
     ],
     forge: [
@@ -1418,6 +1322,8 @@ tools: {
         { id: 'lighthouse', label: 'Lighthouse Kit', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
         { id: 'canvas', label: 'Data Product', icon: 'fa-solid fa-file-contract', color: 'text-blue-500' },
         { id: 'roi', label: 'ROI Calc', icon: 'fa-solid fa-calculator', color: 'text-green-500' },
+         { id: 'squad', label: 'Squad Builder', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
+
         { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox', color: 'text-red-400' }
     ],
     sims: [
@@ -1433,7 +1339,6 @@ tools: {
             { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
             { id: 'roleplay', label: 'Role-Play Dojo', desc: 'Simulate high-stakes conversations.', icon: 'fa-solid fa-user-tie', color: 'text-warn' },
             { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture & speed.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
-            { id: 'quiz', label: 'Flashcards', desc: 'Test your fluency in tech jargon.', icon: 'fa-solid fa-graduation-cap', color: 'text-cyan-400' },
             { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational health.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
             { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
             { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, 
@@ -2567,6 +2472,131 @@ TONE: High agency, executive, mathematically precise. No corporate fluff.`;
                 this.step = 1;
                 this.form = { project: '', who: '', pain: '', value: '' };
                 this.generatedPrompt = '';
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // SQUAD BUILDER (Deterministic Math Engine)
+        // ------------------------------------------------------------------
+        squadBuilder: {
+            roster: [],
+            
+            // The "Market" of Talent
+            catalog: [
+                { id: 'po', title: 'Product Owner', icon: 'fa-briefcase', type: 'biz', biz: 9, tech: 2, cost: 3, desc: 'Value definer. Essential for direction.' },
+                { id: 'tech_lead', title: 'Tech Lead', icon: 'fa-microchip', type: 'tech', biz: 4, tech: 10, cost: 4, desc: 'Architect. Multiplies dev effectiveness.' },
+                { id: 'senior_dev', title: 'Senior Dev', icon: 'fa-code', type: 'tech', biz: 2, tech: 9, cost: 3, desc: 'High output, low maintenance.' },
+                { id: 'junior_dev', title: 'Junior Dev', icon: 'fa-laptop-code', type: 'tech', biz: 1, tech: 5, cost: 1, desc: 'Cheap execution. Needs supervision.' },
+                { id: 'scrum', title: 'Scrum Master', icon: 'fa-stopwatch', type: 'ops', biz: 5, tech: 4, cost: 2, desc: 'Reduces friction/overhead.' },
+                { id: 'qa', title: 'QA Engineer', icon: 'fa-bug', type: 'risk', biz: 2, tech: 6, cost: 2, desc: 'Increases stability.' },
+                { id: 'designer', title: 'UX Designer', icon: 'fa-pen-nib', type: 'design', biz: 7, tech: 3, cost: 3, desc: 'Ensures customer fit.' }
+            ],
+
+            addRole(role) {
+                if (this.roster.length >= 12) return alert("Squad limit reached. Split the team.");
+                this.roster.push({ ...role, uid: Date.now() });
+            },
+
+            removeRole(uid) {
+                this.roster = this.roster.filter(r => r.uid !== uid);
+            },
+
+            reset() {
+                this.roster = [];
+            },
+
+            // --- THE ADVANCED MATH ENGINE ---
+            get stats() {
+                const r = this.roster;
+                if (r.length === 0) return { velocity: 0, quality: 0, alignment: 0, friction: 0, message: "Empty Squad" };
+
+                // 1. Base Attributes
+                let rawTech = r.reduce((a, b) => a + b.tech, 0);
+                let rawBiz = r.reduce((a, b) => a + b.biz, 0);
+                
+                // 2. Brooks' Law (Communication Overhead)
+                // Formula: N * (N-1) / 2 interactions.
+                // We dampen velocity as team size grows.
+                const n = r.length;
+                let overhead = (n * (n - 1)) / 2 * 0.5; 
+                
+                // Scrum Master Bonus: Reduces overhead by 40%
+                if (r.find(x => x.id === 'scrum')) overhead *= 0.6;
+
+                // 3. Velocity Calculation
+                // Tech Lead Multiplier: A TL boosts all Juniors/Seniors by 20%
+                let multiplier = r.find(x => x.id === 'tech_lead') ? 1.2 : 1.0;
+                let velocity = (rawTech * multiplier) - overhead;
+                
+                // 4. Quality/Stability Calculation
+                // QA adds base stability. Too many Juniors lowers it.
+                let quality = 50; // Base
+                r.forEach(x => {
+                    if (x.id === 'qa') quality += 20;
+                    if (x.id === 'tech_lead') quality += 10;
+                    if (x.id === 'junior_dev') quality -= 5;
+                });
+
+                // 5. Alignment (The Bilingual Score)
+                // Balance between Tech Power and Business Direction
+                const hasPO = r.find(x => x.id === 'po');
+                let alignment = hasPO ? 100 : 20; // Massive penalty for no PO
+                
+                // If Tech vastly overpowers Biz, Alignment drops (building cool stuff nobody needs)
+                if (rawTech > (rawBiz * 3)) alignment -= 30;
+
+                // 6. Diagnostics
+                let status = "OPTIMIZED";
+                let statusColor = "text-primary";
+
+                if (!hasPO) { status = "HEADLESS CHICKEN"; statusColor = "text-risk"; }
+                else if (n > 9) { status = "BLOATED"; statusColor = "text-warn"; }
+                else if (quality < 30) { status = "FRAGILE"; statusColor = "text-red-400"; }
+                else if (velocity < 10) { status = "STALLED"; statusColor = "text-slate-400"; }
+
+                return {
+                    velocity: Math.max(0, Math.round(velocity)),
+                    quality: Math.max(0, Math.min(100, quality)),
+                    alignment: alignment,
+                    overhead: Math.round(overhead),
+                    status,
+                    statusColor
+                };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateSquadPrompt() {
+                const s = this.stats;
+                const r = this.roster;
+                
+                // Summarize composition
+                const composition = r.reduce((acc, curr) => {
+                    acc[curr.title] = (acc[curr.title] || 0) + 1;
+                    return acc;
+                }, {});
+                const compString = Object.entries(composition).map(([k, v]) => `${v}x ${k}`).join(', ');
+
+                return `ACT AS: A CTO and Organizational Design Consultant.
+
+## THE SQUAD SIMULATION
+I have designed a cross-functional squad with the following parameters:
+- **Composition:** ${compString}
+- **Headcount:** ${r.length}
+- **Computed Velocity:** ${s.velocity} (Capacity to ship code)
+- **Computed Stability:** ${s.quality}/100 (Risk of bugs/outages)
+- **Strategic Alignment:** ${s.alignment}/100 (Biz/Tech connection)
+
+## THE MATH DIAGNOSIS
+- **Brooks' Law Factor:** Communication overhead is consuming ${s.overhead} points of velocity.
+- **Verdict:** The system flags this squad as "${s.status}".
+
+## YOUR MISSION (PRE-MORTEM)
+Run a simulation of this team over a 6-month period.
+1. **The Breaking Point:** Given this specific mix (e.g., ratio of Juniors to Seniors, or lack of QA), predict exactly how this team fails in production.
+2. **The "Bus Factor":** Identify the single person whose resignation would destroy the team's output.
+3. **The Fix:** Rebalance the roster. Who should I fire, and who should I hire to double the ROI?
+
+TONE: Ruthless, data-driven, experienced.`;
             }
         },
         
