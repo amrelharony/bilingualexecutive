@@ -2076,6 +2076,57 @@ async submitAndBenchmark() {
             if (y <= 60 && x >= 60) return { strategy: "OUTSOURCE", desc: "Non-core commodity. Use standard off-the-shelf tools." };
             return { strategy: "DEPRIORITIZE", desc: "Low value. Don't waste resources." };
         },
+
+        // --- NEW: MATRIX AI PROMPT GENERATOR ---
+        generateMatrixPrompt() {
+            const x = this.matrixCoords.x; // Technical Complexity
+            const y = this.matrixCoords.y; // Strategic Importance
+            const result = this.getMatrixResult(); // Re-use existing logic
+
+            // 1. Diagnose the specific strategic implication
+            let rationale = "";
+            let risk = "";
+
+            if (y > 60 && x < 40) { 
+                // BUILD (High Imp, Low Comp)
+                rationale = "This is our 'Secret Sauce'. It differentiates us in the market and is feasible to build in-house.";
+                risk = "Risk: Over-engineering. We must ensure we don't build a 'Gold Plated' solution.";
+            } else if (y > 60 && x >= 40) {
+                // PARTNER/BUY (High Imp, High Comp)
+                rationale = "This is critical, but too complex to build from scratch. Speed is the priority.";
+                risk = "Risk: Vendor Lock-in. We need a strong API abstraction layer to protect our core.";
+            } else if (y <= 60 && x >= 60) {
+                // OUTSOURCE (Low Imp, High Comp)
+                rationale = "This is 'Plumbing'. It's hard to do but adds zero customer value. It's a commodity.";
+                risk = "Risk: Distraction. Every hour our best engineers spend on this is an hour lost on innovation.";
+            } else {
+                // DEPRIORITIZE (Low Imp, Low Comp)
+                rationale = "This is a 'Nice to Have'. Low value return.";
+                risk = "Risk: Opportunity Cost. We should not be spending budget here.";
+            }
+
+            return `ACT AS: A Chief Technology Officer (CTO) and Investment Committee Advisor.
+
+## THE DECISION CONTEXT (BUILD vs BUY)
+We are evaluating a technology initiative. I have mapped it on the Strategy Matrix:
+- **Strategic Importance:** ${y}% (Does it differentiate us?)
+- **Technical Complexity:** ${x}% (How hard is it to build?)
+
+## THE VERDICT: "${result.strategy}"
+${result.desc}
+
+## LOGIC
+- **Rationale:** ${rationale}
+- **Primary Risk:** ${risk}
+
+## YOUR MISSION
+Draft a **Decision Memo** for the CFO/Board to approve this path.
+1. **The Executive Summary:** Clearly state why we are choosing to ${result.strategy}.
+2. **The Financial Case:** Explain the ROI logic (e.g., if Building: "Why Capitalizing this IP creates asset value." | If Buying: "Why OpEx is better than slowing down market entry.").
+3. **The Guardrails:** Define 3 constraints to ensure this project doesn't spiral out of control.
+
+TONE: Decisive, fiscally responsible, and technically sound.`;
+        },
         
         getCompassResult() {
             const { x, y } = this.compassCoords;
@@ -2205,7 +2256,7 @@ TONE: Visionary, urgent, but grounded in banking reality.`;
             const q = this.glossarySearch.toLowerCase(); 
             return !q ? this.glossaryData : this.glossaryData.filter(i=>i.term.toLowerCase().includes(q)||i.def.toLowerCase().includes(q)); 
         },
-
+        
 // ------------------------------------------------------------------
         // KPI DESIGNER (The Prompt Architect Wizard)
         // ------------------------------------------------------------------
