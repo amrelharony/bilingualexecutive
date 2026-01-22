@@ -540,146 +540,146 @@ TONE: Senior, direct, mentorship-focused.`;
             }
         },
 
-// ------------------------------------------------------------------
-        // ROLE-PLAY DOJO (Updated with Transcript Analysis)
         // ------------------------------------------------------------------
-        rolePlay: {
+        // NEGOTIATION DOJO (Deterministic Logic + AI Debrief)
+        // ------------------------------------------------------------------
+        negotiationDojo: {
             active: false,
-            showDebrief: false, // NEW: Controls the Analysis screen
-            scenario: null,
-            messages: [],
-            input: '',
-            loading: false,
+            gameOver: false,
+            result: null, // 'win' or 'lose'
             
+            // The State Machine
+            currentScenario: null,
+            currentNode: 'start',
+            metrics: { trust: 50, leverage: 50, patience: 3 }, // The "Math"
+            history: [], // Tracks user choices for the prompt
+
+            // THE DATA (Branching Logic)
             scenarios: [
                 {
                     id: 'cloud',
                     title: 'The Cloud Skeptic',
-                    myRole: 'Chief Digital Officer',
-                    opponent: 'CFO (The Bean Counter)',
-                    topic: 'Cloud Migration Cost ($10M)',
-                    intro: 'I see a $10M request for AWS. Our physical data centers are fully paid for. Why should I approve this massive OpEx spike just to rent computers?'
-                },
-                {
-                    id: 'mvp',
-                    title: 'The Scope Creeper',
-                    myRole: 'Product Owner',
-                    opponent: 'Head of Sales',
-                    topic: 'MVP Definition',
-                    intro: 'I saw the prototype. It looks basic. We cannot launch without the "Gold Tier" features. My clients expect perfection, not an experiment.'
-                },
-                {
-                    id: 'risk',
-                    title: 'The Gatekeeper',
-                    myRole: 'Tech Lead',
-                    opponent: 'Chief Risk Officer',
-                    topic: 'Automated Compliance',
-                    intro: 'You want to deploy code daily? Absolutely not. I need 2 weeks to review every release manually. How can a script be safer than my signature?'
+                    opponent: 'CFO Marcus Steel',
+                    role: 'Chief Digital Officer',
+                    intro: 'You need $10M for Cloud Migration. The CFO hates OpEx spikes.',
+                    nodes: {
+                        'start': {
+                            text: "I see a $10M request for AWS. Our data centers are paid for. Why should I rent computers when I own them?",
+                            options: [
+                                { text: "It provides elasticity and microservices scalability.", impact: { trust: -10, leverage: 0, patience: -1 }, next: 'tech_trap', analysis: "Used Jargon. CFO tuned out." },
+                                { text: "It shifts us from CapEx to OpEx, aligning cost with revenue.", impact: { trust: +20, leverage: +10, patience: 0 }, next: 'financial_hook', analysis: "Spoke CFO language (CapEx/OpEx)." }
+                            ]
+                        },
+                        'tech_trap': {
+                            text: "I don't care about 'elasticity'. I care about the P&L. You have 2 minutes before I reject this.",
+                            options: [
+                                { text: "If we don't migrate, we risk a security breach costing $50M.", impact: { trust: -10, leverage: +20, patience: -1 }, next: 'fear_tactic', analysis: "Fear mongering. Risky but high leverage." },
+                                { text: "My apologies. Let me show you the ROI model. We break even in 18 months.", impact: { trust: +10, leverage: +5, patience: +1 }, next: 'financial_hook', analysis: "Pivot to logic. Good recovery." }
+                            ]
+                        },
+                        'financial_hook': {
+                            text: "18 months is too long. The Board wants efficiency now. Can you do it for $5M?",
+                            options: [
+                                { text: "Impossible. We need the full amount.", impact: { trust: 0, leverage: -10, patience: -1 }, next: 'standoff', analysis: "Stubbornness without data reduced leverage." },
+                                { text: "We can do a $5M 'Lighthouse' pilot, but it delays full savings by a year.", impact: { trust: +20, leverage: +20, patience: 0 }, next: 'win', analysis: "The 'Anchor' Trade-off. Perfect Bilingual move." }
+                            ]
+                        },
+                        'fear_tactic': {
+                            text: "Are you threatening the bank? That sounds like a failure of your current leadership.",
+                            options: [
+                                { text: "It's not a threat, it's market reality.", impact: { trust: -20, leverage: 0, patience: -1 }, next: 'lose', analysis: "Argumentative. Lost the room." },
+                                { text: "It's a quantified risk. I'm asking for insurance.", impact: { trust: +10, leverage: +10, patience: 0 }, next: 'financial_hook', analysis: "Re-framed risk as insurance." }
+                            ]
+                        },
+                        'standoff': {
+                            text: "Then we are at an impasse. I'm cutting the budget to $2M. Take it or leave it.",
+                            options: [
+                                { text: "I resign.", impact: { trust: 0, leverage: 0, patience: 0 }, next: 'lose', analysis: "Emotional quit." },
+                                { text: "I'll take the $2M for the Mobile App only. But you own the legacy risk.", impact: { trust: +10, leverage: +10, patience: 0 }, next: 'win', analysis: "Calculated compromise." }
+                            ]
+                        }
+                    }
                 }
             ],
 
             start(index) {
                 this.active = true;
-                this.showDebrief = false;
-                this.scenario = this.scenarios[index];
-                this.messages = [
-                    { role: 'opponent', text: this.scenario.intro }
-                ];
-                this.input = '';
-                // Auto-scroll to bottom
-                this.$nextTick(() => this.scrollToBottom());
+                this.gameOver = false;
+                this.currentScenario = this.scenarios[index];
+                this.currentNode = 'start';
+                this.metrics = { trust: 50, leverage: 50, patience: 3 };
+                this.history = [];
             },
 
-            // Stop the chat and show the analysis
-            endSession() {
-                this.active = false;
-                this.showDebrief = true;
-            },
+            choose(option) {
+                // 1. Math Logic
+                this.metrics.trust += option.impact.trust;
+                this.metrics.leverage += option.impact.leverage;
+                this.metrics.patience += option.impact.patience;
 
-            // Reset everything
-            reset() {
-                this.active = false;
-                this.showDebrief = false;
-                this.messages = [];
-            },
+                // 2. Log History
+                this.history.push({
+                    stage: this.currentNode,
+                    choice: option.text,
+                    reasoning: option.analysis,
+                    impact: option.impact
+                });
 
-            scrollToBottom() {
-                const el = document.getElementById('rp-chat-box');
-                if (el) el.scrollTop = el.scrollHeight;
-            },
-
-            async send() {
-                if (!this.input.trim()) return;
+                // 3. Win/Lose Condition Checks
+                if (this.metrics.patience <= 0 || this.metrics.trust <= 0) {
+                    this.finishGame('lose', "Negotiation Failed. You lost the room.");
+                    return;
+                }
                 
-                // 1. Add User Message
-                this.messages.push({ role: 'user', text: this.input });
-                this.input = '';
-                this.loading = true;
-                this.$nextTick(() => this.scrollToBottom());
-
-                // 2. Check API Key
-                const API_KEY = localStorage.getItem('bilingual_api_key');
-                if (!API_KEY) {
-                    this.messages.push({ role: 'system', text: 'Error: Please set API Key in settings.' });
-                    this.loading = false;
+                if (option.next === 'win') {
+                    this.finishGame('win', "Deal Closed. You secured the budget.");
+                    return;
+                }
+                
+                if (option.next === 'lose') {
+                    this.finishGame('lose', "Proposal Rejected.");
                     return;
                 }
 
-                // 3. Construct Prompt
-                const systemPrompt = `
-                    ACT AS: ${this.scenario.opponent} at a traditional bank.
-                    USER IS: ${this.scenario.myRole}.
-                    TOPIC: ${this.scenario.topic}.
-                    GOAL: You are skeptical. Push back hard on tech jargon. Only agree if the user explains BUSINESS VALUE (Money, Speed, Risk).
-                    RESPONSE: Keep it under 40 words. Conversational.
-                    HISTORY: ${JSON.stringify(this.messages)}
-                `;
-
-                // 4. Call Gemini
-                try {
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
-                    });
-                    
-                    if (!response.ok) throw new Error("API Error");
-                    let json = await response.json();
-                    let reply = json.candidates[0].content.parts[0].text;
-
-                    this.messages.push({ role: 'opponent', text: reply });
-                } catch (e) {
-                    this.messages.push({ role: 'system', text: "Connection error. The simulation has ended." });
-                } finally {
-                    this.loading = false;
-                    this.$nextTick(() => this.scrollToBottom());
-                }
+                // 4. Advance
+                this.currentNode = option.next;
             },
 
-            // --- NEW: COACHING PROMPT GENERATOR ---
-            generateCoachPrompt() {
-                // Convert the chat array into a readable script
-                const transcript = this.messages.map(m => 
-                    `${m.role === 'user' ? 'ME' : 'OPPONENT'}: "${m.text}"`
-                ).join("\n\n");
+            finishGame(result, msg) {
+                this.gameOver = true;
+                this.result = result;
+                this.finalMessage = msg;
+            },
 
-                return `ACT AS: A Master Negotiation Coach (FBI Hostage Negotiator Style).
+            restart() {
+                this.active = false;
+                this.gameOver = false;
+                this.history = [];
+            },
 
-## THE SCENARIO
-I just role-played a high-stakes conversation.
-- **My Role:** ${this.scenario.myRole}
-- **Opponent:** ${this.scenario.opponent}
-- **Topic:** ${this.scenario.topic}
+            // --- NEW: ADVANCED PROMPT GENERATOR ---
+            generateNegotiationPrompt() {
+                const s = this.currentScenario;
+                const path = this.history.map((h, i) => 
+                    `Step ${i+1}: When asked about [${h.stage}], I chose: "${h.choice}". (Impact: Trust ${h.impact.trust > 0 ? '+' : ''}${h.impact.trust})`
+                ).join("\n");
 
-## THE TRANSCRIPT
-${transcript}
+                return `ACT AS: A Hostage Negotiator and Executive Coach (Chris Voss Style).
 
-## YOUR COACHING REPORT
-1. **The Grading:** Rate my influence skills (1-10). Did I convince them?
-2. **The "Labeling" Analysis:** Did I acknowledge their pain ("It sounds like you are worried about...") or did I just argue facts?
-3. **The Missed Opportunity:** Quote one specific line where I used "Jargon" or "Logic" when I should have used "Empathy" or "Business Value".
-4. **The Re-Write:** Rewrite my weakest response to be persuasive.
+## THE SIMULATION RECORD
+I just completed a high-stakes negotiation with ${s.opponent} (${s.role}).
+- **Outcome:** ${this.result.toUpperCase()}
+- **Final Metrics:** Trust (${this.metrics.trust}/100), Leverage (${this.metrics.leverage}/100).
 
-TONE: Direct, tactical, psychological.`;
+## MY DECISION PATH
+${path}
+
+## YOUR COACHING ANALYSIS
+1. **The Psychology:** Analyze *why* my specific choices led to this outcome. Did I use "Tactical Empathy" or did I trigger "Amygdala Hijack"?
+2. **The Pivot Point:** Identify the exact moment the negotiation turned in my favor (or fell apart).
+3. **Advanced Technique:** Teach me one advanced technique (e.g., "The Ackerman Bargain" or "Labeling") that I could have used in Step 2 to get a better result.
+
+TONE: Direct, psychological, actionable.`;
             }
         },
         
@@ -1233,75 +1233,152 @@ TONE: Technical, authoritative, pragmatic.`;
         },
         
         // ------------------------------------------------------------------
-        // WHAT-IF WAR ROOM (Updated with Red Team Prompt)
+        // WAR GAMES (Deterministic Strategy Logic)
         // ------------------------------------------------------------------
-        whatIf: {
-            input: '',
-            loading: false,
-            result: null,
+        warGames: {
+            active: false,
+            gameOver: false,
+            result: null, // 'victory', 'bankruptcy', 'regulatory_shutdown'
             
-            // Strategic Presets
-            examples: [
-                { title: "Outsourcing Core", text: "What if we outsource our Core Banking maintenance to a vendor to save 20% OpEx?" },
-                { title: "The GenAI Bet", text: "What if we replace Tier-1 Customer Support with an autonomous AI Agent?" },
-                { title: "The Freeze", text: "What if we implement a total hiring freeze for 12 months to hit EBITDA targets?" }
+            // State
+            currentScenario: null,
+            currentNode: 'start',
+            metrics: { capital: 100, innovation: 20, stability: 80 },
+            history: [],
+
+            // THE SCENARIOS (Branching Logic)
+            scenarios: [
+                {
+                    id: 'core',
+                    title: 'Operation: Open Heart',
+                    brief: 'The Board demands we replace the 40-year-old Core Banking System. It is risky, expensive, and necessary.',
+                    nodes: {
+                        'start': {
+                            text: "Our legacy vendor just raised prices by 40%. The Core is stable but inflexible. We cannot launch new products. What is the strategy?",
+                            options: [
+                                { text: "Big Bang Replacement. Buy a modern SaaS core and migrate everything in one weekend.", impact: { capital: -60, innovation: +50, stability: -40 }, next: 'big_bang', analysis: "High Risk / High Reward." },
+                                { text: "Hollow out the Core. Build a side-car 'Neobank' stack and migrate slowly.", impact: { capital: -30, innovation: +20, stability: -10 }, next: 'strangler', analysis: "The Strangler Fig Pattern." }
+                            ]
+                        },
+                        'big_bang': {
+                            text: "Migration Weekend is approaching. Testing shows a 15% error rate in account balances. The Board is watching.",
+                            options: [
+                                { text: "Delay the launch by 3 months to fix bugs.", impact: { capital: -20, innovation: 0, stability: +20 }, next: 'delay_pain', analysis: "Prudent but expensive." },
+                                { text: "Launch anyway. We'll fix errors in post-production support.", impact: { capital: 0, innovation: +10, stability: -50 }, next: 'crash', analysis: "Reckless gambling." }
+                            ]
+                        },
+                        'strangler': {
+                            text: "The new 'Side-Car' stack is live and customers love it. But maintaining two parallel banks is draining our OpEx budget.",
+                            options: [
+                                { text: "Cut funding to the Legacy maintenance team to save cash.", impact: { capital: +10, innovation: 0, stability: -30 }, next: 'outage', analysis: "Created technical debt." },
+                                { text: "Accelerate migration. Offer customers $50 bonus to switch to the new stack manually.", impact: { capital: -20, innovation: +10, stability: +10 }, next: 'victory', analysis: "Customer-led migration." }
+                            ]
+                        },
+                        'delay_pain': {
+                            text: "The delay burned cash, but the system is stable. However, a competitor just launched the features we were building.",
+                            options: [
+                                { text: "Stay the course. Reliability is our brand.", impact: { capital: -10, innovation: -10, stability: +10 }, next: 'victory', analysis: "Slow and steady survival." },
+                                { text: "Rush a feature update immediately after launch.", impact: { capital: -10, innovation: +20, stability: -20 }, next: 'crash', analysis: "Destabilized the platform." }
+                            ]
+                        },
+                        'outage': {
+                            text: "Disaster! The under-funded legacy core crashed on payday. 2 million customers cannot access funds.",
+                            options: [
+                                { text: "Blame the vendor publicly.", impact: { capital: 0, innovation: 0, stability: -20 }, next: 'shutdown', analysis: "Weak leadership." },
+                                { text: "Roll back everything to the old state.", impact: { capital: -20, innovation: -40, stability: +30 }, next: 'stagnation', analysis: "Retreat to safety." }
+                            ]
+                        },
+                        'crash': { text: "CRITICAL FAILURE. Data corruption detected. Regulators have entered the building.", options: [], next: 'shutdown' },
+                        'shutdown': { text: "GAME OVER. The banking license has been suspended.", options: [], next: 'end' },
+                        'victory': { text: "SUCCESS. Transformation complete. We are bruised but modern.", options: [], next: 'end' },
+                        'stagnation': { text: "SURVIVAL. We survived, but we are now a zombie bank with no innovation.", options: [], next: 'end' }
+                    }
+                }
             ],
 
-            setInput(text) {
-                this.input = text;
+            start(index) {
+                this.active = true;
+                this.gameOver = false;
+                this.currentScenario = this.scenarios[index];
+                this.currentNode = 'start';
+                this.metrics = { capital: 100, innovation: 20, stability: 80 };
+                this.history = [];
             },
 
-            // --- NEW: RED TEAM PROMPT GENERATOR ---
-            generateWarGamePrompt() {
-                const scenario = this.input || "[Insert Strategic Scenario Here]";
-                
-                return `ACT AS: A "Red Team" Strategist for a Global Bank.
+            choose(option) {
+                // 1. Math Engine
+                this.metrics.capital += option.impact.capital;
+                this.metrics.innovation += option.impact.innovation;
+                this.metrics.stability += option.impact.stability;
 
-## THE HYPOTHESIS
-Management is considering the following strategic move:
-"${scenario}"
+                // 2. Log Decision
+                this.history.push({
+                    situation: this.currentScenario.nodes[this.currentNode].text,
+                    decision: option.text,
+                    rationale: option.analysis,
+                    impact: option.impact
+                });
 
-## YOUR MISSION (WAR GAME SIMULATION)
-Do not give me a balanced view. Your job is to find the breaking points. Conduct a "Pre-Mortem" analysis assuming we are 12 months in the future and this decision has failed catastrophically.
-
-## REPORT STRUCTURE
-1. **The "Black Swan" Event:** Describe the specific worst-case scenario that caused the failure.
-2. **Second-Order Effects:** We know the immediate benefit (e.g., cost savings), but what is the hidden secondary cost? (e.g., loss of institutional knowledge, regulatory fine, talent exodus).
-3. **The "Kill Switch":** What is the one leading indicator we must watch? If this metric turns red, we must abort immediately.
-
-TONE: Paranoid, analytical, risk-obsessed.`;
-            },
-
-            async analyze() {
-                if (!this.input.trim()) return;
-                
-                this.loading = true;
-                this.result = null;
-
-                const API_KEY = localStorage.getItem('bilingual_api_key');
-                if (!API_KEY) {
-                    this.result = "<p class='text-risk font-bold'>Error: API Key missing. Use the 'Copy Prompt' button below to run this in your own AI tool.</p>";
-                    this.loading = false;
+                // 3. Check for immediate failures
+                if (this.metrics.capital <= 0) {
+                    this.finishGame('bankruptcy', "INSOLVENCY. You ran out of money.");
+                    return;
+                }
+                if (this.metrics.stability <= 20) {
+                    this.finishGame('regulatory_shutdown', "INTERVENTION. Regulators seized the bank due to risk.");
                     return;
                 }
 
-                try {
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
-                        method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: this.generateWarGamePrompt() }] }] })
-                    });
+                // 4. Handle End States
+                if (['shutdown', 'end', 'crash', 'stagnation'].includes(option.next)) {
+                    // Map node ID to result type
+                    let res = 'victory';
+                    if (option.next === 'crash' || option.next === 'shutdown') res = 'regulatory_shutdown';
+                    if (option.next === 'stagnation') res = 'stagnation';
                     
-                    if (!response.ok) throw new Error("API Error");
-                    let json = await response.json();
-                    let rawText = json.candidates[0].content.parts[0].text;
-                    
-                    this.result = DOMPurify.sanitize(marked.parse(rawText));
-
-                } catch (e) {
-                    this.result = `<p class='text-risk'>Simulation Failed: ${e.message}. Use the Copy button below.</p>`;
-                } finally {
-                    this.loading = false;
+                    // Update text for the final screen
+                    this.currentNode = option.next; 
+                    this.finishGame(res, this.currentScenario.nodes[option.next].text);
+                } else {
+                    // Advance
+                    this.currentNode = option.next;
                 }
+            },
+
+            finishGame(result, msg) {
+                this.gameOver = true;
+                this.result = result;
+                this.finalMessage = msg;
+            },
+
+            restart() {
+                this.active = false;
+                this.gameOver = false;
+                this.history = [];
+            },
+
+            // --- NEW: STRATEGIC POST-MORTEM PROMPT ---
+            generateWarGamePrompt() {
+                const decisionPath = this.history.map((h, i) => 
+                    `Turn ${i+1}: ${h.decision} (Intent: ${h.rationale})`
+                ).join("\n");
+
+                return `ACT AS: A McKinsey Senior Partner conducting a Strategic Post-Mortem.
+
+## WAR GAME RESULTS
+I just simulated a Bank Transformation Strategy ("${this.currentScenario.title}").
+- **FINAL OUTCOME:** ${this.result.toUpperCase()}
+- **Ending Metrics:** Capital (${this.metrics.capital}), Innovation (${this.metrics.innovation}), Stability (${this.metrics.stability}).
+
+## THE DECISION CHAIN
+${decisionPath}
+
+## YOUR ANALYSIS
+1. **The Fatal Flaw (or Winning Move):** Identify the single decision that sealed my fate. Was it a math error or a cultural error?
+2. **Alternative History:** If you were the CEO, which turn would you have played differently and why?
+3. **The Executive Lesson:** Give me one "Law of Corporate Strategy" that applies to this specific run (e.g. "Conway's Law" or "The Sunk Cost Fallacy").
+
+TONE: Brutally honest, high-level strategic insight.`;
             }
         },
         
