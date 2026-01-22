@@ -2204,7 +2204,9 @@ TONE: Visionary, urgent, but grounded in banking reality.`;
             const q = this.searchQuery.toLowerCase(); 
             return this.dictionary.filter(i => i.banker.toLowerCase().includes(q) || i.tech.toLowerCase().includes(q) || i.translation.toLowerCase().includes(q)); 
         },
-        
+
+  // ---  LIGHTHOUSE ---
+
         lighthouseData: [
             {category:"Value",text:"Customer Facing?"},
             {category:"Value",text:"Solving Pain?"},
@@ -2222,6 +2224,53 @@ TONE: Visionary, urgent, but grounded in banking reality.`;
             return this.lighthouseData.filter(i=>i.checked).length; 
         },
 
+        generateLighthousePrompt() {
+            const score = this.lighthouseCount;
+            const status = this.getLighthouseStatus();
+            
+            // 1. Identify specific gaps
+            const missingItems = this.lighthouseData
+                .filter(i => !i.checked)
+                .map(i => `[MISSING] ${i.category}: ${i.text}`)
+                .join("\n");
+
+            // 2. Determine Strategy based on Score
+            let strategy = "";
+            let action = "";
+
+            if (score === 10) {
+                strategy = "GO FOR LAUNCH. The initiative is fully bilingual (Valuable + Feasible).";
+                action = "Draft a 'Launch Announcement' focusing on speed to market and immediate value capture.";
+            } else if (score >= 8) {
+                strategy = "PROCEED WITH CAUTION. We are taking on specific technical or value risks.";
+                action = "Draft a 'Risk Mitigation Plan' specifically addressing the missing items below. We need a waiver to proceed.";
+            } else {
+                strategy = "NO GO. STOP THE LINE. This project is a 'Zombie' in the making.";
+                action = "Draft a 'Kill/Pivot Memo'. Explain why continuing now would waste resources, and propose a specific pivot to fix the gaps.";
+            }
+
+            return `ACT AS: A Product Innovation Lead and Venture Capitalist.
+
+## THE PITCH EVALUATION (LIGHTHOUSE SCORE)
+I have run our initiative through the Lighthouse Criteria.
+- **SCORE:** ${score}/10
+- **STATUS:** ${status.title}
+- **VERDICT:** ${strategy}
+
+## THE GAP ANALYSIS
+The following criteria were NOT met:
+${missingItems || "None. All systems go."}
+
+## YOUR MISSION
+${action}
+
+1. **The Hard Truth:** Assess the impact of the missing criteria. Why does missing this make us fail?
+2. **The Decision:** Authorize the next step (Launch, Delay, or Kill).
+3. **The 30-Day Fix:** If we are delaying, what exactly must be built/proved in the next sprint to turn this Green?
+
+TONE: Objective, high-standards, focused on resource efficiency.`;
+        },
+        //==============
         repairKitData: [
             {symptom:"The Feature Factory", diagnosis:"High velocity, no value. Measuring output not outcome.", prescription:["Stop celebrating feature counts.", "Audit value with PO."]}, 
             {symptom:"The Cloud Bill Shock", diagnosis:"Lift and Shift strategy. No FinOps.", prescription:["Implement FinOps ticker.", "Auto-shutdown non-prod servers."]}, 
