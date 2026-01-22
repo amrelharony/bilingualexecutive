@@ -302,8 +302,8 @@ talentSkills: [
         talentChartInstance: null,
         gapChartInstance: null,
 
-        // ------------------------------------------------------------------
-        // NEW FEATURE: CASE STUDY SIMULATOR
+// ------------------------------------------------------------------
+        // CASE STUDY SIMULATOR (Updated with AI Prompt)
         // ------------------------------------------------------------------
         caseStudy: {
             active: false,
@@ -393,7 +393,6 @@ talentSkills: [
                     step: this.step + 1,
                     scenario: currentScenario.title,
                     decision: choice.text,
-                    feedback: choice.feedback,
                     result: choice.outcome
                 });
 
@@ -410,9 +409,42 @@ talentSkills: [
             endGame(message) {
                 this.gameOver = true;
                 this.finalMessage = message;
+            },
+
+            // --- NEW: SIMULATOR AI PROMPT ---
+            generateSimulatorPrompt() {
+                const m = this.metrics;
+                // Format the history for the AI
+                const decisionLog = this.history.map(h => 
+                    `turn ${h.step}: On "${h.scenario}", I chose to "${h.decision}". Result: ${h.result.toUpperCase()}.`
+                ).join("\n");
+
+                let profile = "";
+                if(m.politicalCapital > 80) profile = "Master Politician (High Trust)";
+                else if (m.politicalCapital < 20) profile = "Dead Man Walking (Zero Trust)";
+                else profile = "Average Operator";
+
+                return `ACT AS: The Chairman of the Board conducting a Performance Review.
+
+## SIMULATION DATA (THE MERIDIAN PROTOCOL)
+I have just completed a 90-day turnaround simulation as the new CDO.
+- **FINAL OUTCOME:** ${this.finalMessage}
+- **Political Capital:** ${m.politicalCapital}% (${profile})
+- **Velocity Score:** ${m.velocity}
+- **Risk Exposure:** ${m.risk}%
+
+## MY DECISION LOG
+${decisionLog}
+
+## YOUR ASSESSMENT
+1. **The Verdict:** Analyze my decision-making style based on the logs. Am I too reckless? Too cautious? Or truly Bilingual?
+2. **The Blind Spot:** Identify one critical mistake I made (or a risk I ignored) based on the logs.
+3. **The Coaching:** Give me one mental model to improve my executive decision-making.
+
+TONE: Senior, direct, mentorship-focused.`;
             }
         },
-
+        
         // ------------------------------------------------------------------
         // BILINGUAL FLASHCARD QUIZ
         // ------------------------------------------------------------------
@@ -508,24 +540,24 @@ talentSkills: [
             }
         },
 
-        // ------------------------------------------------------------------
-        // ROLE-PLAY SIMULATOR
+// ------------------------------------------------------------------
+        // ROLE-PLAY DOJO (Updated with Transcript Analysis)
         // ------------------------------------------------------------------
         rolePlay: {
             active: false,
+            showDebrief: false, // NEW: Controls the Analysis screen
             scenario: null,
             messages: [],
             input: '',
             loading: false,
             
-            // The Scenarios
             scenarios: [
                 {
                     id: 'cloud',
                     title: 'The Cloud Skeptic',
                     myRole: 'Chief Digital Officer',
-                    opponent: 'CFO',
-                    topic: 'Cloud Migration Cost',
+                    opponent: 'CFO (The Bean Counter)',
+                    topic: 'Cloud Migration Cost ($10M)',
                     intro: 'I see a $10M request for AWS. Our physical data centers are fully paid for. Why should I approve this massive OpEx spike just to rent computers?'
                 },
                 {
@@ -533,7 +565,7 @@ talentSkills: [
                     title: 'The Scope Creeper',
                     myRole: 'Product Owner',
                     opponent: 'Head of Sales',
-                    topic: 'Minimum Viable Product',
+                    topic: 'MVP Definition',
                     intro: 'I saw the prototype. It looks basic. We cannot launch without the "Gold Tier" features. My clients expect perfection, not an experiment.'
                 },
                 {
@@ -548,16 +580,32 @@ talentSkills: [
 
             start(index) {
                 this.active = true;
+                this.showDebrief = false;
                 this.scenario = this.scenarios[index];
                 this.messages = [
                     { role: 'opponent', text: this.scenario.intro }
                 ];
                 this.input = '';
+                // Auto-scroll to bottom
+                this.$nextTick(() => this.scrollToBottom());
             },
 
-            stop() {
+            // Stop the chat and show the analysis
+            endSession() {
                 this.active = false;
+                this.showDebrief = true;
+            },
+
+            // Reset everything
+            reset() {
+                this.active = false;
+                this.showDebrief = false;
                 this.messages = [];
+            },
+
+            scrollToBottom() {
+                const el = document.getElementById('rp-chat-box');
+                if (el) el.scrollTop = el.scrollHeight;
             },
 
             async send() {
@@ -565,9 +613,9 @@ talentSkills: [
                 
                 // 1. Add User Message
                 this.messages.push({ role: 'user', text: this.input });
-                const userText = this.input;
                 this.input = '';
                 this.loading = true;
+                this.$nextTick(() => this.scrollToBottom());
 
                 // 2. Check API Key
                 const API_KEY = localStorage.getItem('bilingual_api_key');
@@ -577,27 +625,19 @@ talentSkills: [
                     return;
                 }
 
-                // 3. Construct the "Roleplay" Prompt
-                // We trick the AI into playing a character
+                // 3. Construct Prompt
                 const systemPrompt = `
                     ACT AS: ${this.scenario.opponent} at a traditional bank.
                     USER IS: ${this.scenario.myRole}.
                     TOPIC: ${this.scenario.topic}.
-                    GOAL: You are skeptical and resistant to change. The user must convince you using "Business Value" (ROI, Speed, Risk Reduction).
-                    RULES: 
-                    1. If the user uses tech jargon (Kubernetes, APIs) without explaining the business value, push back hard.
-                    2. If the user explains the value well (e.g., "Speed to market," "Cost of delay"), start to agree.
-                    3. Keep responses short (under 50 words). Conversational style.
-                    4. If they convince you, say "You have a deal."
-                    
+                    GOAL: You are skeptical. Push back hard on tech jargon. Only agree if the user explains BUSINESS VALUE (Money, Speed, Risk).
+                    RESPONSE: Keep it under 40 words. Conversational.
                     HISTORY: ${JSON.stringify(this.messages)}
                 `;
 
                 // 4. Call Gemini
                 try {
-                    // Try Flash model first
-                    let model = "gemini-3-flash-preview";
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
+                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
                         method: "POST", headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
                     });
@@ -611,10 +651,38 @@ talentSkills: [
                     this.messages.push({ role: 'system', text: "Connection error. The simulation has ended." });
                 } finally {
                     this.loading = false;
+                    this.$nextTick(() => this.scrollToBottom());
                 }
+            },
+
+            // --- NEW: COACHING PROMPT GENERATOR ---
+            generateCoachPrompt() {
+                // Convert the chat array into a readable script
+                const transcript = this.messages.map(m => 
+                    `${m.role === 'user' ? 'ME' : 'OPPONENT'}: "${m.text}"`
+                ).join("\n\n");
+
+                return `ACT AS: A Master Negotiation Coach (FBI Hostage Negotiator Style).
+
+## THE SCENARIO
+I just role-played a high-stakes conversation.
+- **My Role:** ${this.scenario.myRole}
+- **Opponent:** ${this.scenario.opponent}
+- **Topic:** ${this.scenario.topic}
+
+## THE TRANSCRIPT
+${transcript}
+
+## YOUR COACHING REPORT
+1. **The Grading:** Rate my influence skills (1-10). Did I convince them?
+2. **The "Labeling" Analysis:** Did I acknowledge their pain ("It sounds like you are worried about...") or did I just argue facts?
+3. **The Missed Opportunity:** Quote one specific line where I used "Jargon" or "Logic" when I should have used "Empathy" or "Business Value".
+4. **The Re-Write:** Rewrite my weakest response to be persuasive.
+
+TONE: Direct, tactical, psychological.`;
             }
         },
-
+        
         // ------------------------------------------------------------------
 // USER ACTIVITY TRACKING FOR PWA PROMPT (Move to main scope)
 // ------------------------------------------------------------------
@@ -1070,28 +1138,26 @@ ${skills.map(s => `- ${s.label}: ${s.val}/5`).join('\n')}
         },
 
         
-        // ------------------------------------------------------------------
-        //  API SANDBOX
+// ------------------------------------------------------------------
+        //  API SANDBOX (Updated with Architecture Blueprint Prompt)
         // ------------------------------------------------------------------
         apiSandbox: {
-            pipeline: [], // Stores selected components
+            pipeline: [], 
             isRunning: false,
-            result: null, // Holds the simulation result
+            result: null,
             
-            // The Menu of Components
             catalog: [
-                { id: 'mainframe', label: 'Legacy Core (COBOL)', latency: 2000, risk: 'High', icon: 'fa-server', color: 'text-risk border-risk' },
-                { id: 'esb', label: 'Enterprise Bus', latency: 800, risk: 'Med', icon: 'fa-network-wired', color: 'text-warn border-warn' },
-                { id: 'api', label: 'Modern REST API', latency: 100, risk: 'Low', icon: 'fa-cloud', color: 'text-blue-400 border-blue-400' },
-                { id: 'cache', label: 'Redis Cache', latency: 10, risk: 'Low', icon: 'fa-bolt', color: 'text-yellow-400 border-yellow-400' },
-                { id: 'firewall', label: 'Legacy Firewall', latency: 500, risk: 'Low', icon: 'fa-shield-halved', color: 'text-slate-400 border-slate-400' }
+                { id: 'mainframe', label: 'Legacy Core (COBOL)', latency: 2000, risk: 'High', icon: 'fa-server', color: 'text-risk border-risk bg-risk/10' },
+                { id: 'esb', label: 'Enterprise Bus (ESB)', latency: 800, risk: 'Med', icon: 'fa-network-wired', color: 'text-warn border-warn bg-warn/10' },
+                { id: 'api', label: 'Modern REST API', latency: 100, risk: 'Low', icon: 'fa-cloud', color: 'text-blue-400 border-blue-400 bg-blue-400/10' },
+                { id: 'cache', label: 'Redis Cache', latency: 10, risk: 'Low', icon: 'fa-bolt', color: 'text-yellow-400 border-yellow-400 bg-yellow-400/10' },
+                { id: 'firewall', label: 'Legacy Firewall', latency: 500, risk: 'Low', icon: 'fa-shield-halved', color: 'text-slate-400 border-slate-400 bg-slate-400/10' }
             ],
 
             addComponent(item) {
                 if (this.pipeline.length < 5) {
-                    // Create a copy of the item
                     this.pipeline.push({ ...item, uid: Date.now() });
-                    this.result = null; // Reset results on change
+                    this.result = null;
                 }
             },
 
@@ -1112,47 +1178,98 @@ ${skills.map(s => `- ${s.label}: ${s.val}/5`).join('\n')}
                 this.isRunning = true;
                 this.result = null;
 
-                // Calculate total theoretical latency
                 const totalLatency = this.pipeline.reduce((sum, item) => sum + item.latency, 0);
                 
-                // Visualize the "Flow" (Artificial delay for effect)
-                // We cap the animation at 3 seconds max for UX, but show real numbers
-                const animationTime = Math.min(totalLatency, 3000); 
-
+                // Visual delay (capped at 3s for UX)
+                const animationTime = Math.min(totalLatency, 2500); 
                 await new Promise(r => setTimeout(r, animationTime));
 
                 this.isRunning = false;
                 
-                // Generate Insight
                 let message = "";
-                if (totalLatency < 300) message = "🚀 BILINGUAL SPEED! You built a modern, cached architecture.";
-                else if (totalLatency < 1500) message = "⚠️ AVERAGE. Typical hybrid bank. Functional but sluggish.";
-                else message = "🐢 LEGACY CRAWL. This request timed out. The customer went to a Fintech.";
+                if (totalLatency < 300) message = "🚀 REAL-TIME READY. This stack can handle high-frequency trading or instant payments.";
+                else if (totalLatency < 1500) message = "⚠️ HYBRID LAG. Functional, but the legacy hops are killing your customer experience.";
+                else message = "🐢 TIMEOUT RISK. This architecture is too brittle for mobile banking.";
 
                 this.result = {
                     time: totalLatency,
                     message: message
                 };
+            },
+
+            // --- NEW: ARCHITECT PROMPT GENERATOR ---
+            generateArchPrompt() {
+                if (this.pipeline.length === 0) return "Please add components to the board first.";
+
+                const stack = this.pipeline.map(p => p.label).join(" --> ");
+                const totalLatency = this.pipeline.reduce((sum, item) => sum + item.latency, 0);
+                const hasMainframe = this.pipeline.some(p => p.id === 'mainframe');
+                const hasCache = this.pipeline.some(p => p.id === 'cache');
+
+                let bottleneck = "";
+                if (hasMainframe) bottleneck = "The Mainframe Core is the bottleneck. Direct dependency creates coupling.";
+                else if (totalLatency > 1000) bottleneck = "Too many hops. The Enterprise Bus (ESB) is adding unnecessary drag.";
+                else bottleneck = "Latency is acceptable, but check for Single Points of Failure.";
+
+                return `ACT AS: A Chief Enterprise Architect.
+
+## THE CURRENT ARCHITECTURE (DATA PATH)
+I have mapped the "Happy Path" of a critical transaction:
+**USER REQUEST** --> ${stack}
+
+## PERFORMANCE METRICS
+- **Total Round-Trip Latency:** ${totalLatency}ms
+- **Bottleneck Identified:** ${bottleneck}
+- **Modernization Status:** ${hasCache ? "Partial (Caching Layer Active)" : "Raw (Direct Hits)"}
+
+## YOUR MISSION (MODERNIZATION ROADMAP)
+Draft a **Technical Architecture Standard** document to fix this flow.
+1. **The Pattern:** Recommend a specific pattern to decouple this (e.g., Strangler Fig, Anti-Corruption Layer, or CQRS).
+2. **The Fix:** Explain how to drop the latency by 50% without rewriting the Core immediately.
+3. **The Governance:** Write a "Thou Shalt Not" rule for developers regarding this specific stack (e.g., "No direct calls to Mainframe from Mobile").
+
+TONE: Technical, authoritative, pragmatic.`;
             }
         },
-
+        
         // ------------------------------------------------------------------
-        // WHAT-IF SCENARIO PLANNER
+        // WHAT-IF WAR ROOM (Updated with Red Team Prompt)
         // ------------------------------------------------------------------
         whatIf: {
             input: '',
             loading: false,
             result: null,
             
-            // Quick-start prompts for the user
+            // Strategic Presets
             examples: [
-                "What if we outsource our Core Banking maintenance to a vendor?",
-                "What if we delay the mobile app rewrite by 6 months to save cash?",
-                "What if we use Generative AI to automate loan approvals?"
+                { title: "Outsourcing Core", text: "What if we outsource our Core Banking maintenance to a vendor to save 20% OpEx?" },
+                { title: "The GenAI Bet", text: "What if we replace Tier-1 Customer Support with an autonomous AI Agent?" },
+                { title: "The Freeze", text: "What if we implement a total hiring freeze for 12 months to hit EBITDA targets?" }
             ],
 
             setInput(text) {
                 this.input = text;
+            },
+
+            // --- NEW: RED TEAM PROMPT GENERATOR ---
+            generateWarGamePrompt() {
+                const scenario = this.input || "[Insert Strategic Scenario Here]";
+                
+                return `ACT AS: A "Red Team" Strategist for a Global Bank.
+
+## THE HYPOTHESIS
+Management is considering the following strategic move:
+"${scenario}"
+
+## YOUR MISSION (WAR GAME SIMULATION)
+Do not give me a balanced view. Your job is to find the breaking points. Conduct a "Pre-Mortem" analysis assuming we are 12 months in the future and this decision has failed catastrophically.
+
+## REPORT STRUCTURE
+1. **The "Black Swan" Event:** Describe the specific worst-case scenario that caused the failure.
+2. **Second-Order Effects:** We know the immediate benefit (e.g., cost savings), but what is the hidden secondary cost? (e.g., loss of institutional knowledge, regulatory fine, talent exodus).
+3. **The "Kill Switch":** What is the one leading indicator we must watch? If this metric turns red, we must abort immediately.
+
+TONE: Paranoid, analytical, risk-obsessed.`;
             },
 
             async analyze() {
@@ -1163,53 +1280,31 @@ ${skills.map(s => `- ${s.label}: ${s.val}/5`).join('\n')}
 
                 const API_KEY = localStorage.getItem('bilingual_api_key');
                 if (!API_KEY) {
-                    this.result = "<p class='text-risk font-bold'>Error: API Key missing. Please click the 'Key' icon in the top right to set your Google Gemini API Key.</p>";
+                    this.result = "<p class='text-risk font-bold'>Error: API Key missing. Use the 'Copy Prompt' button below to run this in your own AI tool.</p>";
                     this.loading = false;
                     return;
                 }
 
-                // The "Consultant" System Prompt
-                const systemPrompt = `
-                    ACT AS: A top-tier Strategy Consultant advising a Bank Board.
-                    TASK: Analyze the following strategic hypothesis: "${this.input}"
-                    
-                    OUTPUT FORMAT: A structured 'Board Briefing Note'.
-                    Use Markdown formatting (## for headers, ** for bold).
-                    
-                    SECTIONS REQUIRED:
-                    1. **Executive Verdict**: Start with a clear "GREEN LIGHT", "YELLOW LIGHT", or "RED LIGHT" status and a 1-sentence summary.
-                    2. **The Technical Reality** (Speak to the CTO): Architecture impact, legacy integration risks, complexity.
-                    3. **The Financial Lens** (Speak to the CFO): CapEx vs OpEx implications, ROI timeline, hidden costs.
-                    4. **Risk & Governance** (Speak to the CRO): Regulatory hurdles, data privacy, brand risk.
-                    5. **The Bilingual Recommendation**: A final decisive paragraph on how to proceed safely.
-                    
-                    TONE: Professional, concise, brutal honesty. No corporate fluff.
-                `;
-
                 try {
-                    // Failover logic for models
-                    let model = "gemini-3-flash-preview";
-                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
+                    let response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${API_KEY}`, {
                         method: "POST", headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: systemPrompt }] }] })
+                        body: JSON.stringify({ contents: [{ parts: [{ text: this.generateWarGamePrompt() }] }] })
                     });
                     
                     if (!response.ok) throw new Error("API Error");
                     let json = await response.json();
                     let rawText = json.candidates[0].content.parts[0].text;
                     
-                    // Convert Markdown to HTML using the 'marked' library (loaded in index.html)
-                    // Then sanitize it for security
                     this.result = DOMPurify.sanitize(marked.parse(rawText));
 
                 } catch (e) {
-                    this.result = `<p class='text-risk'>Simulation Failed: ${e.message}. Please check your API Key and internet connection.</p>`;
+                    this.result = `<p class='text-risk'>Simulation Failed: ${e.message}. Use the Copy button below.</p>`;
                 } finally {
                     this.loading = false;
                 }
             }
         },
-
+        
         // ------------------------------------------------------------------
         // NAVIGATION & TOOLS
         // ------------------------------------------------------------------
