@@ -297,302 +297,343 @@
 
         <!-- Tool Content Container -->
          <div class="p-4 md:p-8 pb-20">
-             
-             <!-- SIMULATOR TAB -->
-            <div x-show="currentTab === 'simulator'" x-cloak class="max-w-4xl mx-auto">
-                
-                <!-- Intro Screen -->
-                <div x-show="!caseStudy.active" class="text-center py-10">
-                    <div class="inline-block p-6 rounded-full bg-card border border-primary/30 mb-6">
-                        <i class="fa-solid fa-chess-knight text-5xl text-primary"></i>
+
+             <!-- SIMULATOR TAB (REDESIGNED) -->
+<div x-show="currentTab === 'simulator'" x-cloak class="max-w-5xl mx-auto pb-20">
+    
+    <!-- Intro Screen -->
+    <div x-show="!caseStudy.active" class="text-center py-20">
+        <div class="inline-block p-8 rounded-full bg-slate-900 border-2 border-primary/30 mb-8 shadow-[0_0_30px_rgba(74,222,128,0.1)]">
+            <i class="fa-solid fa-chess-knight text-6xl text-primary"></i>
+        </div>
+        <h2 class="text-5xl font-mono font-bold text-white mb-6 tracking-tight">The Meridian Trust Protocol</h2>
+        <p class="text-slate-400 max-w-xl mx-auto mb-10 text-lg leading-relaxed">
+            Simulation Mode: <span class="text-white font-bold">Active</span><br>
+            Role: <span class="text-white font-bold">Chief Digital Officer</span><br>
+            Objective: <span class="text-white font-bold">Survive 90 Days</span>
+        </p>
+        <button @click="caseStudy.start()" class="bg-primary hover:bg-green-400 text-dark font-bold py-4 px-10 rounded-full shadow-glow transition-all text-sm tracking-widest uppercase">
+            Initialize Simulation
+        </button>
+    </div>
+
+    <!-- Active Game UI -->
+    <div x-show="caseStudy.active && !caseStudy.gameOver" class="space-y-8">
+        
+        <!-- HEADS-UP DISPLAY (Telemetry) -->
+        <div class="sticky top-0 z-30 bg-slate-900/90 backdrop-blur-md border-b border-slate-700 p-4 -mx-4 md:mx-0 md:rounded-xl md:border shadow-2xl">
+            <div class="grid grid-cols-3 gap-4 text-center">
+                <!-- Political Capital -->
+                <div>
+                    <div class="text-[10px] uppercase font-mono text-slate-500 mb-1">Political Capital</div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mb-1">
+                        <div class="h-full transition-all duration-500" 
+                             :class="caseStudy.metrics.politicalCapital < 30 ? 'bg-risk' : 'bg-primary'"
+                             :style="`width: ${caseStudy.metrics.politicalCapital}%`"></div>
                     </div>
-                    <h2 class="text-4xl font-mono font-bold text-white mb-4">The Meridian Trust Protocol</h2>
-                    <p class="text-textMuted max-w-xl mx-auto mb-8">
-                        Step into the shoes of Sarah, the new CDO. You have 90 days to save a failing bank.
-                        Your decisions will impact Political Capital, Velocity, and Risk.
-                    </p>
-                    <button @click="caseStudy.start()" class="bg-primary hover:bg-green-400 text-dark font-bold py-4 px-8 rounded-lg shadow-glow transition-all">
-                        START SIMULATION
-                    </button>
+                    <span class="font-mono text-sm font-bold text-white" x-text="caseStudy.metrics.politicalCapital + '%'"></span>
                 </div>
-
-                <!-- QUIZ / FLASHCARDS TAB -->
-            <div x-show="currentTab === 'quiz'" x-cloak class="max-w-2xl mx-auto">
-                
-                <!-- 1. Start Screen -->
-                <div x-show="!quiz.active" class="text-center py-12">
-                    <div class="w-24 h-24 bg-card rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-cyan-400 shadow-glow">
-                        <i class="fa-solid fa-brain text-4xl text-cyan-400"></i>
+                <!-- Velocity -->
+                <div>
+                    <div class="text-[10px] uppercase font-mono text-slate-500 mb-1">Velocity</div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mb-1">
+                        <div class="bg-purple-400 h-full transition-all duration-500" :style="`width: ${caseStudy.metrics.velocity}%`"></div>
                     </div>
-                    <h2 class="text-3xl font-mono font-bold text-white mb-4">The Bilingual Dictionary</h2>
-                    <p class="text-textMuted max-w-md mx-auto mb-8">
-                        Can you translate "Technologist" into "Business Value"? Test your fluency with 5 rapid-fire flashcards.
-                    </p>
-                    <button @click="quiz.start()" class="bg-cyan-400 hover:bg-cyan-300 text-dark font-bold py-4 px-10 rounded-full transition-all active:scale-95 shadow-lg">
-                        START QUIZ
-                    </button>
+                    <span class="font-mono text-sm font-bold text-white" x-text="caseStudy.metrics.velocity"></span>
                 </div>
-
-                <!-- 2. Gameplay Screen -->
-                <div x-show="quiz.active && !quiz.finished" class="relative">
-                    <!-- Progress Bar -->
-                    <div class="w-full bg-slate-800 h-2 rounded-full mb-6">
-                        <div class="bg-cyan-400 h-2 rounded-full transition-all duration-300" 
-                             :style="`width: ${((quiz.currentQuestion + 1) / quiz.questions.length) * 100}%`"></div>
+                <!-- Risk -->
+                <div>
+                    <div class="text-[10px] uppercase font-mono text-slate-500 mb-1">Risk Exposure</div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden mb-1">
+                        <div class="h-full transition-all duration-500" 
+                             :class="caseStudy.metrics.risk > 70 ? 'bg-risk' : 'bg-blue-400'"
+                             :style="`width: ${caseStudy.metrics.risk}%`"></div>
                     </div>
-
-                    <!-- The Flashcard -->
-                    <div class="bg-card border border-slate-700 p-8 rounded-2xl shadow-2xl relative overflow-hidden min-h-[400px] flex flex-col justify-center">
-                        
-                        <!-- Flashcard Content -->
-                        <div class="text-center mb-8">
-                            <span class="text-[10px] font-mono text-cyan-400 tracking-widest uppercase mb-2 block">
-                                TERM TO TRANSLATE
-                            </span>
-                            <h3 class="text-3xl md:text-4xl font-bold text-white" x-text="quiz.questions[quiz.currentQuestion].term"></h3>
-                        </div>
-
-                        <!-- Options -->
-                        <div class="space-y-3">
-                            <template x-for="(option, index) in quiz.questions[quiz.currentQuestion].options" :key="index">
-                                <button @click="quiz.submitAnswer(option.correct)"
-                                        :class="{
-                                            'hover:border-cyan-400 hover:bg-slate-800': !quiz.feedback,
-                                            'border-green-500 bg-green-500/10': quiz.feedback && option.correct,
-                                            'border-red-500 bg-red-500/10 opacity-50': quiz.feedback && !option.correct
-                                        }"
-                                        class="w-full p-4 rounded-xl border border-slate-600 text-left transition-all duration-200">
-                                    <span class="text-sm md:text-base text-slate-200" x-text="option.text"></span>
-                                </button>
-                            </template>
-                        </div>
-
-                        <!-- Feedback Overlay (Popup) -->
-                        <div x-show="quiz.feedback" x-transition.opacity 
-                             class="absolute inset-0 flex items-center justify-center backdrop-blur-sm z-10 rounded-2xl">
-                            <div class="p-6 rounded-full shadow-2xl transform scale-110" 
-                                 :class="quiz.feedback === 'correct' ? 'bg-green-500' : 'bg-red-500'">
-                                <i class="fa-solid text-4xl text-white" 
-                                   :class="quiz.feedback === 'correct' ? 'fa-check' : 'fa-xmark'"></i>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <!-- 3. Results Screen -->
-                <div x-show="quiz.finished" class="text-center py-10">
-                    <h2 class="text-2xl font-mono text-white mb-2">SESSION COMPLETE</h2>
-                    <div class="text-6xl font-bold mb-4" :class="quiz.score === 5 ? 'text-primary' : 'text-cyan-400'">
-                        <span x-text="quiz.score"></span>/<span x-text="quiz.questions.length"></span>
-                    </div>
-                    
-                    <p class="text-textMuted mb-8" x-show="quiz.score === 5">Perfect Score! You are a Bilingual Executive.</p>
-                    <p class="text-textMuted mb-8" x-show="quiz.score < 5">Keep practicing. Fluency takes time.</p>
-
-                    <button @click="quiz.start()" class="border border-slate-500 hover:bg-slate-800 text-white py-3 px-8 rounded-full transition-all">
-                        <i class="fa-solid fa-rotate-right mr-2"></i> Play Again
-                    </button>
+                    <span class="font-mono text-sm font-bold text-white" x-text="caseStudy.metrics.risk + '%'"></span>
                 </div>
             </div>
+        </div>
 
-                <!-- Game Interface -->
-                <div x-show="caseStudy.active && !caseStudy.gameOver" class="grid md:grid-cols-3 gap-6">
-                    
-                    <!-- Left: The Situation -->
-                    <div class="md:col-span-2 space-y-6">
-                        <div class="bg-card border-l-4 border-primary p-6 rounded-r-lg shadow-lg relative overflow-hidden">
-                            <span class="text-[10px] font-mono text-primary tracking-widest uppercase mb-2 block">
-                                Decision Point <span x-text="caseStudy.step + 1"></span>/3
-                            </span>
-                            <h3 class="text-2xl font-bold text-white mb-4" x-text="caseStudy.scenarios[caseStudy.step].title"></h3>
-                            <p class="text-slate-300 leading-relaxed text-lg" x-text="caseStudy.scenarios[caseStudy.step].context"></p>
-                            
-                            <div class="mt-8 p-4 bg-dark/50 rounded border border-slate-700">
-                                <p class="font-mono text-warn text-sm mb-2"><i class="fa-solid fa-triangle-exclamation mr-2"></i>THE DILEMMA</p>
-                                <p class="text-white font-bold italic" x-text="caseStudy.scenarios[caseStudy.step].question"></p>
-                            </div>
-                        </div>
-
-                        <!-- Choices -->
-                        <div class="grid gap-4">
-                            <template x-for="(choice, index) in caseStudy.scenarios[caseStudy.step].choices" :key="index">
-                                <button @click="caseStudy.makeChoice(index)" 
-                                        class="text-left p-5 rounded-lg border border-slate-600 hover:border-primary hover:bg-slate-800 transition-all group relative">
-                                    <div class="absolute top-5 right-5 opacity-0 group-hover:opacity-100 transition-opacity text-primary">
-                                        <i class="fa-solid fa-arrow-right"></i>
-                                    </div>
-                                    <span class="font-mono text-xs text-slate-500 block mb-1">OPTION <span x-text="index + 1"></span></span>
-                                    <span class="text-white font-medium" x-text="choice.text"></span>
-                                </button>
-                            </template>
-                        </div>
-                    </div>
-
-                    <!-- Right: The Dashboard -->
-                    <div class="bg-card border border-slate-700 p-6 rounded-xl h-fit sticky top-6">
-                        <h4 class="font-mono text-xs text-slate-400 uppercase mb-6 border-b border-slate-700 pb-2">Live Telemetry</h4>
-                        
-                        <div class="space-y-6">
-                            <div>
-                                <div class="flex justify-between mb-1">
-                                    <span class="text-xs text-white">Political Capital</span>
-                                    <span class="text-xs font-mono" :class="caseStudy.metrics.politicalCapital < 30 ? 'text-risk' : 'text-primary'" x-text="caseStudy.metrics.politicalCapital + '%'"></span>
-                                </div>
-                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
-                                    <div class="h-full transition-all duration-500" 
-                                         :class="caseStudy.metrics.politicalCapital < 30 ? 'bg-risk' : 'bg-primary'"
-                                         :style="`width: ${caseStudy.metrics.politicalCapital}%`"></div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between mb-1">
-                                    <span class="text-xs text-white">Velocity</span>
-                                    <span class="text-xs font-mono text-purple-400" x-text="caseStudy.metrics.velocity"></span>
-                                </div>
-                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
-                                    <div class="bg-purple-400 h-full transition-all duration-500" :style="`width: ${caseStudy.metrics.velocity}%`"></div>
-                                </div>
-                            </div>
-
-                            <div>
-                                <div class="flex justify-between mb-1">
-                                    <span class="text-xs text-white">Risk Exposure</span>
-                                    <span class="text-xs font-mono" :class="caseStudy.metrics.risk > 70 ? 'text-risk' : 'text-blue-400'" x-text="caseStudy.metrics.risk + '%'"></span>
-                                </div>
-                                <div class="w-full bg-dark h-2 rounded-full overflow-hidden">
-                                    <div class="h-full transition-all duration-500" 
-                                         :class="caseStudy.metrics.risk > 70 ? 'bg-risk' : 'bg-blue-400'"
-                                         :style="`width: ${caseStudy.metrics.risk}%`"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-8 pt-6 border-t border-slate-700">
-                            <p class="text-[10px] text-textMuted text-center italic">
-                                "The Bilingual Executive trades Scale for Speed."
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Game Over / Success Screen -->
-                <div x-show="caseStudy.gameOver" class="max-w-2xl mx-auto text-center">
-                    <div class="mb-6">
-                        <i class="fa-solid fa-flag-checkered text-6xl" :class="caseStudy.metrics.politicalCapital > 0 ? 'text-primary' : 'text-risk'"></i>
-                    </div>
-                    <h2 class="text-3xl font-bold text-white mb-2" x-text="caseStudy.metrics.politicalCapital > 0 ? 'MISSION COMPLETE' : 'TERMINATED'"></h2>
-                    <p class="text-xl text-slate-300 mb-8" x-text="caseStudy.finalMessage"></p>
-
-                    <div class="bg-card text-left p-6 rounded-xl border border-slate-700 mb-8">
-                        <h4 class="font-mono text-sm text-primary mb-4 border-b border-slate-700 pb-2">MISSION DEBRIEF</h4>
-                        <div class="space-y-4">
-                            <template x-for="log in caseStudy.history">
-                                <div class="text-sm">
-                                    <p class="font-bold text-white text-xs mb-1" x-text="log.scenario"></p>
-                                    <div class="flex gap-2">
-                                        <div class="w-1 bg-slate-600 shrink-0"></div>
-                                        <div>
-                                            <p class="text-slate-400 italic mb-1" x-text="log.decision"></p>
-                                            <p :class="log.result === 'success' ? 'text-primary' : 'text-warn'" x-text="log.feedback"></p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
-
-                    <button @click="caseStudy.start()" class="text-slate-400 hover:text-white underline">Replay Simulation</button>
-                </div>
-
-            </div>
+        <!-- SCENARIO CARD -->
+        <div class="bg-card border-l-4 border-primary p-8 rounded-r-xl shadow-2xl relative overflow-hidden max-w-3xl mx-auto">
             
-<!-- ROLE-PLAY DOJO TAB -->
-            <div x-show="currentTab === 'roleplay'" x-cloak class="max-w-4xl mx-auto">
-                
-                <!-- 1. Selection Screen -->
-                <div x-show="!rolePlay.active">
-                    <div class="text-center mb-10 pt-4">
-                        <h2 class="text-3xl font-mono font-bold text-white mb-2">The Negotiation Dojo</h2>
-                        <p class="text-textMuted">Choose a scenario. Convince the skeptic. Don't use jargon.</p>
-                    </div>
+            <!-- Progress Pill -->
+            <div class="absolute top-6 right-6">
+                <span class="bg-slate-800 text-slate-300 text-xs font-mono px-3 py-1 rounded-full border border-slate-700">
+                    DAY <span x-text="(caseStudy.step + 1) * 30"></span> / 90
+                </span>
+            </div>
 
-                    <div class="grid md:grid-cols-3 gap-6">
-                        <template x-for="(scenario, index) in rolePlay.scenarios" :key="index">
-                            <button @click="rolePlay.start(index)" 
-                                    class="bg-card border border-slate-700 hover:border-warn p-6 rounded-xl text-left group transition-all hover:-translate-y-1">
-                                <div class="flex justify-between items-start mb-4">
-                                    <div class="bg-slate-800 p-3 rounded-lg group-hover:bg-warn group-hover:text-dark transition-colors">
-                                        <i class="fa-solid fa-comments text-xl"></i>
-                                    </div>
-                                    <span class="text-[10px] font-mono border border-slate-600 px-2 py-1 rounded text-slate-400">HARD</span>
-                                </div>
-                                <h3 class="text-lg font-bold text-white mb-1" x-text="scenario.title"></h3>
-                                <p class="text-xs text-textMuted mb-4">VS <span x-text="scenario.opponent"></span></p>
-                                <p class="text-sm text-slate-300 line-clamp-3 italic">"<span x-text="scenario.intro"></span>"</p>
-                            </button>
-                        </template>
-                    </div>
-                </div>
+            <span class="text-xs font-mono text-primary tracking-widest uppercase mb-4 block">
+                INCOMING SITUATION
+            </span>
+            
+            <h3 class="text-3xl font-bold text-white mb-4" x-text="caseStudy.scenarios[caseStudy.step].title"></h3>
+            <p class="text-slate-300 leading-relaxed text-lg mb-8" x-text="caseStudy.scenarios[caseStudy.step].context"></p>
+            
+            <div class="bg-slate-900/50 p-6 rounded-lg border border-slate-700 mb-8">
+                <p class="font-mono text-warn text-xs mb-2 uppercase"><i class="fa-solid fa-triangle-exclamation mr-2"></i>Executive Decision Required</p>
+                <p class="text-white font-bold text-xl italic" x-text="caseStudy.scenarios[caseStudy.step].question"></p>
+            </div>
 
-                <!-- 2. Active Simulation Screen -->
-                <div x-show="rolePlay.active" class="flex flex-col h-[600px] bg-card rounded-xl border border-slate-700 shadow-2xl relative overflow-hidden">
+            <!-- Choices -->
+            <div class="grid md:grid-cols-2 gap-4">
+                <template x-for="(choice, index) in caseStudy.scenarios[caseStudy.step].choices" :key="index">
+                    <button @click="caseStudy.makeChoice(index)" 
+                            class="text-left p-6 rounded-xl border border-slate-600 hover:border-primary hover:bg-slate-800 transition-all group relative h-full flex flex-col justify-between">
+                        
+                        <div>
+                            <span class="font-mono text-[10px] text-slate-500 block mb-2">OPTION <span x-text="index + 1"></span></span>
+                            <span class="text-white font-medium block" x-text="choice.text"></span>
+                        </div>
+                        
+                        <div class="mt-4 flex justify-end opacity-0 group-hover:opacity-100 transition-opacity text-primary">
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </div>
+                    </button>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAME OVER / RESULTS SCREEN -->
+    <div x-show="caseStudy.gameOver" class="max-w-3xl mx-auto">
+        
+        <!-- Result Banner -->
+        <div class="text-center mb-10">
+            <div class="mb-4 inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-900 border-2" 
+                 :class="caseStudy.metrics.politicalCapital > 0 ? 'border-primary text-primary' : 'border-risk text-risk'">
+                <i class="fa-solid text-4xl" :class="caseStudy.metrics.politicalCapital > 0 ? 'fa-flag-checkered' : 'fa-skull'"></i>
+            </div>
+            <h2 class="text-4xl font-bold text-white mb-2" x-text="caseStudy.metrics.politicalCapital > 0 ? 'MISSION COMPLETE' : 'TERMINATED'"></h2>
+            <p class="text-xl text-slate-300" x-text="caseStudy.finalMessage"></p>
+        </div>
+
+        <!-- AI DEBRIEF BOX -->
+        <div class="bg-slate-900 border border-slate-700 p-6 rounded-xl relative overflow-hidden group mb-8">
+            
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-mono text-white font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-robot text-white"></i> 
+                    PERFORMANCE REVIEW AI
+                </h3>
+                <span class="text-[10px] uppercase bg-slate-800 text-slate-300 px-2 py-1 rounded border border-slate-700">
+                    Decision Log Ready
+                </span>
+            </div>
+
+            <div class="font-mono text-xs text-slate-400 bg-black/50 p-4 rounded border border-slate-800 mb-4 h-24 overflow-hidden relative">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                <pre class="whitespace-pre-wrap font-sans" x-text="caseStudy.generateSimulatorPrompt()"></pre>
+            </div>
+
+            <button @click="
+                    copyToClipboard(caseStudy.generateSimulatorPrompt(), 'Sim Results');
+                    $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> DATA EXPORTED';
+                    $el.classList.add('bg-white', 'text-black', 'border-white');
+                    setTimeout(() => {
+                        $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> COPY REVIEW FOR AI';
+                        $el.classList.remove('bg-white', 'text-black', 'border-white');
+                    }, 2000)
+                    " 
+                    class="w-full py-4 bg-transparent border border-slate-500 text-white hover:bg-white hover:text-black font-bold rounded-lg transition-all flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> COPY REVIEW FOR AI
+            </button>
+            
+            <p class="text-center text-[10px] text-slate-500 mt-3">
+                Paste into AI to get a breakdown of your leadership psychology.
+            </p>
+        </div>
+
+        <!-- Replay -->
+        <div class="text-center">
+            <button @click="caseStudy.start()" class="text-sm text-slate-400 hover:text-white underline decoration-dotted">
+                <i class="fa-solid fa-rotate-right mr-2"></i>Reset Simulation
+            </button>
+        </div>
+
+    </div>
+
+</div>
+            
+<!-- ROLE-PLAY DOJO TAB (REDESIGNED) -->
+<div x-show="currentTab === 'roleplay'" x-cloak class="max-w-4xl mx-auto pb-20">
+    
+    <!-- PHASE 1: SCENARIO SELECTION -->
+    <div x-show="!rolePlay.active && !rolePlay.showDebrief">
+        <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-800 pb-6">
+            <div>
+                <h2 class="font-mono text-3xl font-bold text-orange-400 flex items-center">
+                    <i class="fa-solid fa-user-ninja mr-3"></i>Negotiation Dojo
+                </h2>
+                <p class="text-textMuted text-sm mt-2">
+                    Spar against a skeptical AI stakeholder. If you use jargon, you lose.
+                </p>
+            </div>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-6">
+            <template x-for="(scenario, index) in rolePlay.scenarios" :key="index">
+                <button @click="rolePlay.start(index)" 
+                        class="group relative bg-card border border-slate-700 hover:border-orange-400/50 p-6 rounded-xl text-left transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(251,146,60,0.1)] overflow-hidden">
                     
-                    <!-- Header -->
-                    <div class="p-4 border-b border-slate-700 bg-slate-900/50 flex justify-between items-center">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-warn/20 flex items-center justify-center text-warn">
+                    <!-- Hover Glow -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-orange-400 border border-slate-700">
                                 <i class="fa-solid fa-user-tie"></i>
                             </div>
-                            <div>
-                                <h3 class="font-bold text-white text-sm" x-text="rolePlay.scenario?.opponent"></h3>
-                                <p class="text-[10px] text-textMuted">Topic: <span x-text="rolePlay.scenario?.topic"></span></p>
-                            </div>
+                            <span class="text-[10px] font-mono border border-slate-600 px-2 py-1 rounded text-slate-400 bg-black/30">LEVEL: HARD</span>
                         </div>
-                        <button @click="rolePlay.stop()" class="text-slate-400 hover:text-white text-xs px-3 py-1 border border-slate-600 rounded">
-                            End Session
-                        </button>
-                    </div>
-
-                    <!-- Chat Area -->
-                    <div class="flex-1 overflow-y-auto p-6 space-y-4 bg-dark/50" id="rp-chat-box">
-                        <template x-for="msg in rolePlay.messages">
-                            <div class="flex flex-col" :class="msg.role === 'user' ? 'items-end' : 'items-start'">
-                                <div class="max-w-[80%] p-4 rounded-2xl text-sm leading-relaxed"
-                                     :class="msg.role === 'user' ? 'bg-primary text-dark rounded-br-none' : (msg.role === 'system' ? 'bg-red-900/50 text-red-200 border border-red-500' : 'bg-card border border-slate-600 text-white rounded-bl-none')">
-                                    <span x-text="msg.text"></span>
-                                </div>
-                                <span class="text-[10px] text-slate-500 mt-1 uppercase font-mono" x-text="msg.role === 'user' ? 'You' : (msg.role === 'system' ? 'System' : rolePlay.scenario?.opponent)"></span>
-                            </div>
-                        </template>
                         
-                        <!-- Typing Indicator -->
-                        <div x-show="rolePlay.loading" class="flex items-center gap-2 text-slate-500 text-xs ml-2">
-                            <i class="fa-solid fa-circle-notch fa-spin"></i> Opponent is thinking...
+                        <h3 class="text-lg font-bold text-white mb-1" x-text="scenario.title"></h3>
+                        <p class="text-xs font-mono text-orange-400 mb-4">VS <span x-text="scenario.opponent"></span></p>
+                        
+                        <div class="bg-black/30 p-3 rounded border border-slate-800">
+                            <p class="text-xs text-slate-400 italic line-clamp-3">"<span x-text="scenario.intro"></span>"</p>
+                        </div>
+                        
+                        <div class="mt-4 flex items-center text-xs font-bold text-slate-500 group-hover:text-white transition-colors">
+                            ENTER SIMULATION <i class="fa-solid fa-arrow-right ml-2"></i>
                         </div>
                     </div>
+                </button>
+            </template>
+        </div>
+    </div>
 
-                    <!-- Input Area -->
-                    <div class="p-4 bg-card border-t border-slate-700">
-                        <div class="relative">
-                            <input type="text" 
-                                   x-model="rolePlay.input" 
-                                   @keydown.enter="rolePlay.send()"
-                                   :disabled="rolePlay.loading"
-                                   placeholder="Type your response (Focus on business value)..." 
-                                   class="w-full bg-dark text-white rounded-lg pl-4 pr-12 py-4 focus:outline-none focus:border-warn border border-slate-600 font-mono text-sm disabled:opacity-50">
-                            
-                            <button @click="rolePlay.send()" 
-                                    :disabled="rolePlay.loading"
-                                    class="absolute right-2 top-2 bottom-2 bg-warn text-dark w-10 rounded flex items-center justify-center hover:bg-yellow-400 transition-colors disabled:opacity-50">
-                                <i class="fa-solid fa-paper-plane"></i>
-                            </button>
-                        </div>
+    <!-- PHASE 2: ACTIVE SIMULATION -->
+    <div x-show="rolePlay.active" class="flex flex-col h-[70vh] max-h-[700px] bg-slate-900 rounded-xl border border-slate-700 shadow-2xl relative overflow-hidden">
+        
+        <!-- Header -->
+        <div class="p-4 border-b border-slate-700 bg-slate-800/90 backdrop-blur flex justify-between items-center z-10">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xs">
+                    AI
+                </div>
+                <div>
+                    <h3 class="font-bold text-white text-sm" x-text="rolePlay.scenario?.opponent"></h3>
+                    <p class="text-[10px] text-orange-400 font-mono">STATUS: SKEPTICAL</p>
+                </div>
+            </div>
+            <button @click="rolePlay.endSession()" class="text-xs bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50 px-3 py-2 rounded transition-colors">
+                END & ANALYZE
+            </button>
+        </div>
+
+        <!-- Chat Area -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-6 bg-black/20" id="rp-chat-box">
+            <template x-for="msg in rolePlay.messages">
+                <div class="flex flex-col w-full" :class="msg.role === 'user' ? 'items-end' : 'items-start'">
+                    
+                    <!-- Message Bubble -->
+                    <div class="max-w-[85%] md:max-w-[70%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm relative"
+                         :class="msg.role === 'user' 
+                            ? 'bg-orange-500 text-white rounded-br-sm' 
+                            : (msg.role === 'system' ? 'bg-red-900/20 text-red-400 border border-red-900/50 text-center w-full max-w-full' : 'bg-slate-800 border border-slate-700 text-slate-200 rounded-bl-sm')">
+                        <span x-text="msg.text"></span>
+                    </div>
+                    
+                    <!-- Label -->
+                    <span class="text-[9px] text-slate-600 mt-1 uppercase font-mono px-1" 
+                          x-text="msg.role === 'user' ? 'YOU' : (msg.role === 'system' ? 'SYSTEM' : rolePlay.scenario?.opponent)"></span>
+                </div>
+            </template>
+            
+            <!-- Typing Indicator -->
+            <div x-show="rolePlay.loading" class="flex items-start gap-2">
+                <div class="bg-slate-800 p-3 rounded-2xl rounded-bl-sm border border-slate-700">
+                    <div class="flex gap-1">
+                        <div class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce"></div>
+                        <div class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce delay-100"></div>
+                        <div class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce delay-200"></div>
                     </div>
                 </div>
             </div>
+        </div>
 
+        <!-- Input Area -->
+        <div class="p-4 bg-slate-800 border-t border-slate-700">
+            <div class="relative">
+                <input type="text" 
+                       x-model="rolePlay.input" 
+                       @keydown.enter="rolePlay.send()"
+                       :disabled="rolePlay.loading"
+                       placeholder="Type your response (Focus on business value)..." 
+                       class="w-full bg-slate-900 text-white rounded-lg pl-4 pr-12 py-4 focus:outline-none focus:ring-1 focus:ring-orange-400 border border-slate-600 font-mono text-sm disabled:opacity-50 transition-all placeholder:text-slate-600">
+                
+                <button @click="rolePlay.send()" 
+                        :disabled="rolePlay.loading || !rolePlay.input"
+                        class="absolute right-2 top-2 bottom-2 bg-orange-500 text-white w-10 rounded flex items-center justify-center hover:bg-orange-400 transition-colors disabled:opacity-50 disabled:bg-slate-700">
+                    <i class="fa-solid fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHASE 3: DEBRIEF & AI ANALYSIS (NEW) -->
+    <div x-show="rolePlay.showDebrief" class="max-w-3xl mx-auto">
+        
+        <div class="text-center mb-8">
+            <div class="inline-block p-4 rounded-full bg-slate-800 border border-slate-700 mb-4">
+                <i class="fa-solid fa-flag-checkered text-3xl text-orange-400"></i>
+            </div>
+            <h2 class="text-3xl font-bold text-white">Simulation Complete</h2>
+            <p class="text-slate-400 text-sm">Review your transcript and get AI coaching.</p>
+        </div>
+
+        <!-- AI Coaching Box -->
+        <div class="bg-slate-900 border border-orange-500/30 p-6 rounded-xl relative overflow-hidden group mb-8">
+            
+            <div class="flex justify-between items-center mb-4 relative z-10">
+                <h3 class="font-mono text-white font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-user-secret text-orange-400"></i> 
+                    NEGOTIATION COACH
+                </h3>
+                <span class="text-[10px] uppercase bg-orange-900/50 text-orange-400 px-2 py-1 rounded border border-orange-500/30 font-bold tracking-wider">
+                    Transcript Ready
+                </span>
+            </div>
+
+            <!-- Transcript Preview -->
+            <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-32 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="rolePlay.generateCoachPrompt()"></pre>
+            </div>
+
+            <!-- Interactive Copy Button -->
+            <button @click="
+                    copyToClipboard(rolePlay.generateCoachPrompt(), 'Transcript');
+                    $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> TRANSCRIPT EXPORTED';
+                    $el.classList.remove('border-orange-500', 'text-orange-400', 'hover:bg-orange-400', 'hover:text-black');
+                    $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                    setTimeout(() => {
+                        $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GET COACHING FEEDBACK';
+                        $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                        $el.classList.add('border-orange-500', 'text-orange-400', 'hover:bg-orange-400', 'hover:text-black');
+                    }, 2000)
+                    " 
+                    class="relative z-10 w-full py-4 bg-transparent border border-orange-500 text-orange-400 hover:bg-orange-400 hover:text-black font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(251,146,60,0.1)] hover:shadow-[0_0_20px_rgba(251,146,60,0.4)]">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> GET COACHING FEEDBACK
+            </button>
+            
+            <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
+                Paste into AI to analyze your leverage, empathy, and business value articulation.
+            </p>
+        </div>
+
+        <div class="text-center">
+            <button @click="rolePlay.reset()" class="text-slate-400 hover:text-white underline text-sm">
+                Start New Negotiation
+            </button>
+        </div>
+
+    </div>
+
+</div>
+             
             <!-- CULTURAL DEBT MONITOR TAB -->
             <div x-show="currentTab === 'culture'" x-cloak class="max-w-4xl mx-auto">
                 
@@ -742,206 +783,312 @@
 
             </div>
 
-            <!-- API SANDBOX TAB -->
-            <div x-show="currentTab === 'sandbox'" x-cloak class="max-w-5xl mx-auto">
+<!-- API SANDBOX TAB (REDESIGNED) -->
+<div x-show="currentTab === 'sandbox'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <!-- Header -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-800 pb-6">
+        <div>
+            <h2 class="font-mono text-3xl font-bold text-cyan-400 flex items-center">
+                <i class="fa-solid fa-shapes mr-3"></i>Architecture Sandbox
+            </h2>
+            <p class="text-textMuted text-sm mt-2">
+                Simulate your stack. See how legacy "hops" destroy customer experience.
+            </p>
+        </div>
+        <!-- Live Result Badge -->
+        <div class="mt-4 md:mt-0 text-right" x-show="apiSandbox.pipeline.length > 0">
+            <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">THEORETICAL LATENCY</span>
+            <div class="text-2xl font-bold font-mono text-white">
+                <span x-text="apiSandbox.pipeline.reduce((sum, i) => sum + i.latency, 0)"></span> ms
+            </div>
+        </div>
+    </div>
+
+    <!-- WORKBENCH GRID -->
+    <div class="grid lg:grid-cols-12 gap-8 mb-8">
+        
+        <!-- Left: Component Palette -->
+        <div class="lg:col-span-3 space-y-4">
+            <p class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">COMPONENT RACK</p>
+            <template x-for="item in apiSandbox.catalog" :key="item.id">
+                <button @click="apiSandbox.addComponent(item)" 
+                        :disabled="apiSandbox.isRunning"
+                        class="w-full flex items-center gap-3 p-3 rounded-lg border border-slate-700 bg-slate-900 hover:border-cyan-500 hover:bg-slate-800 transition-all group disabled:opacity-50">
+                    <div class="w-8 h-8 rounded flex items-center justify-center text-sm" :class="item.color">
+                        <i :class="item.icon"></i>
+                    </div>
+                    <div class="text-left">
+                        <span class="block text-xs font-bold text-white group-hover:text-cyan-400" x-text="item.label"></span>
+                        <span class="block text-[9px] text-slate-500 font-mono">+<span x-text="item.latency"></span>ms</span>
+                    </div>
+                    <i class="fa-solid fa-plus text-slate-600 ml-auto group-hover:text-cyan-400"></i>
+                </button>
+            </template>
+            <button @click="apiSandbox.reset()" class="w-full mt-4 border border-red-900/50 text-red-500 text-xs py-2 rounded hover:bg-red-900/20 transition-colors">
+                <i class="fa-solid fa-trash mr-2"></i>CLEAR BOARD
+            </button>
+        </div>
+
+        <!-- Right: The Blueprint Canvas -->
+        <div class="lg:col-span-9">
+            <div class="bg-slate-900 border border-slate-700 rounded-xl p-8 min-h-[300px] relative flex items-center justify-center overflow-hidden shadow-inner"
+                 style="background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 20px 20px;">
                 
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-mono font-bold text-white">The Architecture Sandbox</h2>
-                    <p class="text-textMuted text-sm mt-2">Build a data pipeline. See how "Legacy" slows you down and "Caching" speeds you up.</p>
+                <!-- Empty State -->
+                <div x-show="apiSandbox.pipeline.length === 0" class="text-center opacity-50">
+                    <div class="w-16 h-16 border-2 border-dashed border-slate-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i class="fa-solid fa-plus text-slate-600"></i>
+                    </div>
+                    <p class="font-mono text-xs text-slate-500">Select components to build pipeline</p>
                 </div>
 
-                <!-- THE CANVAS (Visualization Area) -->
-                <div class="bg-dark border-2 border-dashed border-slate-700 rounded-xl p-8 min-h-[250px] relative flex flex-col justify-center items-center overflow-hidden mb-8">
+                <!-- The Pipeline Visual -->
+                <div x-show="apiSandbox.pipeline.length > 0" class="flex flex-wrap items-center justify-center gap-2 z-10 w-full relative">
                     
-                    <!-- Placeholder Text -->
-                    <div x-show="apiSandbox.pipeline.length === 0" class="text-slate-600 font-mono text-sm text-center">
-                        <i class="fa-solid fa-arrow-pointer mb-2 text-2xl"></i><br>
-                        Click components below to build your stack.<br>
-                        (e.g., App -> Cache -> API -> Core)
+                    <!-- Start Node -->
+                    <div class="flex items-center">
+                        <div class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] font-mono shadow-glow">USER</div>
+                        <div class="w-6 h-0.5 bg-slate-600"></div>
                     </div>
 
-                    <!-- The Pipeline -->
-                    <div class="flex flex-wrap justify-center items-center gap-2 z-10 w-full">
-                        
-                        <!-- The "User" (Start Point) -->
-                        <div x-show="apiSandbox.pipeline.length > 0" class="flex items-center">
-                            <div class="bg-white text-dark p-3 rounded-lg font-bold text-xs">USER</div>
-                            <div class="w-8 h-1 bg-slate-600 mx-2"></div>
-                        </div>
-
-                        <!-- The Blocks -->
-                        <template x-for="(block, index) in apiSandbox.pipeline" :key="block.uid">
-                            <div class="flex items-center animate-glitch">
-                                <!-- The Component Card -->
-                                <div @click="apiSandbox.removeComponent(index)" 
-                                     class="relative group cursor-pointer bg-card border-2 p-4 rounded-lg w-32 h-32 flex flex-col items-center justify-center text-center transition-all hover:scale-105 hover:bg-slate-800"
-                                     :class="block.color">
-                                    
-                                    <!-- Delete Icon on Hover -->
-                                    <div class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <i class="fa-solid fa-xmark"></i>
-                                    </div>
-
-                                    <i :class="block.icon" class="text-2xl mb-2"></i>
-                                    <span class="text-[10px] font-bold uppercase" x-text="block.label"></span>
-                                    <span class="text-[9px] mt-1 opacity-70" x-text="'+' + block.latency + 'ms'"></span>
+                    <!-- Stack Items -->
+                    <template x-for="(block, index) in apiSandbox.pipeline" :key="block.uid">
+                        <div class="flex items-center animate-[fadeIn_0.3s_ease-out]">
+                            <!-- Block -->
+                            <div @click="apiSandbox.removeComponent(index)" 
+                                 class="relative group cursor-pointer w-24 h-24 border rounded-lg flex flex-col items-center justify-center text-center transition-all hover:scale-105 bg-slate-900/90 backdrop-blur"
+                                 :class="block.color.replace('bg-', 'hover:bg-')">
+                                
+                                <div class="absolute -top-2 -right-2 bg-red-500 text-white w-4 h-4 rounded-full flex items-center justify-center text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <i class="fa-solid fa-xmark"></i>
                                 </div>
 
-                                <!-- Connecting Arrow (if not last) -->
-                                <div x-show="index < apiSandbox.pipeline.length - 1" class="text-slate-600 mx-2">
-                                    <i class="fa-solid fa-arrow-right"></i>
-                                </div>
+                                <i :class="block.icon" class="text-xl mb-2"></i>
+                                <span class="text-[9px] font-bold leading-tight px-1" x-text="block.label"></span>
+                                <span class="text-[8px] mt-1 font-mono opacity-70">+<span x-text="block.latency"></span>ms</span>
                             </div>
-                        </template>
 
-                    </div>
-
-                    <!-- Simulation Animation (The moving dot) -->
-                    <div x-show="apiSandbox.isRunning" class="absolute inset-0 z-0 flex items-center">
-                        <div class="w-full h-1 bg-slate-800/50"></div>
-                        <div class="absolute left-0 w-3 h-3 bg-primary rounded-full shadow-glow"
-                             style="animation: moveRight 2s linear infinite;"></div>
-                    </div>
+                            <!-- Connector -->
+                            <div x-show="index < apiSandbox.pipeline.length - 1" class="w-6 h-0.5 bg-slate-600 mx-1"></div>
+                        </div>
+                    </template>
                 </div>
 
-                <!-- CONTROLS -->
-                <div class="grid md:grid-cols-4 gap-6">
-                    
-                    <!-- Component Catalog -->
-                    <div class="md:col-span-3">
-                        <h3 class="font-mono text-xs text-slate-400 uppercase mb-3">Available Components</h3>
-                        <div class="flex flex-wrap gap-3">
-                            <template x-for="item in apiSandbox.catalog" :key="item.id">
-                                <button @click="apiSandbox.addComponent(item)" 
-                                        :disabled="apiSandbox.isRunning"
-                                        class="flex items-center gap-2 bg-card border border-slate-600 px-4 py-3 rounded-lg hover:border-white transition-all active:scale-95 disabled:opacity-50">
-                                    <i :class="item.icon" class="text-slate-400"></i>
-                                    <span class="text-sm font-bold text-white" x-text="item.label"></span>
-                                </button>
-                            </template>
-                        </div>
-                    </div>
-
-                    <!-- Actions -->
-                    <div class="flex flex-col gap-3 justify-end">
-                        <button @click="apiSandbox.runSimulation()" 
-                                :disabled="apiSandbox.pipeline.length === 0 || apiSandbox.isRunning"
-                                class="w-full bg-primary hover:bg-green-400 text-dark font-bold py-3 rounded-lg shadow-glow transition-all disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span x-show="!apiSandbox.isRunning"><i class="fa-solid fa-play mr-2"></i>RUN TEST</span>
-                            <span x-show="apiSandbox.isRunning"><i class="fa-solid fa-circle-notch fa-spin mr-2"></i>TESTING...</span>
-                        </button>
-                        <button @click="apiSandbox.reset()" class="w-full border border-slate-600 text-slate-400 hover:text-white py-2 rounded-lg text-xs">
-                            Reset Board
-                        </button>
-                    </div>
-                </div>
-
-                <!-- RESULTS PANEL -->
-                <div x-show="apiSandbox.result" x-transition.opacity class="mt-8 bg-card border-l-4 p-6 rounded-r-lg shadow-2xl"
-                     :class="apiSandbox.result?.time < 300 ? 'border-primary' : (apiSandbox.result?.time < 1500 ? 'border-warn' : 'border-risk')">
-                    
-                    <div class="flex justify-between items-start">
-                        <div>
-                            <p class="font-mono text-xs uppercase tracking-widest mb-1">Total Round-Trip Time</p>
-                            <h3 class="text-4xl font-bold font-mono text-white mb-2">
-                                <span x-text="apiSandbox.result?.time"></span> ms
-                            </h3>
-                            <p class="text-sm font-medium" 
-                               :class="apiSandbox.result?.time < 300 ? 'text-primary' : (apiSandbox.result?.time < 1500 ? 'text-warn' : 'text-risk')"
-                               x-text="apiSandbox.result?.message"></p>
-                        </div>
-                        <div class="text-right">
-                             <div class="text-xs text-slate-400 mb-1">Customer Experience</div>
-                             <div class="text-2xl">
-                                 <i x-show="apiSandbox.result?.time < 300" class="fa-solid fa-face-laugh-beam text-primary"></i>
-                                 <i x-show="apiSandbox.result?.time >= 300 && apiSandbox.result?.time < 1500" class="fa-solid fa-face-meh text-warn"></i>
-                                 <i x-show="apiSandbox.result?.time >= 1500" class="fa-solid fa-face-dizzy text-risk"></i>
-                             </div>
-                        </div>
-                    </div>
+                <!-- Packet Simulation Animation -->
+                <div x-show="apiSandbox.isRunning" class="absolute left-0 right-0 h-0.5 bg-cyan-500/20 top-1/2 -mt-px pointer-events-none">
+                    <div class="absolute top-1/2 -mt-1.5 w-3 h-3 bg-cyan-400 rounded-full shadow-[0_0_10px_#22d3ee] animate-[moveRight_2s_linear_infinite]"></div>
                 </div>
 
             </div>
 
-            <!-- WHAT-IF SCENARIO PLANNER TAB -->
-            <div x-show="currentTab === 'whatif'" x-cloak class="max-w-4xl mx-auto">
-                
-                <div class="text-center mb-8">
-                    <h2 class="text-3xl font-mono font-bold text-white">Strategic Scenario Simulator</h2>
-                    <p class="text-textMuted text-sm mt-2">Test your hypothesis before spending the budget. AI-driven Bilingual Analysis.</p>
-                </div>
+            <!-- Run Button -->
+            <button @click="apiSandbox.runSimulation()" 
+                    :disabled="apiSandbox.pipeline.length === 0 || apiSandbox.isRunning"
+                    class="mt-4 w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg shadow-glow transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span x-show="!apiSandbox.isRunning"><i class="fa-solid fa-play"></i> TEST ARCHITECTURE</span>
+                <span x-show="apiSandbox.isRunning"><i class="fa-solid fa-circle-notch fa-spin"></i> TRACING REQUEST...</span>
+            </button>
 
-                <!-- Input Console -->
-                <div class="bg-card border border-slate-700 p-6 rounded-xl shadow-lg mb-8">
-                    <label class="block font-mono text-xs text-primary uppercase mb-2">Enter Strategic Hypothesis</label>
-                    <div class="relative">
-                        <textarea x-model="whatIf.input" 
-                                  placeholder="e.g., What if we shut down the physical branches and went 100% digital?" 
-                                  class="w-full bg-dark text-white rounded-lg p-4 font-mono text-sm border border-slate-600 focus:border-primary focus:outline-none h-32"></textarea>
-                        
-                        <!-- Quick Prompts -->
-                        <div class="mt-3 flex flex-wrap gap-2">
-                            <span class="text-[10px] text-slate-500 uppercase">Try:</span>
-                            <template x-for="example in whatIf.examples">
-                                <button @click="whatIf.setInput(example)" class="text-[10px] bg-slate-800 text-slate-300 px-2 py-1 rounded hover:bg-slate-700 hover:text-white transition-colors">
-                                    <span x-text="example"></span>
-                                </button>
-                            </template>
-                        </div>
-                    </div>
+            <!-- Quick Result -->
+            <div x-show="apiSandbox.result" x-transition class="mt-4 p-4 rounded-lg border-l-4 bg-slate-800"
+                 :class="apiSandbox.result?.time < 300 ? 'border-primary' : 'border-risk'">
+                <p class="text-sm text-white font-medium" x-text="apiSandbox.result?.message"></p>
+            </div>
+        </div>
+    </div>
 
-                    <div class="mt-6 flex justify-end">
-                        <button @click="whatIf.analyze()" 
-                                :disabled="whatIf.loading || !whatIf.input"
-                                class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-lg shadow-glow transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                            <span x-show="!whatIf.loading"><i class="fa-solid fa-microchip"></i> SIMULATE OUTCOME</span>
-                            <span x-show="whatIf.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> ANALYZING...</span>
-                        </button>
-                    </div>
-                </div>
+    <!-- AI ARCHITECT BOX -->
+    <div class="mt-8 bg-slate-900 border border-cyan-500/30 p-6 rounded-xl relative overflow-hidden group">
+        
+        <!-- Icon -->
+        <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+            <i class="fa-solid fa-microchip text-9xl text-cyan-500"></i>
+        </div>
 
-                <!-- Results Memo (The Document) -->
-                <div x-show="whatIf.result" x-transition.opacity class="relative">
-                    
-                    <!-- Paper Design -->
-                    <div class="bg-white text-slate-900 p-8 md:p-12 rounded-lg shadow-2xl relative overflow-hidden min-h-[400px]">
-                        
-                        <!-- Watermark -->
-                        <div class="absolute top-10 right-10 opacity-5 pointer-events-none">
-                            <i class="fa-solid fa-chess-king text-9xl"></i>
-                        </div>
+        <div class="flex justify-between items-center mb-4 relative z-10">
+            <h3 class="font-mono text-white font-bold flex items-center gap-2">
+                <i class="fa-solid fa-robot text-cyan-400"></i> 
+                CHIEF ARCHITECT AI
+            </h3>
+            <span class="text-[10px] uppercase bg-cyan-900/50 text-cyan-400 px-2 py-1 rounded border border-cyan-500/30 font-bold tracking-wider">
+                Blueprint Analysis
+            </span>
+        </div>
 
-                        <!-- Header -->
-                        <div class="border-b-2 border-slate-900 pb-4 mb-6 flex justify-between items-end">
-                            <div>
-                                <h3 class="font-bold text-2xl uppercase tracking-tighter">Board Briefing Note</h3>
-                                <p class="text-xs font-mono text-slate-500 mt-1">CONFIDENTIAL // SIMULATION RESULTS</p>
-                            </div>
-                            <div class="text-right hidden md:block">
-                                <p class="text-[10px] font-mono text-slate-500">DATE: <span x-text="new Date().toLocaleDateString()"></span></p>
-                                <p class="text-[10px] font-mono text-slate-500">SOURCE: BILINGUAL AI</p>
-                            </div>
-                        </div>
+        <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-28 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+            <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="apiSandbox.generateArchPrompt()"></pre>
+        </div>
 
-                        <!-- The AI Content -->
-                        <div class="prose prose-slate max-w-none prose-headings:font-bold prose-headings:uppercase prose-h3:text-sm prose-h3:text-slate-500 prose-p:text-sm md:prose-p:text-base prose-li:text-sm"
-                             x-html="whatIf.result">
-                        </div>
+        <button @click="
+                copyToClipboard(apiSandbox.generateArchPrompt(), 'Arch Spec');
+                $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> SPEC COPIED';
+                $el.classList.remove('border-cyan-500', 'text-cyan-400', 'hover:bg-cyan-400', 'hover:text-black');
+                $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                setTimeout(() => {
+                    $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> COPY BLUEPRINT FOR AI';
+                    $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                    $el.classList.add('border-cyan-500', 'text-cyan-400', 'hover:bg-cyan-400', 'hover:text-black');
+                }, 2000)
+                " 
+                class="relative z-10 w-full py-4 bg-transparent border border-cyan-500 text-cyan-400 hover:bg-cyan-400 hover:text-black font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(34,211,238,0.1)] hover:shadow-[0_0_20px_rgba(34,211,238,0.4)]">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> COPY BLUEPRINT FOR AI
+        </button>
+        
+        <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
+            Ask AI to design the "Strangler Fig" pattern to modernize this specific stack.
+        </p>
 
-                        <!-- Footer -->
-                        <div class="mt-12 pt-4 border-t border-slate-200 flex justify-between items-center">
-                            <p class="font-mono text-[10px] text-slate-400">Generated by The Bilingual Executive Toolkit</p>
-                            <button @click="whatIf.result = null" class="text-slate-500 hover:text-red-600 text-xs font-bold uppercase">
-                                <i class="fa-solid fa-trash mr-1"></i> Clear Memo
-                            </button>
-                        </div>
-                    </div>
+    </div>
 
-                    <!-- Glow Effect behind the paper -->
-                    <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg blur opacity-20 -z-10"></div>
-                </div>
 </div>
-                                <!-- ASSESSMENT -->
+             
+             <!-- WHAT-IF SCENARIO PLANNER TAB (REDESIGNED) -->
+<div x-show="currentTab === 'whatif'" x-cloak class="max-w-5xl mx-auto pb-20">
+    
+    <!-- Header -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-800 pb-6">
+        <div>
+            <h2 class="font-mono text-3xl font-bold text-purple-500 flex items-center">
+                <i class="fa-solid fa-chess-rook mr-3"></i>Strategic War Games
+            </h2>
+            <p class="text-textMuted text-sm mt-2">
+                Test your hypothesis before spending the budget. Run a "Pre-Mortem" simulation.
+            </p>
+        </div>
+    </div>
+
+    <!-- MAIN CONSOLE -->
+    <div class="grid lg:grid-cols-12 gap-8">
+        
+        <!-- Left: Input & Controls -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Terminal Input -->
+            <div class="bg-slate-900 p-1 rounded-xl border border-slate-700 shadow-2xl">
+                <div class="bg-slate-800 px-4 py-2 rounded-t-lg flex items-center gap-2 border-b border-slate-700">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                    <span class="ml-2 text-[10px] font-mono text-slate-400 uppercase">Input Stream</span>
+                </div>
+                <textarea x-model="whatIf.input" 
+                          placeholder="> Enter strategic hypothesis here...&#10;> e.g. What if we delay the migration by 6 months?" 
+                          class="w-full h-40 bg-slate-900 text-purple-300 p-4 font-mono text-sm focus:outline-none resize-none placeholder:text-slate-700"></textarea>
+            </div>
+
+            <!-- Quick Stratagems -->
+            <div>
+                <p class="text-[10px] font-mono text-slate-500 uppercase mb-3">Load Tactical Preset:</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <template x-for="example in whatIf.examples">
+                        <button @click="whatIf.setInput(example.text)" 
+                                class="bg-card border border-slate-700 hover:border-purple-500 p-3 rounded-lg text-left group transition-all">
+                            <span class="block text-xs font-bold text-white group-hover:text-purple-400" x-text="example.title"></span>
+                            <span class="block text-[10px] text-slate-500 truncate mt-1">Load Scenario &rarr;</span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Action Bar -->
+            <div class="flex flex-col md:flex-row gap-4 pt-4 border-t border-slate-800">
+                <!-- Action 1: Internal Run -->
+                <button @click="whatIf.analyze()" 
+                        :disabled="whatIf.loading || !whatIf.input"
+                        class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-lg shadow-glow transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span x-show="!whatIf.loading"><i class="fa-solid fa-play"></i> RUN SIMULATION (INTERNAL)</span>
+                    <span x-show="whatIf.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> CALCULATING OUTCOMES...</span>
+                </button>
+            </div>
+
+        </div>
+
+        <!-- Right: The External Export Box (Always visible/useful) -->
+        <div class="lg:col-span-5">
+            <div class="bg-slate-900 border border-purple-500/30 p-6 rounded-xl relative overflow-hidden group h-full flex flex-col">
+                
+                <!-- Background Icon -->
+                <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
+                    <i class="fa-solid fa-user-secret text-9xl text-purple-500"></i>
+                </div>
+
+                <div class="relative z-10 mb-auto">
+                    <h3 class="font-mono text-white font-bold flex items-center gap-2 mb-2">
+                        <i class="fa-solid fa-robot text-purple-400"></i> 
+                        RED TEAM PROMPT
+                    </h3>
+                    <p class="text-xs text-slate-400 leading-relaxed mb-4">
+                        Don't have an API key? Or want to use ChatGPT-4/Claude 3? Copy this engineered prompt to get a rigorous "Pre-Mortem" analysis.
+                    </p>
+                    
+                    <!-- Preview -->
+                    <div class="font-mono text-[10px] text-slate-500 bg-black/50 p-3 rounded border border-slate-800 h-32 overflow-hidden relative mb-4">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                        <pre class="whitespace-pre-wrap font-sans" x-text="whatIf.generateWarGamePrompt()"></pre>
+                    </div>
+                </div>
+
+                <!-- Copy Button -->
+                <button @click="
+                        copyToClipboard(whatIf.generateWarGamePrompt(), 'Red Team Prompt');
+                        $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> SECURE COPY COMPLETE';
+                        $el.classList.remove('border-purple-500', 'text-purple-400', 'hover:bg-purple-400', 'hover:text-black');
+                        $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                        setTimeout(() => {
+                            $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> COPY FOR EXTERNAL AI';
+                            $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                            $el.classList.add('border-purple-500', 'text-purple-400', 'hover:bg-purple-400', 'hover:text-black');
+                        }, 2000)
+                        " 
+                        class="relative z-10 w-full py-4 bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-400 hover:text-black font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> COPY FOR EXTERNAL AI
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- INTERNAL RESULTS DISPLAY -->
+    <div x-show="whatIf.result" x-transition.opacity class="mt-12 relative max-w-4xl mx-auto">
+        
+        <!-- Paper Design -->
+        <div class="bg-white text-slate-900 p-8 md:p-12 rounded-lg shadow-2xl relative overflow-hidden min-h-[400px]">
+            
+            <!-- Watermark -->
+            <div class="absolute top-10 right-10 opacity-5 pointer-events-none">
+                <i class="fa-solid fa-chess-king text-9xl"></i>
+            </div>
+
+            <!-- Header -->
+            <div class="border-b-2 border-slate-900 pb-4 mb-6 flex justify-between items-end">
+                <div>
+                    <h3 class="font-bold text-2xl uppercase tracking-tighter">War Game Report</h3>
+                    <p class="text-xs font-mono text-slate-500 mt-1">CLASSIFIED // SIMULATION RESULTS</p>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="prose prose-slate max-w-none prose-headings:font-bold prose-headings:uppercase prose-h3:text-sm prose-h3:text-slate-500 prose-p:text-sm md:prose-p:text-base prose-li:text-sm"
+                 x-html="whatIf.result">
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-12 pt-4 border-t border-slate-200 flex justify-between items-center">
+                <p class="font-mono text-[10px] text-slate-400">Generated by Bilingual Executive Toolkit</p>
+                <button @click="whatIf.result = null" class="text-slate-500 hover:text-red-600 text-xs font-bold uppercase">
+                    <i class="fa-solid fa-trash mr-1"></i> Clear Data
+                </button>
+            </div>
+        </div>
+
+        <!-- Glow Effect -->
+        <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg blur opacity-20 -z-10"></div>
+    </div>
+
+</div>
+             <!-- ASSESSMENT -->
             <div x-show="currentTab === 'assessment'" x-cloak class="max-w-4xl mx-auto">
 
                                 <!-- TEAM COLLABORATION INTERFACE -->
