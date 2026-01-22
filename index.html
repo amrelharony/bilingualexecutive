@@ -456,177 +456,149 @@
 
 </div>
             
-<!-- ROLE-PLAY DOJO TAB (REDESIGNED) -->
+<!-- NEGOTIATION DOJO (REDESIGNED) -->
 <div x-show="currentTab === 'roleplay'" x-cloak class="max-w-4xl mx-auto pb-20">
     
-    <!-- PHASE 1: SCENARIO SELECTION -->
-    <div x-show="!rolePlay.active && !rolePlay.showDebrief">
-        <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-800 pb-6">
-            <div>
-                <h2 class="font-mono text-3xl font-bold text-orange-400 flex items-center">
-                    <i class="fa-solid fa-user-ninja mr-3"></i>Negotiation Dojo
-                </h2>
-                <p class="text-textMuted text-sm mt-2">
-                    Spar against a skeptical AI stakeholder. If you use jargon, you lose.
-                </p>
-            </div>
-        </div>
-
-        <div class="grid md:grid-cols-3 gap-6">
-            <template x-for="(scenario, index) in rolePlay.scenarios" :key="index">
-                <button @click="rolePlay.start(index)" 
-                        class="group relative bg-card border border-slate-700 hover:border-orange-400/50 p-6 rounded-xl text-left transition-all hover:-translate-y-1 hover:shadow-[0_0_20px_rgba(251,146,60,0.1)] overflow-hidden">
-                    
-                    <!-- Hover Glow -->
-                    <div class="absolute inset-0 bg-gradient-to-br from-orange-500/0 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-
-                    <div class="relative z-10">
-                        <div class="flex justify-between items-start mb-4">
-                            <div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-orange-400 border border-slate-700">
-                                <i class="fa-solid fa-user-tie"></i>
-                            </div>
-                            <span class="text-[10px] font-mono border border-slate-600 px-2 py-1 rounded text-slate-400 bg-black/30">LEVEL: HARD</span>
-                        </div>
-                        
-                        <h3 class="text-lg font-bold text-white mb-1" x-text="scenario.title"></h3>
-                        <p class="text-xs font-mono text-orange-400 mb-4">VS <span x-text="scenario.opponent"></span></p>
-                        
-                        <div class="bg-black/30 p-3 rounded border border-slate-800">
-                            <p class="text-xs text-slate-400 italic line-clamp-3">"<span x-text="scenario.intro"></span>"</p>
-                        </div>
-                        
-                        <div class="mt-4 flex items-center text-xs font-bold text-slate-500 group-hover:text-white transition-colors">
-                            ENTER SIMULATION <i class="fa-solid fa-arrow-right ml-2"></i>
-                        </div>
-                    </div>
-                </button>
-            </template>
-        </div>
-    </div>
-
-    <!-- PHASE 2: ACTIVE SIMULATION -->
-    <div x-show="rolePlay.active" class="flex flex-col h-[70vh] max-h-[700px] bg-slate-900 rounded-xl border border-slate-700 shadow-2xl relative overflow-hidden">
-        
-        <!-- Header -->
-        <div class="p-4 border-b border-slate-700 bg-slate-800/90 backdrop-blur flex justify-between items-center z-10">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xs">
-                    AI
-                </div>
-                <div>
-                    <h3 class="font-bold text-white text-sm" x-text="rolePlay.scenario?.opponent"></h3>
-                    <p class="text-[10px] text-orange-400 font-mono">STATUS: SKEPTICAL</p>
-                </div>
-            </div>
-            <button @click="rolePlay.endSession()" class="text-xs bg-red-900/30 hover:bg-red-900/50 text-red-400 border border-red-900/50 px-3 py-2 rounded transition-colors">
-                END & ANALYZE
-            </button>
-        </div>
-
-        <!-- Chat Area -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-6 bg-black/20" id="rp-chat-box">
-            <template x-for="msg in rolePlay.messages">
-                <div class="flex flex-col w-full" :class="msg.role === 'user' ? 'items-end' : 'items-start'">
-                    
-                    <!-- Message Bubble -->
-                    <div class="max-w-[85%] md:max-w-[70%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm relative"
-                         :class="msg.role === 'user' 
-                            ? 'bg-orange-500 text-white rounded-br-sm' 
-                            : (msg.role === 'system' ? 'bg-red-900/20 text-red-400 border border-red-900/50 text-center w-full max-w-full' : 'bg-slate-800 border border-slate-700 text-slate-200 rounded-bl-sm')">
-                        <span x-text="msg.text"></span>
-                    </div>
-                    
-                    <!-- Label -->
-                    <span class="text-[9px] text-slate-600 mt-1 uppercase font-mono px-1" 
-                          x-text="msg.role === 'user' ? 'YOU' : (msg.role === 'system' ? 'SYSTEM' : rolePlay.scenario?.opponent)"></span>
-                </div>
-            </template>
+    <!-- PHASE 1: LOBBY -->
+    <div x-show="!negotiationDojo.active">
+        <div class="text-center py-12">
+            <h2 class="text-3xl font-mono font-bold text-orange-400 mb-4">Negotiation Dojo</h2>
+            <p class="text-textMuted mb-8">Select a sparring partner. Logic-based simulation.</p>
             
-            <!-- Typing Indicator -->
-            <div x-show="rolePlay.loading" class="flex items-start gap-2">
-                <div class="bg-slate-800 p-3 rounded-2xl rounded-bl-sm border border-slate-700">
-                    <div class="flex gap-1">
-                        <div class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce"></div>
-                        <div class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce delay-100"></div>
-                        <div class="w-1.5 h-1.5 bg-slate-500 rounded-full animate-bounce delay-200"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Input Area -->
-        <div class="p-4 bg-slate-800 border-t border-slate-700">
-            <div class="relative">
-                <input type="text" 
-                       x-model="rolePlay.input" 
-                       @keydown.enter="rolePlay.send()"
-                       :disabled="rolePlay.loading"
-                       placeholder="Type your response (Focus on business value)..." 
-                       class="w-full bg-slate-900 text-white rounded-lg pl-4 pr-12 py-4 focus:outline-none focus:ring-1 focus:ring-orange-400 border border-slate-600 font-mono text-sm disabled:opacity-50 transition-all placeholder:text-slate-600">
-                
-                <button @click="rolePlay.send()" 
-                        :disabled="rolePlay.loading || !rolePlay.input"
-                        class="absolute right-2 top-2 bottom-2 bg-orange-500 text-white w-10 rounded flex items-center justify-center hover:bg-orange-400 transition-colors disabled:opacity-50 disabled:bg-slate-700">
-                    <i class="fa-solid fa-paper-plane"></i>
-                </button>
+            <div class="grid md:grid-cols-1 gap-6 max-w-md mx-auto">
+                <template x-for="(scen, idx) in negotiationDojo.scenarios" :key="idx">
+                    <button @click="negotiationDojo.start(idx)" 
+                            class="bg-slate-900 border border-slate-700 hover:border-orange-400 p-6 rounded-xl text-left transition-all hover:shadow-[0_0_20px_rgba(251,146,60,0.2)]">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-xs font-bold bg-orange-900/50 text-orange-400 px-2 py-1 rounded border border-orange-500/30">LEVEL 1</span>
+                            <i class="fa-solid fa-arrow-right text-slate-500"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white" x-text="scen.title"></h3>
+                        <p class="text-sm text-slate-400 mt-1">Opponent: <span class="text-white" x-text="scen.opponent"></span></p>
+                    </button>
+                </template>
             </div>
         </div>
     </div>
 
-    <!-- PHASE 3: DEBRIEF & AI ANALYSIS (NEW) -->
-    <div x-show="rolePlay.showDebrief" class="max-w-3xl mx-auto">
+    <!-- PHASE 2: THE ARENA -->
+    <div x-show="negotiationDojo.active && !negotiationDojo.gameOver" class="space-y-6">
         
-        <div class="text-center mb-8">
-            <div class="inline-block p-4 rounded-full bg-slate-800 border border-slate-700 mb-4">
-                <i class="fa-solid fa-flag-checkered text-3xl text-orange-400"></i>
+        <!-- Telemetry Bar -->
+        <div class="bg-slate-900 border border-slate-700 p-4 rounded-xl flex justify-between items-center shadow-lg">
+            <!-- Trust -->
+            <div class="flex-1 px-4 border-r border-slate-700">
+                <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1">
+                    <span>Trust</span>
+                    <span x-text="negotiationDojo.metrics.trust"></span>
+                </div>
+                <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                    <div class="h-full bg-green-500 transition-all duration-500" :style="`width: ${negotiationDojo.metrics.trust}%`"></div>
+                </div>
             </div>
-            <h2 class="text-3xl font-bold text-white">Simulation Complete</h2>
-            <p class="text-slate-400 text-sm">Review your transcript and get AI coaching.</p>
+            <!-- Leverage -->
+            <div class="flex-1 px-4 border-r border-slate-700">
+                <div class="flex justify-between text-[10px] uppercase font-bold text-slate-400 mb-1">
+                    <span>Leverage</span>
+                    <span x-text="negotiationDojo.metrics.leverage"></span>
+                </div>
+                <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                    <div class="h-full bg-blue-500 transition-all duration-500" :style="`width: ${negotiationDojo.metrics.leverage}%`"></div>
+                </div>
+            </div>
+            <!-- Patience -->
+            <div class="px-4 text-center">
+                <div class="text-[10px] uppercase font-bold text-slate-400 mb-1">Patience</div>
+                <div class="flex gap-1">
+                    <template x-for="i in 3">
+                        <div class="w-2 h-2 rounded-full transition-all" 
+                             :class="i <= negotiationDojo.metrics.patience ? 'bg-orange-500 shadow-[0_0_5px_orange]' : 'bg-slate-800'"></div>
+                    </template>
+                </div>
+            </div>
         </div>
+
+        <!-- Opponent Dialogue -->
+        <div class="bg-card border-l-4 border-orange-500 p-8 rounded-r-xl shadow-2xl relative">
+            <span class="absolute top-4 left-4 text-[10px] font-mono text-orange-400 uppercase tracking-widest" x-text="negotiationDojo.currentScenario?.opponent"></span>
+            <p class="text-xl md:text-2xl text-white font-medium mt-4 leading-relaxed italic">
+                "<span x-text="negotiationDojo.currentScenario?.nodes[negotiationDojo.currentNode].text"></span>"
+            </p>
+        </div>
+
+        <!-- Tactical Options -->
+        <div class="grid gap-4">
+            <template x-for="(opt, idx) in negotiationDojo.currentScenario?.nodes[negotiationDojo.currentNode].options" :key="idx">
+                <button @click="negotiationDojo.choose(opt)" 
+                        class="group text-left p-5 rounded-xl border border-slate-600 bg-slate-800 hover:bg-slate-700 hover:border-white transition-all relative overflow-hidden">
+                    
+                    <div class="relative z-10 flex justify-between items-center">
+                        <span class="text-sm font-bold text-slate-200 group-hover:text-white" x-text="opt.text"></span>
+                        <i class="fa-solid fa-chevron-right text-slate-600 group-hover:text-white transition-colors"></i>
+                    </div>
+                    
+                    <!-- Hover Impact Preview (Optional: Show impact on hover) -->
+                    <div class="h-1 bg-gradient-to-r from-transparent via-white/10 to-transparent absolute bottom-0 left-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                </button>
+            </template>
+        </div>
+
+    </div>
+
+    <!-- PHASE 3: DEBRIEF & AI PROMPT -->
+    <div x-show="negotiationDojo.gameOver" class="max-w-3xl mx-auto text-center pt-10">
+        
+        <!-- Outcome Icon -->
+        <div class="mb-6 inline-flex items-center justify-center w-24 h-24 rounded-full border-4 shadow-2xl"
+             :class="negotiationDojo.result === 'win' ? 'border-green-500 bg-green-500/10' : 'border-red-500 bg-red-500/10'">
+            <i class="fa-solid text-5xl" 
+               :class="negotiationDojo.result === 'win' ? 'fa-handshake text-green-500' : 'fa-hand-paper text-red-500'"></i>
+        </div>
+
+        <h2 class="text-4xl font-bold text-white mb-2" x-text="negotiationDojo.result === 'win' ? 'DEAL CLOSED' : 'WALKED AWAY'"></h2>
+        <p class="text-slate-400 mb-10" x-text="negotiationDojo.finalMessage"></p>
 
         <!-- AI Coaching Box -->
-        <div class="bg-slate-900 border border-orange-500/30 p-6 rounded-xl relative overflow-hidden group mb-8">
+        <div class="bg-slate-900 border border-orange-500/30 p-6 rounded-xl text-left relative overflow-hidden group">
             
             <div class="flex justify-between items-center mb-4 relative z-10">
                 <h3 class="font-mono text-white font-bold flex items-center gap-2">
                     <i class="fa-solid fa-user-secret text-orange-400"></i> 
-                    NEGOTIATION COACH
+                    PSYCHOLOGICAL ANALYSIS
                 </h3>
                 <span class="text-[10px] uppercase bg-orange-900/50 text-orange-400 px-2 py-1 rounded border border-orange-500/30 font-bold tracking-wider">
-                    Transcript Ready
+                    Trace Generated
                 </span>
             </div>
 
-            <!-- Transcript Preview -->
-            <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-32 overflow-hidden">
+            <!-- Preview -->
+            <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-28 overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
-                <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="rolePlay.generateCoachPrompt()"></pre>
+                <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="negotiationDojo.generateNegotiationPrompt()"></pre>
             </div>
 
-            <!-- Interactive Copy Button -->
+            <!-- Copy Button -->
             <button @click="
-                    copyToClipboard(rolePlay.generateCoachPrompt(), 'Transcript');
-                    $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> TRANSCRIPT EXPORTED';
-                    $el.classList.remove('border-orange-500', 'text-orange-400', 'hover:bg-orange-400', 'hover:text-black');
+                    copyToClipboard(negotiationDojo.generateNegotiationPrompt(), 'Analysis Data');
+                    $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
                     $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
                     setTimeout(() => {
-                        $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GET COACHING FEEDBACK';
+                        $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> ANALYZE MY PSYCHOLOGY (AI)';
                         $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
-                        $el.classList.add('border-orange-500', 'text-orange-400', 'hover:bg-orange-400', 'hover:text-black');
                     }, 2000)
                     " 
                     class="relative z-10 w-full py-4 bg-transparent border border-orange-500 text-orange-400 hover:bg-orange-400 hover:text-black font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(251,146,60,0.1)] hover:shadow-[0_0_20px_rgba(251,146,60,0.4)]">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> GET COACHING FEEDBACK
+                <i class="fa-solid fa-wand-magic-sparkles"></i> ANALYZE MY PSYCHOLOGY (AI)
             </button>
             
             <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
-                Paste into AI to analyze your leverage, empathy, and business value articulation.
+                Generates a detailed breakdown of your negotiation tactics, leverage points, and mistakes.
             </p>
         </div>
 
-        <div class="text-center">
-            <button @click="rolePlay.reset()" class="text-slate-400 hover:text-white underline text-sm">
-                Start New Negotiation
+        <div class="mt-8">
+            <button @click="negotiationDojo.restart()" class="text-slate-500 hover:text-white text-sm underline decoration-dotted">
+                Return to Lobby
             </button>
         </div>
 
@@ -634,7 +606,7 @@
 
 </div>
              
-            <!-- CULTURAL DEBT MONITOR TAB -->
+             <!-- CULTURAL DEBT MONITOR TAB -->
             <div x-show="currentTab === 'culture'" x-cloak class="max-w-4xl mx-auto">
                 
                 <div class="flex justify-between items-end mb-6">
@@ -943,151 +915,162 @@
     </div>
 
 </div>
-             
-             <!-- WHAT-IF SCENARIO PLANNER TAB (REDESIGNED) -->
+
+             <!-- WAR GAMES TAB (REDESIGNED) -->
 <div x-show="currentTab === 'whatif'" x-cloak class="max-w-5xl mx-auto pb-20">
     
-    <!-- Header -->
-    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-800 pb-6">
-        <div>
-            <h2 class="font-mono text-3xl font-bold text-purple-500 flex items-center">
-                <i class="fa-solid fa-chess-rook mr-3"></i>Strategic War Games
-            </h2>
-            <p class="text-textMuted text-sm mt-2">
-                Test your hypothesis before spending the budget. Run a "Pre-Mortem" simulation.
+    <!-- PHASE 1: MISSION SELECT -->
+    <div x-show="!warGames.active">
+        <div class="text-center py-12">
+            <h2 class="text-3xl font-mono font-bold text-purple-500 mb-4">Strategic War Games</h2>
+            <p class="text-textMuted mb-8">Choose a crisis. Make executive decisions. Live with the consequences.</p>
+            
+            <div class="grid md:grid-cols-1 gap-6 max-w-lg mx-auto">
+                <template x-for="(scen, idx) in warGames.scenarios" :key="idx">
+                    <button @click="warGames.start(idx)" 
+                            class="bg-slate-900 border border-slate-700 hover:border-purple-500 p-6 rounded-xl text-left transition-all hover:shadow-[0_0_20px_rgba(168,85,247,0.2)] group">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="text-[10px] font-bold bg-purple-900/50 text-purple-400 px-2 py-1 rounded border border-purple-500/30">SCENARIO 001</span>
+                            <i class="fa-solid fa-play text-slate-500 group-hover:text-purple-400"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-white mb-2" x-text="scen.title"></h3>
+                        <p class="text-sm text-slate-400 leading-relaxed" x-text="scen.brief"></p>
+                    </button>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- PHASE 2: WAR ROOM (ACTIVE) -->
+    <div x-show="warGames.active && !warGames.gameOver" class="space-y-6">
+        
+        <!-- Strategic HUD -->
+        <div class="bg-slate-900 border-y md:border border-slate-700 p-4 md:rounded-xl flex justify-between items-center shadow-2xl sticky top-0 z-20 backdrop-blur-md bg-slate-900/90">
+            <!-- Capital -->
+            <div class="flex-1 px-2 md:px-6 border-r border-slate-700 text-center">
+                <div class="text-[10px] uppercase font-bold text-slate-500 mb-1">Capital</div>
+                <div class="text-lg md:text-2xl font-mono font-bold" :class="warGames.metrics.capital < 30 ? 'text-red-500' : 'text-green-400'">
+                    $<span x-text="warGames.metrics.capital"></span>M
+                </div>
+            </div>
+            <!-- Innovation -->
+            <div class="flex-1 px-2 md:px-6 border-r border-slate-700 text-center">
+                <div class="text-[10px] uppercase font-bold text-slate-500 mb-1">Innovation</div>
+                <div class="text-lg md:text-2xl font-mono font-bold text-purple-400">
+                    <span x-text="warGames.metrics.innovation"></span> pts
+                </div>
+            </div>
+            <!-- Stability -->
+            <div class="flex-1 px-2 md:px-6 text-center">
+                <div class="text-[10px] uppercase font-bold text-slate-500 mb-1">Stability</div>
+                <div class="text-lg md:text-2xl font-mono font-bold" :class="warGames.metrics.stability < 40 ? 'text-red-500' : 'text-blue-400'">
+                    <span x-text="warGames.metrics.stability"></span>%
+                </div>
+            </div>
+        </div>
+
+        <!-- The Situation Board -->
+        <div class="bg-card border border-slate-700 p-8 rounded-xl shadow-lg relative min-h-[200px] flex items-center justify-center">
+            <div class="absolute top-0 left-0 w-1 h-full bg-purple-500 rounded-l-xl"></div>
+            <p class="text-xl md:text-2xl text-white font-medium text-center leading-relaxed">
+                "<span x-text="warGames.currentScenario?.nodes[warGames.currentNode].text"></span>"
             </p>
         </div>
-    </div>
 
-    <!-- MAIN CONSOLE -->
-    <div class="grid lg:grid-cols-12 gap-8">
-        
-        <!-- Left: Input & Controls -->
-        <div class="lg:col-span-7 space-y-6">
-            
-            <!-- Terminal Input -->
-            <div class="bg-slate-900 p-1 rounded-xl border border-slate-700 shadow-2xl">
-                <div class="bg-slate-800 px-4 py-2 rounded-t-lg flex items-center gap-2 border-b border-slate-700">
-                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
-                    <div class="w-3 h-3 rounded-full bg-green-500"></div>
-                    <span class="ml-2 text-[10px] font-mono text-slate-400 uppercase">Input Stream</span>
-                </div>
-                <textarea x-model="whatIf.input" 
-                          placeholder="> Enter strategic hypothesis here...&#10;> e.g. What if we delay the migration by 6 months?" 
-                          class="w-full h-40 bg-slate-900 text-purple-300 p-4 font-mono text-sm focus:outline-none resize-none placeholder:text-slate-700"></textarea>
-            </div>
-
-            <!-- Quick Stratagems -->
-            <div>
-                <p class="text-[10px] font-mono text-slate-500 uppercase mb-3">Load Tactical Preset:</p>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <template x-for="example in whatIf.examples">
-                        <button @click="whatIf.setInput(example.text)" 
-                                class="bg-card border border-slate-700 hover:border-purple-500 p-3 rounded-lg text-left group transition-all">
-                            <span class="block text-xs font-bold text-white group-hover:text-purple-400" x-text="example.title"></span>
-                            <span class="block text-[10px] text-slate-500 truncate mt-1">Load Scenario &rarr;</span>
-                        </button>
-                    </template>
-                </div>
-            </div>
-
-            <!-- Action Bar -->
-            <div class="flex flex-col md:flex-row gap-4 pt-4 border-t border-slate-800">
-                <!-- Action 1: Internal Run -->
-                <button @click="whatIf.analyze()" 
-                        :disabled="whatIf.loading || !whatIf.input"
-                        class="flex-1 bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 rounded-lg shadow-glow transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                    <span x-show="!whatIf.loading"><i class="fa-solid fa-play"></i> RUN SIMULATION (INTERNAL)</span>
-                    <span x-show="whatIf.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> CALCULATING OUTCOMES...</span>
-                </button>
-            </div>
-
-        </div>
-
-        <!-- Right: The External Export Box (Always visible/useful) -->
-        <div class="lg:col-span-5">
-            <div class="bg-slate-900 border border-purple-500/30 p-6 rounded-xl relative overflow-hidden group h-full flex flex-col">
-                
-                <!-- Background Icon -->
-                <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-                    <i class="fa-solid fa-user-secret text-9xl text-purple-500"></i>
-                </div>
-
-                <div class="relative z-10 mb-auto">
-                    <h3 class="font-mono text-white font-bold flex items-center gap-2 mb-2">
-                        <i class="fa-solid fa-robot text-purple-400"></i> 
-                        RED TEAM PROMPT
-                    </h3>
-                    <p class="text-xs text-slate-400 leading-relaxed mb-4">
-                        Don't have an API key? Or want to use ChatGPT-4/Claude 3? Copy this engineered prompt to get a rigorous "Pre-Mortem" analysis.
-                    </p>
+        <!-- Command Console (Choices) -->
+        <div class="grid md:grid-cols-2 gap-4">
+            <template x-for="(opt, idx) in warGames.currentScenario?.nodes[warGames.currentNode].options" :key="idx">
+                <button @click="warGames.choose(opt)" 
+                        class="group text-left p-6 rounded-xl border border-slate-600 bg-slate-800 hover:bg-slate-700 hover:border-purple-400 transition-all relative overflow-hidden h-full">
                     
-                    <!-- Preview -->
-                    <div class="font-mono text-[10px] text-slate-500 bg-black/50 p-3 rounded border border-slate-800 h-32 overflow-hidden relative mb-4">
-                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
-                        <pre class="whitespace-pre-wrap font-sans" x-text="whatIf.generateWarGamePrompt()"></pre>
+                    <div class="relative z-10">
+                        <span class="text-[10px] font-mono text-slate-500 uppercase mb-2 block">STRATAGEM <span x-text="String.fromCharCode(65 + idx)"></span></span>
+                        <span class="text-sm font-bold text-white block mb-4" x-text="opt.text"></span>
+                        
+                        <!-- Mini Impact Preview -->
+                        <div class="flex gap-2 text-[10px] font-mono opacity-50 group-hover:opacity-100 transition-opacity">
+                            <span x-show="opt.impact.capital < 0" class="text-red-400">Cap <i class="fa-solid fa-arrow-down"></i></span>
+                            <span x-show="opt.impact.innovation > 0" class="text-purple-400">Inn <i class="fa-solid fa-arrow-up"></i></span>
+                            <span x-show="opt.impact.stability < 0" class="text-orange-400">Stb <i class="fa-solid fa-arrow-down"></i></span>
+                        </div>
                     </div>
-                </div>
-
-                <!-- Copy Button -->
-                <button @click="
-                        copyToClipboard(whatIf.generateWarGamePrompt(), 'Red Team Prompt');
-                        $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> SECURE COPY COMPLETE';
-                        $el.classList.remove('border-purple-500', 'text-purple-400', 'hover:bg-purple-400', 'hover:text-black');
-                        $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
-                        setTimeout(() => {
-                            $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> COPY FOR EXTERNAL AI';
-                            $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
-                            $el.classList.add('border-purple-500', 'text-purple-400', 'hover:bg-purple-400', 'hover:text-black');
-                        }, 2000)
-                        " 
-                        class="relative z-10 w-full py-4 bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-400 hover:text-black font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> COPY FOR EXTERNAL AI
                 </button>
-            </div>
+            </template>
         </div>
 
     </div>
 
-    <!-- INTERNAL RESULTS DISPLAY -->
-    <div x-show="whatIf.result" x-transition.opacity class="mt-12 relative max-w-4xl mx-auto">
+    <!-- PHASE 3: DEBRIEF & AI ANALYSIS -->
+    <div x-show="warGames.gameOver" class="max-w-3xl mx-auto text-center pt-10">
         
-        <!-- Paper Design -->
-        <div class="bg-white text-slate-900 p-8 md:p-12 rounded-lg shadow-2xl relative overflow-hidden min-h-[400px]">
-            
-            <!-- Watermark -->
-            <div class="absolute top-10 right-10 opacity-5 pointer-events-none">
-                <i class="fa-solid fa-chess-king text-9xl"></i>
-            </div>
-
-            <!-- Header -->
-            <div class="border-b-2 border-slate-900 pb-4 mb-6 flex justify-between items-end">
-                <div>
-                    <h3 class="font-bold text-2xl uppercase tracking-tighter">War Game Report</h3>
-                    <p class="text-xs font-mono text-slate-500 mt-1">CLASSIFIED // SIMULATION RESULTS</p>
-                </div>
-            </div>
-
-            <!-- Content -->
-            <div class="prose prose-slate max-w-none prose-headings:font-bold prose-headings:uppercase prose-h3:text-sm prose-h3:text-slate-500 prose-p:text-sm md:prose-p:text-base prose-li:text-sm"
-                 x-html="whatIf.result">
-            </div>
-
-            <!-- Footer -->
-            <div class="mt-12 pt-4 border-t border-slate-200 flex justify-between items-center">
-                <p class="font-mono text-[10px] text-slate-400">Generated by Bilingual Executive Toolkit</p>
-                <button @click="whatIf.result = null" class="text-slate-500 hover:text-red-600 text-xs font-bold uppercase">
-                    <i class="fa-solid fa-trash mr-1"></i> Clear Data
-                </button>
-            </div>
+        <!-- Outcome Visual -->
+        <div class="mb-6 inline-flex items-center justify-center w-24 h-24 rounded-full border-4 shadow-[0_0_30px_currentColor]"
+             :class="{
+                'border-green-500 text-green-500 bg-green-500/10': warGames.result === 'victory',
+                'border-red-500 text-red-500 bg-red-500/10': warGames.result === 'bankruptcy' || warGames.result === 'regulatory_shutdown',
+                'border-yellow-500 text-yellow-500 bg-yellow-500/10': warGames.result === 'stagnation'
+             }">
+            <i class="fa-solid text-5xl" 
+               :class="{
+                'fa-trophy': warGames.result === 'victory',
+                'fa-land-mine-on': warGames.result === 'bankruptcy',
+                'fa-gavel': warGames.result === 'regulatory_shutdown',
+                'fa-stopwatch': warGames.result === 'stagnation'
+               }"></i>
         </div>
 
-        <!-- Glow Effect -->
-        <div class="absolute -inset-1 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg blur opacity-20 -z-10"></div>
+        <h2 class="text-4xl font-bold text-white mb-2 uppercase" x-text="warGames.result.replace('_', ' ')"></h2>
+        <p class="text-slate-400 mb-10 text-lg" x-text="warGames.finalMessage"></p>
+
+        <!-- AI Post-Mortem Box -->
+        <div class="bg-slate-900 border border-purple-500/30 p-6 rounded-xl text-left relative overflow-hidden group mb-8">
+            
+            <div class="flex justify-between items-center mb-4 relative z-10">
+                <h3 class="font-mono text-white font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-chess text-purple-400"></i> 
+                    STRATEGIC POST-MORTEM
+                </h3>
+                <span class="text-[10px] uppercase bg-purple-900/50 text-purple-400 px-2 py-1 rounded border border-purple-500/30 font-bold tracking-wider">
+                    Game Logs Ready
+                </span>
+            </div>
+
+            <!-- Preview -->
+            <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-32 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="warGames.generateWarGamePrompt()"></pre>
+            </div>
+
+            <!-- Copy Button -->
+            <button @click="
+                    copyToClipboard(warGames.generateWarGamePrompt(), 'Strategy Logs');
+                    $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                    $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                    setTimeout(() => {
+                        $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE POST-MORTEM (AI)';
+                        $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                    }, 2000)
+                    " 
+                    class="relative z-10 w-full py-4 bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-400 hover:text-black font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE POST-MORTEM (AI)
+            </button>
+            
+            <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
+                Paste into AI to analyze your strategic blind spots and "Second Order Effects".
+            </p>
+        </div>
+
+        <div class="mt-8">
+            <button @click="warGames.restart()" class="text-slate-500 hover:text-white text-sm underline decoration-dotted">
+                <i class="fa-solid fa-rotate-left mr-2"></i>Play Another Scenario
+            </button>
+        </div>
+
     </div>
 
 </div>
+
+             
              <!-- ASSESSMENT -->
             <div x-show="currentTab === 'assessment'" x-cloak class="max-w-4xl mx-auto">
 
