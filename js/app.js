@@ -5287,26 +5287,29 @@ TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
                 };
             },
 
+
             // ------------------------------------------------------------------
         // DT ROI TRACKER (Financial J-Curve Engine)
         // ------------------------------------------------------------------
         dtTracker: {
             inputs: {
                 projectName: 'Cloud Migration Phase 1',
-                initialCost: 500000, // Upfront CapEx
-                monthlyCost: 20000,  // Ongoing OpEx (Cloud bill)
-                monthlyHardSavings: 45000, // Server decommissioning
+                initialCost: 500000, 
+                monthlyCost: 20000,  
+                monthlyHardSavings: 45000, 
                 teamSize: 10,
-                efficiencyGain: 15, // % productivity boost (Soft benefit)
-                avgSalary: 120000, // Annual cost per head
-                confidence: 80 // % confidence in Soft Benefits (Skepticism slider)
+                efficiencyGain: 15, 
+                avgSalary: 120000, 
+                confidence: 80 
             },
             results: null,
-            loading: false,
+            loading: false, // Ensure this defaults to false
 
             calculate() {
+                // UI Feedback
                 this.loading = true;
                 
+                // Simulate calculation delay
                 setTimeout(() => {
                     this.runFinancialModel();
                     this.loading = false;
@@ -5317,7 +5320,6 @@ TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
                 const i = this.inputs;
                 
                 // 1. Calculate Soft Benefits Value
-                // Formula: (Team Salary / 12) * (Efficiency % / 100) * (Confidence % / 100)
                 const monthlySalaryLoad = (i.teamSize * i.avgSalary) / 12;
                 const rawSoftSavings = monthlySalaryLoad * (i.efficiencyGain / 100);
                 const adjustedSoftSavings = rawSoftSavings * (i.confidence / 100);
@@ -5330,10 +5332,8 @@ TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
                 let minPoint = -i.initialCost;
 
                 for (month = 1; month <= 24; month++) {
-                    // Net Monthly Flow = (Hard Savings + Soft Savings) - Running Costs
                     const monthlyNet = (i.monthlyHardSavings + adjustedSoftSavings) - i.monthlyCost;
                     balance += monthlyNet;
-                    
                     dataPoints.push(Math.round(balance));
                     
                     if (balance >= 0 && paybackMonth === null) {
@@ -5343,7 +5343,7 @@ TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
                 }
 
                 // 3. Final Metrics
-                const totalValue = balance; // Ending balance after 24 months
+                const totalValue = balance;
                 const roi = ((balance + i.initialCost) / i.initialCost) * 100;
                 const hardOnlyMonthly = i.monthlyHardSavings - i.monthlyCost;
                 const isHardPositive = hardOnlyMonthly > 0;
@@ -5359,7 +5359,7 @@ TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
                     verdict = "SLAM DUNK";
                     color = "text-green-400";
                 } else if (!isHardPositive) {
-                    verdict = "STRATEGIC BET (Soft Value Dependent)";
+                    verdict = "STRATEGIC BET";
                     color = "text-yellow-400";
                 } else {
                     verdict = "SOLID INVESTMENT";
@@ -5375,11 +5375,11 @@ TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
                     verdict,
                     color,
                     chartData: dataPoints,
-                    minPoint // Deepest point of the J-Curve
+                    minPoint 
                 };
             },
 
-            // --- ADVANCED PROMPT GENERATOR ---
+            // Advanced Prompt
             generateCFOReport() {
                 if (!this.results) return "Run calculation first.";
                 const r = this.results;
@@ -5389,7 +5389,7 @@ TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
                     ? "positive cash flow on Hard Savings alone" 
                     : "dependent on Soft Benefits (Efficiency) to break even";
 
-                return `ACT AS: A Chief Financial Officer (CFO) and Digital Transformation Lead.
+                return `ACT AS: A Chief Financial Officer (CFO).
 
 ## THE INVESTMENT CASE: "${i.projectName}"
 I have modeled the P&L for this initiative over a 24-month horizon.
@@ -5404,46 +5404,15 @@ I have modeled the P&L for this initiative over a 24-month horizon.
 
 ## YOUR MISSION
 Write a **Board Investment Memo** defending this spend.
-1. **The J-Curve Defense:** Explain why the initial dip in cash flow (down to $${r.minPoint.toLocaleString()}) is a necessary "Construction Cost" for future velocity.
-2. **The "Soft" Defense:** The model attributes $${r.softContribution.toLocaleString()} to "Efficiency". Translate this abstract number into concrete business value (e.g., "This equals 3,000 developer hours freed up for product innovation").
-3. **The Risk Mitigation:** Propose a "Stage-Gate" funding model where we release the next tranche of budget only if we hit the Month 6 Milestone.
+1. **The J-Curve Defense:** Explain why the initial dip in cash flow (down to $${r.minPoint.toLocaleString()}) is a necessary "Construction Cost".
+2. **The "Soft" Defense:** The model attributes $${r.softContribution.toLocaleString()} to "Efficiency". Translate this into concrete business value (e.g., "Developer hours freed up").
+3. **The Risk Mitigation:** Propose a "Stage-Gate" funding model.
 
 TONE: Fiscally responsible, forward-looking, rigorous.`;
             }
         },
+
             
-            // --- ADVANCED PROMPT GENERATOR ---
-            generateLeanPrompt() {
-                if (!this.metrics) return "Run calculation first.";
-                
-                const m = this.metrics;
-                const s = this.steps.map(step => `- ${step.name}: ${step.work}${this.unit} Work / ${step.wait}${this.unit} Wait`).join("\n");
-
-                return `ACT AS: A Lean Six Sigma Master Black Belt.
-
-## THE VALUE STREAM ANALYSIS
-I have mapped the "${this.processName}" process to calculate Flow Efficiency.
-- **Flow Efficiency:** ${m.efficiency}% (${m.verdict})
-- **Total Cycle Time:** ${m.totalLeadTime} ${this.unit}
-- **Value Added Time:** ${m.totalWork} ${this.unit}
-- **Pure Waste (Wait):** ${m.totalWait} ${this.unit}
-
-## THE BOTTLENECK
-The primary constraint is **"${m.bottleneck.name}"** with ${m.bottleneck.wait} ${this.unit} of wait time.
-
-## STEP DETAILS
-${s}
-
-## YOUR MISSION
-Write a **Process Optimization Plan**.
-1. **The Root Cause:** Based on the bottleneck "${m.bottleneck.name}", predicts *why* work piles up here (e.g., Batching, Hero Dependency, or Manual Approval).
-2. **The WIP Limit:** Recommend a specific "Work In Progress" (WIP) limit for this stage to stop the flooding.
-3. **The Radical Fix:** Propose a way to eliminate the wait time entirely (e.g., "Automated Decisioning" or "Parallel Processing") rather than just speeding up the work.
-
-TONE: Clinical, data-driven, ruthless against waste. Use terms like "Muda" (Waste) and "Little's Law".`;
-            }
-        },
-
         // ------------------------------------------------------------------
         // ADR BUILDER (Weighted Decision Matrix Engine)
         // ------------------------------------------------------------------
