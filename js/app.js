@@ -1319,7 +1319,7 @@ tools: {
         { id: 'cognitive', label: 'Cognitive Load', icon: 'fa-solid fa-brain', color: 'text-purple-400' },
         { id: 'sprintcheck', label: 'Sprint Health', icon: 'fa-solid fa-stopwatch', color: 'text-orange-400' },
         { id: 'adaptation', label: 'Adaptability Monitor', icon: 'fa-solid fa-dna', color: 'text-cyan-400' },
-        { id: 'dt_tracker', label: 'ROI Tracker', icon: 'fa-solid fa-magnifying-glass-dollar', color: 'text-green-400' },
+        { id: 'dt_tracker', label: 'ROI Tracker', icon: 'fa-solid fa-magnifying-glass-dollar', color: 'text-green-400' }
 
 
 
