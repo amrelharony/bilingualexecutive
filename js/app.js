@@ -5866,20 +5866,4 @@ const offlineBenchmarks = [
     {"score":25,"industry":"Traditional Bank"}, 
     {"score":75,"industry":"Neobank"}
 ];        
-    })); // <-- This closes the Alpine.data object
-    console.log("Alpine toolkit registered");
-
-}); // <-- This closes the event listener
-
-    // ------------------------------------------------------------------
-// OFFLINE BENCHMARK DATA (Fallback if Database fails)
-// ------------------------------------------------------------------
-const offlineBenchmarks = [
-    {"score":18,"industry":"Traditional Bank"}, 
-    {"score":25,"industry":"Traditional Bank"}, 
-    // ... PASTE THE REST OF YOUR 1000 ROWS HERE ...
-    {"score":75,"industry":"Neobank"}
-];
-
-// End of JavaScript file
 
