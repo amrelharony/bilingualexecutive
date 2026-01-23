@@ -285,13 +285,23 @@
      class="fixed inset-0 z-50 bg-dark/95 backdrop-blur-xl overflow-y-auto touch-pan-y">
 
         
- <!-- Tool Header (Sticky) -->
-        <div class="sticky top-0 z-[60] p-4 border-b border-white/10 flex justify-between items-center bg-slate-900/90 backdrop-blur-md">
-            <button @click="currentTab = 'dashboard'" class="text-slate-400 hover:text-white flex items-center gap-2 font-mono text-xs uppercase">
-                <i class="fa-solid fa-chevron-left"></i> Back to Hub
+<!-- Tool Header (Sticky) -->
+        <div class="sticky top-0 z-[60] p-4 border-b border-white/10 flex items-center justify-between bg-slate-900/90 backdrop-blur-md relative">
+            
+            <!-- Back Button: Shortened text for mobile to prevent overlap -->
+            <button @click="currentTab = 'dashboard'" class="relative z-10 text-slate-400 hover:text-white flex items-center gap-2 font-mono text-xs uppercase">
+                <i class="fa-solid fa-chevron-left"></i> 
+                <span class="hidden md:inline">Back to Hub</span>
+                <span class="md:hidden">Back</span>
             </button>
-            <div class="font-bold text-white tracking-tight">THE BILINGUAL EXECUTIVE</div>
-            <div class="w-8"> </div> <!-- Spacer -->
+            
+            <!-- Title: Absolutely centered to ignore button width -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="font-bold text-white tracking-tight text-center text-sm md:text-base">THE BILINGUAL EXECUTIVE</div>
+            </div>
+            
+            <!-- Right Spacer -->
+            <div class="w-8"></div> 
         </div>
         
         <!-- Tool Content Container -->
@@ -5637,174 +5647,6 @@ END-IF."></textarea>
     </div>
 
 </div>
-
-
-
-        <!-- REGULATORY SANDBOX GENERATOR TAB -->
-<div x-show="currentTab === 'sandbox'" x-cloak class="max-w-6xl mx-auto pb-20">
-    
-    <div class="text-center mb-10">
-        <h2 class="font-mono text-3xl font-bold text-white mb-2">
-            <i class="fa-solid fa-box-open mr-2 text-blue-400"></i>Sandbox Architect
-        </h2>
-        <p class="text-textMuted text-sm">Design a "Safe-to-Fail" experiment. Lower the blast radius to get approved.</p>
-    </div>
-
-    <div class="grid lg:grid-cols-12 gap-8 items-start">
-        
-        <!-- LEFT: THE CONTROLS (INPUTS) -->
-        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
-            <div class="border-b border-slate-700 pb-4">
-                <label class="text-[10px] text-slate-500 uppercase font-bold">Experiment Name</label>
-                <input type="text" x-model="sandboxGen.inputs.project" class="w-full bg-dark border border-slate-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none mt-1" placeholder="e.g. GenAI Chatbot Alpha">
-            </div>
-
-            <!-- Volume Sliders -->
-            <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-600">
-                <p class="text-[10px] text-blue-400 font-bold uppercase mb-4">Volume Controls</p>
-                
-                <div class="mb-4">
-                    <div class="flex justify-between mb-1">
-                        <label class="text-xs text-slate-300">User Cap</label>
-                        <span class="text-xs font-mono text-white" x-text="sandboxGen.inputs.users"></span>
-                    </div>
-                    <input type="range" min="10" max="10000" step="10" x-model="sandboxGen.inputs.users" @input="sandboxGen.calculateRisk()" class="w-full h-1 bg-dark rounded-lg appearance-none cursor-pointer accent-blue-500">
-                </div>
-
-                <div>
-                    <div class="flex justify-between mb-1">
-                        <label class="text-xs text-slate-300">Max Transaction ($)</label>
-                        <span class="text-xs font-mono text-white" x-text="'$' + sandboxGen.inputs.transactions"></span>
-                    </div>
-                    <input type="range" min="0" max="50000" step="100" x-model="sandboxGen.inputs.transactions" @input="sandboxGen.calculateRisk()" class="w-full h-1 bg-dark rounded-lg appearance-none cursor-pointer accent-green-500">
-                </div>
-            </div>
-
-            <!-- Sensitivity Buttons -->
-            <div>
-                <label class="text-[10px] text-slate-500 uppercase font-bold mb-2 block">Data Sensitivity</label>
-                <div class="grid grid-cols-2 gap-2">
-                    <template x-for="type in sandboxGen.dataTypes">
-                        <button @click="sandboxGen.inputs.dataLevel = type.val; sandboxGen.calculateRisk()" 
-                                class="text-xs py-2 px-3 rounded border transition-all text-left"
-                                :class="sandboxGen.inputs.dataLevel === type.val ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-slate-500'">
-                            <i class="fa-solid fa-database mr-2"></i><span x-text="type.label"></span>
-                        </button>
-                    </template>
-                </div>
-            </div>
-
-            <!-- Mitigation Buttons -->
-            <div>
-                <label class="text-[10px] text-slate-500 uppercase font-bold mb-2 block">Safety Net (Mitigation)</label>
-                <div class="flex flex-col gap-2">
-                    <template x-for="mit in sandboxGen.mitigations">
-                        <button @click="sandboxGen.inputs.fallback = mit.val; sandboxGen.calculateRisk()" 
-                                class="text-xs py-2 px-3 rounded border transition-all text-left flex justify-between items-center"
-                                :class="sandboxGen.inputs.fallback === mit.val ? 'bg-green-600 border-green-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-slate-500'">
-                            <span><i class="fa-solid fa-shield-halved mr-2"></i><span x-text="mit.label"></span></span>
-                            <span class="text-[9px] opacity-70" x-text="'-' + ((1-mit.reduction)*100).toFixed(0) + '% Risk'"></span>
-                        </button>
-                    </template>
-                </div>
-            </div>
-
-            <!-- Duration -->
-            <div>
-                <div class="flex justify-between mb-1">
-                    <label class="text-[10px] text-slate-500 uppercase font-bold">Duration (Weeks)</label>
-                    <span class="text-xs font-mono text-white" x-text="sandboxGen.inputs.duration"></span>
-                </div>
-                <input type="range" min="1" max="52" x-model="sandboxGen.inputs.duration" @input="sandboxGen.calculateRisk()" class="w-full h-1 bg-dark rounded-lg appearance-none cursor-pointer accent-purple-500">
-            </div>
-
-        </div>
-
-        <!-- RIGHT: THE RISK GAUGE (OUTPUT) -->
-        <div class="lg:col-span-7 space-y-6">
-            
-            <!-- Analysis Card -->
-            <div class="bg-card border-2 rounded-xl overflow-hidden shadow-2xl relative"
-                 :class="sandboxGen.analysis ? sandboxGen.analysis.badge : 'border-slate-700'">
-                
-                <!-- Init State -->
-                <div x-show="!sandboxGen.analysis" class="p-10 text-center text-slate-500" x-init="sandboxGen.calculateRisk()">
-                    <i class="fa-solid fa-calculator text-4xl mb-4 opacity-50"></i>
-                    <p class="text-xs uppercase">Adjust sliders to calculate risk</p>
-                </div>
-
-                <!-- Active State -->
-                <div x-show="sandboxGen.analysis">
-                    <div class="p-8 text-center border-b border-slate-700/50 relative overflow-hidden">
-                        <!-- Background pulse -->
-                        <div class="absolute inset-0 opacity-20 bg-gradient-to-t from-black to-transparent"></div>
-                        
-                        <p class="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-4 relative z-10">CALCULATED RISK SCORE</p>
-                        
-                        <div class="relative w-48 h-24 mx-auto overflow-hidden z-10">
-                            <div class="w-48 h-48 rounded-full border-[16px] border-slate-800 border-t-transparent border-l-transparent -rotate-45 absolute top-0 left-0"></div>
-                            <div class="w-48 h-48 rounded-full border-[16px] border-transparent border-t-current border-l-current -rotate-45 absolute top-0 left-0 transition-all duration-700"
-                                 :class="sandboxGen.analysis?.color"
-                                 :style="`transform: rotate(${(sandboxGen.analysis?.score / 100 * 180) - 135}deg)`"></div>
-                        </div>
-                        <div class="relative -mt-10 z-10">
-                            <span class="text-6xl font-bold font-mono text-white" x-text="sandboxGen.analysis?.score"></span>
-                        </div>
-                        
-                        <div class="mt-6 inline-block px-4 py-2 rounded border font-bold text-sm tracking-wide uppercase shadow-lg"
-                             :class="sandboxGen.analysis?.badge + ' ' + sandboxGen.analysis?.color">
-                            <i class="fa-solid" :class="sandboxGen.analysis?.score > 80 ? 'fa-ban' : 'fa-check'"></i>
-                            <span x-text="sandboxGen.analysis?.verdict"></span>
-                        </div>
-                    </div>
-
-                    <div class="p-6 bg-dark/50 grid grid-cols-2 gap-4 text-center">
-                        <div>
-                            <p class="text-[10px] text-slate-500 uppercase font-bold">TOTAL EXPOSURE</p>
-                            <p class="text-lg font-mono text-white" x-text="'$' + sandboxGen.analysis?.exposure"></p>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-slate-500 uppercase font-bold">DATA LEVEL</p>
-                            <p class="text-lg font-mono text-white" x-text="sandboxGen.analysis?.dataLabel"></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Prompt Box -->
-            <div class="bg-slate-900 border border-blue-500/30 p-6 rounded-xl relative overflow-hidden group">
-                <div class="flex justify-between items-center mb-4 relative z-10">
-                    <h3 class="font-mono text-white font-bold flex items-center gap-2 text-xs uppercase">
-                        <i class="fa-solid fa-robot text-blue-400"></i> WAIVER GENERATOR AI
-                    </h3>
-                </div>
-
-                <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-24 overflow-hidden">
-                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
-                    <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="sandboxGen.generateWaiverPrompt()"></pre>
-                </div>
-
-                <button @click="
-                        copyToClipboard(sandboxGen.generateWaiverPrompt(), 'Waiver Request');
-                        $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
-                        setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE WAIVER DOCUMENT (AI)'; }, 2000)
-                        " 
-                        class="relative z-10 w-full border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-black font-bold py-3 rounded-lg transition-all text-xs flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE WAIVER DOCUMENT (AI)
-                </button>
-                
-                <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
-                    Paste into AI to get a compliant "Permission to Operate" letter.
-                </p>
-            </div>
-
-        </div>
-    </div>
-</div>
-
-
-
-
 
         <!-- DT ROI TRACKER TAB -->
 <div x-show="currentTab === 'dt_tracker'" x-cloak class="max-w-6xl mx-auto pb-20">
