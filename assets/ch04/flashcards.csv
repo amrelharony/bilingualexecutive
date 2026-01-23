@@ -1,0 +1,33 @@
+"What is the term for practicing Agile rituals, like stand-up meetings, without adopting the underlying strategic mindset?",Zombie Scrum.
+"According to the text, true Agile is not a set of rituals but a strategic response to what?",Uncertainty.
+What foundational element is required before transparency can exist in an Agile environment?,Psychological Safety.
+What core concept of Agile involves replacing 'Prediction' (Guessing) with 'Inspection' (Learning)?,Empiricism.
+"In a regulated environment like banking, how does the 'Definition of Done' make Agile safer than Waterfall?",It bakes compliance and security directly into the definition of completed work.
+"In the Sterling Bank vignette, the team's burndown chart looked perfect, but what was the actual state of their project?",The mobile app feature couldn't process a real transaction after three months of sprints.
+An Enterprise Agile Coach describes a common stand-up in 'Zombie Scrum' not as a planning meeting but as a ____.,status report
+What is the simple litmus test proposed by the Agile Coach to determine if a team is truly Agile or a 'Zombie' team?,Does the plan change based on new data?
+"The text states that if you aren't allowed to change your mind based on data, you are just doing _____ in two-week chunks.",Waterfall
+What was the key finding of Google's 'Project Aristotle' regarding the success of their best teams?,It was the ability of team members to take risks without being shamed (psychological safety).
+"According to the text, an Agile culture requires that Bad News travels faster than what?",Good News.
+"In the Microsoft case study, what cultural practice under Steve Ballmer created a culture of fear and internal competition?","Stack Ranking, where employees were graded on a curve and the bottom 10% were fired."
+"When Satya Nadella took over Microsoft, what concept did he introduce to replace the 'know-it-all' culture?","The 'Growth Mindset,' encouraging a 'learn-it-all' attitude."
+"What is the core assumption of traditional, 'Prediction'-based management in banking?",That we can accurately predict what customers want and how long it will take to build.
+"Empiricism admits that the world is complex and unpredictable, so instead of long-term predictions, we should inspect and _____.",Adapt
+"In the 'Tale of Two Banks,' which bank used a 'Prediction' approach, building its app in secret for 18 months?","NatWest with its digital bank, Bó."
+How did Monzo's 'Empirical' approach differ from NatWest's Bó?,"Monzo launched a simple prepaid card and co-created the bank with users via a community forum, iterating based on data."
+"What was the outcome for NatWest's Bó, which was built using a predictive approach?","It was shut down after just 6 months with fewer than 11,000 active users."
+What are the four components of the 'Definition of Done' in an Agile Bank?,"The code is written, data lineage is documented, the security scan passed, and the compliance checklist is verified."
+"In the DBS Bank case study, what was the name of their transformation initiative to run the bank like a tech company?",The 'Gandalf' transformation.
+How did DBS Bank automate compliance to make their Agile process safer and faster?,They built an automated 'Governance Pipeline' that checked code against 47 regulatory rules before it could be merged.
+How does an 'Agile Audit' differ from a traditional audit?,"Auditors work in short sprints, share findings immediately, and focus on high-risk areas first, providing real-time feedback."
+"In 2015, ING Netherlands moved to an Agile operating model for its entire headquarters, famously known as the _____ model.",Spotify
+The Head of Internal Audit realized their traditional audit reports were flawed because they were effectively _____.,grading homework six months late
+"Under the 'Continuous Auditing' model, auditors moved from being 'Police Officers' to what new role?",'Safety Inspectors' checking the plumbing while the house is being built.
+The text uses the term 'Bionic Squad' to describe an Agile team whose capabilities are enhanced by what technology?,Generative AI tools like GitHub Copilot.
+What is the 'Velocity Trap'?,"The dangerous dynamic where AI-accelerated code development massively outpaces the 'human speed' of risk, security, and compliance reviews."
+The text argues that you cannot have AI-speed coding with human-speed checking; the solution is to implement ____.,Automated Governance
+What was the key insight from Klarna's adoption of GenAI for its engineering teams?,"The value shifts from typing syntax to defining product strategy and architecture, as code becomes cheap to produce."
+"Agile as a governance strategy provides Transparency through Psychological Safety, Adaptability through Empiricism, and Control through what?",The Definition of Done.
+What is the suggested 'Signal Safety Audit' to perform in a team retrospective?,Ask the team: 'What is one small risk we are currently hiding?'
+What does silence in response to the 'Signal Safety Audit' question indicate about a team?,"It is a fear-based team, not an Agile team."
+What two metrics should a tech lead compare to check for the 'Velocity Trap'?,The average time from code commit to production versus the average time for a security review.
