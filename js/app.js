@@ -129,6 +129,7 @@ this.$watch('talentSkills', () => {
 }, { deep: true });
 
             this.culturalMonitor.init(); 
+          this.initYouTubePlayer(); 
 
 
         },
@@ -1324,7 +1325,6 @@ tools: {
         { id: 'roi', label: 'ROI Calc', icon: 'fa-solid fa-calculator', color: 'text-green-500' },
         { id: 'excel', label: 'Excel Auditor', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
          { id: 'squad', label: 'Squad Builder', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
-        { id: 'excel', label: 'Excel Auditor', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
         { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox', color: 'text-red-400' }
     ],
     sims: [
