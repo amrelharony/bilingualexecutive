@@ -1,0 +1,21 @@
+"What is the central theme of Chapter 5, ""Governing The Goldmine""?",It provides a framework for managing the tension between velocity and control in data governance.
+"What are the two primary sections of the chapter's strategy, titled ""The Strategy: Speed + Control""?",The Agile Data Governance Matrix and the concept of Gatekeepers vs. Guardrails.
+"What specific path does ""The Agile Data Governance Matrix"" aim to map?","The path from a ""Data Swamp"" to an ""Agile Bank."""
+"The governance model of ""Gatekeepers vs. Guardrails"" advocates for a move away from what practice?",It advocates moving away from manual sign-offs.
+"According to the source, what is the primary negative consequence of using manual sign-offs for governance?",They slow down the process.
+"The ""Gatekeepers vs. Guardrails"" model promotes the adoption of what alternative to manual sign-offs?",It promotes the adoption of automated code checks.
+What is the stated benefit of using automated code checks for governance?,They keep the process and data safe.
+The governance strategy should move from manual sign-offs (which slow us down) to _____ (which keep us safe).,automated code checks
+"What is the title of the second major section in the chapter outline, focusing on practical application?",The Execution: Governance in Motion.
+"What is the core principle of implementing ""Just-in-Time"" Governance?","Fixing data errors at the source, not downstream."
+"Concept: ""Just-in-Time"" Governance",An execution strategy focused on addressing and correcting data errors at their point of origin rather than later in the data pipeline.
+"What specific challenge does ""The Shadow IT Trap"" address?","How to govern the sprawl of ""credit card"" software."
+"What is the crucial balance that must be maintained when addressing the ""Shadow IT Trap""?",Governing software sprawl without killing innovation.
+"What is the title of the third major section in the chapter outline, which proposes a final approach?",The Solution: Data as a Product.
+"What is the fundamental idea behind the ""Data as a Product"" solution?",Treating internal data assets with the same rigor as customer-facing apps.
+The solution of treating internal data assets with the same rigor as customer-facing apps is known as _____.,Data as a Product
+"What specific tool is introduced to support the ""Data as a Product"" methodology?",The Data Product Canvas.
+"What new role is created to manage data within the ""Data as a Product"" framework?",The Data Product Owner.
+"In the ""Data as a Product"" model, what concept is referred to as ""The Guarantee""?",Defining Service Level Objectives (SLOs).
+What is the ultimate purpose of defining Service Level Objectives (SLOs) for data products?,To create trust in the data.
+"What is the main takeaway message summarized in the ""IF YOU REMEMBER NOTHING ELSE"" section?","Governance is an Accelerator, Not a Brake."
