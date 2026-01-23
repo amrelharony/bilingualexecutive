@@ -1,0 +1,44 @@
+"What is the primary role of the ""Bilingual Executive"" as described in Chapter 8?",To bridge the gap between the boardroom (business) and the server room (technology).
+"According to the source, ""Tech Literacy"" is the new ____.",Financial Literacy
+"A ""T-Shaped Leader"" combines deep vertical expertise in a field like Banking with what type of horizontal capability?",Horizontal fluency in Digital concepts.
+"What is the purpose of the ""Bilingual Compass"" diagnostic tool?",To check if a leader is balancing Risk versus Innovation.
+"The ""Agile Talent Radar"" is a hiring methodology focused on assessing a candidate's ____, not just their history.",potential
+"Why does the text warn against the ""Translation Layer""?",Because you cannot outsource understanding of fundamental business mechanics.
+"In the context of managing resistance, what term is used for the middle management tier that can be resistant to change?","The ""Clay Layer"" or the ""Frozen Middle."""
+"What is the key takeaway from the section ""IF YOU REMEMBER NOTHING ELSE""?","Tech Literacy is the new Financial Literacy, and leaders cannot treat technology as a black box."
+"In a typical board meeting, why do board members often fail to challenge the CIO's presentation?",They lack the technical literacy to understand the concepts and can only question the price tag.
+"The text argues that in the modern era, the bank is no longer just a building but is fundamentally the ____, the ____, and the ____.","wiring, code, data"
+What is the key difference between literacy and mastery for a Bilingual Executive?,"Literacy means understanding concepts well enough to make informed decisions, not mastering the technical skills to implement them (e.g., coding)."
+What are the two 'languages' a Bilingual Executive must speak?,The Language of Value (Business) and the Language of Possibility (Tech/Data).
+"A Bilingual Executive translates a technical statement like ""refactor the monolith into microservices"" into what business outcome?",Releasing features faster at the cost of potential short-term stability.
+"In his annual letters, Jamie Dimon of JPMC shifted from comparing his bank to other banks to comparing it to what kind of companies?",Technology giants like Google and Stripe.
+How did Jamie Dimon reframe JPMC's $12 billion annual tech budget?,"Not as a cost center, but as an R&D engine to build a platform bank."
+"What type of employee did banks traditionally promote, characterized by deep expertise in a single vertical?","An ""I-Shaped"" person."
+"In the T-Shaped Leader model, the vertical bar represents your core background and gives you ____.",authority
+"In the T-Shaped Leader model, the horizontal bar represents your new digital fluency and gives you ____.",agility
+What business problem is highlighted as a key aspect of Data Literacy for an executive?,"Understanding that ""Data Quality"" is a business problem, not just an IT problem."
+Concept: Zero Trust Architecture,"A cybersecurity concept where identity must be verified at every internal access point, not just at the perimeter."
+"What technology allows a bank to connect its services to the outside world, forming the basis of the ""API Economy""?",APIs (Application Programming Interfaces).
+"From a leader's perspective, what is the key strategic function of the Cloud beyond being ""someone else's computer""?",It provides a way to scale elasticity based on demand.
+What is FinOps?,"Financial Operations; a practice where developers are made responsible for the financial cost of the code they write, especially in a variable-cost cloud environment."
+What is the economic shift involved in moving from data centers to the cloud?,A shift from Capital Expenditures (CapEx) for buying hardware to Operating Expenditures (OpEx) for renting compute power.
+"What is the purpose of a ""Budget Guardrail"" in a FinOps model?",To place a hard-coded monthly spending cap on a development squad to prevent uncontrolled cloud costs.
+What is the primary risk of building a service directly on a specific AI model like GPT-4?,"You become a hostage to that vendor's pricing, policy, or technology changes."
+What solution is proposed to mitigate the risk of being locked into a single AI vendor?,"Demanding an ""AI Gateway"" or abstraction layer that can route requests to the best model for the job."
+What is the critical test question for a CTO regarding AI model dependency?,"""If we had to swap our underlying AI model tomorrow, is that a configuration change (1 day) or a code rewrite (6 months)?"""
+"What was the goal of OCBC Bank's $20 million ""Future Smart"" programme?","To retrain and upskill 29,000 existing employees with digital skills rather than relying on mass layoffs."
+"Instead of turning tellers into developers, OCBC's program taught them what kind of ""horizontal"" skills?","Skills like ""Data Storytelling,"" ""Human-Centered Design,"" and ""Cyber Risk Awareness."""
+What was the key insight from the OCBC Bank case study regarding talent development?,It is often cheaper and more effective to upskill a loyal employee who knows the bank than to hire a mercenary who only knows the tech.
+"According to MIT CISR research, companies with ""Digitally Savvy Boards"" outperform their peers on revenue growth by what percentage?",38%
+"What was the new reality for a CEO regarding technology, making ignorance a disqualifier?","A CEO saying ""I don't understand the IT stuff"" became equivalent to saying ""I don't understand the balance sheet."""
+"In the Bilingual Executive's Compass, what does the 'North' direction represent?","Value Creation (focus on revenue, customer experience, and growth)."
+"In the Bilingual Executive's Compass, what does the 'South' direction represent?","Operational Excellence (focus on efficiency, cost cutting, and stability)."
+"In the Bilingual Executive's Compass, what does the 'East' direction represent?","Innovation Velocity (focus on speed, experimentation, and 'The New')."
+"In the Bilingual Executive's Compass, what does the 'West' direction represent?","Risk Intelligence (focus on compliance, security, and governance)."
+Legacy executives are often trapped in which quadrant of the Bilingual Executive's Compass?,The South-West quadrant (Cost and Compliance).
+Reckless fintech startups often live exclusively in which quadrant of the Bilingual Executive's Compass?,The North-East quadrant (Growth and Speed).
+What is the ideal role of the Bilingual Executive in relation to the compass?,"To be the 'Needle,' constantly oscillating between the four directions based on the situation."
+"Who is presented as the archetype of the Bilingual Executive, having founded Starling Bank as a career banker?",Anne Boden.
+How did Anne Boden of Starling Bank demonstrate her focus on Risk Intelligence (West)?,She built her own Core Banking System from scratch and insisted on a full banking license before launching.
+How did Anne Boden of Starling Bank demonstrate her focus on Innovation Velocity (East)?,"She built the first open API marketplace in the UK, allowing competitors to integrate with her bank."
+"What significant milestone did Starling Bank achieve before its UK neobank competitors, Monzo and Revolut?",It was the first to reach profitability.
