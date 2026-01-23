@@ -1,0 +1,67 @@
+What is the primary focus of Chapter 10: The Future Bank?,Preparing for the next decade of 'Agentic AI' and 'Autonomous Finance'.
+What is the term for the AI shift from an 'Oracle' to an 'Agent'?,The Agentic Threat.
+Autonomous Banking involves bots that perform what key function for the customer?,They negotiate on the customer's behalf.
+"According to the text, what foundational element is necessary for AI to succeed, described as the 'Iceberg Beneath the Surface'?",An 'Agile Data Foundation'.
+What is the name of the safeguard designed to prevent AI liability?,The Algorithmic Trust Shield (FACTS).
+The 'Ecosystem Shift' is characterized by the rise of what kind of bank?,The Invisible Bank.
+What concept describes the paradox of banks becoming essential yet unseen in the new ecosystem?,The rise of Embedded Finance and becoming 'Invisible'.
+What is the term for the financial innovation that aims to solve the T+2 liquidity trap?,The Settlement Revolution (Tokenization).
+The 'Human Shift' in banking is described as the move towards what model?,Bionic Banking.
+What is the 'Phygital' Pivot for bank real estate?,Repurposing branches from a 'Factory' to an 'Apple Store' model.
+The 'Human Pivot' involves retraining the workforce from 'Processors' to what new role?,Problem Solvers.
+"What is the final model for the future bank, which replaces the 'Destination' mindset?",The Continuous Adaptation Machine.
+"The Transformation Flywheel, part of the Continuous Adaptation Machine, consists of what three actions?",Sense → Decide → Execute.
+"In the Agentic era, what will a bank's customer be, instead of a human tapping on a screen?",An AI agent negotiating rates and moving funds.
+"In the Agentic era, what part of a bank's infrastructure becomes the 'new branch front door'?",The API gateway.
+What is the consequence for a bank that cannot handle machine-speed negotiation and real-time data flow?,AI agents will bypass it for a faster competitor.
+The text states you cannot build AI on a _____ _____.,Data Swamp
+What two elements are described as safety protocols to prevent AI from becoming a legal liability?,Agile Data Governance and the Algorithmic Trust Shield (FACTS).
+"In the 'Human Pivot', AI is expected to handle processing and speed, while humans must handle what?",Problems and empathy.
+What is the strategic principle of 'Selective Invisibility'?,"Be invisible in the transaction (Embedded Finance), but highly visible in the advice."
+"According to the text, what is the 'only moat left' for banks in the future?",Trust.
+"What is the function of Level 1 AI, 'The Oracle' (Predictive AI)?",It analyzes vast amounts of historical data to guess the future.
+What is the bank's primary role or use for Level 1 (Predictive) AI?,"Insight, used for Credit Risk, Fraud Detection, and Cash Flow forecasting."
+"What is the function of Level 2 AI, 'The Creator' (Generative AI)?","It creates new content like text, code, or images based on learned patterns."
+What is the bank's primary role or use for Level 2 (Generative) AI?,"Efficiency, used for Marketing, Customer Service (Chatbots), and Coding."
+"What is the function of Level 3 AI, 'The Actor' (Agentic AI)?",It takes autonomous action to achieve a specific goal without human intervention.
+What is the bank's primary role or use for Level 3 (Agentic) AI?,"Agency, where the AI negotiates rates and moves money on behalf of the customer."
+How does the text describe the shift in banking from the last decade to the upcoming 'Agentic decade'?,From 'Branch to Mobile Phone' (Self-Service) to 'Conscious to Unconscious' (Self-Driving).
+"In the Morgan Stanley case study, what problem did their Generative AI solution solve for Wealth Advisors?",It eliminated the need to manually search through thousands of research reports to answer client questions.
+"What specific technology did Morgan Stanley use to restrict its AI to vetted internal data, eliminating hallucination risk?",Retrieval-Augmented Generation (RAG).
+"In the 'Day in the Life: 2030' example, what is the name of Layla's AI agent?",Aria.
+"What was the first action Layla's AI agent, Aria, took after detecting an invoice payment?",It automatically set aside 20% into her 'Tax Vault'.
+What did Aria do with the surplus funds after funding Layla's emergency fund?,It moved the surplus into her High-Yield ETF Portfolio.
+"Besides managing investments and taxes, what other negotiation task did Layla's AI agent perform for her?",It negotiated a lower rate on her home internet renewal.
+How did Layla's smart glasses provide an instant mortgage pre-approval?,Aria instantly overlaid data based on her cash flow and a pre-approved mortgage model.
+What key feature of RBC's NOMI distinguishes it from a standard budgeting app?,NOMI has agency; it automatically moves 'safe' money to a savings account without asking the user.
+What did RBC's experience with NOMI prove about customer psychology?,"It proved that customers trust the bank to move money for them, and the psychological barrier to Autonomous Finance is low."
+What is the 'Copilot' model of AI in banking today?,"The AI suggests an action, but the human must still log in and approve it, acting as a bottleneck."
+What is the 'Autopilot' model of AI in banking tomorrow?,The AI acts on the user's behalf to execute trades and move money 24/7 based on a high-level goal.
+What is the primary bottleneck preventing the widespread adoption of 'Autopilot' finance today?,Data Trust.
+"In the Layla example, what technology enabled her AI to know an invoice was paid instantly, rather than the next day?",Real-Time Event Streaming.
+"How did Layla's AI, Aria, execute a trade into a High-Yield ETF instantly?",It used Product-based APIs built by the Investment Squad.
+How was an instant mortgage bid approved for Layla without a human risk officer?,"The Risk Policy was embedded in the code as 'Guardrails,' which the AI executed."
+What was the core reason for the collapse of 'Zillow Offers'?,"The AI model was built on incomplete data, lacking qualitative data on home conditions like smell or internal damage."
+The Zillow Offers collapse serves as a warning that an AI running on a _____ _____ will confidently drive you off a cliff.,Data Swamp
+"In the FACTS acronym for the Algorithmic Trust Shield, what does 'F' stand for?",Fairness: Testing the model for bias against protected groups.
+"In the FACTS acronym for the Algorithmic Trust Shield, what does 'A' stand for?",Accountability: Identifying the human 'Owner' responsible if the AI breaks the law.
+"In the FACTS acronym for the Algorithmic Trust Shield, what does 'C' stand for?",Confidentiality: Ensuring the AI respects data privacy regulations like GDPR.
+"In the FACTS acronym for the Algorithmic Trust Shield, what does 'T' stand for?",Transparency: The ability to explain why the AI made a specific decision (no 'Black Boxes').
+"In the FACTS acronym for the Algorithmic Trust Shield, what does 'S' stand for?",Safety: Having a 'Kill Switch' if the model starts hallucinating or behaving erratically.
+What was the central failure in the Apple Card 'sexist' algorithm controversy?,The bank (Goldman Sachs) had no explainability; they couldn't explain why the algorithm assigned different credit limits.
+The Apple Card incident proves that _____ is more important than accuracy for a 'Bilingual Executive'.,Explainability
+What is 'Embedded Finance'?,"The concept that financial services (like loans) will come to the customer at the point of need, often offered by a non-bank."
+What data advantage does Tesla Insurance have over traditional insurers?,"Tesla uses real-time telematics data from the car to measure actual driving behavior, not demographic guesses."
+What is the core lesson from the Tesla Insurance example for banks?,"A company with better, more relevant data on risk or cash flow will win, even if it's not a traditional financial institution."
+"Beyond cryptocurrency speculation, what is the primary business signal of 'Tokenization' for banks?",Improving liquidity by putting Real World Assets (RWA) on a private blockchain.
+What is the 'T+2 Problem' in financial settlements?,"The two-day delay between a trade's execution and the final settlement of money, which traps capital in limbo."
+How does tokenization solve the 'T+2 Problem'?,"By putting assets on a private blockchain, it removes the clearing house and allows for instantaneous, 24/7 settlement."
+What is the name of J.P. Morgan's private blockchain network used for corporate clients?,Onyx.
+What is the primary use case and benefit of J.P. Morgan's Onyx network?,"It allows for instantaneous 24/7 repo trading and cross-border payments, saving millions in intraday liquidity costs."
+What is the 'dangerous strategic paradox' for banks that embrace 'invisibility' through embedded finance?,"They risk losing the customer relationship and becoming an interchangeable, commoditized utility."
+How should a bank be 'selectively invisible'?,Be invisible for transactions (utility) but highly visible for advice (value).
+"In the future, a bank's brand value will come from its ability to be the '_____ _____ ' in a chaotic digital world.",Trusted Guardian
+The 'Phygital Pivot' for bank branches means moving from a 'Factory Model' to what other model?,The 'Apple Store Model'.
+"In the 'Apple Store Model', what is the primary role of branch staff?","To act as concierges who help customers solve complex problems, not process transactions."
+What are the three primary reasons a customer would go to a physical branch in the future bank model?,"Complexity, Validation, and Community."
+"Under the new branch model, what should staff be incentivized on instead of transaction volume?",Digital Adoption and Advisory Depth.
