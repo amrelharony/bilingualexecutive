@@ -5753,7 +5753,7 @@ TONE: Technical, objective, permanent record.`;
             }
         },
 
-        // ------------------------------------------------------------------
+// ------------------------------------------------------------------
         // EXECUTIVE LIBRARY (Interactive Curriculum Engine)
         // ------------------------------------------------------------------
         library: {
@@ -5764,7 +5764,7 @@ TONE: Technical, objective, permanent record.`;
             readBooks: [],
             knownTools: [],
 
-            // 1. THE BOOKSHELF (Strategy & Culture)
+            // 1. THE BOOKSHELF
             books: [
                 { id: 'p2p', title: 'Project to Product', author: 'Mik Kersten', domain: 'Strategy', impact: 'High', summary: "Stop funding 'projects' that end. Fund 'products' that live. Measures 'Flow' instead of hours." },
                 { id: 'team', title: 'Team Topologies', author: 'Skelton & Pais', domain: 'Org Design', impact: 'High', summary: "Conway's Law applied. Don't let your org chart break your architecture. Define interaction modes." },
@@ -5773,7 +5773,7 @@ TONE: Technical, objective, permanent record.`;
                 { id: 'inspired', title: 'Inspired', author: 'Marty Cagan', domain: 'Product', impact: 'High', summary: "How to build products customers love. Moves from 'Feature Factory' to 'Problem Solving'." }
             ],
 
-            // 2. THE TECH STACK (Infrastructure & Data)
+            // 2. THE TECH STACK
             techStack: [
                 { id: 'kafka', name: 'Kafka', category: 'Data', analogy: "The Central Nervous System", desc: "Real-time event streaming. It lets systems 'react' instead of 'ask'." },
                 { id: 'k8s', name: 'Kubernetes', category: 'Infra', analogy: "The Container Ship Captain", desc: "Automates the deployment and scaling of software containers. Prevents manual server management." },
@@ -5852,8 +5852,20 @@ Create a **"Cheat Sheet"** for me to bridge these specific gaps immediately.
 
 TONE: Concise, executive-level, high-signal.`;
             }
-        },
+            
+        } // <--- Closes library
         
+    })); // <--- Closes Alpine.data
+}); // <--- Closes Event Listener
+
+// ------------------------------------------------------------------
+// OFFLINE BENCHMARK DATA (Fallback if Database fails)
+// ------------------------------------------------------------------
+const offlineBenchmarks = [
+    {"score":18,"industry":"Traditional Bank"}, 
+    {"score":25,"industry":"Traditional Bank"}, 
+    {"score":75,"industry":"Neobank"}
+];        
     })); // <-- This closes the Alpine.data object
     console.log("Alpine toolkit registered");
 
