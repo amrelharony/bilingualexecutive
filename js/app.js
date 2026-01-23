@@ -1316,7 +1316,10 @@ tools: {
         { id: 'shadow', label: 'Shadow IT Audit', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
         { id: 'detector', label: 'Hallucination Check', icon: 'fa-solid fa-shield-cat', color: 'text-risk' },
         { id: 'watermelon', label: 'Lie Detector', icon: 'fa-solid fa-user-secret', color: 'text-red-500' },
-        { id: 'cognitive', label: 'Cognitive Load', icon: 'fa-solid fa-brain', color: 'text-purple-400' }
+        { id: 'cognitive', label: 'Cognitive Load', icon: 'fa-solid fa-brain', color: 'text-purple-400' },
+        { id: 'sprintcheck', label: 'Sprint Health', icon: 'fa-solid fa-stopwatch', color: 'text-orange-400' },
+            { id: 'adaptation', label: 'Adaptability Monitor', icon: 'fa-solid fa-chart-radar', color: 'text-cyan-400' }
+
 
 
 
@@ -1341,7 +1344,10 @@ tools: {
         { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox', color: 'text-red-400' },
             { id: 'vendor', label: 'Vendor Coach', icon: 'fa-solid fa-handshake', color: 'text-yellow-400' },
             { id: 'capex', label: 'FinOps Auditor', icon: 'fa-solid fa-file-invoice-dollar', color: 'text-green-400' },
-            { id: 'legacy', label: 'Legacy Explainer', icon: 'fa-solid fa-microchip', color: 'text-slate-400' }
+            { id: 'legacy', label: 'Legacy Explainer', icon: 'fa-solid fa-microchip', color: 'text-slate-400' },
+            { id: 'flow', label: 'Flow Efficiency', icon: 'fa-solid fa-water', color: 'text-blue-400' }
+
+        
 
 
 
@@ -1355,7 +1361,11 @@ tools: {
         { id: 'sandbox', label: 'Arch Sandbox', icon: 'fa-solid fa-shapes', color: 'text-cyan-500' },
         { id: 'risksim', label: 'Risk Dojo', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
         { id: 'escaperoom', label: 'Excel Escape', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
-            { id: 'bingo', label: 'Bilingual Bingo', icon: 'fa-solid fa-table-cells', color: 'text-pink-500' }
+        { id: 'bingo', label: 'Bilingual Bingo', icon: 'fa-solid fa-table-cells', color: 'text-pink-500' },
+        { id: 'regsim', label: 'Reg Simulator', icon: 'fa-solid fa-gavel', color: 'text-yellow-500' },
+
+
+        
         
         
     ]
@@ -1372,6 +1382,8 @@ tools: {
            { id: 'risksim', label: 'Risk Negotiator', desc: 'Simulate a high-stakes "Go/No-Go" meeting with a CRO.', icon: 'fa-solid fa-gavel', color: 'text-risk', vip: false },
            { id: 'escaperoom', label: 'Escape the Factory', desc: 'Gamified technical debt simulation.', icon: 'fa-solid fa-dungeon', color: 'text-green-500', vip: false },
            { id: 'bingo', label: 'Meeting Bingo', desc: 'Gamify cultural transformation during actual meetings.', icon: 'fa-solid fa-table-cells', color: 'text-pink-500', vip: false },
+           { id: 'regsim', label: 'Regulation Impact', desc: 'Simulate the cost & tech blast radius of PSD3, AI Act, and DORA.', icon: 'fa-solid fa-scale-balanced', color: 'text-yellow-500', vip: false },
+
 
 
 
@@ -1385,6 +1397,8 @@ tools: {
            { id: 'vendor', label: 'Vendor Negotiator', desc: 'Shift contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-signature', color: 'text-yellow-400', vip: false },
            { id: 'capex', label: 'CapEx Classifier', desc: 'Audit agile tickets against IAS 38 Accounting Standards.', icon: 'fa-solid fa-scale-balanced', color: 'text-green-400', vip: false },
            { id: 'legacy', label: 'Legacy Translator', desc: 'Scan COBOL/SQL for business logic risks.', icon: 'fa-solid fa-code', color: 'text-slate-400', vip: false },
+           { id: 'flow', label: 'Value Stream Calc', desc: 'Measure the hidden waste (Wait Time) in your processes.', icon: 'fa-solid fa-stopwatch', color: 'text-blue-400', vip: false },
+
 
 
 
@@ -1398,6 +1412,10 @@ tools: {
            { id: 'shadow', label: 'Shadow IT Scanner', desc: 'Audit SaaS sprawl and calculate the "Integration Tax".', icon: 'fa-solid fa-ghost', color: 'text-purple-400', vip: false },
            { id: 'detector', label: 'AI Risk Scanner', desc: 'Mathematically verify AI outputs against Golden Source data.', icon: 'fa-solid fa-user-secret', color: 'text-risk', vip: false },
            { id: 'cognitive', label: 'Brain Bandwidth', desc: 'Measure team mental overhead and burnout risk.', icon: 'fa-solid fa-brain', color: 'text-purple-400', vip: false },
+           { id: 'sprintcheck', label: 'Sprint Diagnostic', desc: '60-second pulse check on velocity, creep, and morale.', icon: 'fa-solid fa-heart-pulse', color: 'text-orange-400', vip: false },
+           { id: 'adaptation', label: 'Adaptation Health', desc: 'Measure organizational plasticity and rigidity.', icon: 'fa-solid fa-dna', color: 'text-cyan-400', vip: false },
+
+
 
 
 
@@ -4770,6 +4788,520 @@ TONE: Observational, witty, constructive. Reference "Tribal Leadership" concepts
             }
         },
 
+        // ------------------------------------------------------------------
+        // SPRINT HEALTH CHECK (Deterministic Forecasting Engine)
+        // ------------------------------------------------------------------
+        sprintHealth: {
+            inputs: {
+                day: 5,           // Current day (1-10)
+                plannedPts: 40,   // Committed points
+                completedPts: 10, // Done so far
+                addedPts: 0,      // Scope creep
+                blockers: 1,      // 0=None, 1=Minor, 2=Major
+                mood: 7           // 1-10 Team Morale
+            },
+            analysis: null,
+            loading: false,
+
+            calculate() {
+                this.loading = true;
+                
+                // Simulate "Vital Signs Scan"
+                setTimeout(() => {
+                    this.runDiagnostics();
+                    this.loading = false;
+                }, 600);
+            },
+
+            runDiagnostics() {
+                const i = this.inputs;
+                const totalScope = parseInt(i.plannedPts) + parseInt(i.addedPts);
+                
+                // 1. TIME PACING (The Ideal Trend)
+                // Assuming 10 day sprint
+                const timeElapsedPct = (i.day / 10);
+                const idealCompletion = totalScope * timeElapsedPct;
+                
+                // 2. DRIFT CALCULATION (Are we behind?)
+                // Positive = Ahead, Negative = Behind
+                const delta = parseInt(i.completedPts) - idealCompletion;
+                const driftPct = (delta / totalScope) * 100;
+
+                // 3. CREEP FACTOR (The Silent Killer)
+                const creepPct = (parseInt(i.addedPts) / parseInt(i.plannedPts)) * 100;
+
+                // 4. PROBABILITY ENGINE (Weighted Score 0-100)
+                // Weights: Velocity (40%), Mood (30%), Creep (20%), Blockers (10%)
+                
+                let velocityScore = 100;
+                if (driftPct < 0) velocityScore = Math.max(0, 100 - (Math.abs(driftPct) * 2)); // Penalty for being behind
+                
+                let moodScore = i.mood * 10;
+                
+                let creepScore = Math.max(0, 100 - (creepPct * 2)); // Penalty for adding scope
+                
+                let blockerScore = i.blockers === 0 ? 100 : (i.blockers === 1 ? 50 : 0);
+
+                // Weighted Average
+                const probability = (velocityScore * 0.4) + (moodScore * 0.3) + (creepScore * 0.2) + (blockerScore * 0.1);
+
+                // 5. DIAGNOSIS
+                let weather = "Sunny";
+                let color = "text-green-400";
+                let prescription = "Stay the course. Protect the team from interference.";
+
+                if (probability < 40) {
+                    weather = "Hurricane";
+                    color = "text-red-500";
+                    prescription = "EMERGENCY: Descope immediately. Cut 30% of the backlog today.";
+                } else if (probability < 70) {
+                    weather = "Turbulence";
+                    color = "text-orange-400";
+                    prescription = "Risk of carry-over. Focus on finishing 'In Progress' before starting new.";
+                } else if (creepPct > 10) {
+                    weather = "Foggy";
+                    color = "text-yellow-400";
+                    prescription = "Scope Creep detected. Reject any new requests.";
+                }
+
+                this.analysis = {
+                    score: Math.round(probability),
+                    weather,
+                    color,
+                    prescription,
+                    drift: Math.round(driftPct),
+                    creep: Math.round(creepPct),
+                    completionRate: Math.round((i.completedPts / totalScope) * 100)
+                };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateStandupPrompt() {
+                if (!this.analysis) return "Run diagnostics first.";
+                const a = this.analysis;
+                const i = this.inputs;
+
+                return `ACT AS: An Agile Coach and Crisis Manager.
+
+## THE SPRINT DIAGNOSTIC REPORT
+I have run a health check on the current sprint (Day ${i.day}/10).
+- **Success Probability:** ${a.score}% (${a.weather})
+- **Velocity Drift:** ${a.drift > 0 ? "+" : ""}${a.drift}% vs Ideal Trend.
+- **Scope Creep:** ${a.creep}% added work.
+- **Team Morale:** ${i.mood}/10.
+- **Blocker Status:** ${i.blockers === 2 ? "CRITICAL STOP" : (i.blockers === 1 ? "Drag" : "Clear")}.
+
+## THE PRESCRIPTION
+"${a.prescription}"
+
+## YOUR MISSION
+Write a **"Standup Intervention Script"** for tomorrow morning.
+1. **The Reality Check:** A script to show the team the data without blaming them (e.g., "Math says we are 20% behind").
+2. **The Hard Choice:** A specific question to ask the Product Owner about what to cut *today* to save the sprint goal.
+3. **The Morale Boost:** A 1-sentence rally cry acknowledging the hard work despite the ${a.weather} conditions.
+
+TONE: Urgent, supportive, data-driven.`;
+            }
+        },
+
+        
+// ------------------------------------------------------------------
+        // CONTINUOUS ADAPTATION MONITOR (Deterministic Radar Engine)
+        // ------------------------------------------------------------------
+        adaptMonitor: {
+            // The 5 Dimensions of Plasticity
+            dimensions: [
+                { id: 'learning', label: 'Learning Velocity', val: 5, desc: "Speed from 'Idea' to 'Validated Data'", weight: 1.2 },
+                { id: 'decisions', label: 'Decision Latency', val: 5, desc: "Time to make a reversible decision", weight: 1.0 },
+                { id: 'safety', label: 'Psychological Safety', val: 5, desc: "Tolerance for failure/bad news", weight: 1.5 }, // Critical Multiplier
+                { id: 'funding', label: 'Funding Fluidity', val: 5, desc: "Ability to move budget mid-year", weight: 1.1 },
+                { id: 'customer', label: 'Customer Closeness', val: 5, desc: "Layers between Devs and Users", weight: 1.0 }
+            ],
+            
+            result: null,
+            chart: null,
+            loading: false,
+
+            calculate() {
+                this.loading = true;
+                
+                // Simulate "Telemetry Scan"
+                setTimeout(() => {
+                    this.runMath();
+                    this.loading = false;
+                    this.$nextTick(() => this.renderRadar());
+                }, 800);
+            },
+
+            runMath() {
+                // 1. CALCULATE WEIGHTED AQ (Adaptability Quotient)
+                let totalScore = 0;
+                let totalWeight = 0;
+                let lowestDim = this.dimensions[0];
+
+                this.dimensions.forEach(d => {
+                    totalScore += (d.val * d.weight);
+                    totalWeight += d.weight;
+                    if (d.val < lowestDim.val) lowestDim = d;
+                });
+
+                let aq = (totalScore / totalWeight) * 10; // Scale to 100
+
+                // 2. THE SAFETY VETO (Math Constraint)
+                // You cannot be adaptable if people are terrified.
+                // If Safety < 4, AQ is capped at 50, regardless of other scores.
+                const safetyScore = this.dimensions.find(d => d.id === 'safety').val;
+                let penalty = "";
+                
+                if (safetyScore < 4) {
+                    aq = Math.min(aq, 45);
+                    penalty = "SAFETY VETO APPLIED: Fear is freezing the organization.";
+                }
+
+                // 3. ARCHETYPE PROFILING
+                let archetype = "The Fossil"; // Default
+                let color = "text-risk";
+                let advice = "Survival is unlikely without radical change.";
+
+                if (aq > 80) {
+                    archetype = "The Chameleon";
+                    color = "text-primary";
+                    advice = "Market Leader. Focus on maintaining edge.";
+                } else if (aq > 60) {
+                    archetype = "The Tanker";
+                    color = "text-yellow-400";
+                    advice = "Strong but slow to turn. Vulnerable to agile disruptors.";
+                } else if (safetyScore > 7 && aq < 60) {
+                    archetype = "The Country Club"; // High safety, low output
+                    color = "text-orange-400";
+                    advice = "Too comfortable. Needs urgency/performance pressure.";
+                }
+
+                this.result = {
+                    aq: Math.round(aq),
+                    archetype,
+                    color,
+                    penalty,
+                    weakness: lowestDim.label,
+                    advice
+                };
+            },
+
+            renderRadar() {
+                const ctx = document.getElementById('adaptChart');
+                if (!ctx) return;
+                
+                // Destroy old instance if exists (requires tracking the instance)
+                if (window.adaptChartInstance) window.adaptChartInstance.destroy();
+
+                window.adaptChartInstance = new Chart(ctx, {
+                    type: 'radar',
+                    data: {
+                        labels: this.dimensions.map(d => d.label),
+                        datasets: [{
+                            label: 'Current Plasticity',
+                            data: this.dimensions.map(d => d.val),
+                            backgroundColor: 'rgba(34, 211, 238, 0.2)', // Cyan opacity
+                            borderColor: '#22d3ee', // Cyan
+                            pointBackgroundColor: '#fff',
+                            borderWidth: 2
+                        },
+                        {
+                            label: 'Neo-Bank Benchmark',
+                            data: [8, 9, 8, 9, 9], // The target
+                            backgroundColor: 'transparent',
+                            borderColor: '#94a3b8', // Slate
+                            borderDash: [5, 5],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            r: {
+                                min: 0, max: 10,
+                                ticks: { display: false },
+                                grid: { color: '#334155' },
+                                angleLines: { color: '#334155' },
+                                pointLabels: { color: '#e2e8f0', font: { size: 10, family: 'monospace' } }
+                            }
+                        },
+                        plugins: { legend: { display: false } }
+                    }
+                });
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateChangePrompt() {
+                if (!this.result) return "Run analysis first.";
+                const r = this.result;
+                const scores = this.dimensions.map(d => `- ${d.label}: ${d.val}/10`).join("\n");
+
+                return `ACT AS: An Organizational Design Consultant and Change Management Expert.
+
+## THE ADAPTABILITY AUDIT
+I have measured my organization's "Adaptability Quotient" (AQ).
+- **AQ Score:** ${r.aq}/100
+- **Archetype:** "${r.archetype}"
+- **Critical Constraint:** ${r.weakness}
+- **Structural Block:** ${r.penalty || "None."}
+
+## DIMENSIONAL DATA
+${scores}
+
+## YOUR MISSION
+Design a **30-Day Intervention Plan** to break the rigidity.
+1. **The Diagnosis:** Explain *why* an organization with this profile fails in the current market (use a biological metaphor).
+2. **The "Shock" Therapy:** Propose 1 radical action to fix the "${r.weakness}" (e.g., if Funding is low, propose "VC-style Pitch Days" instead of annual budgets).
+3. **The Culture Hack:** Give me a specific meeting ritual to introduce next Monday to signal that "things have changed."
+
+TONE: Urgent, biological (evolutionary), prescriptive.`;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // REGULATORY IMPACT SIMULATOR (Deterministic Impact Matrix)
+        // ------------------------------------------------------------------
+        regSimulator: {
+            selectedReg: null,
+            inputs: {
+                legacyScore: 50, // 0-100 (How old is your tech?)
+                cloudAdoption: 30, // 0-100 (How much is on cloud?)
+                dataGovernance: 40 // 0-100 (How organized is data?)
+            },
+            analysis: null,
+            loading: false,
+
+            // The Regulation Database
+            regulations: [
+                {
+                    id: 'psd3',
+                    name: "PSD3 / PSR",
+                    focus: "Payments & Fraud",
+                    desc: "Stricter Strong Customer Authentication (SCA) and API performance parity.",
+                    impactVector: { api: 0.9, security: 0.8, data: 0.3, infra: 0.2 }, // Weights
+                    baseCost: 2000000 // $2M base implementation
+                },
+                {
+                    id: 'aiact',
+                    name: "EU AI Act",
+                    focus: "Model Governance",
+                    desc: "Categorization of 'High Risk' AI. Mandatory human oversight and data lineage.",
+                    impactVector: { api: 0.2, security: 0.4, data: 0.9, infra: 0.5 },
+                    baseCost: 1500000
+                },
+                {
+                    id: 'dora',
+                    name: "DORA",
+                    focus: "Operational Resilience",
+                    desc: "Digital Operational Resilience Act. ICT risk management and 3rd party auditing.",
+                    impactVector: { api: 0.4, security: 0.7, data: 0.5, infra: 0.9 },
+                    baseCost: 3000000
+                },
+                {
+                    id: 'basel4',
+                    name: "Basel IV",
+                    focus: "Capital & Risk",
+                    desc: "Standardized approach for credit risk. Heavy data aggregation requirements.",
+                    impactVector: { api: 0.3, security: 0.2, data: 1.0, infra: 0.4 },
+                    baseCost: 5000000
+                }
+            ],
+
+            simulate() {
+                if (!this.selectedReg) return alert("Select a regulation.");
+                
+                this.loading = true;
+                this.analysis = null;
+
+                // Simulate "Impact Analysis"
+                setTimeout(() => {
+                    this.runImpactMath();
+                    this.loading = false;
+                }, 1000);
+            },
+
+            runImpactMath() {
+                const reg = this.selectedReg;
+                const i = this.inputs;
+
+                // 1. Calculate Multipliers based on Organization Health
+                // High Legacy = Higher Cost (Harder to change)
+                const legacyMult = 1 + (i.legacyScore / 100); 
+                
+                // Low Governance = Higher Risk (Harder to report)
+                const govMult = 1 + ((100 - i.dataGovernance) / 100);
+
+                // 2. Calculate Total Cost
+                const estCost = reg.baseCost * legacyMult * govMult;
+
+                // 3. Calculate "Blast Radius" (Systems Affected)
+                // We generate a heat score (0-100) for each domain based on Reg Vector vs Org State
+                const systems = [
+                    { name: "API Gateway", heat: reg.impactVector.api * 100 },
+                    { name: "Core Banking (Legacy)", heat: reg.impactVector.infra * i.legacyScore },
+                    { name: "Data Lake", heat: reg.impactVector.data * (150 - i.dataGovernance) }, // Poor gov makes this hotter
+                    { name: "IAM / Security", heat: reg.impactVector.security * 100 }
+                ];
+
+                // 4. Calculate Fine Exposure (The "Stick")
+                // Arbitrary revenue base of $1B for simulation
+                const maxFine = 1000000000 * 0.04; // 4% of turnover (GDPR/AI Act standard)
+                const exposure = maxFine * (1 - (i.dataGovernance / 200)); // Better gov reduces prob
+
+                this.analysis = {
+                    cost: Math.round(estCost),
+                    exposure: Math.round(exposure),
+                    timeline: Math.round(12 * legacyMult), // Months
+                    systems: systems.sort((a,b) => b.heat - a.heat),
+                    complexity: legacyMult > 1.5 ? "EXTREME" : "MANAGEABLE"
+                };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateCompliancePrompt() {
+                if (!this.analysis) return "Run simulation first.";
+                const a = this.analysis;
+                const r = this.selectedReg;
+                const sysList = a.systems.map(s => `- **${s.name}:** Impact Level ${Math.round(s.heat)}/100`).join("\n");
+
+                return `ACT AS: A Chief Compliance Officer (CCO) and CTO.
+
+## THE REGULATORY IMPACT ASSESSMENT
+We are preparing for **${r.name}** (${r.focus}).
+- **Estimated Implementation Cost:** $${a.cost.toLocaleString()}
+- **Timeline:** ${a.timeline} Months
+- **Technical Complexity:** ${a.complexity} (Due to ${this.inputs.legacyScore}% Legacy Debt).
+
+## THE "BLAST RADIUS" (IMPACTED SYSTEMS)
+${sysList}
+
+## YOUR MISSION
+Draft a **Compliance Roadmap** for the Board.
+1. **The Gap Analysis:** Explain why our current setup (Low Data Governance, High Legacy) makes compliance with ${r.name} specifically difficult.
+2. **The "Must-Do" Projects:** Define the top 3 technical initiatives we must fund immediately to avoid the fine exposure of ~$${(a.exposure/1000000).toFixed(1)}M.
+3. **The Opportunity:** How can we use this mandatory spend to actually modernize the bank (e.g. "Use DORA to finally move to Cloud")?
+
+TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // VALUE STREAM FLOW CALCULATOR (Deterministic Lean Engine)
+        // ------------------------------------------------------------------
+        flowCalc: {
+            processName: 'Commercial Loan Approval',
+            unit: 'hours', // minutes, hours, days
+            steps: [
+                { id: 1, name: 'Customer Application', work: 1, wait: 0, type: 'Input' },
+                { id: 2, name: 'Credit Risk Review', work: 2, wait: 48, type: 'Bottleneck' }, // 2 days waiting
+                { id: 3, name: 'Legal Sanctions Check', work: 0.5, wait: 4, type: 'Process' },
+                { id: 4, name: 'Final Sign-off', work: 0.2, wait: 24, type: 'Approval' }
+            ],
+            metrics: null,
+            loading: false,
+
+            addStep() {
+                this.steps.push({ 
+                    id: Date.now(), 
+                    name: 'New Step', 
+                    work: 1, 
+                    wait: 0, 
+                    type: 'Process' 
+                });
+                this.calculate();
+            },
+
+            removeStep(id) {
+                this.steps = this.steps.filter(s => s.id !== id);
+                this.calculate();
+            },
+
+            calculate() {
+                this.loading = true;
+                this.metrics = null;
+
+                // Simulate "Process Mapping"
+                setTimeout(() => {
+                    this.runMath();
+                    this.loading = false;
+                }, 600);
+            },
+
+            runMath() {
+                const totalWork = this.steps.reduce((acc, s) => acc + parseFloat(s.work), 0);
+                const totalWait = this.steps.reduce((acc, s) => acc + parseFloat(s.wait), 0);
+                const totalLeadTime = totalWork + totalWait;
+
+                // 1. Flow Efficiency Ratio
+                // Formula: (Value Add Time / Total Lead Time) * 100
+                const efficiency = totalLeadTime === 0 ? 0 : Math.round((totalWork / totalLeadTime) * 100);
+
+                // 2. Bottleneck Identification
+                // Find the step with the highest Wait Time
+                const bottleneckStep = this.steps.reduce((prev, current) => (prev.wait > current.wait) ? prev : current);
+
+                // 3. Diagnosis
+                let verdict = "";
+                let color = "";
+                let analysis = "";
+
+                if (efficiency < 15) {
+                    verdict = "RESOURCE EFFICIENCY TRAP";
+                    color = "text-red-500";
+                    analysis = "Your process is 85%+ waste. You are optimizing for 'keeping people busy' instead of 'moving work'.";
+                } else if (efficiency < 40) {
+                    verdict = "TYPICAL CORPORATE";
+                    color = "text-yellow-400";
+                    analysis = "Standard friction. Handoffs and approvals are eating your speed.";
+                } else {
+                    verdict = "LEAN MACHINE";
+                    color = "text-green-400";
+                    analysis = "Excellent flow. You have removed most wait states.";
+                }
+
+                this.metrics = {
+                    totalWork,
+                    totalWait,
+                    totalLeadTime,
+                    efficiency,
+                    bottleneck: bottleneckStep,
+                    verdict,
+                    color,
+                    analysis
+                };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateLeanPrompt() {
+                if (!this.metrics) return "Run calculation first.";
+                
+                const m = this.metrics;
+                const s = this.steps.map(step => `- ${step.name}: ${step.work}${this.unit} Work / ${step.wait}${this.unit} Wait`).join("\n");
+
+                return `ACT AS: A Lean Six Sigma Master Black Belt.
+
+## THE VALUE STREAM ANALYSIS
+I have mapped the "${this.processName}" process to calculate Flow Efficiency.
+- **Flow Efficiency:** ${m.efficiency}% (${m.verdict})
+- **Total Cycle Time:** ${m.totalLeadTime} ${this.unit}
+- **Value Added Time:** ${m.totalWork} ${this.unit}
+- **Pure Waste (Wait):** ${m.totalWait} ${this.unit}
+
+## THE BOTTLENECK
+The primary constraint is **"${m.bottleneck.name}"** with ${m.bottleneck.wait} ${this.unit} of wait time.
+
+## STEP DETAILS
+${s}
+
+## YOUR MISSION
+Write a **Process Optimization Plan**.
+1. **The Root Cause:** Based on the bottleneck "${m.bottleneck.name}", predicts *why* work piles up here (e.g., Batching, Hero Dependency, or Manual Approval).
+2. **The WIP Limit:** Recommend a specific "Work In Progress" (WIP) limit for this stage to stop the flooding.
+3. **The Radical Fix:** Propose a way to eliminate the wait time entirely (e.g., "Automated Decisioning" or "Parallel Processing") rather than just speeding up the work.
+
+TONE: Clinical, data-driven, ruthless against waste. Use terms like "Muda" (Waste) and "Little's Law".`;
+            }
+        },
         
     })); // <-- This closes the Alpine.data object
 
