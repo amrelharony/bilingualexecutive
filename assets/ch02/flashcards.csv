@@ -1,0 +1,50 @@
+What metaphor describes the central problem with ungoverned data in banking?,Data is like a millstone; it can grind grain (be useful) or drown you if hung around your neck (become a liability).
+"The chapter argues that ungoverned data in a bank's operational reality is not an asset, but a _____.",liability
+"What term describes the risky, unofficial system of running a bank's critical calculations on spreadsheets?",The Shadow Data Economy or The Excel Factory.
+"Why did the 'Data Lake' concept often fail in banks, according to the text?","Without governance, metadata, or quality standards, it turned into a 'Data Swamp'."
+What is the primary reason banks struggle to achieve a 'Single View of the Customer'?,Data is trapped in siloed systems that do not share common customer identifiers.
+What specific regulatory requirement is called 'The Green Data Trap'?,The requirement for banks to report on 'Scope 3 Emissions' for the companies they lend to (ESG).
+How does Generative AI worsen the problem of bad data?,It turns bad or missing data into plausible-sounding but incorrect 'hallucinations'.
+What is the term for the 40-year-old Mainframe systems that form the bedrock of most Tier-1 banks?,The Legacy Trap or the 'Ghost in the Machine'.
+"In the 'Monday Morning Fire Drill' example, what task does the risk analyst spend five hours on?",Manually stitching together data from three different systems in Excel to calculate credit exposure.
+What is the central paradox of modern banking described in the text?,Banks are drowning in data but starving for information.
+What is the 'Millstone Effect' of ungoverned data?,"It becomes a liability due to storage costs, compliance risks, and the 'agility tax' it imposes on new projects."
+What is the key insight from the Equifax data breach regarding data management?,Unmanaged data hoarding creates a toxic asset that accumulates risk over time.
+"The text suggests data is not like oil, but like _____, because if left ungoverned it becomes radioactive.",uranium
+What does the text mean by the 'Cost of Carry' for data?,"The total cost and risk associated with storing and maintaining data, including ungoverned and obsolete data."
+"To calculate Scope 3 Emissions for ESG reporting, what specific data point is crucial for every borrower?",A perfect industry classification code (SIC/NACE).
+Reporting a 'Green' number to a regulator based on a spreadsheet guess can lead to accusations of _____.,Greenwashing
+"What was the consequence for DWS, Deutsche Bank's asset manager, in the greenwashing scandal?","Their headquarters were raided by 50 police officers, and the CEO resigned the next day."
+"The 'Bilingual Move' regarding ESG is to treat it not as a PR campaign, but as a _____.",Regulatory Audit
+What are the three main disasters caused by the 'Excel Factory'?,"Fragility (processes break when people leave), Inconsistency (different departments have different numbers), and Security (unencrypted spreadsheets are emailed)."
+What operational failure was at the heart of the JP Morgan 'London Whale' trading loss?,The Value-at-Risk (VaR) model was a manual Excel spreadsheet with a copy-paste error.
+What was the specific calculation error in the 'London Whale' spreadsheet?,A formula was dividing by the sum of rates instead of their average.
+What is the 'Bilingual Move' for dealing with critical risk models running on Excel?,Audit them and fund an immediate migration to governed code.
+"In the 'Head of Regulatory Reporting' archetype, what does he call the manual, spreadsheet-based reporting process?",The Factory.
+The Head of Regulatory Reporting states his team of analysts turns into 'digital _____' at month-end.,janitors
+A key problem for the regulatory reporting team is that _____ do not match across different source systems.,Customer IDs
+"In the Westpac money laundering case, the bank was fined for failing to report what?","International funds transfers, some of which were linked to child exploitation."
+What was the technical cause of Westpac's AML reporting failure?,"Messy middleware dropped a data field linking transactions to customer profiles, breaking the 'Single View'."
+The text argues that the 'Single View of the Customer' is not just for marketing but is a _____ imperative.,regulatory
+What radical decision did Capital One make to escape the 'Data Swamp'?,They closed all physical data centers and moved 100% of their data to the public cloud (AWS and Snowflake).
+"By moving to a modern stack, Capital One didn't just save on server costs; they increased their _____.",Data Velocity
+What is the 'Bilingual Move' suggested by Capital One's data center strategy?,Burn the boats; close the data centers to force the organization to adopt cloud-native speed.
+How does Generative AI's handling of missing data differ from traditional analytics?,"Traditional analytics shows a blank, while GenAI invents a plausible-sounding number to fill the gap (hallucinates)."
+The text suggests that Agile Data Governance is the _____ that prevents GenAI from lying to the Board.,Safety Rail
+What was the key legal ruling in the Moffatt v. Air Canada chatbot case?,"The airline was ruled liable for the false information provided by its chatbot, even though it contradicted the official policy."
+What is the insight for banks from the Air Canada chatbot case?,"If an internal GenAI promises something to a customer based on bad data, the bank may be legally forced to honor the AI's mistake."
+The 'Bilingual Move' for deploying GenAI is to never do so without _____ it in verified policy data.,Grounding
+"To fix data problems, banks must stop treating data as a byproduct ('exhaust') and start treating it as a _____.",Product
+What is the 'geology' of a typical Tier-1 bank's IT system?,Modern applications and APIs are built on top of a bedrock of Mainframe systems running COBOL code from the 1980s or 90s.
+What is the 'Power Plant Analogy' used to describe a bank's core banking system?,It's like a reliable but old coal power plant that wasn't designed to connect to a modern smart grid.
+"What is the term for the complex, tangled layers of middleware built around a core banking system?",Spaghetti Architecture.
+Why is 'Digital Transformation' often like putting lipstick on a pig in a bank?,A modern mobile app front-end is still slow if it has to fetch data from a 40-year-old mainframe through layers of middleware.
+What caused Citigroup to mistakenly wire nearly $900 million of its own money in the Revlon loan case?,A user interface design flaw in the legacy payment-processing software (Flexcube) made it easy for operators to make a catastrophic error.
+"The Citigroup UI error demonstrates that modernizing the user experience for internal employees is not cosmetic, but a defense against _____.","risk, error, and regulatory exposure"
+What is the 'Bilingual Move' regarding the user experience (UX) of internal systems?,Treat internal employee interfaces with the same UX rigor as customer apps.
+"According to the Chief Enterprise Architect archetype, what is the 'Translation Gap' in bank IT?","The Core system speaks COBOL and thinks in 'Batch Files,' while modern apps speak JSON and think in 'APIs'."
+What is a modern 'Anti-Corruption Layer' (ACL) in the context of legacy modernization?,A clean API shield that allows new systems to talk to old systems without being infected by their complexity.
+What is the 'secret weapon' or key advantage that emerging market banks have over established Western banks?,"They have less history, meaning less legacy technology ('Spaghetti Architecture') to overcome."
+What is the 'Leapfrog' Effect for emerging market banks?,They can skip intermediate technology phases (like hybrid cloud) and go straight to modern architectures (cloud-native).
+How does the role of regulators in emerging markets often differ from that in the West?,"In emerging markets, the Central Bank is often a driver of innovation (e.g., mandating instant payments), whereas in the West they are often seen as brakes."
+What is the 'Bilingual Move' for emerging market banks regarding technology strategy?,Stop copying the Western roadmap (fixing the past) and focus on building the future.
