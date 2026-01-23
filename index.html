@@ -5156,6 +5156,315 @@ END-IF."></textarea>
 
     </div>
 </div>
+
+
+        <!-- ADR BUILDER TAB -->
+<div x-show="currentTab === 'adr'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">
+            <i class="fa-solid fa-book-journal-whills mr-2 text-indigo-300"></i>Architecture Decision Journal
+        </h2>
+        <p class="text-textMuted text-sm">Don't rely on memory. Rely on weighted math.</p>
+    </div>
+
+    <!-- HEADER / DEMO -->
+    <div class="flex justify-between items-end mb-6">
+        <div class="w-full max-w-lg">
+            <label class="text-xs font-mono text-slate-400 uppercase">Decision Title</label>
+            <input type="text" x-model="adrBuilder.title" placeholder="e.g. Monolith vs Microservices" class="w-full bg-dark border border-slate-600 rounded p-3 text-white focus:border-indigo-400 focus:outline-none mt-1">
+        </div>
+        <button @click="adrBuilder.loadDemo()" class="text-xs border border-slate-600 hover:bg-slate-700 text-slate-300 px-3 py-2 rounded transition-all">
+            Load Demo Data
+        </button>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: THE MATRIX (INPUTS) -->
+        <div class="lg:col-span-8 bg-card border border-slate-700 rounded-xl overflow-hidden">
+            <div class="p-4 bg-slate-800 border-b border-slate-700 flex justify-between items-center">
+                <h3 class="font-mono text-xs text-indigo-300 uppercase font-bold">Evaluation Matrix</h3>
+                <div class="flex gap-2">
+                    <button @click="adrBuilder.addCriteria()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">+ Criteria</button>
+                    <button @click="adrBuilder.addOption()" class="text-[10px] bg-slate-700 hover:bg-slate-600 text-white px-2 py-1 rounded">+ Option</button>
+                </div>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="bg-slate-900 text-slate-400 text-[10px] uppercase font-mono">
+                            <th class="p-4 w-1/3">Criteria (Weight 1-5)</th>
+                            <template x-for="opt in adrBuilder.options" :key="opt.id">
+                                <th class="p-4 text-center border-l border-slate-700">
+                                    <input type="text" x-model="opt.name" class="bg-transparent text-center w-full focus:outline-none text-white font-bold">
+                                </th>
+                            </template>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-700">
+                        <template x-for="crit in adrBuilder.criteria" :key="crit.id">
+                            <tr class="hover:bg-slate-800/30">
+                                <td class="p-4">
+                                    <div class="flex flex-col gap-1">
+                                        <input type="text" x-model="crit.label" class="bg-transparent text-white focus:outline-none">
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[9px] text-slate-500">IMPORTANCE:</span>
+                                            <input type="range" min="1" max="5" x-model="crit.weight" @input="adrBuilder.calculate()" class="w-16 h-1 bg-slate-600 rounded-lg appearance-none cursor-pointer">
+                                            <span class="text-[9px] font-mono text-indigo-400" x-text="crit.weight"></span>
+                                        </div>
+                                    </div>
+                                </td>
+                                <template x-for="opt in adrBuilder.options" :key="opt.id">
+                                    <td class="p-4 text-center border-l border-slate-700">
+                                        <input type="number" min="1" max="5" 
+                                               x-model="opt.scores[crit.id]" 
+                                               @input="adrBuilder.calculate()"
+                                               class="w-10 bg-dark border border-slate-600 rounded text-center text-white focus:border-indigo-400">
+                                    </td>
+                                </template>
+                            </tr>
+                        </template>
+                    </tbody>
+                    <!-- Totals Row -->
+                    <tfoot class="bg-slate-900 border-t-2 border-slate-700">
+                        <tr>
+                            <td class="p-4 font-mono text-xs text-slate-400 text-right uppercase tracking-widest">Weighted Score</td>
+                            <template x-for="opt in adrBuilder.options" :key="opt.id">
+                                <td class="p-4 text-center border-l border-slate-700">
+                                    <span class="text-xl font-bold font-mono" 
+                                          :class="opt.id === adrBuilder.winner?.id ? 'text-green-400' : 'text-slate-500'"
+                                          x-text="opt.total"></span>
+                                </td>
+                            </template>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
+        <!-- RIGHT: THE VERDICT (OUTPUT) -->
+        <div class="lg:col-span-4 space-y-6">
+            
+            <!-- Winner Card -->
+            <div class="bg-gradient-to-br from-slate-800 to-indigo-900/30 border border-indigo-500/30 p-6 rounded-xl relative overflow-hidden" x-show="adrBuilder.winner">
+                <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-trophy text-6xl text-yellow-400"></i></div>
+                
+                <p class="text-[10px] text-indigo-300 uppercase tracking-widest mb-2">RECOMMENDED DECISION</p>
+                <h3 class="text-2xl font-bold text-white mb-4" x-text="adrBuilder.winner?.name"></h3>
+                
+                <div class="space-y-2">
+                    <div class="flex justify-between text-xs border-b border-white/10 pb-1">
+                        <span class="text-slate-400">Total Score</span>
+                        <span class="text-white font-mono" x-text="adrBuilder.winner?.total"></span>
+                    </div>
+                    <div class="flex justify-between text-xs border-b border-white/10 pb-1">
+                        <span class="text-slate-400">Winning Margin</span>
+                        <span class="text-green-400 font-mono">+<span x-text="adrBuilder.options.length > 1 ? (adrBuilder.winner?.total - adrBuilder.options.sort((a,b)=>b.total-a.total)[1].total) : 0"></span></span>
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <span class="text-[9px] bg-indigo-500 text-white px-2 py-1 rounded font-bold uppercase">Status: Proposed</span>
+                </div>
+            </div>
+
+            <!-- AI Prompt Box -->
+            <div class="bg-slate-900 border border-slate-700 p-6 rounded-xl group">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-mono text-white font-bold flex items-center gap-2 text-xs uppercase">
+                        <i class="fa-solid fa-robot text-indigo-400"></i> ADR Generator
+                    </h3>
+                </div>
+
+                <div class="relative font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-24 overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                    <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="adrBuilder.generateADRPrompt()"></pre>
+                </div>
+
+                <button @click="
+                        copyToClipboard(adrBuilder.generateADRPrompt(), 'Decision Data');
+                        $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                        setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE ADR DOC (AI)'; }, 2000)
+                        " 
+                        class="w-full border border-indigo-500 text-indigo-400 hover:bg-indigo-500 hover:text-white font-bold py-3 rounded text-xs transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE ADR DOC (AI)
+                </button>
+                <p class="text-center text-[10px] text-slate-500 mt-3">
+                    Ready to paste into your GenAI tool of choice.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- DT ROI TRACKER TAB -->
+<div x-show="currentTab === 'dt_tracker'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">
+            <i class="fa-solid fa-magnifying-glass-dollar mr-2 text-green-400"></i>ROI Tracker
+        </h2>
+        <p class="text-textMuted text-sm">Visualize the "J-Curve" of transformation. Prove the value of 'Soft' benefits.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: FINANCIAL INPUTS -->
+        <div class="lg:col-span-4 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+            <h3 class="font-mono text-xs text-green-400 uppercase font-bold border-b border-slate-700 pb-2">Cost Structure</h3>
+            
+            <div>
+                <label class="text-[10px] text-slate-500 uppercase font-bold">Project Name</label>
+                <input type="text" x-model="dtTracker.inputs.projectName" class="w-full bg-dark border border-slate-600 rounded p-2 text-white text-sm focus:border-green-500 outline-none">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] text-slate-500 uppercase font-bold">Upfront Cost ($)</label>
+                    <input type="number" x-model="dtTracker.inputs.initialCost" class="w-full bg-dark border border-slate-600 rounded p-2 text-white font-mono">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-500 uppercase font-bold">Monthly Run Cost ($)</label>
+                    <input type="number" x-model="dtTracker.inputs.monthlyCost" class="w-full bg-dark border border-slate-600 rounded p-2 text-white font-mono">
+                </div>
+            </div>
+
+            <h3 class="font-mono text-xs text-blue-400 uppercase font-bold border-b border-slate-700 pb-2 pt-2">Benefit Drivers</h3>
+
+            <div>
+                <label class="text-[10px] text-slate-500 uppercase font-bold">Hard Savings / Month ($)</label>
+                <input type="number" x-model="dtTracker.inputs.monthlyHardSavings" class="w-full bg-dark border border-slate-600 rounded p-2 text-white font-mono placeholder-slate-600" placeholder="Server cuts, etc.">
+            </div>
+
+            <div class="bg-blue-900/10 p-3 rounded border border-blue-500/30">
+                <p class="text-[10px] text-blue-300 font-bold mb-2">SOFT VALUE ENGINE</p>
+                <div class="grid grid-cols-2 gap-4 mb-2">
+                    <div>
+                        <label class="text-[9px] text-slate-400">Team Size</label>
+                        <input type="number" x-model="dtTracker.inputs.teamSize" class="w-full bg-dark border border-slate-600 rounded p-1 text-white text-xs">
+                    </div>
+                    <div>
+                        <label class="text-[9px] text-slate-400">Efficiency Gain %</label>
+                        <input type="number" x-model="dtTracker.inputs.efficiencyGain" class="w-full bg-dark border border-slate-600 rounded p-1 text-white text-xs">
+                    </div>
+                </div>
+                
+                <!-- Confidence Slider -->
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <label class="text-[9px] text-slate-400">CFO Confidence Level</label>
+                        <span class="text-[9px] font-bold text-white" x-text="dtTracker.inputs.confidence + '%'"></span>
+                    </div>
+                    <input type="range" min="0" max="100" step="10" x-model="dtTracker.inputs.confidence" class="w-full h-1 bg-dark rounded-lg appearance-none cursor-pointer accent-blue-400">
+                </div>
+            </div>
+
+            <button @click="dtTracker.calculate()" 
+                    :disabled="dtTracker.loading"
+                    class="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
+                <span x-show="!dtTracker.loading"><i class="fa-solid fa-chart-line"></i> MODEL THE J-CURVE</span>
+                <span x-show="dtTracker.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> CALCULATING...</span>
+            </button>
+        </div>
+
+        <!-- RIGHT: THE J-CURVE (OUTPUT) -->
+        <div class="lg:col-span-8 relative min-h-[500px]">
+            
+            <!-- Empty State -->
+            <div x-show="!dtTracker.results" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-500">
+                <i class="fa-solid fa-sack-dollar text-6xl mb-4 opacity-20"></i>
+                <p class="font-mono text-xs uppercase">Input Financials to Begin</p>
+            </div>
+
+            <!-- Results Card -->
+            <div x-show="dtTracker.results" x-transition class="bg-card border-2 rounded-xl overflow-hidden shadow-2xl h-full flex flex-col relative"
+                 :class="dtTracker.results?.roi24 > 0 ? 'border-green-500' : 'border-red-500'">
+                
+                <!-- Header -->
+                <div class="p-6 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">24-MONTH OUTLOOK</p>
+                        <h3 class="text-3xl font-bold font-mono mt-1" 
+                            :class="dtTracker.results?.endingBalance > 0 ? 'text-green-400' : 'text-red-400'" 
+                            x-text="'$' + dtTracker.results?.endingBalance.toLocaleString()"></h3>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-bold px-3 py-1 rounded bg-slate-800 border uppercase" :class="dtTracker.results?.color" x-text="dtTracker.results?.verdict"></span>
+                        <p class="text-[9px] text-slate-500 mt-1">Payback: <span x-text="dtTracker.results?.payback"></span></p>
+                    </div>
+                </div>
+
+                <!-- The Visual Graph (CSS Bar Chart) -->
+                <div class="p-6 flex-1 flex flex-col justify-end relative bg-dark/50">
+                    <div class="absolute top-2 left-4 text-[10px] text-slate-500 font-mono">CUMULATIVE CASH FLOW (2 Years)</div>
+                    
+                    <!-- Zero Line -->
+                    <div class="w-full h-px bg-slate-500 absolute" style="top: 50%;"></div>
+
+                    <div class="flex items-end justify-between h-48 w-full gap-1">
+                        <template x-for="(val, index) in dtTracker.results?.chartData">
+                            <div class="flex-1 flex flex-col justify-center relative group">
+                                <!-- The Bar -->
+                                <div class="w-full rounded-t-sm transition-all duration-500"
+                                     :class="val >= 0 ? 'bg-green-500' : 'bg-red-500'"
+                                     :style="`height: ${Math.abs(val) / (Math.max(...dtTracker.results.chartData.map(Math.abs)) * 1.2) * 50}%; margin-bottom: ${val >= 0 ? '50%' : '0'}; margin-top: ${val < 0 ? '50%' : '0'}`">
+                                </div>
+                                <!-- Tooltip -->
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-black text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 font-mono">
+                                    M<span x-text="index+1"></span>: $<span x-text="val.toLocaleString()"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Composition Analysis -->
+                <div class="p-4 grid grid-cols-2 gap-4 bg-slate-900 border-t border-slate-800">
+                    <div>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold">HARD VALUE (P&L)</p>
+                        <p class="text-sm font-mono text-white" x-text="'$' + dtTracker.results?.hardContribution.toLocaleString()"></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold">SOFT VALUE (Strategic)</p>
+                        <p class="text-sm font-mono text-blue-300" x-text="'$' + dtTracker.results?.softContribution.toLocaleString()"></p>
+                    </div>
+                </div>
+
+                <!-- AI Prompt Box -->
+                <div class="p-6 bg-slate-800 border-t border-slate-700">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-mono text-white font-bold flex items-center gap-2 text-xs uppercase">
+                            <i class="fa-solid fa-robot text-green-400"></i> CFO Narrative Generator
+                        </h3>
+                    </div>
+
+                    <div class="relative font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-600 mb-4 h-24 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                        <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="dtTracker.generateCFOReport()"></pre>
+                    </div>
+
+                    <button @click="
+                            copyToClipboard(dtTracker.generateCFOReport(), 'Financial Model');
+                            $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                            setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE BOARD MEMO (AI)'; }, 2000)
+                            " 
+                            class="w-full border border-green-500 text-green-400 hover:bg-green-500 hover:text-white font-bold py-3 rounded text-xs transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE BOARD MEMO (AI)
+                    </button>
+                    <p class="text-center text-[10px] text-slate-500 mt-3">
+                        Ready to paste into your GenAI tool of choice.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
         
         
             <!-- COMMUNITY -->
