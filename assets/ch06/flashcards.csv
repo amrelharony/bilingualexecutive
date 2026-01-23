@@ -1,0 +1,52 @@
+"According to the text, the 'Project Mindset' destroys institutional knowledge through what cycle?","The 'Hire-Fire' cycle, where temporary teams are assembled for a project and then disbanded."
+The shift from Project to Product involves moving from funding temporary ideas to funding what?,Persistent teams.
+What is the 'CAPEX Trap' in the context of Agile transformation?,"The accounting friction where traditional project costs are capitalized (CAPEX) while persistent team salaries are expensed (OPEX), negatively impacting short-term profit."
+"In a product-centric model, the Product Owner's role shifts from a 'scribe' to what archetype?",A 'Mini-CEO' with P&L authority.
+What is the 'Proxy' trap that arises from the banking talent gap?,"Placing a middle manager or consultant between Business and IT, leading to a 'Telephone Game' where information is lost."
+"What is the term for the destructive cycle where a bank hires contractors for a project, launches, and then fires them, losing all the acquired knowledge?",The 'Hire-Fire' cycle.
+The phenomenon of repeatedly paying for new teams to learn a codebase because the previous team was disbanded is called the _____.,Amnesia Architecture
+What was the core strategic weakness Deutsche Bank identified in 2015 that led to 'Project Kraken'?,They had outsourced so much IT that they no longer understood their own systems.
+"The key insight from Deutsche Bank's insourcing initiative is that intellectual property isn't the code, but the _____.",understanding of the code
+"In a Product model, instead of funding 'temporary endeavors,' organizations fund what?",Persistent teams.
+What is the 'Ownership Benefit' of having a persistent team maintain the code they write?,"When developers know they have to maintain their own code, they tend to write better, cleaner code ('spaghetti code' is reduced)."
+Nationwide Building Society replaced its traditional Project Management Office (PMO) with what entity to better support Agile ways of working?,A Value Management Office (VMO).
+How did the guiding question differ between Nationwide's old PMO and its new VMO?,"The old PMO asked 'Is the project on time?', while the new VMO asks 'Is the flow of value impeded?'"
+"What is the term for the end-to-end flow of value to a customer, which is funded in a product model instead of individual projects?",A Value Stream.
+How does the core question of success differ between the Project Mindset and the Product Mindset?,"The Project Mindset asks 'Did you deliver on time?', while the Product Mindset asks 'Did you achieve the desired outcome (e.g., increase applications by 20%)?'"
+"Which bank transformed its funding model by identifying over 80 Value Streams and funding them directly, rather than funding 500 disparate projects?",Barclays.
+"According to the 'CFO's Calculator' section, why is keeping a persistent team together often cheaper than the 'Stop-Start' funding of projects?",It eliminates the cost of the 'Ramp-Up' or 'Learning Time' that new teams spend understanding old code.
+Why do CFOs traditionally prefer projects from an accounting perspective?,"Projects are typically treated as Capital Expenditure (CAPEX), which sits on the balance sheet as an asset and makes current profits look higher."
+"How are the salaries of persistent teams typically treated in accounting, and why is this a problem for CFOs?","They are treated as Operating Expense (OPEX), which hits the P&L immediately and reduces the current quarter's profit."
+What is the solution to the 'CAPEX Trap' that allows for funding persistent teams without negatively impacting the balance sheet?,"Product Capitalization, where work is tracked at the 'story' level and tagged as either New Value (CAPEX) or Maintenance/Bugs (OPEX)."
+Which retail giant successfully implemented 'Agile Capitalization' by using Jira to automatically track whether labor costs should be capitalized or expensed?,Target.
+A key attribute of a Product Owner acting as a 'Mini-CEO' is their authority to say what to stakeholders?,The authority to say 'No' to features that do not align with quarterly goals.
+Which Dutch bank undertook a 'Headquarters Reboot' by dissolving its traditional structure and empowering Product Owners with full P&L responsibility?,ING.
+"According to Marty Cagan, what distinguishes a true Product Owner from a Project Manager (or 'Scribe')?","The Product Owner is responsible for the Outcome (value), while the Project Manager is responsible for the Output (features)."
+"What is the term for the 'Highest Paid Person's Opinion,' which a true Product Owner must have the authority to challenge?",HIPPO.
+"To solve the scarcity of qualified Product Owners, what did Capital One create internally?",An internal 'Product College' to train both business and tech people to become 'Bilingual Executives'.
+The ideal Product Owner for a 'Consumer Lending Squad' should come from which part of the bank?,"The Consumer Lending business unit, not IT."
+What is the 'Two-in-a-Box' leadership model implemented by DBS Bank?,"A model where a major platform is co-led by one person from Business and one from Technology, who share the same KPIs."
+How did DBS Bank's 'Two-in-a-Box' model align incentives between business and technology leaders?,"The Tech lead was measured on revenue growth, and the Business lead was measured on system stability/uptime."
+Measuring success by 'code deployed' or 'on-time delivery' is an example of focusing on _____.,Outputs
+Measuring success by 'reduced call center volume' or 'increased customer retention' is an example of focusing on _____.,Outcomes
+What was the 'North Star' metric that Brazilian digital bank Nubank obsessed over to drive organic growth?,Net Promoter Score (NPS).
+What is the term used to describe external vendors who are good at following orders but are not invested in the company's future?,Mercenaries.
+What is the term for internal employees who are passionate about the company's mission and future?,Missionaries.
+"In 2009, what percentage of its technology had DBS Bank outsourced, leading to a 'Mercenary' problem?",85%.
+What is Level 1 of the Vendor Partnership Pyramid?,"The Commodity (Transactional) level, characterized by a Fixed Price, Fixed Scope model where vendors are incentivized to do the bare minimum."
+What is Level 2 of the Vendor Partnership Pyramid?,"The Capacity (Augmentation) level, characterized by a Time & Materials (T&M) model where vendors are incentivized to work slowly or add more people."
+What is Level 3 of the Vendor Partnership Pyramid?,"The Co-Creator (Shared Outcome) level, characterized by a Risk/Reward Sharing model that aligns the vendor's profit with the bank's success."
+What is the 'Golden Rule of Outsourcing' for a Bilingual Executive?,"You can outsource the Hands, but you must never outsource the Brain (i.e., the Product Owner role)."
+"What type of contract did NASA use with vendors like Boeing that incentivized slower, more expensive projects?","A 'Cost-Plus' basis, where the vendor was paid for their costs plus a guaranteed profit."
+"What type of contract did NASA use with SpaceX that incentivized faster, cheaper innovation?","Fixed-Price, Milestone-Based contracts, where payment was contingent on achieving a specific outcome."
+What is the name of the software architecture pattern that can be applied to legacy contracts to erode them over time?,The 'Strangler Pattern'.
+"According to the 'Strangler Pattern' for contracts, what is the first tactic to 'starve the beast'?",Stop sending 'Change Requests' (CRs) for new features to the legacy vendor and instead build them externally.
+"What does it mean to 'aggressively ""Headless"" the bank' as a contract strangulation tactic?","To build your own 'Experience Layer' (Mobile/Web) that connects to the legacy core via APIs, reducing the vendor to a 'dumb utility'."
+What is the 'Carve-Out' Renegotiation tactic for legacy contracts?,Offering to renew the core maintenance part of the contract in exchange for the vendor releasing the bank from exclusivity clauses for other areas like Digital Channels.
+What is the goal of the 'Agile Capacity' clause in a Level 3 contract?,To stop filing Change Requests by buying a fixed team capacity whose priorities are dynamically set by the Product Owner.
+What is the goal of the 'Upside Bonus' clause in a Level 3 contract?,"To make the vendor care about business outcomes like customer adoption and satisfaction, not just code delivery."
+What is the goal of the 'Stability Malus' clause in a Level 3 contract?,To incentivize quality and prevent vendors from rushing buggy code to production by imposing penalties for defects and outages.
+The partnership model where a client pays a vendor for outcomes and allows the vendor to keep the profit margin from automation is known as what?,Vested Outsourcing.
+"In their core modernization, Commonwealth Bank of Australia (CBA) used the SAP kernel for the ledger but built what on top of it?",Their own real-time data engine and customer interface.
+The core lesson from CBA's modernization is to buy the commodity (Ledger) but build the ____.,differentiator (Experience)
+What is the primary way the shift from Project to Product acts as a 'peace treaty' for the 'Business vs. IT' war?,"It blurs the distinction between the two, creating unified teams focused on the same value stream and outcomes."
