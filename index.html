@@ -2531,14 +2531,14 @@
     
     <div class="text-center mb-10">
         <h2 class="font-mono text-3xl font-bold text-white mb-2">The Future Bank Simulator</h2>
-        <p class="text-textMuted text-sm">Decisions have compounding interest. Choose a strategy and watch the P&L evolve to 2030.</p>
+        <p class="text-textMuted text-sm">Decisions have compounding interest. Choose a strategy and navigate the crises of 2026-2030.</p>
     </div>
 
     <!-- 1. SCENARIO SELECTOR -->
     <div x-show="!futureBank.activeScenario" class="grid md:grid-cols-3 gap-6">
         <template x-for="scenario in futureBank.scenarios" :key="scenario.id">
             <button @click="futureBank.selectScenario(scenario.id)" 
-                    class="bg-card border border-slate-700 hover:border-purple-500 p-8 rounded-xl text-center group transition-all hover:-translate-y-2 relative overflow-hidden">
+                    class="bg-card border border-slate-700 hover:border-purple-500 p-8 rounded-xl text-center group transition-all hover:-translate-y-2 relative overflow-hidden shadow-lg">
                 <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-6 group-hover:bg-slate-700 transition-colors relative z-10">
                     <i :class="'fa-solid ' + scenario.icon + ' text-3xl ' + scenario.color"></i>
                 </div>
@@ -2547,15 +2547,13 @@
                 <div class="mt-6 text-xs font-mono text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity relative z-10">
                     INITIALIZE SIMULATION <i class="fa-solid fa-arrow-right ml-1"></i>
                 </div>
-                
-                <!-- Hover Glow -->
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-purple-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             </button>
         </template>
     </div>
 
     <!-- 2. ACTIVE SIMULATION -->
-    <div x-show="futureBank.activeScenario" x-transition class="relative">
+    <div x-show="futureBank.activeScenario" x-transition class="relative min-h-[500px]">
         
         <!-- Timeline Header -->
         <div class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
@@ -2569,17 +2567,15 @@
             </div>
             <div class="w-24 text-right">
                 <span class="text-xs font-bold px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-600">
-                    <i class="fa-solid fa-play mr-1 text-green-400" x-show="futureBank.isPlaying"></i>
-                    <i class="fa-solid fa-check mr-1 text-blue-400" x-show="!futureBank.isPlaying"></i>
-                    <span x-text="futureBank.isPlaying ? 'RUNNING' : 'COMPLETE'"></span>
+                    <i class="fa-solid fa-play mr-1 text-green-400" x-show="futureBank.isPlaying && !futureBank.activeEvent"></i>
+                    <i class="fa-solid fa-pause mr-1 text-yellow-400" x-show="futureBank.activeEvent"></i>
+                    <span x-text="futureBank.activeEvent ? 'ACTION' : (futureBank.isPlaying ? 'RUNNING' : 'COMPLETE')"></span>
                 </span>
             </div>
         </div>
 
-        <!-- LIVE TELEMETRY -->
+        <!-- LIVE TELEMETRY GRID -->
         <div class="grid md:grid-cols-4 gap-6 mb-8">
-            
-            <!-- Profit -->
             <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden">
                 <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">NET PROFIT</p>
                 <h3 class="text-2xl font-mono font-bold text-green-400 mb-2">
@@ -2589,8 +2585,6 @@
                     <div class="bg-green-500 h-1 rounded-full transition-all duration-500" :style="`width: ${(futureBank.metrics.profit / 5000) * 100}%`"></div>
                 </div>
             </div>
-
-            <!-- Customers -->
             <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden">
                 <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">CUSTOMER BASE</p>
                 <h3 class="text-2xl font-bold text-white mb-2">
@@ -2600,19 +2594,15 @@
                     <div class="bg-blue-500 h-1 rounded-full transition-all duration-500" :style="`width: ${(futureBank.metrics.customers / 20) * 100}%`"></div>
                 </div>
             </div>
-
-            <!-- Efficiency Ratio -->
             <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden">
-                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">COST/INCOME RATIO</p>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">EFFICIENCY RATIO</p>
                 <h3 class="text-2xl font-mono font-bold mb-2" :class="futureBank.metrics.efficiency < 50 ? 'text-primary' : 'text-orange-400'">
                     <span x-text="futureBank.metrics.efficiency.toFixed(0)"></span>%
                 </h3>
                 <p class="text-[9px] text-slate-500">Lower is better</p>
             </div>
-
-            <!-- Tech Debt -->
             <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden">
-                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">TECH DEBT INDEX</p>
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">TECH DEBT</p>
                 <h3 class="text-2xl font-mono font-bold mb-2" :class="futureBank.metrics.techDebt > 50 ? 'text-red-500' : 'text-slate-300'">
                     <span x-text="futureBank.metrics.techDebt"></span>/100
                 </h3>
@@ -2624,49 +2614,691 @@
             </div>
         </div>
 
-        <!-- 3. AI PROMPT BOX (Replaces the automatic letter) -->
+        <!-- *** THE INTERACTIVE EVENT OVERLAY *** -->
+        <div x-show="futureBank.activeEvent" 
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-90"
+             x-transition:enter-end="opacity-100 scale-100"
+             class="absolute inset-0 z-50 flex items-center justify-center p-4">
+            
+            <!-- Backdrop -->
+            <div class="absolute inset-0 bg-black/90 backdrop-blur-sm rounded-xl"></div>
+            
+            <!-- Card -->
+            <div class="bg-slate-900 border-2 border-red-500 rounded-2xl p-8 max-w-lg w-full relative z-10 shadow-[0_0_50px_rgba(239,68,68,0.3)]">
+                <div class="flex items-center gap-3 mb-4 text-red-500 animate-pulse">
+                    <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                    <h3 class="font-mono text-xl font-bold uppercase">Breaking News</h3>
+                </div>
+                
+                <h4 class="text-2xl font-bold text-white mb-2" x-text="futureBank.activeEvent?.title"></h4>
+                <p class="text-slate-300 mb-8 leading-relaxed" x-text="futureBank.activeEvent?.desc"></p>
+                
+                <div class="space-y-3">
+                    <template x-for="choice in futureBank.activeEvent?.choices">
+                        <button @click="futureBank.resolveEvent(choice)" 
+                                class="w-full text-left p-4 rounded-lg bg-slate-800 border border-slate-600 hover:border-white hover:bg-slate-700 transition-all group">
+                            <div class="flex justify-between items-center">
+                                <span class="font-bold text-sm text-white" x-text="choice.label"></span>
+                                <i class="fa-solid fa-arrow-right text-slate-500 group-hover:text-white"></i>
+                            </div>
+                            <div class="text-[10px] text-slate-400 mt-1 flex gap-3">
+                                <span x-show="choice.cost > 0">Cost: $<span x-text="choice.cost"></span>M</span>
+                                <span x-show="choice.debt < 0" class="text-green-400">Debt Down</span>
+                                <span x-show="choice.debt > 0" class="text-red-400">Debt Up</span>
+                            </div>
+                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. AI PROMPT BOX (End State) -->
         <div x-show="!futureBank.isPlaying && futureBank.year === 2030" 
              x-transition:enter="transition ease-out duration-1000 delay-200" 
-             x-transition:enter-start="opacity-0 translate-y-10" 
-             x-transition:enter-end="opacity-100 translate-y-0"
-             class="bg-slate-900 border border-purple-500/30 p-6 rounded-xl relative overflow-hidden group">
+             class="bg-slate-900 border border-purple-500/30 p-6 rounded-xl relative overflow-hidden group mt-4">
             
-            <!-- Header -->
             <div class="flex justify-between items-center mb-4 relative z-10">
                 <h3 class="font-mono text-white font-bold flex items-center gap-2">
                     <i class="fa-solid fa-robot text-purple-400"></i> 
-                    RETROSPECTIVE AI GENERATOR
+                    WALL STREET ANALYST REPORT
                 </h3>
                 <span class="text-[10px] uppercase bg-purple-900/50 text-purple-400 px-2 py-1 rounded border border-purple-500/30 font-bold tracking-wider">
-                    Simulation Data Ready
+                    Simulation Complete
                 </span>
             </div>
 
-            <!-- Preview -->
             <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-32 overflow-hidden">
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
                 <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="futureBank.generateFuturePrompt()"></pre>
             </div>
 
-            <!-- Copy Button -->
             <button @click="
                     copyToClipboard(futureBank.generateFuturePrompt(), 'Simulation Data');
                     $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
                     $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
                     setTimeout(() => {
-                        $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE SHAREHOLDER LETTER (AI)';
+                        $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE REPORT (AI)';
                         $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
                     }, 2000)
                     " 
                     class="relative z-10 w-full py-4 bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-400 hover:text-black font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]">
-                <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE SHAREHOLDER LETTER (AI)
+                <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE REPORT (AI)
             </button>
             
             <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
-                Paste into AI to get the "Letter to Shareholders from 2030".
+                Includes your specific crisis decisions (2027/2029) in the prompt.
             </p>
         </div>
 
+    </div>
+</div>
+        <!-- CONWAY'S LAW VISUALIZER TAB -->
+<div x-show="currentTab === 'conway'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">Conway's Law Simulator</h2>
+        <p class="text-textMuted text-sm">"You don't have a code problem. You have an org chart problem."</p>
+    </div>
+
+    <!-- 1. BUILDER UI -->
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: Org Chart Builder -->
+        <div class="lg:col-span-4 bg-card border border-slate-700 p-6 rounded-xl">
+            <h3 class="font-mono text-xs text-indigo-400 uppercase mb-4 font-bold">1. Define the Org</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-slate-500 uppercase">Team Name</label>
+                    <input type="text" x-model="conwaySim.newTeamName" @keydown.enter="conwaySim.addTeam()" class="w-full bg-dark border border-slate-600 rounded p-2 text-white text-sm focus:border-indigo-500 focus:outline-none">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-500 uppercase">Team Archetype</label>
+                    <div class="grid grid-cols-2 gap-2 mt-1">
+                        <button @click="conwaySim.newTeamType = 'silo'" :class="conwaySim.newTeamType === 'silo' ? 'bg-orange-500/20 border-orange-500 text-orange-400' : 'bg-slate-800 border-slate-600 text-slate-400'" class="p-2 rounded border text-xs font-bold transition-all">
+                            <i class="fa-solid fa-building-columns mr-1"></i> Silo
+                        </button>
+                        <button @click="conwaySim.newTeamType = 'squad'" :class="conwaySim.newTeamType === 'squad' ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-slate-800 border-slate-600 text-slate-400'" class="p-2 rounded border text-xs font-bold transition-all">
+                            <i class="fa-solid fa-rocket mr-1"></i> Squad
+                        </button>
+                        <button @click="conwaySim.newTeamType = 'platform'" :class="conwaySim.newTeamType === 'platform' ? 'bg-blue-500/20 border-blue-500 text-blue-400' : 'bg-slate-800 border-slate-600 text-slate-400'" class="p-2 rounded border text-xs font-bold transition-all">
+                            <i class="fa-solid fa-layer-group mr-1"></i> Platform
+                        </button>
+                        <button @click="conwaySim.newTeamType = 'gatekeeper'" :class="conwaySim.newTeamType === 'gatekeeper' ? 'bg-red-500/20 border-red-500 text-red-400' : 'bg-slate-800 border-slate-600 text-slate-400'" class="p-2 rounded border text-xs font-bold transition-all">
+                            <i class="fa-solid fa-hand-paper mr-1"></i> Gatekeeper
+                        </button>
+                    </div>
+                </div>
+                <button @click="conwaySim.addTeam()" class="w-full bg-white hover:bg-gray-200 text-dark font-bold py-2 rounded-lg text-xs transition-all">
+                    + ADD TEAM
+                </button>
+            </div>
+
+            <!-- Help Text -->
+            <div class="mt-6 p-4 bg-slate-800/50 rounded-lg border border-slate-700">
+                <p class="text-[10px] text-slate-400 leading-relaxed">
+                    <strong class="text-white">How it works:</strong> Add teams. Then, on the right panel, click any two teams to create a <span class="text-red-400">Dependency Line</span>. The simulator calculates the resulting architectural mess.
+                </p>
+            </div>
+        </div>
+
+        <!-- RIGHT: Interactive Graph -->
+        <div class="lg:col-span-8 space-y-6">
+            
+            <!-- Matrix Visualizer -->
+            <div class="bg-dark border-2 border-dashed border-slate-700 rounded-xl p-6 relative min-h-[400px]">
+                
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest absolute top-4 left-4">DEPENDENCY MATRIX (CLICK TO CONNECT)</p>
+                
+                <div x-show="conwaySim.teams.length === 0" class="flex h-full items-center justify-center text-slate-600">
+                    <div class="text-center">
+                        <i class="fa-solid fa-sitemap text-4xl mb-2 opacity-30"></i>
+                        <p class="text-xs">Add teams to visualize architecture.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mt-8">
+                    <template x-for="team in conwaySim.teams" :key="team.id">
+                        <div class="relative bg-slate-800 p-4 rounded-lg border transition-all group"
+                             :class="{
+                                'border-orange-500': team.type === 'silo',
+                                'border-green-500': team.type === 'squad',
+                                'border-blue-500': team.type === 'platform',
+                                'border-red-500': team.type === 'gatekeeper'
+                             }">
+                            
+                            <!-- Delete Button -->
+                            <button @click.stop="conwaySim.removeTeam(team.id)" class="absolute -top-2 -right-2 w-6 h-6 bg-red-600 text-white rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity z-20">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+
+                            <div class="flex items-center gap-2 mb-2">
+                                <i class="fa-solid" :class="{
+                                    'fa-building-columns text-orange-400': team.type === 'silo',
+                                    'fa-rocket text-green-400': team.type === 'squad',
+                                    'fa-layer-group text-blue-400': team.type === 'platform',
+                                    'fa-hand-paper text-red-400': team.type === 'gatekeeper'
+                                }"></i>
+                                <span class="font-bold text-white text-sm truncate" x-text="team.name"></span>
+                            </div>
+
+                            <!-- Connection Grid -->
+                            <div class="mt-3 pt-3 border-t border-slate-700/50">
+                                <p class="text-[9px] text-slate-500 mb-2 uppercase">Depends on:</p>
+                                <div class="flex flex-wrap gap-2">
+                                    <template x-for="target in conwaySim.teams" :key="target.id">
+                                        <button x-show="team.id !== target.id" 
+                                                @click="conwaySim.toggleDependency(team.id, target.id)"
+                                                class="text-[9px] px-2 py-1 rounded border transition-all"
+                                                :class="conwaySim.hasDependency(team.id, target.id) 
+                                                    ? 'bg-red-500/20 border-red-500 text-red-300' 
+                                                    : 'bg-slate-900 border-slate-700 text-slate-500 hover:border-slate-500'">
+                                            <span x-text="target.name"></span>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Calculated Results -->
+            <div class="grid grid-cols-3 gap-4" x-show="conwaySim.teams.length > 0">
+                <div class="bg-card border border-slate-700 p-4 rounded-xl text-center">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest">COUPLING SCORE</p>
+                    <h3 class="text-2xl font-mono font-bold my-1" :class="conwaySim.metrics.couplingScore > 50 ? 'text-red-500' : 'text-green-400'">
+                        <span x-text="conwaySim.metrics.couplingScore"></span>/100
+                    </h3>
+                    <p class="text-[9px] text-slate-400">Integration Pain</p>
+                </div>
+                <div class="bg-card border border-slate-700 p-4 rounded-xl text-center">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest">VELOCITY</p>
+                    <h3 class="text-2xl font-mono font-bold my-1 text-blue-400">
+                        <span x-text="conwaySim.metrics.velocity.toFixed(0)"></span>
+                    </h3>
+                    <p class="text-[9px] text-slate-400">Deployment Speed</p>
+                </div>
+                <div class="bg-card border border-slate-700 p-4 rounded-xl text-center">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest">RESULTING SYSTEM</p>
+                    <h3 class="text-sm font-bold text-white my-2" x-text="conwaySim.metrics.archType"></h3>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 2. AI DIAGNOSIS BOX -->
+    <div x-show="conwaySim.teams.length > 0" 
+         class="mt-8 bg-slate-900 border border-indigo-500/30 p-6 rounded-xl relative overflow-hidden group">
+        
+        <div class="flex justify-between items-center mb-4 relative z-10">
+            <h3 class="font-mono text-white font-bold flex items-center gap-2">
+                <i class="fa-solid fa-robot text-indigo-400"></i> 
+                ARCHITECTURAL DIAGNOSIS AI
+            </h3>
+            <span class="text-[10px] uppercase bg-indigo-900/50 text-indigo-400 px-2 py-1 rounded border border-indigo-500/30 font-bold tracking-wider">
+                Topology Mapped
+            </span>
+        </div>
+
+        <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-32 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+            <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="conwaySim.generateConwayPrompt()"></pre>
+        </div>
+
+        <button @click="
+                copyToClipboard(conwaySim.generateConwayPrompt(), 'Topology Data');
+                $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                setTimeout(() => {
+                    $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE RE-ORG PLAN (AI)';
+                    $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                }, 2000)
+                " 
+                class="relative z-10 w-full py-4 bg-transparent border border-indigo-500 text-indigo-400 hover:bg-indigo-400 hover:text-black font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(129,140,248,0.1)] hover:shadow-[0_0_20px_rgba(129,140,248,0.4)]">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE RE-ORG PLAN (AI)
+        </button>
+        
+        <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
+            Paste into AI to get the "Inverse Conway Maneuver" strategy.
+        </p>
+    </div>
+
+</div>
+
+        <!-- DUMB PIPE RISK CALCULATOR TAB -->
+<div x-show="currentTab === 'dumbpipe'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">Dumb Pipe Risk Calculator</h2>
+        <p class="text-textMuted text-sm">"If you lose the interface, you lose the margin." Are you becoming a utility?</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: INPUTS -->
+        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-8">
+            
+            <!-- Revenue Mix -->
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-slate-400 uppercase font-bold"><i class="fa-solid fa-money-bill-transfer mr-2"></i>Commodity Revenue</label>
+                    <span class="text-xs font-bold text-white" x-text="dumbPipeCalc.inputs.commodity_share + '%'"></span>
+                </div>
+                <input type="range" min="0" max="100" x-model="dumbPipeCalc.inputs.commodity_share" @input="dumbPipeCalc.result = null" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500">
+                <p class="text-[10px] text-slate-500 mt-2">Revenue from Interchange, FX, or Overdrafts (Low Loyalty).</p>
+            </div>
+
+            <!-- Aggregator Traffic -->
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-slate-400 uppercase font-bold"><i class="fa-solid fa-server mr-2"></i>3rd Party Traffic</label>
+                    <span class="text-xs font-bold text-white" x-text="dumbPipeCalc.inputs.aggregator_share + '%'"></span>
+                </div>
+                <input type="range" min="0" max="100" x-model="dumbPipeCalc.inputs.aggregator_share" @input="dumbPipeCalc.result = null" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-yellow-500">
+                <p class="text-[10px] text-slate-500 mt-2">Customers accessing you via Apple Wallet, Mint, or Plaid.</p>
+            </div>
+
+            <!-- Engagement -->
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-slate-400 uppercase font-bold"><i class="fa-solid fa-mobile-screen mr-2"></i>Daily Logins (DAU)</label>
+                    <span class="text-xs font-bold text-white" x-text="dumbPipeCalc.inputs.daily_logins + '%'"></span>
+                </div>
+                <input type="range" min="0" max="100" x-model="dumbPipeCalc.inputs.daily_logins" @input="dumbPipeCalc.result = null" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                <p class="text-[10px] text-slate-500 mt-2">Percentage of customer base checking the app daily.</p>
+            </div>
+
+            <!-- NPS -->
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-slate-400 uppercase font-bold"><i class="fa-solid fa-heart mr-2"></i>Net Promoter Score</label>
+                    <span class="text-xs font-bold text-white" x-text="dumbPipeCalc.inputs.nps"></span>
+                </div>
+                <input type="range" min="-100" max="100" x-model="dumbPipeCalc.inputs.nps" @input="dumbPipeCalc.result = null" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-green-500">
+            </div>
+
+            <button @click="dumbPipeCalc.analyze()" 
+                    class="w-full py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-calculator"></i> CALCULATE RISK
+            </button>
+        </div>
+
+        <!-- RIGHT: RESULTS & STRATEGY -->
+        <div class="lg:col-span-7 relative min-h-[400px]">
+            
+            <!-- Empty State -->
+            <div x-show="!dumbPipeCalc.result" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-500">
+                <i class="fa-solid fa-faucet-drip text-4xl mb-4 opacity-20"></i>
+                <p class="font-mono text-xs uppercase">Adjust Inputs to Audit</p>
+            </div>
+
+            <!-- Result Card -->
+            <div x-show="dumbPipeCalc.result" x-transition class="bg-card border border-slate-700 rounded-xl overflow-hidden shadow-2xl relative group">
+                
+                <!-- The Gauge Header -->
+                <div class="p-8 text-center bg-gradient-to-b from-slate-800 to-slate-900 border-b border-slate-700 relative overflow-hidden">
+                    <!-- Background Glow -->
+                    <div class="absolute inset-0 opacity-10 transition-colors duration-500" :class="'bg-' + dumbPipeCalc.result?.color.replace('text-', '')"></div>
+                    
+                    <p class="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-4">COMMODITIZATION INDEX</p>
+                    
+                    <div class="relative w-48 h-24 mx-auto overflow-hidden">
+                        <!-- Gauge Arc (CSS Trick) -->
+                        <div class="w-48 h-48 rounded-full border-[12px] border-slate-700 border-t-transparent border-l-transparent -rotate-45 absolute top-0 left-0"></div>
+                        <div class="w-48 h-48 rounded-full border-[12px] border-transparent border-t-current border-l-current -rotate-45 absolute top-0 left-0 transition-all duration-1000"
+                             :class="dumbPipeCalc.result?.color"
+                             :style="`transform: rotate(${(dumbPipeCalc.result?.score / 100 * 180) - 135}deg)`"></div>
+                    </div>
+                    <div class="relative -mt-10">
+                        <span class="text-5xl font-bold font-mono text-white" x-text="dumbPipeCalc.result?.score"></span>
+                    </div>
+                    
+                    <h3 class="text-2xl font-bold mt-4 uppercase tracking-tight" :class="dumbPipeCalc.result?.color" x-text="dumbPipeCalc.result?.verdict"></h3>
+                    <p class="text-xs text-slate-400 mt-2 font-mono">Archetype: <span class="text-white font-bold" x-text="dumbPipeCalc.result?.archetype"></span></p>
+                </div>
+
+                <!-- AI Prompt Box -->
+                <div class="p-6 bg-slate-900">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-mono text-white font-bold flex items-center gap-2 text-xs uppercase">
+                            <i class="fa-solid fa-robot text-red-400"></i> Strategic Defense AI
+                        </h3>
+                        <span class="text-[9px] bg-red-900/50 text-red-400 px-2 py-1 rounded border border-red-500/30 font-bold uppercase tracking-wider">
+                            Gap Identified
+                        </span>
+                    </div>
+
+                    <div class="relative font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-24 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                        <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="dumbPipeCalc.generateStrategyPrompt()"></pre>
+                    </div>
+
+                    <button @click="
+                            copyToClipboard(dumbPipeCalc.generateStrategyPrompt(), 'Strategy Memo');
+                            $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                            $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                            setTimeout(() => {
+                                $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE DEFENSE STRATEGY (AI)';
+                                $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                            }, 2000)
+                            " 
+                            class="w-full py-4 bg-transparent border border-red-500 text-red-400 hover:bg-red-500 hover:text-white font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(239,68,68,0.1)] hover:shadow-[0_0_20px_rgba(239,68,68,0.4)]">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE DEFENSE STRATEGY (AI)
+                    </button>
+                    
+                    <p class="text-center text-[10px] text-slate-500 mt-3">
+                        Paste into AI to get a roadmap for escaping the "Utility Trap".
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+        <!-- AGILE DATA GOVERNANCE DASHBOARD TAB -->
+<div x-show="currentTab === 'datagov'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="flex justify-between items-end mb-8">
+        <div>
+            <h2 class="font-mono text-3xl font-bold text-white mb-2">Agile Data Governance</h2>
+            <p class="text-textMuted text-sm">Don't fix data downstream (Janitor). Fix it at the source (Guardrails).</p>
+        </div>
+        
+        <!-- Controls -->
+        <div class="flex gap-2">
+             <button @click="dataGovDash.injectFailure('schema')" class="px-4 py-2 border border-red-500/50 text-red-400 hover:bg-red-900/20 rounded-full text-xs font-bold transition-all shadow-[0_0_15px_rgba(239,68,68,0.2)]">
+                <i class="fa-solid fa-bug mr-2"></i> INJECT BREAK
+            </button>
+            <button @click="dataGovDash.toggleSim()" 
+                    class="font-bold py-2 px-6 rounded-full shadow-glow transition-all flex items-center gap-2"
+                    :class="dataGovDash.isLive ? 'bg-blue-500/20 text-blue-400 border border-blue-500' : 'bg-slate-700 text-white'">
+                <i class="fa-solid" :class="dataGovDash.isLive ? 'fa-spin fa-circle-notch' : 'fa-play'"></i>
+                <span x-text="dataGovDash.isLive ? 'LIVE MONITORING' : 'START MONITOR'"></span>
+            </button>
+        </div>
+    </div>
+
+    <div class="grid lg:grid-cols-3 gap-6 items-start">
+        
+        <!-- LEFT: DATA PRODUCTS GRID -->
+        <div class="lg:col-span-2 space-y-4">
+            <template x-for="product in dataGovDash.products" :key="product.id">
+                <div @click="dataGovDash.selectedProduct = product"
+                     class="bg-card border p-6 rounded-xl cursor-pointer transition-all hover:translate-x-1 relative overflow-hidden group"
+                     :class="product.status === 'critical' ? 'border-red-500 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : (dataGovDash.selectedProduct?.id === product.id ? 'border-blue-500' : 'border-slate-700')">
+                    
+                    <!-- Critical Alert Overlay -->
+                    <div x-show="product.status === 'critical'" class="absolute inset-0 bg-red-900/10 z-0 animate-pulse"></div>
+
+                    <div class="relative z-10">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="w-2 h-2 rounded-full" :class="product.status === 'critical' ? 'bg-red-500 shadow-[0_0_10px_red]' : 'bg-green-400'"></span>
+                                    <h3 class="font-bold text-white text-lg" x-text="product.name"></h3>
+                                </div>
+                                <p class="text-xs text-slate-400 font-mono">Owner: <span class="text-white" x-text="product.owner"></span></p>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-[10px] uppercase tracking-widest text-slate-500">Service Level</span>
+                                <div class="text-2xl font-mono font-bold" :class="product.status === 'critical' ? 'text-red-500' : 'text-green-400'">
+                                    <span x-text="Math.min(product.slo.freshness, product.slo.accuracy).toFixed(1)"></span>%
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SLO Metrics -->
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="bg-slate-900 rounded p-2 border border-slate-800">
+                                <p class="text-[9px] text-slate-400 uppercase">Freshness (Latency)</p>
+                                <div class="w-full bg-slate-800 h-1.5 rounded-full mt-1 mb-1 overflow-hidden">
+                                    <div class="h-full transition-all duration-300" :class="product.slo.freshness < 99 ? 'bg-red-500' : 'bg-blue-400'" :style="`width: ${product.slo.freshness}%`"></div>
+                                </div>
+                                <p class="font-mono font-bold text-xs" :class="product.slo.freshness < 99 ? 'text-red-400' : 'text-white'" x-text="product.slo.freshness.toFixed(1) + '%'"></p>
+                            </div>
+                            <div class="bg-slate-900 rounded p-2 border border-slate-800">
+                                <p class="text-[9px] text-slate-400 uppercase">Accuracy (Quality)</p>
+                                <div class="w-full bg-slate-800 h-1.5 rounded-full mt-1 mb-1 overflow-hidden">
+                                    <div class="h-full transition-all duration-300" :class="product.slo.accuracy < 99 ? 'bg-red-500' : 'bg-blue-400'" :style="`width: ${product.slo.accuracy}%`"></div>
+                                </div>
+                                <p class="font-mono font-bold text-xs" :class="product.slo.accuracy < 99 ? 'text-red-400' : 'text-white'" x-text="product.slo.accuracy.toFixed(1) + '%'"></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- RIGHT: INCIDENT COMMAND & PROMPT GEN -->
+        <div class="bg-dark border-l border-slate-700 p-6 flex flex-col h-full min-h-[500px]">
+            <h3 class="font-mono text-xs text-blue-400 uppercase mb-4 tracking-widest">Incident Command Center</h3>
+            
+            <!-- Empty State -->
+            <div x-show="!dataGovDash.selectedProduct" class="text-center text-slate-600 mt-20">
+                <i class="fa-solid fa-tower-observation text-4xl mb-4 opacity-20"></i>
+                <p class="text-xs font-mono">Select a Data Product to monitor.</p>
+            </div>
+
+            <!-- Active Product Details -->
+            <div x-show="dataGovDash.selectedProduct" class="flex-1 flex flex-col">
+                <div class="mb-6 pb-4 border-b border-slate-800">
+                     <span class="text-lg font-bold text-white block mb-1" x-text="dataGovDash.selectedProduct?.name"></span>
+                     <div class="flex items-center gap-2">
+                         <span class="text-[10px] px-2 py-0.5 rounded border" 
+                               :class="dataGovDash.selectedProduct?.status === 'critical' ? 'bg-red-900/30 border-red-500 text-red-400' : 'bg-green-900/30 border-green-500 text-green-400'"
+                               x-text="dataGovDash.selectedProduct?.status === 'critical' ? 'CRITICAL INCIDENT' : 'OPERATIONAL'"></span>
+                         <span class="text-[10px] text-slate-500" x-text="'$' + dataGovDash.selectedProduct?.costPerMinute + '/min'"></span>
+                     </div>
+                </div>
+
+                <!-- INCIDENT ALERT (Only shows if broken) -->
+                <div x-show="dataGovDash.selectedProduct?.status === 'critical'" x-transition class="space-y-4">
+                    
+                    <div class="bg-red-900/10 border border-red-500 p-4 rounded-lg animate-pulse">
+                        <div class="flex items-center gap-2 mb-2 text-red-400 text-xs font-bold uppercase">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Business Impact
+                        </div>
+                        <p class="text-2xl text-white font-mono font-bold mb-1" x-text="'$' + Math.round(dataGovDash.activeIncident?.totalCost).toLocaleString()"></p>
+                        <p class="text-[10px] text-red-300">Estimated Value Lost (Cumulative)</p>
+                        <p class="text-xs text-white mt-3 font-mono bg-black/50 p-2 rounded border border-red-500/30">
+                            > <span x-text="dataGovDash.activeIncident?.errorMsg"></span>
+                        </p>
+                    </div>
+
+                    <button @click="dataGovDash.repair()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded shadow-glow transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wrench"></i> DEPLOY HOTFIX
+                    </button>
+
+                    <!-- AI RCA Prompt Box -->
+                    <div class="mt-6 bg-slate-800 p-4 rounded-lg border border-slate-600">
+                        <div class="flex justify-between items-center mb-2">
+                            <h4 class="text-[10px] font-bold text-slate-400 uppercase">Post-Mortem Generator</h4>
+                            <span class="text-[9px] text-blue-400 bg-blue-900/20 px-1 rounded">AI READY</span>
+                        </div>
+                        <div class="bg-black/50 p-2 rounded text-[10px] text-slate-400 font-mono mb-3 h-20 overflow-hidden relative">
+                            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/80 pointer-events-none"></div>
+                            <span x-text="dataGovDash.generateRCAPrompt()"></span>
+                        </div>
+                        <button @click="
+                                copyToClipboard(dataGovDash.generateRCAPrompt(), 'RCA Prompt');
+                                $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                                setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> COPY RCA PROMPT'; }, 2000)
+                                " 
+                                class="w-full border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white py-2 rounded text-xs font-bold transition-all">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> COPY RCA PROMPT
+                        </button>
+                    </div>
+
+                </div>
+
+                <!-- Healthy State Message -->
+                <div x-show="dataGovDash.selectedProduct?.status !== 'critical'" class="text-center py-10 opacity-50">
+                    <i class="fa-solid fa-shield-heart text-4xl text-green-500 mb-2"></i>
+                    <p class="text-xs text-slate-400">System Healthy.<br>Inject a failure to test response.</p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+        <!-- SHADOW IT AUDIT TAB -->
+<div x-show="currentTab === 'shadow'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">Shadow IT Scanner</h2>
+        <p class="text-textMuted text-sm">Don't just ban it. Audit the "Hidden Tax" of manual integration.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: INPUT SCANNER -->
+        <div class="lg:col-span-4 bg-card border border-slate-700 p-6 rounded-xl h-fit">
+            <h3 class="font-mono text-xs text-purple-400 uppercase mb-4 font-bold border-b border-slate-700 pb-2">Add New Tool</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="text-[10px] text-slate-500 uppercase">Tool Name</label>
+                    <input type="text" x-model="shadowAudit.form.name" @keydown.enter="shadowAudit.addTool()" placeholder="e.g. Monday.com, Trello" class="w-full bg-dark border border-slate-600 rounded p-2 text-white text-sm focus:border-purple-500 focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] text-slate-500 uppercase">User Count</label>
+                        <input type="number" x-model="shadowAudit.form.users" class="w-full bg-dark border border-slate-600 rounded p-2 text-white text-sm">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-slate-500 uppercase">Cost/User ($)</label>
+                        <input type="number" x-model="shadowAudit.form.costPerUser" class="w-full bg-dark border border-slate-600 rounded p-2 text-white text-sm">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] text-slate-500 uppercase">Data Sensitivity</label>
+                    <select x-model="shadowAudit.form.dataLevel" class="w-full bg-dark border border-slate-600 rounded p-2 text-white text-sm">
+                        <option value="public">Public (Non-Sensitive)</option>
+                        <option value="internal">Internal (Business Ops)</option>
+                        <option value="confidential">Confidential (Strategy)</option>
+                        <option value="restricted">Restricted (PII / Financials)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="text-[10px] text-slate-500 uppercase">Integration Status</label>
+                    <div class="grid grid-cols-2 gap-2 mt-1">
+                        <button @click="shadowAudit.form.integration = 'silo'" :class="shadowAudit.form.integration === 'silo' ? 'bg-red-500/20 border-red-500 text-red-400' : 'bg-slate-800 border-slate-600 text-slate-400'" class="p-2 rounded border text-xs font-bold transition-all">
+                            <i class="fa-solid fa-file-csv mr-1"></i> Silo (CSV)
+                        </button>
+                        <button @click="shadowAudit.form.integration = 'api'" :class="shadowAudit.form.integration === 'api' ? 'bg-green-500/20 border-green-500 text-green-400' : 'bg-slate-800 border-slate-600 text-slate-400'" class="p-2 rounded border text-xs font-bold transition-all">
+                            <i class="fa-solid fa-plug mr-1"></i> API (Auto)
+                        </button>
+                    </div>
+                </div>
+
+                <button @click="shadowAudit.addTool()" class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 rounded-lg shadow-glow transition-all mt-2">
+                    SCAN & ADD
+                </button>
+            </div>
+        </div>
+
+        <!-- RIGHT: INVENTORY DASHBOARD -->
+        <div class="lg:col-span-8 space-y-6">
+            
+            <!-- Summary Stats -->
+            <div class="grid grid-cols-3 gap-4">
+                <div class="bg-card border border-slate-700 p-4 rounded-xl relative overflow-hidden">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">TOTAL LIABILITY</p>
+                    <h3 class="text-2xl font-mono font-bold text-white">
+                        $<span x-text="Math.round(shadowAudit.summary.totalCost).toLocaleString()"></span>
+                    </h3>
+                    <div class="absolute right-0 bottom-0 p-3 opacity-10"><i class="fa-solid fa-money-bill-wave text-4xl"></i></div>
+                </div>
+                <div class="bg-card border border-slate-700 p-4 rounded-xl relative overflow-hidden">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">SHADOW TAX</p>
+                    <h3 class="text-2xl font-mono font-bold text-red-400">
+                        $<span x-text="Math.round(shadowAudit.summary.hiddenTax).toLocaleString()"></span>
+                    </h3>
+                    <p class="text-[9px] text-slate-400">Manual Work Cost</p>
+                </div>
+                <div class="bg-card border border-slate-700 p-4 rounded-xl relative overflow-hidden">
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">CRITICAL RISKS</p>
+                    <h3 class="text-2xl font-mono font-bold" :class="shadowAudit.summary.highRiskCount > 0 ? 'text-red-500' : 'text-green-400'">
+                        <span x-text="shadowAudit.summary.highRiskCount"></span>
+                    </h3>
+                    <p class="text-[9px] text-slate-400">Tools to Kill</p>
+                </div>
+            </div>
+
+            <!-- Inventory List -->
+            <div class="bg-dark border-2 border-dashed border-slate-700 rounded-xl min-h-[300px] flex flex-col relative">
+                
+                <div x-show="shadowAudit.inventory.length === 0" class="flex-1 flex flex-col items-center justify-center text-slate-600 opacity-50">
+                    <i class="fa-solid fa-ghost text-4xl mb-2"></i>
+                    <p class="text-xs">No shadow tools detected yet.</p>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4 space-y-2">
+                    <template x-for="tool in shadowAudit.inventory" :key="tool.id">
+                        <div class="bg-slate-800 border border-slate-600 p-3 rounded-lg flex justify-between items-center group relative hover:border-purple-500 transition-colors">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-white text-sm" x-text="tool.name"></span>
+                                    <span class="text-[9px] px-2 py-0.5 rounded border uppercase"
+                                          :class="tool.integration === 'silo' ? 'border-red-500 text-red-400 bg-red-500/10' : 'border-green-500 text-green-400 bg-green-500/10'"
+                                          x-text="tool.integration"></span>
+                                </div>
+                                <div class="flex gap-3 text-[10px] text-slate-400 mt-1">
+                                    <span>TCO: $<span x-text="Math.round(tool.trueCost).toLocaleString()"></span></span>
+                                    <span>Risk: <span :class="tool.risk >= 7 ? 'text-red-400 font-bold' : 'text-slate-400'" x-text="tool.risk + '/10'"></span></span>
+                                    <span class="font-mono text-purple-300" x-text="tool.verdict"></span>
+                                </div>
+                            </div>
+                            <button @click="shadowAudit.removeTool(tool.id)" class="text-slate-600 hover:text-red-400 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- AI Governance Prompt -->
+            <div x-show="shadowAudit.inventory.length > 0" class="bg-slate-900 border border-purple-500/30 p-6 rounded-xl relative overflow-hidden group">
+                <div class="flex justify-between items-center mb-4 relative z-10">
+                    <h3 class="font-mono text-white font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-robot text-purple-400"></i> 
+                        CISO GOVERNANCE AI
+                    </h3>
+                    <span class="text-[10px] uppercase bg-purple-900/50 text-purple-400 px-2 py-1 rounded border border-purple-500/30 font-bold tracking-wider">
+                        Audit Complete
+                    </span>
+                </div>
+
+                <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-24 overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                    <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="shadowAudit.generateGovernancePrompt()"></pre>
+                </div>
+
+                <button @click="
+                        copyToClipboard(shadowAudit.generateGovernancePrompt(), 'Audit Report');
+                        $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                        $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                        setTimeout(() => {
+                            $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE POLICY MEMO (AI)';
+                            $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                        }, 2000)
+                        " 
+                        class="relative z-10 w-full py-4 bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-400 hover:text-black font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE POLICY MEMO (AI)
+                </button>
+            </div>
+
+        </div>
     </div>
 </div>
         
