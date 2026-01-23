@@ -1315,7 +1315,9 @@ tools: {
         { id: 'datagov', label: 'Data Health', icon: 'fa-solid fa-traffic-light', color: 'text-blue-500' },
         { id: 'shadow', label: 'Shadow IT Audit', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
         { id: 'detector', label: 'Hallucination Check', icon: 'fa-solid fa-shield-cat', color: 'text-risk' },
-            { id: 'watermelon', label: 'Lie Detector', icon: 'fa-solid fa-user-secret', color: 'text-red-500' }
+        { id: 'watermelon', label: 'Lie Detector', icon: 'fa-solid fa-user-secret', color: 'text-red-500' },
+        { id: 'cognitive', label: 'Cognitive Load', icon: 'fa-solid fa-brain', color: 'text-purple-400' }
+
 
 
 
@@ -1326,6 +1328,8 @@ tools: {
         { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language', color: 'text-blue-300' },
         { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king', color: 'text-yellow-400' },
         { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book', color: 'text-slate-400' }
+
+        
     ],
     forge: [
         { id: 'kpi', label: 'Outcome Gen', icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400' },
@@ -1348,7 +1352,12 @@ tools: {
         { id: 'roleplay', label: 'Negotiation Dojo', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
         { id: 'conway', label: 'Conway Sim', icon: 'fa-solid fa-project-diagram', color: 'text-indigo-400' },
         { id: 'whatif', label: 'War Games', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
-        { id: 'sandbox', label: 'Arch Sandbox', icon: 'fa-solid fa-shapes', color: 'text-cyan-500' }
+        { id: 'sandbox', label: 'Arch Sandbox', icon: 'fa-solid fa-shapes', color: 'text-cyan-500' },
+        { id: 'risksim', label: 'Risk Dojo', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
+        { id: 'escaperoom', label: 'Excel Escape', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
+            { id: 'bingo', label: 'Bilingual Bingo', icon: 'fa-solid fa-table-cells', color: 'text-pink-500' }
+        
+        
     ]
 },
         
@@ -1360,6 +1369,12 @@ tools: {
             { id: 'roleplay', label: 'Negotiation Dojo', desc: 'Spar against skeptical stakeholders.', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
            { id: 'conway', label: 'Org Mirror', desc: 'Simulate how Org Chart breaks Architecture.', icon: 'fa-solid fa-sitemap', color: 'text-indigo-400', vip: false },
             { id: 'escaperoom', label: 'Excel Escape', desc: 'Gamified technical debt simulation.', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
+           { id: 'risksim', label: 'Risk Negotiator', desc: 'Simulate a high-stakes "Go/No-Go" meeting with a CRO.', icon: 'fa-solid fa-gavel', color: 'text-risk', vip: false },
+           { id: 'escaperoom', label: 'Escape the Factory', desc: 'Gamified technical debt simulation.', icon: 'fa-solid fa-dungeon', color: 'text-green-500', vip: false },
+           { id: 'bingo', label: 'Meeting Bingo', desc: 'Gamify cultural transformation during actual meetings.', icon: 'fa-solid fa-table-cells', color: 'text-pink-500', vip: false },
+
+
+
 
             // 2. Calculators & Builders (Forge)
             { id: 'squad', label: 'Squad Builder', desc: 'Design teams using Brooks Law.', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
@@ -1382,6 +1397,8 @@ tools: {
            { id: 'datagov', label: 'Live Data Governance', desc: 'Monitor SLOs, Lineage, and Quality in real-time.', icon: 'fa-solid fa-server', color: 'text-blue-500', vip: false },
            { id: 'shadow', label: 'Shadow IT Scanner', desc: 'Audit SaaS sprawl and calculate the "Integration Tax".', icon: 'fa-solid fa-ghost', color: 'text-purple-400', vip: false },
            { id: 'detector', label: 'AI Risk Scanner', desc: 'Mathematically verify AI outputs against Golden Source data.', icon: 'fa-solid fa-user-secret', color: 'text-risk', vip: false },
+           { id: 'cognitive', label: 'Brain Bandwidth', desc: 'Measure team mental overhead and burnout risk.', icon: 'fa-solid fa-brain', color: 'text-purple-400', vip: false },
+
 
 
 
@@ -4132,6 +4149,628 @@ Write a **"Gemba Walk" Interrogation Script** for my meeting with this Project M
 TONE: Skeptical, experienced, piercing.`;
             }
         },
+
+        // ------------------------------------------------------------------
+        // RISK SIMULATOR (Deterministic Card Game Engine)
+        // ------------------------------------------------------------------
+        riskSim: {
+            active: false,
+            round: 0,
+            
+            // The Math State
+            metrics: {
+                trust: 50,    // Marcus's confidence in you (0-100)
+                velocity: 50, // Time-to-Market speed (0-100)
+                patience: 3   // Lives remaining
+            },
+            
+            history: [],
+            currentObjection: null,
+            outcome: null,
+
+            // The Opponent (Marcus) Logic
+            scenarios: [
+                {
+                    round: 1,
+                    topic: "The Cloud Waiver",
+                    objection: "You want to put PII in the public cloud? I can't sign this off. The regulator will eat us alive.",
+                    mood: "Skeptical"
+                },
+                {
+                    round: 2,
+                    topic: "The AI Hallucination",
+                    objection: "This Chatbot feature... what if it promises a refund we can't honor? I need a human in the loop for every transaction.",
+                    mood: "Defensive"
+                },
+                {
+                    round: 3,
+                    topic: "The Deployment Speed",
+                    objection: "You want to release daily? Our governance process requires a 2-week CAB (Change Advisory Board) review.",
+                    mood: "Bureaucratic"
+                }
+            ],
+
+            // Your Deck (The Options)
+            cards: [
+                { 
+                    id: 'data', 
+                    label: 'The Data Shield', 
+                    desc: 'Show logs/evidence.', 
+                    icon: 'fa-database',
+                    math: { trust: +20, velocity: -10 }, 
+                    response: "Fine. The data looks solid. But gathering this took time." 
+                },
+                { 
+                    id: 'policy', 
+                    label: 'The Policy Loophole', 
+                    desc: 'Cite specific regulation.', 
+                    icon: 'fa-book-open',
+                    math: { trust: +10, velocity: 0 }, 
+                    response: "Technically you are correct, though I don't like it." 
+                },
+                { 
+                    id: 'speed', 
+                    label: 'The Competitor Threat', 
+                    desc: 'Fear of missing out.', 
+                    icon: 'fa-bolt',
+                    math: { trust: -10, velocity: +20 }, 
+                    response: "I don't care what Revolut is doing! We are a bank, not a startup." 
+                },
+                { 
+                    id: 'pilot', 
+                    label: 'The Ring-Fence', 
+                    desc: 'Limit exposure (Sandbox).', 
+                    icon: 'fa-box',
+                    math: { trust: +15, velocity: +5 }, 
+                    response: "A contained blast radius? Smart. That I can work with." 
+                }
+            ],
+
+            start() {
+                this.active = true;
+                this.round = 0;
+                this.metrics = { trust: 40, velocity: 60, patience: 3 }; // Starting stats
+                this.history = [];
+                this.outcome = null;
+                this.loadRound();
+            },
+
+            loadRound() {
+                if (this.round >= this.scenarios.length) {
+                    this.endGame();
+                    return;
+                }
+                this.currentObjection = this.scenarios[this.round];
+            },
+
+            playCard(cardId) {
+                const card = this.cards.find(c => c.id === cardId);
+                const scenario = this.currentObjection;
+
+                // 1. Apply Math
+                this.metrics.trust += card.math.trust;
+                this.metrics.velocity += card.math.velocity;
+                
+                // 2. Determine Success of Turn
+                let turnResult = "Neutral";
+                // Specific logic: 'speed' card always hurts trust on round 1 (Cloud)
+                if (this.round === 0 && cardId === 'speed') {
+                    this.metrics.trust -= 10; 
+                    card.response = "Reckless! I'm flagging this to the CEO.";
+                }
+                // Specific logic: 'pilot' card is super effective on round 2 (AI)
+                if (this.round === 1 && cardId === 'pilot') {
+                    this.metrics.trust += 10;
+                    card.response = "Exactly. A sandbox is the only way I'd approve AI.";
+                }
+
+                // 3. Log History
+                this.history.push({
+                    round: this.round + 1,
+                    topic: scenario.topic,
+                    objection: scenario.objection,
+                    tactic: card.label,
+                    outcome: card.response,
+                    stats: { ...this.metrics }
+                });
+
+                // 4. Check Fail State
+                if (this.metrics.trust <= 0) {
+                    this.outcome = { status: "FIRED", msg: "Marcus shut down the project. You lost all credibility." };
+                    return;
+                }
+
+                // 5. Advance
+                this.round++;
+                this.loadRound();
+            },
+
+            endGame() {
+                const m = this.metrics;
+                let status = "APPROVED";
+                let msg = "Project Green-lit.";
+                let archetype = "The Bilingual Executive";
+
+                if (m.trust < 50) {
+                    status = "CONDITIONAL APPROVAL";
+                    msg = "Approved, but with heavy audit shackles. You moved too fast.";
+                    archetype = "The Cowboy";
+                } else if (m.velocity < 40) {
+                    status = "DELAYED";
+                    msg = "Safe, but you missed the market window. Too cautious.";
+                    archetype = "The Bureaucrat";
+                } else {
+                    msg = "Perfect balance of Risk and Speed. The Golden Path.";
+                }
+
+                this.outcome = { status, msg, archetype };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateCoachingPrompt() {
+                if (!this.outcome) return "Complete simulation first.";
+                
+                const path = this.history.map(h => `Round ${h.round} (${h.topic}): I used "${h.tactic}". Result: Trust ${h.stats.trust}, Velocity ${h.stats.velocity}.`).join("\n");
+
+                return `ACT AS: An Executive Coach for Product Leaders.
+
+## THE SIMULATION REPORT
+I just engaged in a simulated negotiation with a Chief Risk Officer (Marcus).
+- **Final Result:** ${this.outcome.status}
+- **My Archetype:** "${this.outcome.archetype}"
+- **Ending Metrics:** Trust (${this.metrics.trust}/100) vs Speed (${this.metrics.velocity}/100).
+
+## MY DECISION PATH
+${path}
+
+## YOUR COACHING
+1. **Psychological Analysis:** Based on my card choices, do I lean too much on "Asking for Permission" (Data/Policy) or "Asking for Forgiveness" (Speed)?
+2. **The "Marcus" Perspective:** Explain *why* the Risk Officer reacted the way he did to my specific choices.
+3. **Real World Application:** Give me a specific script to use in my next real Steering Committee meeting to gain Trust without sacrificing Speed.
+
+TONE: Constructive, psychological, tactical.`;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // EXCEL ESCAPE ROOM (Deterministic Dungeon Crawler)
+        // ------------------------------------------------------------------
+        excelEscape: {
+            active: false,
+            level: 0,
+            hp: 100, // Political Capital
+            score: 0, // Efficiency Score
+            logs: [],
+            loading: false,
+            
+            // State Tracking
+            playerName: '',
+            playStyle: { manual: 0, legacy: 0, modern: 0 }, // Tracks choices
+            gamePath: [], // The 5 random levels for this run
+            outcome: null, // Final result
+
+            // THE LEVEL DATABASE (The Dungeon Rooms)
+            allLevels: [
+                {
+                    id: 1,
+                    name: "The Basement of Reconciliation",
+                    enemy: "The VLOOKUP Hydra",
+                    desc: "A 50MB spreadsheet crashes every time Finance opens it. The Regulator needs the report in 1 hour.",
+                    options: [
+                        { label: "Split into 4 files", type: "manual", cost: 20, score: 10, risk: 0, msg: "Safe, but you burned out 2 analysts." },
+                        { label: "Write VBA Macro", type: "legacy", cost: 10, score: 30, risk: 20, msg: "It works, but now you own legacy code." },
+                        { label: "Python ETL Script", type: "modern", cost: 0, score: 100, risk: 40, msg: "High risk deploy... SUCCESS! Automated forever." }
+                    ]
+                },
+                {
+                    id: 2,
+                    name: "The Email Chain of Doom",
+                    enemy: "The Version Control Ghost",
+                    desc: "Three departments are emailing 'Final_v3_REAL.xlsx'. No one knows which file is the truth.",
+                    options: [
+                        { label: "Call Emergency Meeting", type: "manual", cost: 15, score: 5, risk: 0, msg: "You wasted 2 hours, but found the file." },
+                        { label: "Move to SharePoint", type: "legacy", cost: 5, score: 20, risk: 10, msg: "Better, but sync issues remain." },
+                        { label: "Centralize in Data Mesh", type: "modern", cost: 0, score: 150, risk: 50, msg: "Single Source of Truth established." }
+                    ]
+                },
+                {
+                    id: 3,
+                    name: "The Boardroom Firewall",
+                    enemy: "The PDF Dragon",
+                    desc: "The CEO wants a live dashboard, but the data is trapped in static PDFs generated by a mainframe.",
+                    options: [
+                        { label: "Hire interns to type it", type: "manual", cost: 30, score: 10, risk: 0, msg: "Costly and slow. CEO is unimpressed." },
+                        { label: "Screen Scraper", type: "legacy", cost: 15, score: 40, risk: 30, msg: "Fragile. It breaks if the PDF layout changes." },
+                        { label: "Build API Wrapper", type: "modern", cost: 0, score: 200, risk: 60, msg: "Real-time feed achieved. Executive delight." }
+                    ]
+                },
+                {
+                    id: 4,
+                    name: "The Deployment Weekend",
+                    enemy: "The Big Bang Release",
+                    desc: "It's Friday night. You have 3,000 lines of code to deploy. The manual test script takes 48 hours.",
+                    options: [
+                        { label: "Order Pizza & Pray", type: "manual", cost: 40, score: 0, risk: 10, msg: "Team is exhausted. Errors likely." },
+                        { label: "Delay Launch", type: "legacy", cost: 20, score: 10, risk: 0, msg: "Safe, but opportunity cost is high." },
+                        { label: "CI/CD Pipeline", type: "modern", cost: 0, score: 150, risk: 40, msg: "Deploy in 10 minutes. The weekend is saved." }
+                    ]
+                },
+                {
+                    id: 5,
+                    name: "The Regulatory Audit",
+                    enemy: "The Paperwork Golem",
+                    desc: "Auditors want to see who approved every change in the last 6 months. Evidence is in emails.",
+                    options: [
+                        { label: "Search Outlook manually", type: "manual", cost: 50, score: 5, risk: 0, msg: "Soul-crushing work. You missed a few." },
+                        { label: "Export Jira Logs", type: "legacy", cost: 10, score: 50, risk: 20, msg: "Messy, but compliant." },
+                        { label: "Automated Governance Chain", type: "modern", cost: 0, score: 200, risk: 30, msg: "Instant audit trail. Auditors are amazed." }
+                    ]
+                }
+            ],
+
+            start() {
+                if (!this.playerName) this.playerName = "Agent " + Math.floor(Math.random()*1000);
+                
+                // 1. Reset & Randomize
+                this.hp = 100;
+                this.score = 0;
+                this.playStyle = { manual: 0, legacy: 0, modern: 0 };
+                this.outcome = null;
+                this.logs = ["SYSTEM: Connected to Corporate Network...", "SYSTEM: Threat Scanning..."];
+                
+                // Shuffle and pick 3 levels for a short session
+                this.gamePath = [...this.allLevels].sort(() => 0.5 - Math.random()).slice(0, 3);
+                
+                this.active = true;
+                this.level = 1;
+            },
+
+            makeMove(optionIndex) {
+                this.loading = true;
+                const currentLevel = this.gamePath[this.level - 1];
+                const choice = currentLevel.options[optionIndex];
+
+                // Simulate "Processing"
+                setTimeout(() => {
+                    this.resolveMove(choice);
+                    this.loading = false;
+                }, 800);
+            },
+
+            resolveMove(choice) {
+                // 1. Apply Logic
+                this.playStyle[choice.type]++;
+                
+                // Risk Calculation: Does the move fail?
+                const roll = Math.random() * 100;
+                let damage = choice.cost; // Base cost (Manual always costs HP)
+                let points = choice.score;
+                let logMsg = choice.msg;
+
+                if (roll < choice.risk) {
+                    // Critical Failure on risky tech moves
+                    damage += 30;
+                    points = 0;
+                    logMsg = `CRITICAL FAILURE! The ${choice.type} solution crashed. You took heavy political damage.`;
+                }
+
+                this.hp -= damage;
+                this.score += points;
+                this.logs.unshift(`L${this.level}: ${logMsg} (${points} PTS, -${damage} HP)`);
+
+                // 2. Check Game Over
+                if (this.hp <= 0) {
+                    this.endGame("FIRED", "You ran out of Political Capital.");
+                    return;
+                }
+
+                // 3. Advance or Win
+                if (this.level < 3) {
+                    this.level++;
+                } else {
+                    this.endGame("PROMOTED", "You escaped the factory.");
+                }
+            },
+
+            endGame(status, msg) {
+                // Determine Archetype
+                let archetype = "The Pragmatist";
+                if (this.playStyle.manual >= 2) archetype = "The Martyr (Manual Worker)";
+                if (this.playStyle.modern >= 2) archetype = "The Futurist (Automation First)";
+                
+                this.outcome = {
+                    status: status,
+                    msg: msg,
+                    finalScore: this.score,
+                    archetype: archetype,
+                    hpRemaining: Math.max(0, this.hp)
+                };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generatePerformancePrompt() {
+                if (!this.outcome) return "Finish game first.";
+                
+                const o = this.outcome;
+                const p = this.playStyle;
+
+                return `ACT AS: A Chief Technology Officer (CTO) conducting a performance review.
+
+## THE GAMIFIED ASSESSMENT DATA
+The candidate played the "Excel Escape Room" simulation.
+- **Outcome:** ${o.status}
+- **Leadership Archetype:** "${o.archetype}"
+- **Final Score:** ${o.finalScore} (Efficiency)
+- **Political Capital Remaining:** ${o.hpRemaining}/100
+
+## DECISION STYLE
+- **Manual Work (Grind):** Chosen ${p.manual} times.
+- **Legacy Patches (Band-aids):** Chosen ${p.legacy} times.
+- **Modern Automation (Risk/Reward):** Chosen ${p.modern} times.
+
+## YOUR MISSION
+Write a **Performance Feedback Email** to this employee.
+1. **The Profiling:** Analyze what their playstyle says about their real-world management style (e.g., "You rely too much on heroism/overtime" vs "You take smart technical risks").
+2. **The Career Path:** Based on this, should they be promoted to Architecture (Strategic) or Operations (Tactical)?
+3. **The Book Recommendation:** Recommend 1 real book (e.g. Phoenix Project) based on their specific failure/success pattern.
+
+TONE: Mentorship, tough love, growth-oriented.`;
+            },
+
+            reset() {
+                this.active = false;
+                this.level = 0;
+                this.outcome = null;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // COGNITIVE LOAD CALCULATOR (Deterministic Psych-Math Engine)
+        // ------------------------------------------------------------------
+        cognitiveCalc: {
+            inputs: {
+                teamSize: 6,
+                interruptions: 15, // Context switches per day per person
+                meetings: 12, // Hours per week in meetings
+                tools: 8, // Number of tools required to ship one feature
+                ambiguity: 5 // 1-10 (1=Clear Specs, 10="Figure it out")
+            },
+            result: null,
+            loading: false,
+
+            calculate() {
+                this.loading = true;
+                
+                // Simulate "Neural Processing" visual delay
+                setTimeout(() => {
+                    this.runMath();
+                    this.loading = false;
+                }, 800);
+            },
+
+            runMath() {
+                const i = this.inputs;
+
+                // 1. COMPUTE LOAD VECTORS
+                
+                // A. Context Switch Tax (The "Sawtooth Effect")
+                // Research: It takes ~23 mins to refocus. 
+                // Formula: Interruptions * 0.2 hrs * Impact Factor
+                const switchLoad = (i.interruptions * 3) / 100; // Normalized 0-1.0
+
+                // B. Meeting Tax (Fragmented Time)
+                // 40 hour work week. >20 hours is critical.
+                const meetingLoad = (i.meetings / 30); // Normalized
+
+                // C. Tooling Friction (The "Toggle Tax")
+                // >5 tools creates heavy friction
+                const toolLoad = (i.tools / 15); // Normalized
+
+                // D. Ambiguity (Decision Fatigue)
+                const ambiguityLoad = (i.ambiguity / 10);
+
+                // 2. TOTAL COGNITIVE LOAD INDEX (0-100)
+                // Weighted: Interruptions (35%), Ambiguity (30%), Meetings (20%), Tools (15%)
+                let rawScore = (switchLoad * 35) + (ambiguityLoad * 30) + (meetingLoad * 20) + (toolLoad * 15);
+                rawScore = rawScore * 2.5; // Scale to 100
+                const loadScore = Math.min(100, Math.round(rawScore));
+
+                // 3. FINANCIAL IMPACT (THE "COGNITIVE TAX")
+                // Assumption: Avg blended rate $80/hr. 
+                // Wasted time = Re-focus time + Useless meetings + Tool toggling
+                // Refocus time = Interruptions * 15mins
+                const dailyWastedHours = (i.interruptions * 0.25) + (i.meetings / 5 * 0.2) + (i.tools * 0.05); 
+                const weeklyWaste = dailyWastedHours * 5;
+                const annualCost = Math.round(weeklyWaste * 50 * 80 * i.teamSize); // 50 weeks, $80/hr
+
+                // 4. DIAGNOSIS
+                let zone = "FLOW STATE";
+                let color = "text-green-400";
+                let diagnosis = "The team has space for Deep Work.";
+                
+                if (loadScore > 80) {
+                    zone = "BURNOUT ZONE";
+                    color = "text-risk";
+                    diagnosis = "Cognitive capacity is exceeded. Innovation is impossible.";
+                } else if (loadScore > 50) {
+                    zone = "FRAGMENTED";
+                    color = "text-yellow-400";
+                    diagnosis = "Efficiency is bleeding out via context switching.";
+                }
+
+                this.result = {
+                    score: loadScore,
+                    zone,
+                    color,
+                    diagnosis,
+                    annualTax: annualCost
+                };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generatePsychPrompt() {
+                if (!this.result) return "Run analysis first.";
+                const r = this.result;
+                const i = this.inputs;
+
+                return `ACT AS: An Organizational Psychologist and Team Topologies Expert.
+
+## THE COGNITIVE LOAD AUDIT
+I have measured the mental overhead of my software team (${i.teamSize} people).
+- **Cognitive Load Index:** ${r.score}/100 (${r.zone})
+- **Financial "Cognitive Tax":** $${r.annualTax.toLocaleString()}/year (Cost of lost focus).
+
+## THE STRESSORS
+1. **Context Switching:** ${i.interruptions} interruptions/day (The "Sawtooth" Effect).
+2. **Ambiguity:** ${i.ambiguity}/10 (Decision Fatigue).
+3. **Tool Chain:** ${i.tools} disjointed tools to ship one feature.
+4. **Meeting Load:** ${i.meetings} hours/week.
+
+## YOUR MISSION
+Write a **"Deep Work" Preservation Strategy** for this team.
+1. **The Architecture Fix:** Explain how "Conway's Law" might be causing the high ambiguity/interruptions (e.g. Dependencies on other teams).
+2. **The Ritual:** Propose a specific team ritual (e.g. "No-Meeting Wednesdays" or "Async-First Mornings") to lower the score by 20 points.
+3. **The Tool Rationalization:** Give a ruthless heuristic for killing one of the ${i.tools} tools.
+
+TONE: Scientific, empathetic, efficiency-focused. Use terms like "Extraneous Load" and "Flow Efficiency".`;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // BILINGUAL BINGO (Gamified Cultural Observation)
+        // ------------------------------------------------------------------
+        bingoGame: {
+            active: false,
+            board: [], // The 5x5 grid
+            history: [], // Log of clicked items
+            metrics: { score: 0, toxicity: 0, status: "LISTENING" },
+            
+            // The Tile Database
+            library: {
+                positive: [
+                    "Data Overruled Opinion", "Customer Pain Cited", "Tech Explained Simply", "Financial Impact Calculated", 
+                    "Silo Bridge Built", "Psych Safety Moment", "'I Don't Know' Admitted", "Experiment Proposed",
+                    "Latency Linked to Revenue", "Manual Work Automating", "No Acronyms Used", "Blocker Removed"
+                ],
+                negative: [
+                    "HiPPO Dominated", "Blamed the Vendor", "Analysis Paralysis", "It Worked on My Machine", 
+                    "We've Always Done It This Way", "Passive Aggression", "Meeting Could Have Been Email", 
+                    "Tech Jargon Overload", "Scope Creep", "Shadow IT Revealed", "Excel Spreadsheet Opened", "Budget Freeze Cited"
+                ]
+            },
+
+            startNewGame() {
+                // 1. Shuffle and Pick
+                const pos = [...this.library.positive].sort(() => 0.5 - Math.random());
+                const neg = [...this.library.negative].sort(() => 0.5 - Math.random());
+                
+                // 2. Build 5x5 Grid (Mix of Good and Bad)
+                // We want a mix to test the meeting's soul.
+                let deck = [
+                    ...pos.slice(0, 13), 
+                    ...neg.slice(0, 12)
+                ].sort(() => 0.5 - Math.random());
+
+                // 3. Create Board Objects
+                this.board = deck.map((text, i) => ({
+                    id: i,
+                    text: text,
+                    type: this.library.positive.includes(text) ? 'good' : 'bad',
+                    selected: false
+                }));
+
+                // 4. Set Free Space (Center)
+                this.board[12] = { id: 12, text: "BILINGUAL MINDSET", type: 'neutral', selected: true };
+
+                this.metrics = { score: 0, toxicity: 0, status: "IN SESSION" };
+                this.history = [];
+                this.active = true;
+            },
+
+            toggleTile(index) {
+                if (index === 12) return; // Free space locked
+                
+                const tile = this.board[index];
+                tile.selected = !tile.selected;
+
+                this.calculateMetrics();
+            },
+
+            calculateMetrics() {
+                const selected = this.board.filter(t => t.selected && t.id !== 12);
+                
+                // 1. Culture Score (Math)
+                // Good tiles = +10, Bad tiles = -10
+                let rawScore = 0;
+                let badCount = 0;
+                
+                selected.forEach(t => {
+                    if (t.type === 'good') rawScore += 10;
+                    else { rawScore -= 10; badCount++; }
+                });
+
+                this.metrics.score = rawScore;
+
+                // 2. Toxicity Index (Percentage of bad tiles vs total clicked)
+                this.metrics.toxicity = selected.length === 0 ? 0 : Math.round((badCount / selected.length) * 100);
+
+                // 3. Win Condition (Standard Bingo Rules)
+                if (this.checkWin()) {
+                    this.metrics.status = "BINGO!";
+                } else {
+                    this.metrics.status = "IN SESSION";
+                }
+            },
+
+            checkWin() {
+                // Indices for Rows, Cols, Diagonals
+                const wins = [
+                    [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24], // Rows
+                    [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22], [3,8,13,18,23], [4,9,14,19,24], // Cols
+                    [0,6,12,18,24], [4,8,12,16,20] // Diagonals
+                ];
+
+                return wins.some(pattern => pattern.every(i => this.board[i].selected));
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateCulturePrompt() {
+                const selected = this.board.filter(t => t.selected);
+                if (selected.length === 0) return "Play the game first.";
+
+                const goodEvents = selected.filter(t => t.type === 'good').map(t => t.text).join(", ");
+                const badEvents = selected.filter(t => t.type === 'bad').map(t => t.text).join(", ");
+                const score = this.metrics.score;
+                const toxicity = this.metrics.toxicity;
+
+                let archetype = "Balanced";
+                if (score > 50) archetype = "High-Performance Squad";
+                if (toxicity > 60) archetype = "Toxic Bureaucracy";
+                if (score < 0 && toxicity < 40) archetype = "Passive / Low Energy";
+
+                return `ACT AS: A Corporate Anthropologist and Agile Coach.
+
+## THE MEETING OBSERVATION REPORT (BINGO DATA)
+I observed a team meeting and tracked behavioral signals.
+- **Culture Score:** ${score} (Net Positive Behaviors)
+- **Toxicity Index:** ${toxicity}% (Percentage of negative behaviors)
+- **Meeting Archetype:** "${archetype}"
+
+## OBSERVED BEHAVIORS
+- **Positive Signals (Assets):** ${goodEvents || "None observed."}
+- **Negative Signals (Liabilities):** ${badEvents || "None observed."}
+
+## YOUR MISSION
+Write a **Cultural Retro** for the team leader.
+1. **The Mirror:** Describe the "vibe" of the meeting based on the data. Was it a fight? A funeral? A workshop?
+2. **The Intervention:** Pick the specific Negative Signal "${badEvents.split(',')[0] || 'Generic Silence'}" and prescribe a "Ritual" to fix it (e.g. "To fix HiPPO dominance, introduce 'Silent Brainstorming'").
+3. **The Reinforcement:** How can we double down on the Positive Signals observed?
+
+TONE: Observational, witty, constructive. Reference "Tribal Leadership" concepts.`;
+            }
+        },
+
+        
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
