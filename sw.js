@@ -1,46 +1,97 @@
-// sw.js
+/* sw.js */
+const CACHE_NAME = 'bilingual-toolkit-v1.0';
 
-// Change this version number if you update your code to force a refresh for users
-const CACHE_NAME = 'bilingual-exec-v22.1';
-
-// List of files to save locally
-const ASSETS_TO_CACHE = [
-  './',
-  './index.html',
-  './css/styles.css',
-  './js/app.js',
-  './manifest.json'
+// 1. Core Assets: These are critical for the app shell and must be cached immediately.
+const CORE_ASSETS = [
+    './',
+    './index.html',
+    './css/styles.css',
+    './js/app.js',
+    './manifest.json'
 ];
 
-// 1. Install Event: Cache the files
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      // This will fail if any of the files are missing
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
+// 2. Install Phase: Cache the core assets
+self.addEventListener('install', event => {
+    self.skipWaiting(); // Force this SW to become active immediately
+    event.waitUntil(
+        caches.open(CACHE_NAME)
+            .then(cache => {
+                console.log('[SW] Pre-caching core assets');
+                return cache.addAll(CORE_ASSETS);
+            })
+            .catch(err => console.error('[SW] Pre-cache failed:', err))
+    );
 });
 
-// 2. Fetch Event: Serve from Cache, then fallback to Network
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Return cached file if found, otherwise go to network
-      return response || fetch(event.request);
-    })
-  );
+// 3. Activate Phase: Clean up old caches
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(keys => {
+            return Promise.all(
+                keys.map(key => {
+                    // Delete any cache that doesn't match the current CACHE_NAME
+                    if (key !== CACHE_NAME) {
+                        console.log('[SW] Clearing old cache:', key);
+                        return caches.delete(key);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim()) // Take control of all pages immediately
+    );
 });
 
-// 3. Activate Event: Clean up old caches
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keyList) => {
-      return Promise.all(keyList.map((key) => {
-        if (key !== CACHE_NAME) {
-          return caches.delete(key);
-        }
-      }));
-    })
-  );
+// 4. Fetch Phase: The Strategy
+self.addEventListener('fetch', event => {
+    const url = new URL(event.request.url);
+
+    // STRATEGY: Network Only (Do NOT Cache)
+    // - Supabase API calls (Data must be fresh)
+    // - YouTube Video streams/API (Complex streaming logic handled by browser)
+    // - Extension schemes (chrome-extension://)
+    if (
+        url.hostname.includes('supabase.co') ||
+        url.hostname.includes('youtube.com') ||
+        url.hostname.includes('googlevideo.com') ||
+        url.protocol.includes('extension')
+    ) {
+        return; // Fallback to standard network request
+    }
+
+    // STRATEGY: Stale-While-Revalidate (or Cache First with fallback)
+    // For everything else (HTML, JS Libraries, CSS, Fonts)
+    event.respondWith(
+        caches.match(event.request).then(cachedResponse => {
+            // A. If found in cache, return it immediately (Fastest)
+            if (cachedResponse) {
+                return cachedResponse;
+            }
+
+            // B. If not in cache, fetch from network
+            return fetch(event.request)
+                .then(networkResponse => {
+                    // Check if we received a valid response
+                    if (
+                        !networkResponse || 
+                        networkResponse.status !== 200 || 
+                        networkResponse.type !== 'basic' && networkResponse.type !== 'cors'
+                    ) {
+                        return networkResponse;
+                    }
+
+                    // C. Clone the response and store it in cache for next time
+                    // This creates a "Runtime Cache" for your CDN libraries (Alpine, Tailwind, etc.)
+                    const responseToCache = networkResponse.clone();
+                    caches.open(CACHE_NAME).then(cache => {
+                        cache.put(event.request, responseToCache);
+                    });
+
+                    return networkResponse;
+                })
+                .catch(err => {
+                    // Network failed (Offline)
+                    console.log('[SW] Fetch failed (Offline):', err);
+                    // You could return a custom offline.html here if you created one
+                });
+        })
+    );
 });
