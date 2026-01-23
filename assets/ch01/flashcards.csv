@@ -1,0 +1,48 @@
+What is the core external threat to traditional banking described as the 'Fintech Tsunami'?,The dismantling of the universal banking model by a rising tide of specialized competitors.
+"What term describes the process of Fintechs attacking specific, high-margin niches of traditional banks?",Unbundling.
+"For 100 years, banks relied on the '_____'—bundling profitable products to subsidize expensive ones.",Fortress Model
+"According to the source, what is the greatest threat to a Tier-1 bank today?",The fragmentation of its value chain by specialized Fintech competitors.
+How did Wise (formerly TransferWise) 'unbundle' the bank?,"By creating a transparent, low-cost alternative for cross-border remittances, taking the FX revenue."
+How did Stripe and Square 'unbundle' the bank?,"By building seamless APIs for merchant acquiring, taking the payment processing revenue."
+How did Affirm and Klarna 'unbundle' the bank?,"By re-branding credit as 'Buy Now, Pay Later' integrated at the point of sale, taking consumer lending revenue."
+What is the ultimate risk for banks if the 'unbundling' trend continues unchecked?,"Becoming 'dumb pipes'—invisible, low-margin utility providers for brands that own the customer relationship."
+"According to 'The Defender' archetype, what was a bank's best retention tool for decades?","Friction, as it was too painful for customers to shop around."
+What customer behavior illustrates that a bank is being used as a 'dumb pipe'?,"Receiving a salary into the bank account, then immediately moving the money to various Fintech apps for spending, saving, and investing."
+"What business practice did banks rely on for FX revenue, which Wise's transparency destroyed?","Information Asymmetry, specifically hiding fees in the exchange rate."
+What key insight does the success of Wise offer to traditional banks?,Abusing customers with hidden fees will drive them to find or build alternatives that bypass the bank.
+What is the 'Experience Gap' in banking?,"The chasm between a traditional bank's slow, friction-filled processes and the seamless, instant experiences customers expect from tech companies like Spotify and Amazon."
+"Modern customers compare their bank's app not to another bank's app, but to the experience they get from companies like _____, _____, and _____.","Instagram, Amazon, Spotify"
+How do 'Data Native' Fintechs use data differently than traditional banks?,"They use data to reduce friction in the present, not just to report on the past."
+What was the market-share weapon that allowed Rocket Mortgage to overtake Wells Fargo as the #1 US mortgage lender?,"Speed, achieved by using API integrations to eliminate forms and reduce closing time from 45 days to as little as 8."
+What is the 'Innovation Illusion' in traditional banking?,"The flurry of activity like innovation labs and hackathons that often produces 'theater, not code' and fails to impact core products."
+"What is the core reason innovation efforts at large banks often fail, despite having smart people?","The bank's architecture and governance are designed for stability, not speed."
+"According to Anne Boden of Starling Bank, what is the paralyzing effect of legacy governance on innovation?","Big banks build new features on top of old technology, which increases their cost base instead of reducing it."
+"What did Kristo Käärmann, co-founder of Wise, identify as the key vulnerability of banks?","They haven't treated their users transparently, particularly by hiding fees in the exchange rate."
+"The source argues that competitors are not beating banks with code, but with _____.",clarity
+How has the role of regulators shifted with the introduction of Open Banking?,They have shifted from protecting incumbents to prioritizing competition and consumer rights.
+How did Open Banking turn a bank's data moat into a bridge for competitors?,"It mandated that customers own their data and can require banks to share it with third parties via APIs, fueling competitor apps."
+"What was the impact of Brazil's mandatory instant payment system, Pix, on traditional banks?","It caused a significant drop in current-account fee income as transfers became free and instant, evaporating a key revenue stream."
+What is the 'Compliance Defense'?,The internal practice of using regulation and outdated policies as an excuse for inertia and to avoid innovation.
+How does a Fintech's approach to compliance differ from a traditional bank's?,"Fintechs solve compliance with code (RegTech) for real-time automation, while banks often solve it with people and manual processes."
+"According to the Chief Compliance Officer archetype, what is the primary reason compliance blocks digital projects late in the process?",The product team brings a fully-built product for sign-off at the last minute instead of involving compliance from day one.
+"The Chief Compliance Officer archetype argues that their role should be 'Safety Architect,' not '_____.'",Executioner
+What is the 'Dumb Pipe' scenario for a traditional bank?,"Becoming an invisible, low-margin utility provider that handles infrastructure and risk while customer-facing brands capture the profits and loyalty."
+The Apple Card and Goldman Sachs partnership is a real-world example of what risk?,"A prestigious bank being reduced to a utility provider for a tech company, taking the credit losses while the tech company takes the brand equity."
+What are the two variables used in the 'Fintech Immune Response Matrix' to decide on a strategy?,Strategic Importance (Y-Axis) and Implementation Complexity (X-Axis).
+"In the Fintech Immune Response Matrix, what is the recommended strategy for a product of HIGH strategic importance and LOW implementation complexity?",BUILD it in-house.
+What is an example of a product that a bank should BUILD according to the Fintech Immune Response Matrix?,"The mobile app interface, as it is the bank's primary storefront."
+"In the Fintech Immune Response Matrix, what is the recommended strategy for a product of HIGH strategic importance and HIGH implementation complexity?",BUY or ACQUIRE the company that has already built it.
+"In the Fintech Immune Response Matrix, what is the recommended strategy for a product of LOW strategic importance and HIGH implementation complexity?",PARTNER with a Fintech via an API.
+What is an example of a service where a bank should PARTNER according to the Fintech Immune Response Matrix?,International remittance rails or rewards programs.
+"In the Fintech Immune Response Matrix, what is the recommended strategy for a product of LOW strategic importance and LOW implementation complexity?",IGNORE it and focus resources elsewhere.
+What is the 'Value Gap' that banks must close?,"The gap created by Fintechs unbundling profitable services, leaving banks with low-margin, high-cost utility functions."
+What is the 'Experience Gap' that banks must close?,The gap between customer expectations for 'Spotify' speed and the reality of 'Branch' friction.
+What is the 'Governance Gap' that banks must close?,"The gap between slow, committee-driven internal controls and the automated, fast, and safe guardrails used by competitors."
+"What are the two 'pistons' of the engine that traditional banks need to mobilize their assets of capital, data, and trust?",Data and Agility.
+What does the text mean by saying Fintechs are stealing the profitable 'corner pieces' of the puzzle?,"They are targeting and taking over the most lucrative parts of the banking value chain, leaving the less profitable parts to the incumbents."
+What does the phrase 'death by a thousand cuts' refer to in the context of banking?,The gradual erosion of profits and customer relationships as numerous specialized Fintechs each strip away a small piece of the bank's business.
+Why does the board of a bank being hollowed out sometimes think the bank is winning?,"Because traditional metrics like 'number of accounts' remain high, even as all the profitable activity associated with those accounts moves elsewhere."
+What is the 'Bilingual Move' suggested in response to the Rocket Mortgage case study?,Don't just digitize a paper form; eliminate the form entirely by integrating directly with the data source.
+"The author states that to survive, banks cannot just copy Fintech features, they must copy their _____.",metabolism
+What are the three inherent advantages traditional banks hold that Fintechs crave?,"Massive capital reserves, decades of deep customer trust, and vast historical data."
+What is the suggested 'first call' on Monday to understand the 'Burning Platform' for change?,To perform a 'Mystery Shop' test by opening an account on a leading Fintech app and your own bank's app to compare the friction.
