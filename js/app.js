@@ -1335,20 +1335,30 @@ tools: {
     ]
 },
         
-        dashboardTools: [ 
-            { id: 'simulator', label: 'Case Simulator', desc: 'Practice bilingual decision making.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
-            { id: 'whatif', label: 'Scenario Planner', desc: 'AI-powered strategic simulation.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-400' },
-            { id: 'roleplay', label: 'Role-Play Dojo', desc: 'Simulate high-stakes conversations.', icon: 'fa-solid fa-user-tie', color: 'text-warn' },
-            { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture & speed.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
-            { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational health.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
-            { id: 'assessment', label: 'Agile Audit', desc: 'Assess organizational maturity.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
+       dashboardTools: [ 
+            // 1. Simulations & Games
+            { id: 'simulator', label: 'Case Simulator', desc: '90-Day Turnaround Simulation.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
+            { id: 'whatif', label: 'War Games', desc: 'Strategic Pre-Mortem & Risk Analysis.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
+            { id: 'roleplay', label: 'Negotiation Dojo', desc: 'Spar against skeptical stakeholders.', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
+            { id: 'escaperoom', label: 'Excel Escape', desc: 'Gamified technical debt simulation.', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
+
+            // 2. Calculators & Builders (Forge)
+            { id: 'squad', label: 'Squad Builder', desc: 'Design teams using Brooks Law.', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
+            { id: 'excel', label: 'Excel Auditor', desc: 'Calculate OpEx waste & risk liability.', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
+            { id: 'roi', label: 'Lighthouse ROI', desc: 'Calculate NPV & Cost of Delay.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
+            { id: 'kpi', label: 'Outcome Gen',  desc: 'Turn Project Outputs into Business Outcomes.',  icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400'},
+            { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture latency.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
+
+            // 3. Diagnostics (Radar)
+            { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational friction.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
+            { id: 'assessment', label: 'Agile Audit', desc: 'Assess maturity across Data/Delivery.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
+            { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in leadership.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
+            
+            // 4. Strategy Tools
             { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, 
+            { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for pilot success.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, 
-            { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in squads.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
-            { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for successful pilots.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
-            { id: 'roi', label: 'Lighthouse ROI', desc: 'Quantify Hard & Soft value. Generate Board Defense script.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
-            { id: 'kpi', label: 'Outcome Generator',  desc: 'Turn "Project Outputs" into "Business Outcomes". Build the perfect prompt.',  icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400'},
             { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
         ],
         
@@ -1484,27 +1494,32 @@ toggleVideoMute() {
     }
 },
 
-   enterApp() {
+  enterApp() {
     this.showLanding = false;
-    // mark that they've entered
     localStorage.setItem('app_entered', 'true');
     
-    // Stop the video completely to save battery/data
-    if (this.player && this.player.stopVideo) {
-        this.player.stopVideo();
+    // Properly pause/stop the video
+    if (this.player && this.player.pauseVideo) {
+        this.player.pauseVideo();
     }
-    if (navigator.vibrate) navigator.vibrate(50);
     
-    // Start tracking user activity
+    // Set videoPlaying to false
+    this.videoPlaying = false;
+    
+    // Clear update interval
+    if (this.updateTimeInterval) {
+        clearInterval(this.updateTimeInterval);
+        this.updateTimeInterval = null;
+    }
+    
+    if (navigator.vibrate) navigator.vibrate(50);
     this.setupActivityTracking();
     
-    // Also set a fallback timer (in case user is not active enough)
-    // This ensures prompt shows after 60 seconds regardless of activity
     setTimeout(() => {
         if (!this.isPwaPromptActive && !this.showPwaPrompt) {
             this.showDelayedPwaPrompt();
         }
-    }, 60000); // 60 second fallback
+    }, 60000);
 }, 
 
         
