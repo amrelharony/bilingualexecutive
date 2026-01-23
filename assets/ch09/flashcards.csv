@@ -1,0 +1,51 @@
+"In the Meridian Trust case study, what was the name of the traditional bank on the brink of irrelevance?",Meridian Trust.
+The case study described Meridian Trust's legacy systems and data swamps as the '_____ Mess'.,Spaghetti Mess
+What was the name of Meridian Trust's failed $50M 'Big Bang' transformation attempt?,Project Olympus.
+What was the name of the new strategy Sarah proposed after killing Project Olympus?,The Lighthouse Strategy.
+What was the specific product chosen for the Lighthouse pilot project at Meridian Trust?,The 'Instant Loan' for Small Business (SME) Lending.
+What is the term for protecting a pilot team from the legacy bureaucracy and 'corporate immune system'?,Establishing the Bubble.
+The central conflict in the Meridian Trust turnaround was the friction between the Agile Squad and which department?,The Risk Office.
+"According to the 'IF YOU REMEMBER NOTHING ELSE' section, transformation is a _____ Act, not just a technical one.",Political
+What does the principle 'Kill the Zombies' refer to in the context of digital transformation?,Having the courage to cancel failing projects to free up resources for new initiatives.
+What does the principle 'Demo or Die' imply about changing corporate culture?,Working software is far more effective at changing minds than presentations or PowerPoints.
+Who was the newly appointed Chief Digital Officer at Meridian Trust responsible for the turnaround?,Sarah.
+What reason did the Head of Retail initially give for losing 12% of the youth market share?,He blamed competitors' irrational pricing subsidized by venture capital and central bank rate hikes.
+What was Sarah's diagnosis for the loss of market share after her 'mystery shopper' experience?,"The problem was friction in the customer experience, not price."
+Concept: The Data Swamp,"A term for a data repository (like a data lake) that is full of data, but nobody trusts or uses it due to poor quality and governance."
+"In her Gemba Walk, what did Sarah discover in the 'Credit Risk Reporting Team's' basement office?",An 'Excel Factory' where analysts were manually cleaning and stitching together data from multiple systems.
+Who was Ahmed in the Meridian Trust case study?,A Senior Data Analyst who spent three days a month manually creating the risk exposure report using multiple spreadsheets.
+Sarah's realization was that Meridian Trust had a _____ problem masquerading as a staffing problem.,Data Governance
+What development methodology characterized the failed 'Project Olympus'?,"A classic Waterfall disaster, with months spent on requirements gathering before any delivery."
+"As a 'Bilingual Executive', what was Sarah's justification for killing the $50M Project Olympus?",She wanted to stop burning the next $20 million on a failing platform and start building a valuable product.
+How long did it take Meridian Trust to approve a small business loan before Sarah's intervention?,Three weeks.
+What audacious goal did Sarah promise the board for the 'Instant Loan' pilot?,To issue a loan in under 10 minutes within 90 days.
+Who did Sarah select as the Product Owner for the 'Instant Loan' squad?,"Tariq, the Head of SME Sales, who was frustrated with losing deals."
+"Who was chosen as the Tech Lead for the Lighthouse squad, known for her deep knowledge of the legacy mainframe?",Maya.
+What did it mean for the Lighthouse squad to be in a 'Bubble'?,They were physically moved to a WeWork and exempted from standard corporate processes and bureaucracy to allow them to move quickly.
+"Who was David, the Chief Risk Officer (CRO) at Meridian Trust?",A 58-year-old veteran whose main job was to prevent the bank from failing and who was deeply skeptical of Sarah's agile approach.
+What was David's primary objection to the squad's plan to deploy code every two weeks?,"He didn't trust code and believed in people and 'eyes on paper' for risk management, fearing the loss of control and potential for errors."
+The organizational resistance from managers like David is referred to as the '_____'.,Clay Layer
+What was the 'Red Screen' moment?,"A live demo for the CRO where the new loan app automatically detected high-risk applications (like a sanctioned entity) and flashed a bright red screen, instantly blocking the transaction."
+How did the 'Red Screen' demo change the CRO's perspective on automated governance?,"He realized the automated system was stricter and more reliable than his human team, representing true control rather than the opacity of paperwork."
+What concept did Ahmed and Maya implement to fix data quality issues at the source rather than cleaning them up later?,Data Contracts.
+How did Data Contracts change Ahmed's role from a data 'janitor' to a data 'architect'?,"Instead of cleaning up bad data after extraction, he defined rules and tests that prevented bad data from entering the system in the first place."
+What was the key outcome of the 'Demo Day' presentation to the Board?,"A live small business loan was approved and funded in 3 minutes and 40 seconds, proving the success of the Lighthouse strategy."
+"During the live demo, how did the app verify the business's existence and calculate its credit score so quickly?",It used an API to hit a government database for verification and pulled internal transaction data to calculate risk in milliseconds.
+"What question did the Chairman ask immediately after the successful live demo, signaling a major shift in the boardroom culture?",'How fast can we do this for Mortgages?'
+"What real-world Fintech company, later acquired by Amex, is cited as an example of a successful 3-minute loan provider?",Kabbage.
+Kabbage revolutionized SME lending by shifting from 'Stated Data' to '_____ Data'.,Verified Data
+How did Kabbage gather 'Verified Data' instead of using traditional application forms?,They asked for the user's PayPal or Quickbooks password and scraped real-time transaction data to assess cash flow.
+"Who was Robert, the CEO of Retail Banking, in the case study?",The skeptic who had survived three previous failed transformations and initially laughed at Sarah's plan.
+What specific event was Robert's 'Moment of Belief' when he realized the agile approach worked?,When he was handed a phone with an ugly but functional onboarding app and successfully created a real customer account in seconds.
+"What core problem did the skeptic, Robert, realize Meridian Trust had after seeing the two-week demo?","He realized they had a process problem, not a technology problem, and had wasted years writing documents instead of building software."
+The case study states: 'Trust is not built by roadmaps; it is built by _____.',shipping
+"After the pilot's success, why did Sarah refuse the Board's request to simply clone the 'Instant Loan' team?","She argued they needed to build a 'Franchise' by scaling the standards and capabilities, not just copy-pasting one team."
+"What new role was Ahmed, the former data analyst, given in the 'Franchise' model?","Head of the new Data Center of Excellence, teaching others to automate quality checks."
+"What new role was Tariq, the former Head of SME Sales, given in the 'Franchise' model?","Chief Product Officer for Retail Banking, teaching business heads to act like product owners."
+What evidence of a 'Ripple Effect' did Sarah observe weeks after the Demo Day?,"She overheard legacy operations staff using new vocabulary, worrying that a feature couldn't be shipped because its 'data lineage' wasn't documented and the 'Red Screen' would block it."
+The cultural shift at Meridian Trust was from 'Compliance Theater' to '_____.',Engineering Discipline
+What is the core thesis of the 'Bilingual Executive' proven by the Meridian Trust case study?,You don't need to be a Fintech to act like one; you need the courage to treat data as an asset and people as a team.
+What is a 'Gemba Walk' in the context of this case study?,"A practice of going to the actual place where work is done to observe and understand the real process, as Sarah did by visiting the basement."
+What was the flaw in David the CRO's belief that 'eyes on paper' represented control?,The paper process represented opacity because he had no real way to verify if his analysts were checking every line item correctly.
+"How did Tariq, as Product Owner, demonstrate the 'power of the No'?","He rejected the Legal department's request to add a 10-page disclaimer that would break the user flow, asserting his ownership over the product experience."
+What did Meridian Trust replace their 'Project Management Office' with after the transformation began to scale?,Value Stream Management.
