@@ -1310,7 +1310,12 @@ tools: {
         { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
         { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' },
         { id: 'compass', label: 'Strategy Compass', icon: 'fa-regular fa-compass', color: 'text-purple-400' },
-        { id: 'matrix', label: 'Decision Matrix', icon: 'fa-solid fa-chess-board', color: 'text-blue-400' }
+        { id: 'matrix', label: 'Decision Matrix', icon: 'fa-solid fa-chess-board', color: 'text-blue-400' },
+        { id: 'dumbpipe', label: 'Dumb Pipe Calc', icon: 'fa-solid fa-faucet-drip', color: 'text-red-400' },
+        { id: 'datagov', label: 'Data Health', icon: 'fa-solid fa-traffic-light', color: 'text-blue-500' },
+         { id: 'shadow', label: 'Shadow IT Audit', icon: 'fa-solid fa-ghost', color: 'text-purple-400' }
+
+
     ],
     academy: [
         { id: 'manual', label: 'Field Manual', icon: 'fa-solid fa-headphones', color: 'text-white' }, // NotebookLM Feature
@@ -1331,6 +1336,7 @@ tools: {
         { id: 'simulator', label: 'Case Study', icon: 'fa-solid fa-chess-knight', color: 'text-white' },
         { id: 'future', label: 'Future Bank', icon: 'fa-solid fa-forward', color: 'text-purple-400' }, 
         { id: 'roleplay', label: 'Negotiation Dojo', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
+        { id: 'conway', label: 'Conway Sim', icon: 'fa-solid fa-project-diagram', color: 'text-indigo-400' } 
         { id: 'whatif', label: 'War Games', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
         { id: 'sandbox', label: 'Arch Sandbox', icon: 'fa-solid fa-shapes', color: 'text-cyan-500' }
     ]
@@ -1342,6 +1348,7 @@ tools: {
            { id: 'future', label: 'Future Bank 2030', desc: 'Simulate your strategy to 2030.', icon: 'fa-solid fa-forward', color: 'text-purple-400', vip: false }, 
             { id: 'whatif', label: 'War Games', desc: 'Strategic Pre-Mortem & Risk Analysis.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
             { id: 'roleplay', label: 'Negotiation Dojo', desc: 'Spar against skeptical stakeholders.', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
+           { id: 'conway', label: 'Org Mirror', desc: 'Simulate how Org Chart breaks Architecture.', icon: 'fa-solid fa-sitemap', color: 'text-indigo-400', vip: false },
             { id: 'escaperoom', label: 'Excel Escape', desc: 'Gamified technical debt simulation.', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
 
             // 2. Calculators & Builders (Forge)
@@ -1356,6 +1363,12 @@ tools: {
             { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational friction.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
             { id: 'assessment', label: 'Agile Audit', desc: 'Assess maturity across Data/Delivery.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
             { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in leadership.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
+           { id: 'dumbpipe', label: 'Utility Risk', desc: 'Calculate the probability of losing the customer interface.', icon: 'fa-solid fa-link-slash', color: 'text-red-400', vip: false },
+           { id: 'datagov', label: 'Live Data Governance', desc: 'Monitor SLOs, Lineage, and Quality in real-time.', icon: 'fa-solid fa-server', color: 'text-blue-500', vip: false },
+           { id: 'shadow', label: 'Shadow IT Scanner', desc: 'Audit SaaS sprawl and calculate the "Integration Tax".', icon: 'fa-solid fa-ghost', color: 'text-purple-400', vip: false },
+
+
+
             
             // 4. Strategy Tools
             { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, 
@@ -2814,15 +2827,17 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
         },
 
         // ------------------------------------------------------------------
-        // FUTURE BANK SIMULATOR (Deterministic Math + Prompt Gen)
+        // FUTURE BANK SIMULATOR (Interactive + Math Engine)
         // ------------------------------------------------------------------
         futureBank: {
             activeScenario: null,
             year: 2026,
             isPlaying: false,
-            metrics: { profit: 0, customers: 0, efficiency: 0, techDebt: 0 },
+            timer: null,
+            activeEvent: null, // Stores the current crisis
+            decisionLog: [],   // Tracks user choices for the AI prompt
             
-            // The Strategic Paths
+            // The 3 Core Paths
             scenarios: [
                 {
                     id: 'ai_first',
@@ -2830,9 +2845,9 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
                     icon: 'fa-robot',
                     color: 'text-purple-400',
                     desc: 'Aggressive automation. High initial cost (J-Curve), exponential payoff.',
-                    baseGrowth: 1.15, // 15% YoY growth
-                    efficiencyGain: 0.05, // Efficiency improves 5% per year
-                    riskFactor: 0.2 // High execution risk
+                    baseGrowth: 1.15, 
+                    efficiencyGain: 0.05, 
+                    riskFactor: 0.2 
                 },
                 {
                     id: 'partnership',
@@ -2840,7 +2855,7 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
                     icon: 'fa-handshake',
                     color: 'text-green-400',
                     desc: 'Embedded Finance. Low brand visibility, massive volume via Partners.',
-                    baseGrowth: 1.25, // 25% YoY growth (Volume)
+                    baseGrowth: 1.25, 
                     efficiencyGain: 0.02, 
                     riskFactor: 0.1
                 },
@@ -2850,20 +2865,43 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
                     icon: 'fa-shield-halved',
                     color: 'text-risk',
                     desc: 'Defensive posture. Cost cutting and compliance focus.',
-                    baseGrowth: 1.02, // 2% YoY growth (Stagnant)
-                    efficiencyGain: -0.01, // Tech debt eats efficiency
+                    baseGrowth: 1.03, 
+                    efficiencyGain: -0.01, 
                     riskFactor: 0.05
                 }
             ],
 
+            // The Crisis Database (Triggered at specific years)
+            events: {
+                2027: {
+                    title: "CRISIS: THE CLOUD OUTAGE",
+                    desc: "A major vendor outage has taken down mobile banking for 4 hours. The regulator is on the phone.",
+                    choices: [
+                        { label: "Public Apology & Refund", effect: "churn_reduction", cost: 50, debt: 0, msg: "Expensive, but saved the brand." },
+                        { label: "Blame the Vendor", effect: "churn_increase", cost: 0, debt: 0, msg: "Saved cash, but customers are angry." },
+                        { label: "Accelerate Multi-Cloud", effect: "debt_reduction", cost: 200, debt: -15, msg: "Strategic pivot. High cost, long-term stability." }
+                    ]
+                },
+                2029: {
+                    title: "OPPORTUNITY: THE FINTECH CRASH",
+                    desc: "Interest rates spiked. A major Neo-Bank competitor is insolvent. Assets are cheap.",
+                    choices: [
+                        { label: "Acquire for Tech Stack", effect: "tech_boost", cost: 500, debt: -20, msg: "Bought their code to replace ours." },
+                        { label: "Acquire for Customers", effect: "growth_boost", cost: 300, debt: 10, msg: "Bought their users. Integration will be messy." },
+                        { label: "Let them Die", effect: "efficiency", cost: 0, debt: 0, msg: "Preserved capital. Conservative play." }
+                    ]
+                }
+            },
+
             selectScenario(id) {
                 this.activeScenario = this.scenarios.find(s => s.id === id);
                 this.year = 2026;
-                // Initial Baseline
+                this.decisionLog = [];
+                // Reset Metrics
                 this.metrics = { 
                     profit: 1000, // $1.0B
                     customers: 5, // 5M
-                    efficiency: 60, // Cost/Income Ratio (Lower is better)
+                    efficiency: 60, // Cost/Income Ratio
                     techDebt: 20 // Index 0-100
                 };
                 this.playSimulation();
@@ -2871,76 +2909,570 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
 
             playSimulation() {
                 this.isPlaying = true;
-                let timer = setInterval(() => {
+                this.activeEvent = null;
+                
+                this.timer = setInterval(() => {
+                    // Check for Events BEFORE advancing year
+                    if ((this.year === 2027 || this.year === 2029) && !this.isEventResolved(this.year)) {
+                        this.triggerEvent(this.year);
+                        return; // Pause loop
+                    }
+
                     if (this.year < 2030) {
                         this.year++;
                         this.calculateYearlyMath();
                     } else {
-                        clearInterval(timer);
+                        clearInterval(this.timer);
                         this.isPlaying = false;
                     }
-                }, 1200); // 1.2 seconds per year
+                }, 1500);
+            },
+
+            triggerEvent(year) {
+                clearInterval(this.timer); // Pause Time
+                this.activeEvent = { ...this.events[year], year: year };
+            },
+
+            resolveEvent(choice) {
+                // 1. Apply Immediate Effects
+                this.metrics.profit -= choice.cost;
+                this.metrics.techDebt = Math.max(0, this.metrics.techDebt + choice.debt);
+                
+                // 2. Apply Special Effects
+                if (choice.effect === 'churn_increase') this.metrics.customers *= 0.9;
+                if (choice.effect === 'churn_reduction') this.metrics.customers *= 1.05; // Loyalty boost
+                if (choice.effect === 'growth_boost') this.metrics.customers += 1.5; // +1.5M users
+                if (choice.effect === 'tech_boost') this.metrics.efficiency -= 5; 
+
+                // 3. Log for AI
+                this.decisionLog.push({ year: this.activeEvent.year, event: this.activeEvent.title, decision: choice.label, outcome: choice.msg });
+
+                // 4. Resume
+                this.activeEvent = null;
+                this.playSimulation();
+            },
+
+            isEventResolved(year) {
+                return this.decisionLog.some(d => d.year === year);
             },
 
             calculateYearlyMath() {
                 const s = this.activeScenario;
                 
-                // 1. Math: Compound Growth
-                // J-Curve logic for 'ai_first': Dip in 2027, spike in 2029
-                let yearFactor = 1.0;
-                if (s.id === 'ai_first' && this.year === 2027) yearFactor = 0.8; // The "Valley of Despair"
-                if (s.id === 'ai_first' && this.year >= 2029) yearFactor = 1.3; // The "Bionic Payoff"
+                // J-Curve Logic
+                let growth = s.baseGrowth;
+                if (s.id === 'ai_first' && this.year === 2027) growth = 0.9; // The dip
+                if (s.id === 'ai_first' && this.year >= 2029) growth = 1.35; // The rocket
 
-                this.metrics.profit = Math.round(this.metrics.profit * s.baseGrowth * yearFactor);
+                this.metrics.profit = Math.round(this.metrics.profit * growth);
                 
-                // 2. Math: Efficiency (Cost to Income Ratio)
+                // Efficiency Drifts
                 this.metrics.efficiency = Math.max(30, this.metrics.efficiency - (s.efficiencyGain * 100));
                 
-                // 3. Math: Customer Base vs Brand
-                if (s.id === 'fortress') this.metrics.customers *= 0.95; // Churn
-                if (s.id === 'partnership') this.metrics.customers *= 1.40; // Massive volume (via partners)
-                if (s.id === 'ai_first') this.metrics.customers *= 1.10; // Steady growth
-
-                // 4. Tech Debt Accumulation
-                if (s.id === 'fortress') this.metrics.techDebt += 15;
-                else this.metrics.techDebt = Math.max(0, this.metrics.techDebt - 10);
+                // Tech Debt Drifts (Fortress rots, others improve slightly)
+                if (s.id === 'fortress') this.metrics.techDebt += 5;
+                else this.metrics.techDebt = Math.max(5, this.metrics.techDebt - 2);
             },
 
-            // --- ADVANCED PROMPT GENERATOR ---
+            // --- PROMPT GENERATOR ---
             generateFuturePrompt() {
                 const s = this.activeScenario;
                 const m = this.metrics;
                 
-                // Formulate the narrative based on final math
-                let outcome = "";
-                if (m.profit > 2000) outcome = "EXPONENTIAL SUCCESS. We dominated the market.";
-                else if (m.profit > 1200) outcome = "SURVIVAL. We exist, but margins are thin.";
-                else outcome = "IRRELEVANCE. We are a utility or being acquired.";
+                const decisions = this.decisionLog.map(d => `In ${d.year}, faced with "${d.event}", I chose to "${d.decision}".`).join("\n");
 
-                return `ACT AS: A Futurist and Investment Banker in the year 2030.
+                return `ACT AS: A Wall Street Analyst writing a "Sell-Side Report" on this Bank in 2030.
 
-## THE SIMULATION REPORT (2026-2030)
-I chose the strategic path: "${s.title}" (${s.desc}).
-Here is the 5-year outcome of that decision:
+## STRATEGY & EXECUTION REVIEW (2026-2030)
+The CEO chose the "${s.title}" strategy (${s.desc}).
+Key Decisions made during the timeline:
+${decisions}
 
-## FINANCIAL TELEMETRY (2030)
+## 2030 FINANCIAL RESULTS
 - **Net Profit:** $${(m.profit/1000).toFixed(1)} Billion
-- **Efficiency Ratio:** ${m.efficiency.toFixed(0)}% (Industry Avg: 50%)
+- **Efficiency Ratio:** ${m.efficiency.toFixed(0)}%
 - **Customer Base:** ${(m.customers).toFixed(1)} Million
-- **Technical Debt Index:** ${m.techDebt}/100
+- **Technical Debt:** ${m.techDebt}/100
 
-## THE NARRATIVE ARC
-${s.id === 'ai_first' ? "We suffered the 'J-Curve' dip in 2027 but automation eventually compounded returns." : ""}
-${s.id === 'partnership' ? "We lost our consumer brand but became the infrastructure rail for Big Tech." : ""}
-${s.id === 'fortress' ? "We saved money on OpEx but starved innovation. Our Tech Debt is now toxic." : ""}
+## YOUR ANALYSIS
+1. **The Verdict:** Is this bank a "Buy", "Hold", or "Sell"? Why?
+2. **The "Crisis Management" Score:** Analyze how my decision in the 2027/2029 crises impacted the final P&L.
+3. **The 2035 Outlook:** Given the high/low Tech Debt, will this bank survive the *next* wave of disruption (Quantum Computing)?
 
-## YOUR MISSION (RETROSPECTIVE)
-Write a **"Letter to Shareholders (2030)"** explaining this result.
-1. ** The 'I told you so' moment:** Analyze why this specific strategy led to this specific Profit/Efficiency number.
-2. **The Talent Shift:** Describe what kind of employees thrive here now (e.g., "We have more API Engineers than Tellers").
-3. **The Warning:** What is the single biggest threat to this new business model?
+TONE: Professional, financial, ruthlessly objective.`;
+            }
+        },
 
-TONE: Visionary, retrospective, analytical.`;
+        // ------------------------------------------------------------------
+        // CONWAY'S LAW SIMULATOR (Deterministic Topology Engine)
+        // ------------------------------------------------------------------
+        conwaySim: {
+            teams: [],
+            dependencies: [], // Array of {from: id, to: id}
+            
+            // Mathematical Output
+            metrics: {
+                couplingScore: 0, // 0-100 (Higher is worse)
+                velocity: 100,    // 0-100 (Higher is better)
+                archType: "Greenfield"
+            },
+
+            // User Inputs
+            newTeamName: '',
+            newTeamType: 'silo', // silo, squad, platform, gatekeeper
+
+            addTeam() {
+                if (!this.newTeamName) return alert("Name required.");
+                this.teams.push({
+                    id: Date.now(),
+                    name: this.newTeamName,
+                    type: this.newTeamType
+                });
+                this.newTeamName = '';
+                this.calculateTopology();
+            },
+
+            removeTeam(id) {
+                this.teams = this.teams.filter(t => t.id !== id);
+                this.dependencies = this.dependencies.filter(d => d.from !== id && d.to !== id);
+                this.calculateTopology();
+            },
+
+            toggleDependency(fromId, toId) {
+                if (fromId === toId) return;
+                
+                const existingIndex = this.dependencies.findIndex(d => d.from === fromId && d.to === toId);
+                if (existingIndex > -1) {
+                    this.dependencies.splice(existingIndex, 1);
+                } else {
+                    this.dependencies.push({ from: fromId, to: toId });
+                }
+                this.calculateTopology();
+            },
+
+            hasDependency(fromId, toId) {
+                return this.dependencies.some(d => d.from === fromId && d.to === toId);
+            },
+
+            // --- THE DETERMINISTIC MATH ENGINE ---
+            calculateTopology() {
+                if (this.teams.length === 0) {
+                    this.metrics = { couplingScore: 0, velocity: 100, archType: "Empty" };
+                    return;
+                }
+
+                let friction = 0;
+                let drag = 0;
+
+                // 1. Node Analysis (Types)
+                const silos = this.teams.filter(t => t.type === 'silo').length;
+                const gatekeepers = this.teams.filter(t => t.type === 'gatekeeper').length;
+                const squads = this.teams.filter(t => t.type === 'squad').length;
+
+                // Silos add inherent friction (Communication overhead)
+                friction += (silos * 15);
+                
+                // Gatekeepers destroy velocity
+                drag += (gatekeepers * 25);
+
+                // 2. Edge Analysis (Dependencies)
+                this.dependencies.forEach(dep => {
+                    const from = this.teams.find(t => t.id === dep.from);
+                    const to = this.teams.find(t => t.id === dep.to);
+                    
+                    // Linking two Silos = TIGHT COUPLING (Integration Tax)
+                    if (from.type === 'silo' && to.type === 'silo') friction += 20;
+                    
+                    // Linking Squad to Platform = GOOD (Loose Coupling)
+                    else if (to.type === 'platform') friction += 5; // Minimal friction
+                    
+                    // Linking anything to Gatekeeper = STOP (High Drag)
+                    else if (to.type === 'gatekeeper') drag += 30;
+                    
+                    // Squad to Squad = Coordination Cost
+                    else friction += 10;
+                });
+
+                // 3. Normalize Metrics
+                this.metrics.couplingScore = Math.min(100, friction);
+                this.metrics.velocity = Math.max(0, 100 - drag - (friction * 0.5));
+
+                // 4. Determine Architecture Archetype
+                if (gatekeepers > 1) this.metrics.archType = "Bureaucratic Waterfall";
+                else if (this.metrics.couplingScore > 70) this.metrics.archType = "Distributed Monolith (Spaghetti)";
+                else if (silos > squads) this.metrics.archType = "Service-Oriented Architecture (SOA)";
+                else this.metrics.archType = "Microservices Mesh (Agile)";
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateConwayPrompt() {
+                const m = this.metrics;
+                const teamList = this.teams.map(t => `- ${t.name} (${t.type.toUpperCase()})`).join("\n");
+                const depList = this.dependencies.map(d => {
+                    const f = this.teams.find(t => t.id === d.from).name;
+                    const t = this.teams.find(t => t.id === d.to).name;
+                    return `${f} depends on ${t}`;
+                }).join(", ");
+
+                return `ACT AS: A Chief Software Architect and Organizational Designer.
+
+## THE CONWAY'S LAW SIMULATION
+I have modeled my organization to predict the resulting software architecture.
+- **Topology:** ${this.teams.length} Teams, ${this.dependencies.length} Hard Dependencies.
+- **Calculated Coupling Score:** ${m.couplingScore}/100 (Higher = Spaghettification).
+- **Predicted Velocity:** ${m.velocity.toFixed(0)}/100.
+- **Resulting Architecture:** "${m.archType}".
+
+## THE ORG CHART INPUT
+${teamList}
+**Hard Dependencies:** ${depList || "None (Silos are isolated)"}
+
+## YOUR DIAGNOSIS (THE INVERSE CONWAY MANEUVER)
+1. **The Architecture Mirror:** Explain exactly why this specific org structure will create a "${m.archType}" in the code (e.g. "Because Team A depends on Team B, their databases will be tightly coupled").
+2. **The Breaking Point:** Identify the single biggest bottleneck in this graph.
+3. **The Re-Org:** Propose one specific structural change (e.g. "Merge Team X and Y" or "Turn Team Z into a Self-Service Platform") to fix the architecture.
+
+TONE: Technical, systemic, authoritative. Quote Melvin Conway.`;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // DUMB PIPE CALCULATOR (Deterministic Strategy Engine)
+        // ------------------------------------------------------------------
+        dumbPipeCalc: {
+            inputs: {
+                commodity_share: 60, // % of revenue from interchange/fees (bad) vs advisory (good)
+                aggregator_share: 20, // % of traffic coming via 3rd parties (Apple Wallet, Mint, etc)
+                daily_logins: 30, // % of customers logging into YOUR app daily
+                nps: 20 // Net Promoter Score (-100 to 100)
+            },
+            result: null,
+
+            analyze() {
+                const i = this.inputs;
+                
+                // 1. THE MATH ENGINE
+                // Base Risk: Dependency on commodity revenue (Interchange/Overdraft)
+                let riskScore = i.commodity_share * 0.5;
+
+                // Interface Risk: If traffic comes via Aggregators, you lost the front end
+                riskScore += (i.aggregator_share * 0.4);
+
+                // Mitigation: Daily engagement reduces churn risk
+                // If 50% log in daily, we reduce risk by 20 points
+                const stickiness = Math.min(50, i.daily_logins) * 0.4;
+                riskScore -= stickiness;
+
+                // Mitigation: Brand Love (NPS)
+                // High NPS acts as a moat. Low NPS accelerates commoditization.
+                if (i.nps < 0) riskScore += 10; // Penalty for hatred
+                if (i.nps > 50) riskScore -= 10; // Bonus for love
+
+                // Clamp 0-100
+                riskScore = Math.max(0, Math.min(100, Math.round(riskScore)));
+
+                // 2. DIAGNOSTIC PROFILING
+                let archetype = "";
+                let verdict = "";
+                let color = "";
+
+                if (riskScore > 80) {
+                    archetype = "The Invisible Utility";
+                    verdict = "TERMINAL DECLINE";
+                    color = "text-risk";
+                } else if (riskScore > 50) {
+                    archetype = "The Interchange Junkie";
+                    verdict = "HIGH RISK";
+                    color = "text-orange-500";
+                } else if (i.aggregator_share > 60) {
+                    archetype = "The Embedded Balance Sheet"; // Profitable but invisible
+                    verdict = "PIVOT REQUIRED";
+                    color = "text-yellow-400";
+                } else {
+                    archetype = "The Primary Partner";
+                    verdict = "SUSTAINABLE";
+                    color = "text-primary";
+                }
+
+                this.result = {
+                    score: riskScore,
+                    archetype,
+                    verdict,
+                    color,
+                    burnRate: (100 - riskScore) / 2 // Years left logic simulation
+                };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateStrategyPrompt() {
+                if (!this.result) return "Run calculation first.";
+                
+                const r = this.result;
+                const i = this.inputs;
+
+                return `ACT AS: An Activist Investor and Fintech Strategist.
+
+## THE DISTRESS SIGNAL (DUMB PIPE ANALYSIS)
+I have audited my bank's business model vulnerability.
+- **Risk Score:** ${r.score}/100 (Probability of becoming a commodity utility).
+- **Current Archetype:** "${r.archetype}".
+- **Revenue Mix:** ${i.commodity_share}% Commodity (Interchange/Fees).
+- **Interface Control:** ${i.aggregator_share}% of traffic comes via 3rd Parties (Apple/Plaid).
+- **Customer Moat:** ${i.daily_logins}% DAU, NPS ${i.nps}.
+
+## THE STRATEGIC PIVOT
+The data suggests we are on a path to "${r.verdict}". 
+
+## YOUR MISSION
+Write a **"Save the Bank" Strategic Memo** to the Board.
+1. **The Brutal Truth:** Explain why high Aggregator Traffic (${i.aggregator_share}%) + High Commodity Revenue (${i.commodity_share}%) guarantees margin compression.
+2. **The Defensive Move:** Propose 1 feature to increase "Stickiness" (e.g. Subscription Banking, Embedded Identity).
+3. **The Offensive Move:** Should we fight for the interface (Super App) or accept our fate and become a "Banking-as-a-Service" provider? Pick a lane.
+
+TONE: Urgent, financial, high-stakes.`;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // AGILE DATA GOVERNANCE DASHBOARD (Deterministic SRE Simulator)
+        // ------------------------------------------------------------------
+        dataGovDash: {
+            isLive: false,
+            interval: null,
+            selectedProduct: null,
+            activeIncident: null, // Stores current failure data
+            
+            // The Data Asset Portfolio
+            products: [
+                { 
+                    id: 'cust360', 
+                    name: "Customer 360", 
+                    owner: "Marketing Squad", 
+                    criticality: "HIGH",
+                    costPerMinute: 500, // $ lost per minute of downtime
+                    slo: { freshness: 99.9, accuracy: 99.9 },
+                    status: 'healthy'
+                },
+                { 
+                    id: 'risk_engine', 
+                    name: "Credit Risk Engine", 
+                    owner: "Risk Squad", 
+                    criticality: "CRITICAL",
+                    costPerMinute: 2000, 
+                    slo: { freshness: 99.9, accuracy: 99.9 },
+                    status: 'healthy'
+                },
+                { 
+                    id: 'payments', 
+                    name: "Real-Time Payments", 
+                    owner: "Payments Tribe", 
+                    criticality: "CRITICAL",
+                    costPerMinute: 5000, 
+                    slo: { freshness: 99.9, accuracy: 99.9 },
+                    status: 'healthy'
+                }
+            ],
+
+            toggleSim() {
+                if (this.isLive) {
+                    clearInterval(this.interval);
+                    this.isLive = false;
+                } else {
+                    this.isLive = true;
+                    this.interval = setInterval(() => this.tick(), 1000);
+                }
+            },
+
+            tick() {
+                // 1. Healthy Fluctuation
+                this.products.forEach(p => {
+                    if (p.status === 'healthy') {
+                        // Tiny variations to look alive
+                        p.slo.freshness = Math.min(100, Math.max(98, p.slo.freshness + (Math.random() - 0.5)));
+                        p.slo.accuracy = Math.min(100, Math.max(99, p.slo.accuracy + (Math.random() - 0.5)));
+                    } else if (p.status === 'critical') {
+                        // 2. Incident Logic: Metrics crash
+                        if (this.activeIncident.type === 'schema') p.slo.accuracy = Math.max(0, p.slo.accuracy - 5);
+                        if (this.activeIncident.type === 'latency') p.slo.freshness = Math.max(0, p.slo.freshness - 8);
+                        
+                        // 3. Financial Impact Accumulator
+                        this.activeIncident.totalCost += p.costPerMinute / 60; // Add cost per second
+                    }
+                });
+            },
+
+            injectFailure(type) {
+                if (!this.isLive) this.toggleSim();
+                
+                // Target a random product
+                const target = this.products[Math.floor(Math.random() * this.products.length)];
+                target.status = 'critical';
+                this.selectedProduct = target;
+
+                this.activeIncident = {
+                    product: target.name,
+                    owner: target.owner,
+                    type: type, // 'schema' or 'latency'
+                    startTime: new Date().toLocaleTimeString(),
+                    totalCost: 0,
+                    errorMsg: type === 'schema' ? "ERR_NULL_POINTER: 'Credit_Score' field missing in stream." : "ERR_TIMEOUT: Kafka Consumer Lag > 5000ms."
+                };
+            },
+
+            repair() {
+                if (this.selectedProduct) {
+                    this.selectedProduct.status = 'healthy';
+                    this.selectedProduct.slo.freshness = 99.9;
+                    this.selectedProduct.slo.accuracy = 99.9;
+                    // Keep the incident data for the report, but mark resolved in UI
+                }
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateRCAPrompt() {
+                if (!this.activeIncident) return "No incident to report.";
+                
+                const inc = this.activeIncident;
+                const cost = Math.round(inc.totalCost).toLocaleString();
+
+                return `ACT AS: A Site Reliability Engineer (SRE) and Data Product Owner.
+
+## THE INCIDENT REPORT (ROOT CAUSE ANALYSIS)
+A data failure occurred in the "${inc.product}" product.
+- **Incident Type:** ${inc.type === 'schema' ? "Schema Drift (Breaking Change)" : "Latency Spike (Data Freshness Failure)"}
+- **Error Log:** "${inc.errorMsg}"
+- **Business Impact:** Service degraded. Estimated financial loss: $${cost} (based on downtime duration).
+- **Owner:** ${inc.owner}
+
+## YOUR MISSION
+Draft a **"5 Whys" Post-Mortem Email** to the Executive Committee.
+1. **The Executive Summary:** Explain what broke and the financial impact in plain English (no tech jargon).
+2. **The Root Cause:** Explain that this wasn't just "bad luck", it was a lack of Governance (e.g., "We pushed code without checking the data contract").
+3. **The Fix:** Propose a specific automated guardrail (e.g., "Implement Schema Registry checks in CI/CD") to ensure this never happens again.
+
+TONE: Accountable, transparent, systems-thinking (blame the process, not the person).`;
+            }
+        },
+
+    // ------------------------------------------------------------------
+        // SHADOW IT AUDIT (Deterministic TCO & Risk Engine)
+        // ------------------------------------------------------------------
+        shadowAudit: {
+            inventory: [],
+            form: {
+                name: '',
+                users: 5,
+                costPerUser: 20, // Monthly
+                dataLevel: 'internal', // public, internal, confidential, restricted
+                integration: 'silo' // silo (manual export), api (automated)
+            },
+            summary: { totalCost: 0, hiddenTax: 0, highRiskCount: 0 },
+
+            init() {
+                // Load from local storage if available
+                const saved = localStorage.getItem('bilingual_shadow_inventory');
+                if (saved) {
+                    this.inventory = JSON.parse(saved);
+                    this.calculateTotals();
+                }
+            },
+
+            addTool() {
+                if (!this.form.name) return alert("Enter tool name.");
+                
+                const f = this.form;
+                
+                // 1. Math: Annual License Cost
+                const licenseCost = f.users * f.costPerUser * 12;
+
+                // 2. Math: The "Shadow Tax" (Hidden Operational Costs)
+                // - Silos cost 50% more due to manual data copy-pasting/CSV exports
+                // - APIs cost 10% more due to maintenance
+                const taxRate = f.integration === 'silo' ? 0.50 : 0.10;
+                const hiddenTax = licenseCost * taxRate;
+
+                // 3. Math: Risk Score (1-10)
+                let risk = 1;
+                if (f.dataLevel === 'internal') risk = 3;
+                if (f.dataLevel === 'confidential') risk = 7;
+                if (f.dataLevel === 'restricted') risk = 10; // PII/Financials
+                
+                // Penalty for silos handling restricted data
+                if (risk >= 7 && f.integration === 'silo') risk += 2; // Data leakage risk is higher
+
+                // 4. Verdict
+                let verdict = "ALLOW";
+                if (risk >= 8) verdict = "SHUTDOWN";
+                else if (risk >= 5) verdict = "REGULATE";
+                else if (licenseCost > 50000) verdict = "CONSOLIDATE";
+
+                this.inventory.push({
+                    id: Date.now(),
+                    name: f.name,
+                    licenseCost,
+                    hiddenTax,
+                    trueCost: licenseCost + hiddenTax,
+                    risk,
+                    verdict,
+                    dataLevel: f.dataLevel,
+                    integration: f.integration
+                });
+
+                this.save();
+                this.form.name = ''; // Reset name only, keep settings for fast entry
+            },
+
+            removeTool(id) {
+                this.inventory = this.inventory.filter(t => t.id !== id);
+                this.save();
+            },
+
+            save() {
+                this.calculateTotals();
+                localStorage.setItem('bilingual_shadow_inventory', JSON.stringify(this.inventory));
+            },
+
+            calculateTotals() {
+                this.summary.totalCost = this.inventory.reduce((acc, t) => acc + t.trueCost, 0);
+                this.summary.hiddenTax = this.inventory.reduce((acc, t) => acc + t.hiddenTax, 0);
+                this.summary.highRiskCount = this.inventory.filter(t => t.risk >= 8).length;
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateGovernancePrompt() {
+                if (this.inventory.length === 0) return "Add tools to inventory first.";
+
+                const highRiskTools = this.inventory.filter(t => t.risk >= 8);
+                const siloTools = this.inventory.filter(t => t.integration === 'silo');
+                const totalWaste = this.summary.hiddenTax;
+
+                let focus = "";
+                if (highRiskTools.length > 0) focus = `SECURITY ALERT. We have ${highRiskTools.length} tools handling Restricted Data without IT oversight.`;
+                else if (siloTools.length > 3) focus = `DATA FRAGMENTATION. We have ${siloTools.length} data silos creating manual work.`;
+                else focus = "COST OPTIMIZATION. We are paying a 'Shadow Tax' on unmanaged licenses.";
+
+                const toolList = this.inventory.map(t => 
+                    `- **${t.name}**: True Cost $${Math.round(t.trueCost).toLocaleString()} (Risk: ${t.risk}/10 | Verdict: ${t.verdict})`
+                ).join("\n");
+
+                return `ACT AS: A Chief Information Security Officer (CISO) and CFO.
+
+## THE SHADOW IT AUDIT FINDINGS
+I have scanned our environment for unauthorized SaaS usage.
+- **Total Annual Liability:** $${Math.round(this.summary.totalCost).toLocaleString()}
+- **The "Shadow Tax":** $${Math.round(this.summary.hiddenTax).toLocaleString()} (Wasted on manual data entry & lack of integration).
+- **Primary Concern:** ${focus}
+
+## INVENTORY LIST
+${toolList}
+
+## YOUR MISSION
+Write a **Governance Memo** to the Department Heads.
+1. **The Policy:** Define a clear "Red Line" based on the data above (e.g. "No tools handling PII without SSO").
+2. **The Amnesty Offer:** Propose a "Bring your own tool" amnesty period where they can register tools without punishment, IF they integrate them via API.
+3. **The Crackdown:** For the tools marked "SHUTDOWN", draft the email explaining why access is being revoked immediately (cite Data Sovereignty or GDPR).
+
+TONE: Firm but fair. Focus on Risk and Waste, not bureaucracy.`;
             }
         },
         
