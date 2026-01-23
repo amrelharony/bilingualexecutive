@@ -1318,7 +1318,8 @@ tools: {
         { id: 'watermelon', label: 'Lie Detector', icon: 'fa-solid fa-user-secret', color: 'text-red-500' },
         { id: 'cognitive', label: 'Cognitive Load', icon: 'fa-solid fa-brain', color: 'text-purple-400' },
         { id: 'sprintcheck', label: 'Sprint Health', icon: 'fa-solid fa-stopwatch', color: 'text-orange-400' },
-            { id: 'adaptation', label: 'Adaptability Monitor', icon: 'fa-solid fa-chart-radar', color: 'text-cyan-400' }
+        { id: 'adaptation', label: 'Adaptability Monitor', icon: 'fa-solid fa-dna', color: 'text-cyan-400' },
+        { id: 'dt_tracker', label: 'ROI Tracker', icon: 'fa-solid fa-magnifying-glass-dollar', color: 'text-green-400' },
 
 
 
@@ -1345,7 +1346,9 @@ tools: {
             { id: 'vendor', label: 'Vendor Coach', icon: 'fa-solid fa-handshake', color: 'text-yellow-400' },
             { id: 'capex', label: 'FinOps Auditor', icon: 'fa-solid fa-file-invoice-dollar', color: 'text-green-400' },
             { id: 'legacy', label: 'Legacy Explainer', icon: 'fa-solid fa-microchip', color: 'text-slate-400' },
-            { id: 'flow', label: 'Flow Efficiency', icon: 'fa-solid fa-water', color: 'text-blue-400' }
+            { id: 'flow', label: 'Flow Efficiency', icon: 'fa-solid fa-water', color: 'text-blue-400' },
+            { id: 'adr', label: 'Decision Journal', icon: 'fa-solid fa-book-journal-whills', color: 'text-indigo-300' }
+
 
         
 
@@ -1398,6 +1401,8 @@ tools: {
            { id: 'capex', label: 'CapEx Classifier', desc: 'Audit agile tickets against IAS 38 Accounting Standards.', icon: 'fa-solid fa-scale-balanced', color: 'text-green-400', vip: false },
            { id: 'legacy', label: 'Legacy Translator', desc: 'Scan COBOL/SQL for business logic risks.', icon: 'fa-solid fa-code', color: 'text-slate-400', vip: false },
            { id: 'flow', label: 'Value Stream Calc', desc: 'Measure the hidden waste (Wait Time) in your processes.', icon: 'fa-solid fa-stopwatch', color: 'text-blue-400', vip: false },
+           { id: 'adr', label: 'ADR Builder', desc: 'Create weighted decision matrices and generate Architecture Decision Records.', icon: 'fa-solid fa-scale-unbalanced-flip', color: 'text-indigo-300', vip: false },
+
 
 
 
@@ -1413,7 +1418,9 @@ tools: {
            { id: 'detector', label: 'AI Risk Scanner', desc: 'Mathematically verify AI outputs against Golden Source data.', icon: 'fa-solid fa-user-secret', color: 'text-risk', vip: false },
            { id: 'cognitive', label: 'Brain Bandwidth', desc: 'Measure team mental overhead and burnout risk.', icon: 'fa-solid fa-brain', color: 'text-purple-400', vip: false },
            { id: 'sprintcheck', label: 'Sprint Diagnostic', desc: '60-second pulse check on velocity, creep, and morale.', icon: 'fa-solid fa-heart-pulse', color: 'text-orange-400', vip: false },
-           { id: 'adaptation', label: 'Adaptation Health', desc: 'Measure organizational plasticity and rigidity.', icon: 'fa-solid fa-dna', color: 'text-cyan-400', vip: false },
+         { id: 'adaptation', label: 'Adaptation Health', desc: 'Measure organizational plasticity and rigidity.', icon: 'fa-solid fa-dna', color: 'text-cyan-400', vip: false },
+           { id: 'dt_tracker', label: 'Transformation ROI', desc: 'Track the J-Curve: Hard costs vs. Soft value realization.', icon: 'fa-solid fa-chart-line', color: 'text-green-400', vip: false },
+
 
 
 
@@ -5271,6 +5278,131 @@ TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
                 };
             },
 
+            // ------------------------------------------------------------------
+        // DT ROI TRACKER (Financial J-Curve Engine)
+        // ------------------------------------------------------------------
+        dtTracker: {
+            inputs: {
+                projectName: 'Cloud Migration Phase 1',
+                initialCost: 500000, // Upfront CapEx
+                monthlyCost: 20000,  // Ongoing OpEx (Cloud bill)
+                monthlyHardSavings: 45000, // Server decommissioning
+                teamSize: 10,
+                efficiencyGain: 15, // % productivity boost (Soft benefit)
+                avgSalary: 120000, // Annual cost per head
+                confidence: 80 // % confidence in Soft Benefits (Skepticism slider)
+            },
+            results: null,
+            loading: false,
+
+            calculate() {
+                this.loading = true;
+                
+                setTimeout(() => {
+                    this.runFinancialModel();
+                    this.loading = false;
+                }, 800);
+            },
+
+            runFinancialModel() {
+                const i = this.inputs;
+                
+                // 1. Calculate Soft Benefits Value
+                // Formula: (Team Salary / 12) * (Efficiency % / 100) * (Confidence % / 100)
+                const monthlySalaryLoad = (i.teamSize * i.avgSalary) / 12;
+                const rawSoftSavings = monthlySalaryLoad * (i.efficiencyGain / 100);
+                const adjustedSoftSavings = rawSoftSavings * (i.confidence / 100);
+
+                // 2. Build the Timeline (24 Months)
+                let balance = -i.initialCost;
+                let month = 0;
+                let paybackMonth = null;
+                let dataPoints = [];
+                let minPoint = -i.initialCost;
+
+                for (month = 1; month <= 24; month++) {
+                    // Net Monthly Flow = (Hard Savings + Soft Savings) - Running Costs
+                    const monthlyNet = (i.monthlyHardSavings + adjustedSoftSavings) - i.monthlyCost;
+                    balance += monthlyNet;
+                    
+                    dataPoints.push(Math.round(balance));
+                    
+                    if (balance >= 0 && paybackMonth === null) {
+                        paybackMonth = month;
+                    }
+                    if (balance < minPoint) minPoint = balance;
+                }
+
+                // 3. Final Metrics
+                const totalValue = balance; // Ending balance after 24 months
+                const roi = ((balance + i.initialCost) / i.initialCost) * 100;
+                const hardOnlyMonthly = i.monthlyHardSavings - i.monthlyCost;
+                const isHardPositive = hardOnlyMonthly > 0;
+
+                // 4. Strategic Verdict
+                let verdict = "";
+                let color = "";
+                
+                if (paybackMonth === null) {
+                    verdict = "MONEY PIT";
+                    color = "text-red-500";
+                } else if (paybackMonth <= 12) {
+                    verdict = "SLAM DUNK";
+                    color = "text-green-400";
+                } else if (!isHardPositive) {
+                    verdict = "STRATEGIC BET (Soft Value Dependent)";
+                    color = "text-yellow-400";
+                } else {
+                    verdict = "SOLID INVESTMENT";
+                    color = "text-blue-400";
+                }
+
+                this.results = {
+                    payback: paybackMonth ? `${paybackMonth} Months` : "> 2 Years",
+                    roi24: Math.round(roi),
+                    endingBalance: Math.round(balance),
+                    softContribution: Math.round((adjustedSoftSavings * 24)),
+                    hardContribution: Math.round(((i.monthlyHardSavings - i.monthlyCost) * 24) - i.initialCost),
+                    verdict,
+                    color,
+                    chartData: dataPoints,
+                    minPoint // Deepest point of the J-Curve
+                };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateCFOReport() {
+                if (!this.results) return "Run calculation first.";
+                const r = this.results;
+                const i = this.inputs;
+
+                const hardStatus = i.monthlyHardSavings > i.monthlyCost 
+                    ? "positive cash flow on Hard Savings alone" 
+                    : "dependent on Soft Benefits (Efficiency) to break even";
+
+                return `ACT AS: A Chief Financial Officer (CFO) and Digital Transformation Lead.
+
+## THE INVESTMENT CASE: "${i.projectName}"
+I have modeled the P&L for this initiative over a 24-month horizon.
+- **Initial Outlay:** $${i.initialCost.toLocaleString()}
+- **Break-Even Point:** ${r.payback}
+- **2-Year ROI:** ${r.roi24}% (Net Value: $${r.endingBalance.toLocaleString()})
+- **Financial Profile:** The project is ${hardStatus}.
+
+## VALUE COMPOSITION
+- **Hard P&L Impact:** $${r.hardContribution.toLocaleString()} (Cost Reductions - Running Costs)
+- **Strategic Value:** $${r.softContribution.toLocaleString()} (Efficiency Gains @ ${i.confidence}% Confidence)
+
+## YOUR MISSION
+Write a **Board Investment Memo** defending this spend.
+1. **The J-Curve Defense:** Explain why the initial dip in cash flow (down to $${r.minPoint.toLocaleString()}) is a necessary "Construction Cost" for future velocity.
+2. **The "Soft" Defense:** The model attributes $${r.softContribution.toLocaleString()} to "Efficiency". Translate this abstract number into concrete business value (e.g., "This equals 3,000 developer hours freed up for product innovation").
+3. **The Risk Mitigation:** Propose a "Stage-Gate" funding model where we release the next tranche of budget only if we hit the Month 6 Milestone.
+
+TONE: Fiscally responsible, forward-looking, rigorous.`;
+            }
+        },
+            
             // --- ADVANCED PROMPT GENERATOR ---
             generateLeanPrompt() {
                 if (!this.metrics) return "Run calculation first.";
@@ -5302,6 +5434,127 @@ Write a **Process Optimization Plan**.
 TONE: Clinical, data-driven, ruthless against waste. Use terms like "Muda" (Waste) and "Little's Law".`;
             }
         },
+
+        // ------------------------------------------------------------------
+        // ADR BUILDER (Weighted Decision Matrix Engine)
+        // ------------------------------------------------------------------
+        adrBuilder: {
+            title: '',
+            status: 'PROPOSED', // PROPOSED, ACCEPTED, REJECTED
+            
+            // The Criteria (Rows) - Weight is 1-5
+            criteria: [
+                { id: 1, label: 'Development Speed', weight: 5 },
+                { id: 2, label: 'Scalability', weight: 4 },
+                { id: 3, label: 'Cost to Maintain', weight: 3 }
+            ],
+
+            // The Options (Columns) - Scores are 1-5
+            options: [
+                { 
+                    id: 1, 
+                    name: 'Option A: Monolith', 
+                    scores: { 1: 5, 2: 2, 3: 5 }, // criteriaID: score
+                    total: 0 
+                },
+                { 
+                    id: 2, 
+                    name: 'Option B: Microservices', 
+                    scores: { 1: 2, 2: 5, 3: 2 }, 
+                    total: 0 
+                }
+            ],
+
+            winner: null,
+
+            // Demo Data
+            loadDemo() {
+                this.title = "Database Selection for New Payments Service";
+                this.criteria = [
+                    { id: 1, label: 'ACID Compliance', weight: 5 },
+                    { id: 2, label: 'Write Throughput', weight: 4 },
+                    { id: 3, label: 'Team Familiarity', weight: 3 }
+                ];
+                this.options = [
+                    { id: 1, name: 'PostgreSQL', scores: { 1: 5, 2: 3, 3: 5 }, total: 0 },
+                    { id: 2, name: 'DynamoDB', scores: { 1: 3, 2: 5, 3: 2 }, total: 0 },
+                    { id: 3, name: 'Mongo (NoSQL)', scores: { 1: 2, 2: 4, 3: 4 }, total: 0 }
+                ];
+                this.calculate();
+            },
+
+            addCriteria() {
+                const id = Date.now();
+                this.criteria.push({ id, label: 'New Criteria', weight: 3 });
+                // Init scores for existing options
+                this.options.forEach(o => o.scores[id] = 3);
+                this.calculate();
+            },
+
+            addOption() {
+                const id = Date.now();
+                let newScores = {};
+                this.criteria.forEach(c => newScores[c.id] = 3);
+                this.options.push({ id, name: 'New Option', scores: newScores, total: 0 });
+                this.calculate();
+            },
+
+            calculate() {
+                let maxScore = -1;
+                let winningOption = null;
+
+                this.options.forEach(opt => {
+                    let sum = 0;
+                    this.criteria.forEach(crit => {
+                        const s = parseInt(opt.scores[crit.id] || 0);
+                        const w = parseInt(crit.weight || 0);
+                        sum += (s * w);
+                    });
+                    opt.total = sum;
+
+                    if (sum > maxScore) {
+                        maxScore = sum;
+                        winningOption = opt;
+                    }
+                });
+
+                this.winner = winningOption;
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateADRPrompt() {
+                if (!this.winner) return "Complete the matrix first.";
+
+                const critList = this.criteria.map(c => `- ${c.label} (Weight: ${c.weight})`).join("\n");
+                
+                const optList = this.options.map(o => {
+                    const isWinner = o.id === this.winner.id ? "(SELECTED)" : "";
+                    return `### Option: ${o.name} ${isWinner}\n- Weighted Score: ${o.total}\n- Strengths/Weaknesses based on criteria scores.`;
+                }).join("\n\n");
+
+                return `ACT AS: A Principal Software Architect.
+
+## THE ARCHITECTURE DECISION (ADR)
+I need to document a formal decision record for: "${this.title}".
+
+## THE DECISION MATRIX (MATH)
+We evaluated options based on weighted criteria:
+${critList}
+
+## THE EVALUATION
+${optList}
+
+## YOUR MISSION
+Write a standard **Architecture Decision Record (ADR)** in Markdown.
+1. **Context:** Briefly explain why we need to make this decision.
+2. **The Decision:** State clearly that we are choosing **${this.winner.name}**.
+3. **The Justification:** Use the math above to explain *why* it won (e.g., "While Option B had better scalability, Option A won due to higher Team Familiarity scores").
+4. **Consequences:** List the trade-offs (Negatives) of the winning choice that we must mitigate.
+
+TONE: Technical, objective, permanent record.`;
+            }
+        },
+        
         
     })); // <-- This closes the Alpine.data object
 
