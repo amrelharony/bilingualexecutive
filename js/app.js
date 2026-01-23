@@ -1313,7 +1313,11 @@ tools: {
         { id: 'matrix', label: 'Decision Matrix', icon: 'fa-solid fa-chess-board', color: 'text-blue-400' },
         { id: 'dumbpipe', label: 'Dumb Pipe Calc', icon: 'fa-solid fa-faucet-drip', color: 'text-red-400' },
         { id: 'datagov', label: 'Data Health', icon: 'fa-solid fa-traffic-light', color: 'text-blue-500' },
-         { id: 'shadow', label: 'Shadow IT Audit', icon: 'fa-solid fa-ghost', color: 'text-purple-400' }
+        { id: 'shadow', label: 'Shadow IT Audit', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
+        { id: 'detector', label: 'Hallucination Check', icon: 'fa-solid fa-shield-cat', color: 'text-risk' },
+            { id: 'watermelon', label: 'Lie Detector', icon: 'fa-solid fa-user-secret', color: 'text-red-500' }
+
+
 
 
     ],
@@ -1330,7 +1334,13 @@ tools: {
         { id: 'roi', label: 'Lighthouse ROI', icon: 'fa-solid fa-calculator', color: 'text-green-500' },
         { id: 'excel', label: 'Excel Auditor', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
          { id: 'squad', label: 'Squad Builder', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
-        { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox', color: 'text-red-400' }
+        { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox', color: 'text-red-400' },
+            { id: 'vendor', label: 'Vendor Coach', icon: 'fa-solid fa-handshake', color: 'text-yellow-400' },
+            { id: 'capex', label: 'FinOps Auditor', icon: 'fa-solid fa-file-invoice-dollar', color: 'text-green-400' },
+            { id: 'legacy', label: 'Legacy Explainer', icon: 'fa-solid fa-microchip', color: 'text-slate-400' }
+
+
+
     ],
     sims: [
         { id: 'simulator', label: 'Case Study', icon: 'fa-solid fa-chess-knight', color: 'text-white' },
@@ -1353,11 +1363,16 @@ tools: {
 
             // 2. Calculators & Builders (Forge)
             { id: 'squad', label: 'Squad Builder', desc: 'Design teams using Brooks Law.', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
-           
             { id: 'excel', label: 'Excel Auditor', desc: 'Calculate OpEx waste & risk liability.', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
             { id: 'roi', label: 'Lighthouse ROI', desc: 'Calculate NPV & Cost of Delay.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
             { id: 'kpi', label: 'Outcome Gen',  desc: 'Turn Project Outputs into Business Outcomes.',  icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400'},
             { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture latency.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
+           { id: 'vendor', label: 'Vendor Negotiator', desc: 'Shift contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-signature', color: 'text-yellow-400', vip: false },
+           { id: 'capex', label: 'CapEx Classifier', desc: 'Audit agile tickets against IAS 38 Accounting Standards.', icon: 'fa-solid fa-scale-balanced', color: 'text-green-400', vip: false },
+           { id: 'legacy', label: 'Legacy Translator', desc: 'Scan COBOL/SQL for business logic risks.', icon: 'fa-solid fa-code', color: 'text-slate-400', vip: false },
+
+
+
 
             // 3. Diagnostics (Radar)
             { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational friction.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
@@ -1366,6 +1381,8 @@ tools: {
            { id: 'dumbpipe', label: 'Utility Risk', desc: 'Calculate the probability of losing the customer interface.', icon: 'fa-solid fa-link-slash', color: 'text-red-400', vip: false },
            { id: 'datagov', label: 'Live Data Governance', desc: 'Monitor SLOs, Lineage, and Quality in real-time.', icon: 'fa-solid fa-server', color: 'text-blue-500', vip: false },
            { id: 'shadow', label: 'Shadow IT Scanner', desc: 'Audit SaaS sprawl and calculate the "Integration Tax".', icon: 'fa-solid fa-ghost', color: 'text-purple-400', vip: false },
+           { id: 'detector', label: 'AI Risk Scanner', desc: 'Mathematically verify AI outputs against Golden Source data.', icon: 'fa-solid fa-user-secret', color: 'text-risk', vip: false },
+
 
 
 
@@ -1375,7 +1392,8 @@ tools: {
             { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for pilot success.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
             { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, 
             { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
-            { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true } 
+            { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true },
+           { id: 'watermelon', label: 'Green Light Detector', desc: 'Detect the "Watermelon Effect" in status reports.', icon: 'fa-solid fa-user-secret', color: 'text-red-500', vip: false }
         ],
         
         // ------------------------------------------------------------------
@@ -3475,7 +3493,645 @@ Write a **Governance Memo** to the Department Heads.
 TONE: Firm but fair. Focus on Risk and Waste, not bureaucracy.`;
             }
         },
-        
+
+        // ------------------------------------------------------------------
+        // HALLUCINATION DETECTOR (Deterministic NLP & Math Engine)
+        // ------------------------------------------------------------------
+        hallucinationDetector: {
+            policy: '', // The Golden Source (Ground Truth)
+            aiOutput: '', // The Unverified Text (Candidate)
+            loading: false,
+            result: null,
+
+            // Demo Data: The "Air Canada" Case Study
+            loadDemo() {
+                this.policy = `POLICY 8.2: BEREAVEMENT FARES
+1. Eligibility: Immediate family members only.
+2. Timing: Application must be submitted PRIOR to travel.
+3. Retroactive Claims: Absolutely no refunds are permitted for travel that has already occurred.
+4. Documentation: Death certificate required within 30 days.
+5. Max Discount: 15% off base fare.`;
+
+                this.aiOutput = `Hi! I'm sorry for your loss. Regarding the bereavement fare: You can purchase a full-price ticket now to travel immediately. 
+                
+Don't worry about the paperwork yet; you can submit a refund claim within 90 days after you return, and we will refund the difference of up to 50%.`;
+            },
+
+            scan() {
+                if (!this.policy || !this.aiOutput) return alert("Please provide both Policy and AI Output.");
+                
+                this.loading = true;
+                this.result = null;
+
+                // Simulate "Processing" time
+                setTimeout(() => {
+                    this.performMathAnalysis();
+                    this.loading = false;
+                }, 1000);
+            },
+
+            performMathAnalysis() {
+                const source = this.policy.toLowerCase();
+                const target = this.aiOutput.toLowerCase();
+
+                let flags = [];
+                let trustScore = 100;
+
+                // 1. NUMERICAL INTEGRITY CHECK (The most common banking hallucination)
+                // Extract numbers (money, percentages, days)
+                const extractNums = (text) => text.match(/\d+(\.\d+)?/g) || [];
+                const sourceNums = extractNums(source);
+                const targetNums = extractNums(target);
+
+                // Find numbers in Target that DO NOT exist in Source
+                const hallucinations = targetNums.filter(n => !sourceNums.includes(n));
+                
+                if (hallucinations.length > 0) {
+                    trustScore -= (hallucinations.length * 20);
+                    flags.push({ type: 'CRITICAL', msg: `Numeric Hallucination: AI invented values [${hallucinations.join(', ')}] not found in policy.` });
+                }
+
+                // 2. NEGATION FLIP CHECK (Dangerous!)
+                // Check if Policy says "No/Not" but AI doesn't, or vice versa
+                const negations = ["no ", "not ", "never ", "prohibited"];
+                const sourceHasNeg = negations.some(w => source.includes(w));
+                const targetHasNeg = negations.some(w => target.includes(w));
+
+                if (sourceHasNeg !== targetHasNeg) {
+                    trustScore -= 15;
+                    flags.push({ type: 'WARN', msg: `Sentiment Inversion: Policy and Output differ on negative constraints ("No/Not").` });
+                }
+
+                // 3. JACCARD SIMILARITY INDEX (Semantic Drift)
+                // Measures overlap of unique words. If intersection is low, AI is rambling.
+                const tokenize = (text) => new Set(text.split(/\W+/).filter(w => w.length > 3)); // Filter small words
+                const setA = tokenize(source);
+                const setB = tokenize(target);
+                
+                const intersection = new Set([...setA].filter(x => setB.has(x)));
+                const union = new Set([...setA, ...setB]);
+                const jaccardIndex = intersection.size / union.size; // 0 to 1
+
+                if (jaccardIndex < 0.2) {
+                    trustScore -= 15;
+                    flags.push({ type: 'INFO', msg: `Low Semantic Overlap (${(jaccardIndex*100).toFixed(0)}%). AI is using vocabulary unrelated to the policy.` });
+                }
+
+                // 4. URL/LINK CHECK
+                if (target.includes("http") && !source.includes("http")) {
+                    trustScore -= 20;
+                    flags.push({ type: 'CRITICAL', msg: "Fabricated Link: AI provided a URL not present in the source text." });
+                }
+
+                // Final Score Calculation
+                trustScore = Math.max(0, Math.round(trustScore));
+                
+                let verdict = "SAFE";
+                let color = "text-primary";
+                if (trustScore < 60) { verdict = "DANGEROUS"; color = "text-risk"; }
+                else if (trustScore < 90) { verdict = "CAUTION"; color = "text-warn"; }
+
+                this.result = {
+                    score: trustScore,
+                    verdict,
+                    color,
+                    flags
+                };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateCompliancePrompt() {
+                if (!this.result) return "Run scan first.";
+                
+                const r = this.result;
+                const flagList = r.flags.map(f => `- [${f.type}] ${f.msg}`).join("\n");
+
+                return `ACT AS: A Senior Model Risk Officer (MRO).
+
+## THE HALLUCINATION AUDIT
+I have performed a deterministic scan comparing an AI Output against our Golden Source Policy.
+- **Trust Score:** ${r.score}/100
+- **Automated Verdict:** ${r.verdict}
+
+## DETECTED DEVIATIONS
+${flagList || "No mathematical deviations detected."}
+
+## INPUT DATA
+**Golden Source:** "${this.policy.substring(0, 100)}..."
+**AI Candidate:** "${this.aiOutput.substring(0, 100)}..."
+
+## YOUR MISSION
+Write a **Deployment Authorization Memo**.
+1. **The Verification:** Manually verify the "Red Flags" listed above. Are they real errors or just phrasing differences?
+2. **The Impact:** If the detected numbers/logic are wrong, what is the regulatory impact (e.g. UDAAP violation, fines)?
+3. **The Fix:** Rewrite the System Prompt instructions to prevent this specific error type (e.g. "Instruction: You must strictly copy numbers from the context. Do not calculate.")
+
+TONE: Regulatory, precise, risk-averse.`;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // VENDOR PARTNERSHIP COACH (Deterministic Game Theory)
+        // ------------------------------------------------------------------
+        vendorCoach: {
+            step: 'input', // input, analysis, sim
+            inputs: {
+                vendorName: '',
+                spend: 1000000, // Annual spend
+                model: 'tm', // tm (Time & Material), fixed, outcome
+                dependency: 8, // 1-10 (How hard to replace?)
+                quality: 5 // 1-10 (Current satisfaction)
+            },
+            analysis: null,
+            
+            // Simulation State
+            sim: {
+                active: false,
+                round: 0,
+                trust: 50,
+                savings: 0,
+                history: [],
+                vendorMood: "Neutral"
+            },
+
+            // Deterministic Logic Engine
+            analyze() {
+                if (!this.inputs.vendorName) return alert("Enter vendor name.");
+                
+                const i = this.inputs;
+                
+                // 1. Calculate Leverage Score (Who has the power?)
+                // High Spend + Low Dependency = High Leverage (You win)
+                // Low Spend + High Dependency = Low Leverage (Vendor wins)
+                let leverage = (i.spend / 100000) - (i.dependency * 5) + 50;
+                leverage = Math.max(0, Math.min(100, leverage));
+
+                // 2. Identify the Trap
+                let trap = "";
+                let strategy = "";
+                
+                if (i.model === 'tm') {
+                    trap = "The Efficiency Paradox. The longer they take, the more you pay.";
+                    strategy = "Move to Capacity-Based Funding with SLOs.";
+                } else if (i.model === 'fixed') {
+                    trap = "The Change Request Trap. Low initial price, high cost for every change.";
+                    strategy = "Shift to 'Money for Nothing, Change for Free' Agile contracts.";
+                } else {
+                    trap = "Measurement Risk. Are you measuring the right outcome?";
+                    strategy = "Tighten the definition of 'Done'.";
+                }
+
+                // 3. Financial Exposure
+                const wasteFactor = (10 - i.quality) * 0.10; // 10% waste for every point of bad quality
+                const wasteAmount = Math.round(i.spend * wasteFactor);
+
+                this.analysis = {
+                    leverage: Math.round(leverage),
+                    waste: wasteAmount,
+                    trap: trap,
+                    strategy: strategy,
+                    readiness: leverage > 60 ? "READY TO RENEGOTIATE" : "WEAK POSITION"
+                };
+
+                this.step = 'analysis';
+            },
+
+            // --- SIMULATION ENGINE ---
+            startSim() {
+                this.step = 'sim';
+                this.sim = { active: true, round: 1, trust: 50, savings: 0, history: [], vendorMood: "Skeptical" };
+                this.addSimMessage('bot', `(Account Manager): We appreciate your business, but our margins are tight. We actually need to discuss a 5% rate hike for inflation.`);
+            },
+
+            makeMove(moveType) {
+                let reply = "";
+                let trustChange = 0;
+                let savingsChange = 0;
+
+                // Game Theory Logic
+                if (moveType === 'hardball') {
+                    // Aggressive: High risk, high reward
+                    if (this.analysis.leverage > 60) {
+                        reply = "Okay, okay. We can waive the hike. But we can't lower rates.";
+                        trustChange = -10;
+                        savingsChange = 5; // Saved the 5% hike
+                    } else {
+                        reply = "I'm afraid that's not possible. If you can't pay, we may need to offboard.";
+                        trustChange = -30;
+                        savingsChange = 0;
+                    }
+                } else if (moveType === 'partnership') {
+                    // Collaborative: Builds trust, unlocks value
+                    reply = "That's interesting. If you can commit to a 3-year term, we could look at an Outcome-based rebate model.";
+                    trustChange = +20;
+                    savingsChange = 10;
+                } else if (moveType === 'threaten') {
+                    // Threaten to leave
+                    if (this.inputs.dependency > 7) {
+                        reply = "We know your stack is built on our proprietary code. Moving would cost you double.";
+                        trustChange = -50;
+                        savingsChange = 0;
+                    } else {
+                        reply = "Let's not be hasty. What if we offered a volume discount?";
+                        trustChange = -10;
+                        savingsChange = 15;
+                    }
+                }
+
+                this.sim.trust = Math.max(0, Math.min(100, this.sim.trust + trustChange));
+                this.sim.savings += savingsChange;
+                this.sim.round++;
+                
+                // Add to chat
+                let userText = "";
+                if (moveType === 'hardball') userText = "I reject the hike. Efficiency has been poor.";
+                if (moveType === 'partnership') userText = "Let's shift the model. I'll pay more for 'Results', less for 'Hours'.";
+                if (moveType === 'threaten') userText = "I'm issuing an RFP to your competitors tomorrow.";
+
+                this.addSimMessage('user', userText);
+                setTimeout(() => this.addSimMessage('bot', reply), 600);
+            },
+
+            addSimMessage(role, text) {
+                this.sim.history.push({ role, text });
+                // Auto-scroll logic would go here
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateNegotiationPrompt() {
+                const a = this.analysis;
+                const i = this.inputs;
+
+                return `ACT AS: A Chief Procurement Officer and Agile Coach.
+
+## THE CONTRACT AUDIT
+I am renegotiating a contract with "${i.vendorName}".
+- **Current Model:** ${i.model === 'tm' ? "Time & Materials (Body Shop)" : "Fixed Price (Waterfall)"}
+- **Annual Spend:** $${i.spend.toLocaleString()}
+- **Performance:** ${i.quality}/10 Quality Score.
+- **My Leverage:** ${a.leverage}/100.
+
+## THE PROBLEM
+We are trapped in "${a.trap}". 
+We estimate we are wasting $${a.waste.toLocaleString()} annually on friction and rework.
+
+## YOUR MISSION
+Draft a **Negotiation Script** for the upcoming renewal meeting.
+1. **The Opener:** A script to shut down their request for a rate hike by using our Quality data.
+2. **The Pivot:** Specific language to propose shifting from "Headcount" to "${a.strategy}".
+3. **The Clause:** Draft a specific "Service Level Objective (SLO)" clause that penalizes them if they ship bugs, instead of paying them to fix the bugs they wrote.
+
+TONE: Professional, firm, collaborative but demanding.`;
+            }
+        },
+
+    // ------------------------------------------------------------------
+        // FINOPS AUDITOR (Deterministic Accounting Engine)
+        // ------------------------------------------------------------------
+        capexClassifier: {
+            input: "FEAT-101: Build new Mobile Login module\nBUG-202: Fix crash on payment screen\nCHORE: Update server dependencies\nSPIKE: Research Blockchain feasibility\nFEAT-105: Refactor database for 10x scale",
+            sensitivity: 50, // 0 = Conservative, 100 = Aggressive
+            analysis: null,
+            stats: { ratio: 0, totalValue: 0, capexValue: 0 },
+
+            // The Keyword Dictionary (IAS 38 Logic)
+            rules: {
+                capex: ['new', 'build', 'create', 'launch', 'feature', 'scale', 'module', 'architecture', 'implement'],
+                opex: ['fix', 'bug', 'repair', 'maintain', 'support', 'patch', 'update', 'training', 'research', 'spike', 'meeting']
+            },
+
+            analyze() {
+                if (!this.input.trim()) return alert("Please paste ticket list.");
+                
+                const lines = this.input.split('\n').filter(l => l.trim().length > 0);
+                let processed = [];
+                let totalVal = 0;
+                let capexVal = 0;
+                
+                // Assume average cost per ticket for simulation (e.g., 1 Story Point = $1,000)
+                const costPerTicket = 1000; 
+
+                lines.forEach(line => {
+                    const lower = line.toLowerCase();
+                    
+                    // 1. Scoring Logic
+                    let capScore = 0;
+                    let opScore = 0;
+                    
+                    this.rules.capex.forEach(w => { if(lower.includes(w)) capScore++; });
+                    this.rules.opex.forEach(w => { if(lower.includes(w)) opScore++; });
+
+                    // 2. Apply Sensitivity (The "CFO Mood" Slider)
+                    // High sensitivity makes it easier to claim CapEx (Aggressive)
+                    // Low sensitivity defaults to OpEx (Conservative)
+                    let threshold = 0;
+                    if (this.sensitivity > 50) capScore += 0.5; // Bias towards Asset
+                    if (this.sensitivity < 50) opScore += 0.5; // Bias towards Expense
+
+                    // 3. Verdict
+                    let type = "OpEx";
+                    let reason = "Routine Maintenance (Expense)";
+                    let confidence = "High";
+
+                    if (capScore > opScore) {
+                        type = "CapEx";
+                        reason = "Creates Future Economic Benefit (Asset)";
+                    } else if (capScore === opScore) {
+                        type = "Review";
+                        reason = "Ambiguous. Requires manual check.";
+                        confidence = "Low";
+                    }
+
+                    // 4. Financials
+                    totalVal += costPerTicket;
+                    if (type === "CapEx") capexVal += costPerTicket;
+
+                    processed.push({ ticket: line, type, reason, confidence });
+                });
+
+                this.stats.totalValue = totalVal;
+                this.stats.capexValue = capexVal;
+                this.stats.ratio = totalVal === 0 ? 0 : Math.round((capexVal / totalVal) * 100);
+                this.analysis = processed;
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateAuditorPrompt() {
+                if (!this.analysis) return "Run analysis first.";
+                
+                const s = this.stats;
+                const riskLevel = this.sensitivity > 70 ? "HIGH (Aggressive Accounting)" : "LOW (Conservative)";
+                
+                // Sample 5 tickets for the prompt
+                const sample = this.analysis.slice(0, 5).map(i => `- ${i.ticket} -> ${i.type}`).join("\n");
+
+                return `ACT AS: A Big 4 External Auditor (KPMG/Deloitte style).
+
+## THE INTERNAL AUDIT REPORT (IAS 38 CHECK)
+I have classified our software engineering labor for Capitalization.
+- **Total Labor Spend:** $${s.totalValue.toLocaleString()} (Simulated)
+- **Capitalization Rate:** ${s.ratio}% (Industry Benchmark: 30-50%)
+- **Accounting Stance:** ${riskLevel}
+
+## SAMPLE DATA
+${sample}
+... (and ${this.analysis.length - 5} more items)
+
+## YOUR MISSION
+Write an **Audit Defense Memo** for the CTO to sign.
+1. **The Justification:** Explain why our Capitalization Rate of ${s.ratio}% is justified given we are building "New Assets" vs "Maintenance".
+2. **The Red Flags:** If the rate is >60%, warn us about the specific risk of "improperly capitalizing maintenance" which inflates profit artificially.
+3. **The Policy:** Write a 1-sentence "Golden Rule" for developers to use when naming Jira tickets so they pass audit (e.g., "Don't use the word 'Fix' if you are actually rebuilding").
+
+TONE: Compliance-focused, protective, financially literate.`;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // LEGACY CODE EXPLAINER (Deterministic Static Analysis)
+        // ------------------------------------------------------------------
+        legacyExplainer: {
+            input: "IF ORDER-AMT > CUST-CREDIT-LIMIT\n    MOVE 'Y' TO REJECT-FLAG\n    PERFORM REJECT-ROUTINE\n    GO TO EXIT-PARA\nELSE\n    COMPUTE NEW-BAL = OLD-BAL + ORDER-AMT\nEND-IF.",
+            loading: false,
+            analysis: null,
+            
+            // Configuration
+            targetAudience: 'ceo', // ceo (Simple), cto (Technical), compliance (Risk)
+            language: 'detect',    // detect, cobol, sql
+
+            // The Pattern Matcher
+            patterns: {
+                cobol: {
+                    keywords: ['PERFORM', 'MOVE', 'PIC', 'IDENTIFICATION DIVISION', 'COMP-3'],
+                    risks: [
+                        { pattern: /GO\s*TO/i, score: 20, label: "Spaghetti Code (GOTO)" },
+                        { pattern: /HARD-CODED/i, score: 15, label: "Hardcoded Values" },
+                        { pattern: /DATE/i, score: 5, label: "Date Arithmetic Risk" }
+                    ]
+                },
+                sql: {
+                    keywords: ['SELECT', 'FROM', 'WHERE', 'JOIN', 'UNION'],
+                    risks: [
+                        { pattern: /CURSOR/i, score: 25, label: "Performance Killer (Cursor)" },
+                        { pattern: /DROP\s+TABLE/i, score: 50, label: "Destructive Command" },
+                        { pattern: /SELECT\s+\*/i, score: 10, label: "Inefficient Query (Select *)" }
+                    ]
+                },
+                business: {
+                    // Words that imply money or rules
+                    keywords: ['AMT', 'BAL', 'INT', 'RATE', 'TAX', 'LIMIT', 'CREDIT', 'DEBIT', 'FEE']
+                }
+            },
+
+            analyze() {
+                if (!this.input.trim()) return alert("Paste some code first.");
+                
+                this.loading = true;
+                this.analysis = null;
+
+                // Simulate processing delay
+                setTimeout(() => {
+                    this.runHeuristics();
+                    this.loading = false;
+                }, 800);
+            },
+
+            runHeuristics() {
+                const code = this.input.toUpperCase();
+                let detectedLang = "Generic";
+                let riskScore = 0;
+                let businessValue = 0;
+                let flaws = [];
+
+                // 1. Detect Language
+                const cobolMatches = this.patterns.cobol.keywords.filter(k => code.includes(k)).length;
+                const sqlMatches = this.patterns.sql.keywords.filter(k => code.includes(k)).length;
+                
+                if (cobolMatches > sqlMatches) detectedLang = "COBOL (Mainframe)";
+                else if (sqlMatches > cobolMatches) detectedLang = "SQL (Database)";
+
+                // 2. Risk Scanning
+                const activeRules = detectedLang.includes("COBOL") ? this.patterns.cobol.risks : this.patterns.sql.risks;
+                
+                activeRules.forEach(rule => {
+                    if (rule.pattern.test(code)) {
+                        riskScore += rule.score;
+                        flaws.push(rule.label);
+                    }
+                });
+
+                // 3. Business Value Scanning (Density of financial terms)
+                this.patterns.business.keywords.forEach(word => {
+                    // Count occurrences
+                    const count = (code.match(new RegExp(word, "g")) || []).length;
+                    businessValue += (count * 10);
+                });
+
+                // 4. Determine Archetype
+                let archetype = "Utility Script"; // Low Risk, Low Value
+                if (riskScore > 50 && businessValue > 50) archetype = "THE BLACK BOX (Critical & Dangerous)";
+                else if (riskScore > 50) archetype = "TECHNICAL DEBT (Refactor Now)";
+                else if (businessValue > 50) archetype = "CORE LOGIC (Golden Rule)";
+
+                this.analysis = {
+                    language: detectedLang,
+                    riskScore: Math.min(100, riskScore),
+                    bizScore: Math.min(100, businessValue),
+                    flaws: flaws,
+                    archetype: archetype
+                };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateTranslatorPrompt() {
+                if (!this.analysis) return "Run analysis first.";
+                
+                const a = this.analysis;
+                const audience = this.targetAudience === 'ceo' ? "Non-Technical CEO" : (this.targetAudience === 'compliance' ? "Risk Auditor" : "Modern Java Developer");
+                const goal = this.targetAudience === 'ceo' ? "Explain the financial impact." : (this.targetAudience === 'compliance' ? "Find the regulatory gaps." : "Rewrite this in Python.");
+
+                return `ACT AS: A Senior Mainframe Modernization Architect.
+
+## THE SOURCE CODE ANALYSIS
+I have scanned a block of legacy code.
+- **Language:** ${a.language}
+- **Complexity Archetype:** "${a.archetype}"
+- **Detected Technical Risks:** ${a.flaws.join(", ") || "None detected (Clean code)"}
+
+## INPUT CODE
+"""
+${this.input}
+"""
+
+## YOUR MISSION
+Translate this code for a **${audience}**.
+1. **The Plain English Translation:** ${goal}
+2. **The Business Rule:** Extract the exact logic (e.g., "If credit < 500, reject"). Ignore syntax.
+3. **The Modernization Path:** If we rewrote this today, would it be a Microservice, a Database Trigger, or a Config Rule?
+
+TONE: Authoritative, cynical about legacy, clear about value.`;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // WATERMELON DETECTOR (Deterministic Linguistics Engine)
+        // ------------------------------------------------------------------
+        watermelonDetector: {
+            inputs: [
+                "Week 1: Development is progressing well. We are 90% complete with the backend.",
+                "Week 2: Still targeting launch. Just a few minor integration nuances to iron out. 95% complete.",
+                "Week 3: Almost there. Just waiting on a 3rd party vendor API key. Dashboard is Green."
+            ],
+            loading: false,
+            result: null,
+
+            // The Pattern Library
+            patterns: {
+                vagueness: ["progressing", "hoping", "aiming", "believe", "anticipate", "trying", "should be"],
+                stagnancy: ["90%", "95%", "99%", "almost done", "finalizing", "polishing", "tweaking"],
+                deflection: ["waiting on", "dependency", "vendor", "client", "3rd party", "external"],
+                passive: ["mistakes were made", "challenges were encountered", "it was decided"]
+            },
+
+            analyze() {
+                this.loading = true;
+                this.result = null;
+
+                // Simulate processing "Forensic Scan"
+                setTimeout(() => {
+                    this.runForensics();
+                    this.loading = false;
+                }, 1000);
+            },
+
+            runForensics() {
+                let bsScore = 0;
+                let flags = [];
+                const fullText = this.inputs.join(" ").toLowerCase();
+
+                // 1. THE "90% PARADOX" (Stagnancy Check)
+                // If "90%" or "95%" appears in multiple weeks, it's a lie.
+                let stagCount = 0;
+                this.inputs.forEach((week, idx) => {
+                    if (this.patterns.stagnancy.some(p => week.toLowerCase().includes(p))) stagCount++;
+                });
+
+                if (stagCount >= 2) {
+                    bsScore += 40;
+                    flags.push("The Zeno's Paradox: Stuck at 'Almost Done' for multiple weeks.");
+                }
+
+                // 2. HAPPY TALK FILTER (Vagueness)
+                let vagueCount = 0;
+                this.patterns.vagueness.forEach(word => {
+                    if (fullText.includes(word)) vagueCount++;
+                });
+                
+                if (vagueCount > 0) {
+                    bsScore += (vagueCount * 10);
+                    flags.push(`Vague Assurance: Used low-confidence words ${vagueCount} times (e.g. 'hoping', 'trying').`);
+                }
+
+                // 3. THE BLAME GAME (Deflection)
+                const hasDeflection = this.patterns.deflection.some(w => fullText.includes(w));
+                if (hasDeflection) {
+                    bsScore += 20;
+                    flags.push("External Blaming: Shifting responsibility to vendors/dependencies.");
+                }
+
+                // 4. LENGTH MISMATCH
+                // If reports get shorter over time, they are hiding something.
+                if (this.inputs[2].length < this.inputs[0].length * 0.5) {
+                    bsScore += 15;
+                    flags.push("Silence Protocol: Updates are shrinking. Information is being withheld.");
+                }
+
+                // Calculate Verdict
+                bsScore = Math.min(100, bsScore);
+                let verdict = "TRUE GREEN";
+                let color = "text-primary";
+
+                if (bsScore > 75) { verdict = "WATERMELON (CRITICAL)"; color = "text-risk"; }
+                else if (bsScore > 40) { verdict = "AMBER (WARNING)"; color = "text-yellow-500"; }
+
+                this.result = {
+                    bsScore,
+                    verdict,
+                    color,
+                    red_flags: flags.length > 0 ? flags : ["No linguistic deception detected."]
+                };
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateInterrogationPrompt() {
+                if (!this.result) return "Run scan first.";
+                
+                const r = this.result;
+                const flags = r.red_flags.join("\n- ");
+                const context = this.inputs.map((t, i) => `Week ${i+1}: "${t}"`).join("\n");
+
+                return `ACT AS: A Forensic Project Auditor (The "Wolf" of Project Management).
+
+## THE EVIDENCE (STATUS REPORTS)
+I have flagged a project for "Watermelon Reporting" (Green on the outside, Red on the inside).
+- **Deception Score:** ${r.bsScore}/100
+- **Verdict:** ${r.verdict}
+
+## DETECTED PATTERNS
+- ${flags}
+
+## REPORT TRANSCRIPT
+${context}
+
+## YOUR MISSION
+Write a **"Gemba Walk" Interrogation Script** for my meeting with this Project Manager.
+1. **The Trap:** Don't ask "Is it on track?". Ask a question that forces them to reveal the blocker (e.g., "Show me the specific test case that failed yesterday").
+2. **The Translation:** Translate their vague update into what is likely *actually* happening (e.g., "99% done" usually means "The integration is broken").
+3. **The Ultimatum:** Give me the exact wording to demand a "Red Status" report by EOD.
+
+TONE: Skeptical, experienced, piercing.`;
+            }
+        },
     })); // <-- This closes the Alpine.data object
 
 }); // <-- This closes the event listener
