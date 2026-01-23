@@ -4127,6 +4127,11 @@ END-IF."></textarea>
                     class="relative z-10 w-full py-4 bg-transparent border border-risk text-risk hover:bg-risk hover:text-dark font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> GET COACHING (AI)
             </button>
+            
+            <!-- NEW CAPTION -->
+            <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
+                Ready to paste into your GenAI tool of choice (ChatGPT, Claude, Gemini).
+            </p>
         </div>
 
         <div class="text-center mt-8">
@@ -4275,6 +4280,11 @@ END-IF."></textarea>
                     class="w-full border border-green-500 text-green-400 hover:bg-green-500 hover:text-black py-3 rounded text-xs font-bold transition-all flex items-center justify-center gap-2">
                 <i class="fa-solid fa-wand-magic-sparkles"></i> GET CAREER FEEDBACK (AI)
             </button>
+            
+            <!-- NEW CAPTION -->
+            <p class="text-center text-[10px] text-slate-500 mt-3">
+                Ready to paste into your GenAI tool of choice to analyze your playstyle.
+            </p>
         </div>
 
         <button @click="excelEscape.reset(); excelEscape.start()" class="text-slate-500 hover:text-white underline text-xs">
@@ -4513,7 +4523,7 @@ END-IF."></textarea>
             </template>
         </div>
 
-        <!-- Footer Actions -->
+<!-- Footer Actions -->
         <div class="mt-8 grid md:grid-cols-2 gap-4">
             
             <!-- Reset -->
@@ -4535,15 +4545,617 @@ END-IF."></textarea>
             </div>
         </div>
 
+        <!-- NEW CAPTION -->
         <p class="text-center text-[10px] text-slate-500 mt-4">
-            Generated prompt uses Anthropological Analysis to diagnose team rituals.
+            Ready to paste into your GenAI tool of choice. Uses Anthropological Analysis to diagnose rituals.
         </p>
-
+        
     </div>
 </div>
 
         
+        <!-- SPRINT HEALTH CHECK TAB -->
+<div x-show="currentTab === 'sprintcheck'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">
+            <i class="fa-solid fa-stopwatch mr-2 text-orange-400"></i>Sprint Health Check
+        </h2>
+        <p class="text-textMuted text-sm">60-second diagnostic. Is your sprint a "Success" or a "Death March"?</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
         
+        <!-- LEFT: VITAL SIGNS (INPUTS) -->
+        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+            <h3 class="font-mono text-xs text-orange-400 uppercase font-bold border-b border-slate-700 pb-2">Sprint Vitals</h3>
+
+            <!-- Day & Points -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] text-slate-500 uppercase font-bold">Current Day (1-10)</label>
+                    <input type="number" x-model="sprintHealth.inputs.day" class="w-full bg-dark border border-slate-600 rounded p-2 text-white font-mono">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-500 uppercase font-bold">Planned Points</label>
+                    <input type="number" x-model="sprintHealth.inputs.plannedPts" class="w-full bg-dark border border-slate-600 rounded p-2 text-white font-mono">
+                </div>
+            </div>
+
+            <!-- Progress & Creep -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] text-green-400 uppercase font-bold">Completed Points</label>
+                    <input type="number" x-model="sprintHealth.inputs.completedPts" class="w-full bg-dark border border-green-500/50 rounded p-2 text-white font-mono">
+                </div>
+                <div>
+                    <label class="text-[10px] text-red-400 uppercase font-bold">Added Points (Creep)</label>
+                    <input type="number" x-model="sprintHealth.inputs.addedPts" class="w-full bg-dark border border-red-500/50 rounded p-2 text-white font-mono">
+                </div>
+            </div>
+
+            <!-- Sliders -->
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-white font-bold"><i class="fa-solid fa-face-smile mr-2 text-yellow-400"></i>Team Morale</label>
+                    <span class="text-xs font-bold text-white" x-text="sprintHealth.inputs.mood + '/10'"></span>
+                </div>
+                <input type="range" min="1" max="10" x-model="sprintHealth.inputs.mood" @input="sprintHealth.analysis = null" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-yellow-400">
+            </div>
+
+            <div>
+                <label class="block text-xs font-mono text-white font-bold mb-2">Blocker Status</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button @click="sprintHealth.inputs.blockers = 0; sprintHealth.analysis = null" :class="sprintHealth.inputs.blockers === 0 ? 'bg-green-500 text-dark font-bold' : 'bg-slate-800 text-slate-400'" class="p-2 rounded border border-slate-600 text-[10px] transition-all">Clear</button>
+                    <button @click="sprintHealth.inputs.blockers = 1; sprintHealth.analysis = null" :class="sprintHealth.inputs.blockers === 1 ? 'bg-orange-500 text-white font-bold' : 'bg-slate-800 text-slate-400'" class="p-2 rounded border border-slate-600 text-[10px] transition-all">Sticky</button>
+                    <button @click="sprintHealth.inputs.blockers = 2; sprintHealth.analysis = null" :class="sprintHealth.inputs.blockers === 2 ? 'bg-red-600 text-white font-bold' : 'bg-slate-800 text-slate-400'" class="p-2 rounded border border-slate-600 text-[10px] transition-all">Critical</button>
+                </div>
+            </div>
+
+            <button @click="sprintHealth.calculate()" 
+                    :disabled="sprintHealth.loading"
+                    class="w-full py-4 bg-orange-500 hover:bg-orange-400 text-white font-bold rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
+                <span x-show="!sprintHealth.loading"><i class="fa-solid fa-stethoscope"></i> RUN DIAGNOSTIC</span>
+                <span x-show="sprintHealth.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> ANALYZING...</span>
+            </button>
+        </div>
+
+        <!-- RIGHT: THE MONITOR (OUTPUT) -->
+        <div class="lg:col-span-7 relative min-h-[500px]">
+            
+            <!-- Empty State -->
+            <div x-show="!sprintHealth.analysis" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-500">
+                <i class="fa-solid fa-heart-pulse text-6xl mb-4 opacity-20"></i>
+                <p class="font-mono text-xs uppercase">Awaiting Vitals</p>
+            </div>
+
+            <!-- Results Card -->
+            <div x-show="sprintHealth.analysis" x-transition class="bg-card border-2 rounded-xl overflow-hidden shadow-2xl h-full flex flex-col relative"
+                 :class="sprintHealth.analysis?.score < 40 ? 'border-red-500' : (sprintHealth.analysis?.score < 70 ? 'border-orange-500' : 'border-green-500')">
+                
+                <!-- Monitor Header -->
+                <div class="p-6 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">SUCCESS PROBABILITY</p>
+                        <h3 class="text-4xl font-bold font-mono mt-1" :class="sprintHealth.analysis?.color" x-text="sprintHealth.analysis?.score + '%'"></h3>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-bold px-3 py-1 rounded bg-slate-800 border" :class="sprintHealth.analysis?.color" x-text="sprintHealth.analysis?.weather.toUpperCase()"></span>
+                    </div>
+                </div>
+
+                <!-- Metrics Grid -->
+                <div class="p-6 space-y-6 flex-1">
+                    
+                    <!-- Trend Bar -->
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-2">
+                            <span class="text-slate-400">Completion vs Time</span>
+                            <span :class="sprintHealth.analysis?.drift < 0 ? 'text-red-400' : 'text-green-400'" x-text="sprintHealth.analysis?.drift + '% Drift'"></span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-4 rounded-full overflow-hidden relative">
+                            <!-- Ideal Marker -->
+                            <div class="absolute top-0 bottom-0 w-1 bg-white z-10 opacity-50" :style="`left: ${(sprintHealth.inputs.day * 10)}%`" title="Today"></div>
+                            <!-- Actual Bar -->
+                            <div class="h-full transition-all duration-1000 ease-out"
+                                 :class="sprintHealth.analysis?.drift < -10 ? 'bg-red-500' : 'bg-green-500'"
+                                 :style="`width: ${sprintHealth.analysis?.completionRate}%`"></div>
+                        </div>
+                    </div>
+
+                    <!-- Warning Flags -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700" :class="sprintHealth.analysis?.creep > 10 ? 'border-red-500/50' : ''">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">SCOPE CREEP</p>
+                            <h4 class="text-xl font-mono font-bold" :class="sprintHealth.analysis?.creep > 10 ? 'text-red-400' : 'text-slate-300'" x-text="sprintHealth.analysis?.creep + '%'"></h4>
+                        </div>
+                        <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">PRESCRIPTION</p>
+                            <p class="text-xs text-white leading-tight mt-1" x-text="sprintHealth.analysis?.prescription"></p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- AI Prompt Box -->
+                <div class="p-6 bg-slate-900 border-t border-slate-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-mono text-white font-bold flex items-center gap-2 text-xs uppercase">
+                            <i class="fa-solid fa-robot text-orange-400"></i> Scrum Master AI
+                        </h3>
+                    </div>
+
+                    <div class="relative font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-24 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                        <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="sprintHealth.generateStandupPrompt()"></pre>
+                    </div>
+
+                    <button @click="
+                            copyToClipboard(sprintHealth.generateStandupPrompt(), 'Standup Script');
+                            $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                            setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE RESCUE SCRIPT (AI)'; }, 2000)
+                            " 
+                            class="w-full border border-orange-500 text-orange-400 hover:bg-orange-500 hover:text-white font-bold py-3 rounded text-xs transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE RESCUE SCRIPT (AI)
+                    </button>
+                    
+                    <p class="text-center text-[10px] text-slate-500 mt-3">
+                        Ready to paste into your GenAI tool of choice.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+        
+
+
+
+<!-- ADAPTABILITY MONITOR TAB -->
+<div x-show="currentTab === 'adaptation'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">
+            <i class="fa-solid fa-dna mr-2 text-cyan-400"></i>Adaptability Health Monitor
+        </h2>
+        <p class="text-textMuted text-sm">Survival of the fittest? No. Survival of the most adaptable.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: SENSORS (INPUTS) -->
+        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+            <h3 class="font-mono text-xs text-cyan-400 uppercase font-bold border-b border-slate-700 pb-2">Organizational Sensors</h3>
+
+            <template x-for="dim in adaptMonitor.dimensions" :key="dim.id">
+                <div>
+                    <div class="flex justify-between mb-2">
+                        <label class="text-xs font-mono text-white font-bold" x-text="dim.label"></label>
+                        <span class="text-xs font-bold" :class="dim.val < 4 ? 'text-red-400' : 'text-cyan-400'" x-text="dim.val + '/10'"></span>
+                    </div>
+                    <input type="range" min="1" max="10" x-model.number="dim.val" @input="adaptMonitor.result = null" 
+                           class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+                    <p class="text-[10px] text-slate-500 mt-1" x-text="dim.desc"></p>
+                </div>
+            </template>
+
+            <button @click="adaptMonitor.calculate()" 
+                    :disabled="adaptMonitor.loading"
+                    class="w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-dark font-bold rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
+                <span x-show="!adaptMonitor.loading"><i class="fa-solid fa-microscope"></i> CALCULATE AQ</span>
+                <span x-show="adaptMonitor.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> SEQUENCING DNA...</span>
+            </button>
+        </div>
+
+        <!-- RIGHT: THE RADAR (OUTPUT) -->
+        <div class="lg:col-span-7 relative min-h-[500px]">
+            
+            <!-- Empty State -->
+            <div x-show="!adaptMonitor.result" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-500">
+                <i class="fa-solid fa-chart-radar text-6xl mb-4 opacity-20"></i>
+                <p class="font-mono text-xs uppercase">Awaiting Sensor Data</p>
+            </div>
+
+            <!-- Results Card -->
+            <div x-show="adaptMonitor.result" x-transition class="bg-card border-2 rounded-xl overflow-hidden shadow-2xl h-full flex flex-col relative"
+                 :class="adaptMonitor.result?.aq > 70 ? 'border-cyan-500' : 'border-slate-600'">
+                
+                <!-- Monitor Header -->
+                <div class="p-6 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">ADAPTABILITY QUOTIENT (AQ)</p>
+                        <h3 class="text-4xl font-bold font-mono mt-1" :class="adaptMonitor.result?.color" x-text="adaptMonitor.result?.aq"></h3>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-bold px-3 py-1 rounded bg-slate-800 border" :class="adaptMonitor.result?.color" x-text="adaptMonitor.result?.archetype.toUpperCase()"></span>
+                        <p class="text-[9px] text-slate-500 mt-1">ORGANIC STATE</p>
+                    </div>
+                </div>
+
+                <!-- Alert Console -->
+                <div x-show="adaptMonitor.result?.penalty" class="bg-red-900/20 border-b border-red-500/30 p-2 text-center animate-pulse">
+                    <p class="text-[10px] text-red-400 font-mono font-bold">
+                        <i class="fa-solid fa-triangle-exclamation mr-2"></i><span x-text="adaptMonitor.result?.penalty"></span>
+                    </p>
+                </div>
+
+                <!-- Chart Area -->
+                <div class="p-4 flex-1 flex items-center justify-center bg-dark/50">
+                    <div class="w-full max-w-sm h-64">
+                        <canvas id="adaptChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Analysis Footer -->
+                <div class="p-6 bg-slate-900 border-t border-slate-800 space-y-4">
+                    <div class="flex items-start gap-3">
+                        <div class="bg-slate-800 p-2 rounded text-cyan-400"><i class="fa-solid fa-user-doctor"></i></div>
+                        <div>
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">DIAGNOSIS</p>
+                            <p class="text-xs text-white leading-relaxed" x-text="adaptMonitor.result?.advice"></p>
+                        </div>
+                    </div>
+
+                    <!-- AI Prompt Button -->
+                    <div class="border-t border-slate-800 pt-4">
+                        <div class="bg-black/50 p-3 rounded text-[10px] text-slate-400 font-mono mb-3 h-16 overflow-hidden relative">
+                            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/80 pointer-events-none"></div>
+                            <span x-text="adaptMonitor.generateChangePrompt()"></span>
+                        </div>
+
+                        <button @click="
+                                copyToClipboard(adaptMonitor.generateChangePrompt(), 'Health Report');
+                                $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                                setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE INTERVENTION PLAN (AI)'; }, 2000)
+                                " 
+                                class="w-full border border-cyan-500 text-cyan-400 hover:bg-cyan-500 hover:text-dark font-bold py-3 rounded text-xs transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE INTERVENTION PLAN (AI)
+                        </button>
+                        <p class="text-center text-[10px] text-slate-500 mt-2">
+                            Ready to paste into your GenAI tool of choice.
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+        
+<!-- REGULATORY IMPACT SIMULATOR TAB -->
+<div x-show="currentTab === 'regsim'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">
+            <i class="fa-solid fa-gavel mr-2 text-yellow-500"></i>Regulatory Impact Simulator
+        </h2>
+        <p class="text-textMuted text-sm">Visualize the "Blast Radius" of incoming regulations on your legacy stack.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: CONFIGURATION -->
+        <div class="lg:col-span-4 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+            <h3 class="font-mono text-xs text-yellow-500 uppercase font-bold border-b border-slate-700 pb-2">1. Select Threat</h3>
+            
+            <div class="grid grid-cols-2 gap-2">
+                <template x-for="reg in regSimulator.regulations" :key="reg.id">
+                    <button @click="regSimulator.selectedReg = reg; regSimulator.analysis = null" 
+                            class="p-3 rounded border text-left transition-all"
+                            :class="regSimulator.selectedReg?.id === reg.id ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-slate-800 text-slate-400 border-slate-600 hover:border-yellow-500'">
+                        <span class="block font-bold text-xs" x-text="reg.name"></span>
+                        <span class="block text-[9px] opacity-70" x-text="reg.focus"></span>
+                    </button>
+                </template>
+            </div>
+
+            <div x-show="regSimulator.selectedReg" x-transition>
+                <div class="bg-slate-800/50 p-3 rounded border border-slate-700 mb-6">
+                    <p class="text-xs text-slate-300 italic" x-text="regSimulator.selectedReg.desc"></p>
+                </div>
+
+                <h3 class="font-mono text-xs text-yellow-500 uppercase font-bold border-b border-slate-700 pb-2 mb-4">2. Org Context</h3>
+                
+                <div class="space-y-4">
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <label class="text-[10px] text-slate-400 uppercase">Legacy Debt</label>
+                            <span class="text-[10px] font-bold text-white" x-text="regSimulator.inputs.legacyScore + '%'"></span>
+                        </div>
+                        <input type="range" x-model="regSimulator.inputs.legacyScore" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-red-500">
+                    </div>
+                    <div>
+                        <div class="flex justify-between mb-1">
+                            <label class="text-[10px] text-slate-400 uppercase">Data Governance</label>
+                            <span class="text-[10px] font-bold text-white" x-text="regSimulator.inputs.dataGovernance + '%'"></span>
+                        </div>
+                        <input type="range" x-model="regSimulator.inputs.dataGovernance" class="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    </div>
+                </div>
+
+                <button @click="regSimulator.simulate()" 
+                        :disabled="regSimulator.loading"
+                        class="w-full mt-6 py-4 bg-yellow-600 hover:bg-yellow-500 text-black font-bold rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
+                    <span x-show="!regSimulator.loading"><i class="fa-solid fa-burst"></i> SIMULATE IMPACT</span>
+                    <span x-show="regSimulator.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> CALCULATING...</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- RIGHT: THE BLAST RADIUS (OUTPUT) -->
+        <div class="lg:col-span-8 relative min-h-[500px]">
+            
+            <!-- Empty State -->
+            <div x-show="!regSimulator.analysis" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-500">
+                <i class="fa-solid fa-scale-unbalanced-flip text-6xl mb-4 opacity-20"></i>
+                <p class="font-mono text-xs uppercase">Select Regulation to Begin</p>
+            </div>
+
+            <!-- Results Card -->
+            <div x-show="regSimulator.analysis" x-transition class="h-full flex flex-col gap-6">
+                
+                <!-- 1. The Bill -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="bg-card border border-slate-700 p-4 rounded-xl text-center">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">EST. IMPLEMENTATION COST</p>
+                        <h3 class="text-2xl font-mono font-bold text-white mt-1" x-text="'$' + (regSimulator.analysis?.cost / 1000000).toFixed(1) + 'M'"></h3>
+                    </div>
+                    <div class="bg-card border border-slate-700 p-4 rounded-xl text-center">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">TIMELINE</p>
+                        <h3 class="text-2xl font-mono font-bold text-yellow-400 mt-1" x-text="regSimulator.analysis?.timeline + ' Months'"></h3>
+                    </div>
+                    <div class="bg-card border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-red-900/20 animate-pulse"></div>
+                        <p class="text-[10px] text-red-400 uppercase tracking-widest relative z-10">MAX FINE EXPOSURE</p>
+                        <h3 class="text-2xl font-mono font-bold text-red-500 mt-1 relative z-10" x-text="'$' + (regSimulator.analysis?.exposure / 1000000).toFixed(1) + 'M'"></h3>
+                    </div>
+                </div>
+
+                <!-- 2. The Blast Radius (Heatmap) -->
+                <div class="bg-card border border-slate-700 p-6 rounded-xl flex-1">
+                    <h3 class="font-mono text-xs text-white uppercase mb-4 font-bold flex justify-between">
+                        <span>System Impact Heatmap</span>
+                        <span class="text-red-400" x-text="regSimulator.analysis?.complexity"></span>
+                    </h3>
+                    
+                    <div class="space-y-4">
+                        <template x-for="sys in regSimulator.analysis?.systems">
+                            <div>
+                                <div class="flex justify-between text-xs mb-1">
+                                    <span class="text-slate-300 font-bold" x-text="sys.name"></span>
+                                    <span class="font-mono" :class="sys.heat > 70 ? 'text-red-500' : (sys.heat > 40 ? 'text-yellow-500' : 'text-green-500')" x-text="Math.round(sys.heat) + '% Impact'"></span>
+                                </div>
+                                <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
+                                    <div class="h-full transition-all duration-1000"
+                                         :class="sys.heat > 70 ? 'bg-red-600' : (sys.heat > 40 ? 'bg-yellow-500' : 'bg-green-500')"
+                                         :style="`width: ${Math.min(100, sys.heat)}%`"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    
+                    <div class="mt-6 p-4 bg-slate-800/50 rounded-lg border-l-4 border-yellow-500">
+                        <p class="text-xs text-slate-300 italic">
+                            "Because of your <strong>High Legacy Debt</strong>, the cost of implementing <span x-text="regSimulator.selectedReg?.name"></span> is <strong class="text-white">2.5x higher</strong> than a Neobank."
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 3. AI Prompt Box -->
+                <div class="bg-slate-900 border border-yellow-500/30 p-6 rounded-xl relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-mono text-white font-bold flex items-center gap-2 text-xs uppercase">
+                            <i class="fa-solid fa-robot text-yellow-500"></i> Compliance Architect AI
+                        </h3>
+                    </div>
+
+                    <div class="relative font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-24 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                        <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="regSimulator.generateCompliancePrompt()"></pre>
+                    </div>
+
+                    <button @click="
+                            copyToClipboard(regSimulator.generateCompliancePrompt(), 'Roadmap Data');
+                            $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                            setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE COMPLIANCE ROADMAP (AI)'; }, 2000)
+                            " 
+                            class="w-full border border-yellow-500 text-yellow-400 hover:bg-yellow-500 hover:text-black font-bold py-3 rounded text-xs transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE COMPLIANCE ROADMAP (AI)
+                    </button>
+                    
+                    <p class="text-center text-[10px] text-slate-500 mt-2">
+                        Ready to paste into your GenAI tool of choice.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+        <!-- VALUE STREAM CALCULATOR TAB -->
+<div x-show="currentTab === 'flow'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">
+            <i class="fa-solid fa-water mr-2 text-blue-400"></i>Flow Efficiency Calculator
+        </h2>
+        <p class="text-textMuted text-sm">Most processes are 90% waiting. Find the hidden waste.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: MAPPER (INPUTS) -->
+        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                <h3 class="font-mono text-xs text-blue-400 uppercase font-bold">Process Map</h3>
+                <select x-model="flowCalc.unit" class="bg-dark border border-slate-600 rounded text-[10px] text-white px-2 py-1">
+                    <option value="minutes">Minutes</option>
+                    <option value="hours">Hours</option>
+                    <option value="days">Days</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-[10px] text-slate-500 uppercase">Process Name</label>
+                <input type="text" x-model="flowCalc.processName" class="w-full bg-dark border border-slate-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none">
+            </div>
+
+            <!-- Steps List -->
+            <div class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
+                <template x-for="(step, index) in flowCalc.steps" :key="step.id">
+                    <div class="bg-slate-800 p-3 rounded border border-slate-600 relative group">
+                        <button @click="flowCalc.removeStep(step.id)" class="absolute top-2 right-2 text-slate-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-xmark"></i></button>
+                        
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="bg-slate-700 text-slate-300 w-5 h-5 flex items-center justify-center rounded-full text-[10px] font-bold" x-text="index + 1"></span>
+                            <input type="text" x-model="step.name" class="bg-transparent text-white text-sm font-bold w-full focus:outline-none" placeholder="Step Name">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-[9px] text-green-400 uppercase font-bold block mb-1">Work Time (Value)</label>
+                                <input type="number" x-model="step.work" class="w-full bg-dark border border-green-900 rounded p-1 text-white text-xs">
+                            </div>
+                            <div>
+                                <label class="text-[9px] text-red-400 uppercase font-bold block mb-1">Wait Time (Waste)</label>
+                                <input type="number" x-model="step.wait" class="w-full bg-dark border border-red-900 rounded p-1 text-white text-xs">
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="flex gap-3">
+                <button @click="flowCalc.addStep()" class="flex-1 border border-slate-600 text-slate-400 hover:text-white py-2 rounded-lg text-xs font-bold transition-all">
+                    + ADD STEP
+                </button>
+                <button @click="flowCalc.calculate()" 
+                        class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
+                    <span x-show="!flowCalc.loading"><i class="fa-solid fa-calculator"></i> CALCULATE FLOW</span>
+                    <span x-show="flowCalc.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> MAPPING...</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- RIGHT: VISUALIZER (OUTPUT) -->
+        <div class="lg:col-span-7 relative min-h-[500px]">
+            
+            <!-- Empty State -->
+            <div x-show="!flowCalc.metrics" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-500">
+                <i class="fa-solid fa-stopwatch text-6xl mb-4 opacity-20"></i>
+                <p class="font-mono text-xs uppercase">Map your Value Stream</p>
+            </div>
+
+            <!-- Results Card -->
+            <div x-show="flowCalc.metrics" x-transition class="bg-card border-2 rounded-xl overflow-hidden shadow-2xl h-full flex flex-col relative"
+                 :class="flowCalc.metrics?.efficiency < 15 ? 'border-red-500' : (flowCalc.metrics?.efficiency < 40 ? 'border-yellow-500' : 'border-green-500')">
+                
+                <!-- Monitor Header -->
+                <div class="p-6 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">FLOW EFFICIENCY SCORE</p>
+                        <h3 class="text-4xl font-bold font-mono mt-1" :class="flowCalc.metrics?.color" x-text="flowCalc.metrics?.efficiency + '%'"></h3>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-bold px-3 py-1 rounded bg-slate-800 border uppercase" :class="flowCalc.metrics?.color" x-text="flowCalc.metrics?.verdict"></span>
+                        <p class="text-[9px] text-slate-500 mt-1">Target: >25%</p>
+                    </div>
+                </div>
+
+                <!-- The "Stream" Visualization -->
+                <div class="p-6 bg-dark border-b border-slate-800 overflow-x-auto">
+                    <p class="text-[10px] text-slate-500 uppercase mb-3 font-bold">TIMELINE VISUALIZATION (GREEN=WORK, RED=WAIT)</p>
+                    <div class="flex h-12 w-full rounded-lg overflow-hidden relative min-w-[300px]">
+                        <template x-for="step in flowCalc.steps">
+                            <div class="flex h-full flex-grow" :style="`flex-grow: ${parseFloat(step.work) + parseFloat(step.wait)}`">
+                                <!-- Work Segment -->
+                                <div class="h-full bg-green-500 border-r border-black/20 relative group" 
+                                     :style="`width: ${(step.work / (parseFloat(step.work) + parseFloat(step.wait))) * 100}%`">
+                                     <div class="absolute bottom-full mb-1 left-0 text-[9px] bg-black text-white px-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10" x-text="step.work"></div>
+                                </div>
+                                <!-- Wait Segment -->
+                                <div class="h-full bg-red-500/80 border-r border-black/20 relative group"
+                                     :style="`width: ${(step.wait / (parseFloat(step.work) + parseFloat(step.wait))) * 100}%`">
+                                     <div class="absolute bottom-full mb-1 right-0 text-[9px] bg-black text-white px-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10" x-text="step.wait"></div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-2 font-mono">
+                        <span>Start</span>
+                        <span>Total Lead Time: <span x-text="flowCalc.metrics?.totalLeadTime + ' ' + flowCalc.unit"></span></span>
+                    </div>
+                </div>
+
+                <!-- Metrics Body -->
+                <div class="p-6 space-y-6 flex-1">
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-green-900/10 border border-green-500/30 p-4 rounded-lg">
+                            <p class="text-[10px] text-green-400 uppercase font-bold">VALUE ADD TIME</p>
+                            <h4 class="text-2xl font-mono text-white font-bold" x-text="flowCalc.metrics?.totalWork"></h4>
+                            <p class="text-[9px] text-slate-500" x-text="flowCalc.unit"></p>
+                        </div>
+                        <div class="bg-red-900/10 border border-red-500/30 p-4 rounded-lg">
+                            <p class="text-[10px] text-red-400 uppercase font-bold">WASTE (WAIT TIME)</p>
+                            <h4 class="text-2xl font-mono text-white font-bold" x-text="flowCalc.metrics?.totalWait"></h4>
+                            <p class="text-[9px] text-slate-500" x-text="flowCalc.unit"></p>
+                        </div>
+                    </div>
+
+                    <!-- Bottleneck Alert -->
+                    <div class="bg-slate-800 border-l-4 border-orange-500 p-4 rounded-r-lg">
+                        <div class="flex items-center gap-2 mb-1">
+                            <i class="fa-solid fa-triangle-exclamation text-orange-500 text-xs"></i>
+                            <p class="text-[10px] text-orange-400 uppercase font-bold">PRIMARY BOTTLENECK DETECTED</p>
+                        </div>
+                        <p class="text-white font-bold text-sm">"<span x-text="flowCalc.metrics?.bottleneck.name"></span>"</p>
+                        <p class="text-xs text-slate-400 mt-1">
+                            Accounting for <span x-text="Math.round((flowCalc.metrics?.bottleneck.wait / flowCalc.metrics?.totalWait) * 100)"></span>% of all delays.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- AI Prompt Box -->
+                <div class="p-6 bg-slate-900 border-t border-slate-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-mono text-white font-bold flex items-center gap-2 text-xs uppercase">
+                            <i class="fa-solid fa-robot text-blue-400"></i> Lean Master AI
+                        </h3>
+                    </div>
+
+                    <div class="relative font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-24 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                        <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="flowCalc.generateLeanPrompt()"></pre>
+                    </div>
+
+                    <button @click="
+                            copyToClipboard(flowCalc.generateLeanPrompt(), 'Analysis Data');
+                            $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                            setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE LEAN STRATEGY (AI)'; }, 2000)
+                            " 
+                            class="w-full border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white font-bold py-3 rounded text-xs transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE LEAN STRATEGY (AI)
+                    </button>
+                    <p class="text-center text-[10px] text-slate-500 mt-3">
+                        Ready to paste into your GenAI tool of choice.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
         
         
             <!-- COMMUNITY -->
