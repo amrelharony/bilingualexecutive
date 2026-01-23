@@ -1,21 +1,42 @@
 {
   "name": "The Bilingual Executive Toolkit",
   "short_name": "BilingualExec",
+  "description": "Strategic tools for banking leaders: Agile Audits, War Games, and Financial Simulators.",
+  "id": "/?source=pwa",
   "start_url": "/index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0f172a",
   "theme_color": "#0f172a",
+  "categories": ["productivity", "finance", "business"],
   "icons": [
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/mobile-dashboard.png",
+      "sizes": "625x630",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Executive Dashboard"
+    },
+    {
+      "src": "screenshots/desktop-simulator.png",
+      "sizes": "1920x869",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "War Games Simulator"
     }
   ]
 }
