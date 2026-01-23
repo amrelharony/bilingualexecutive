@@ -3978,6 +3978,574 @@ END-IF."></textarea>
 
     </div>
 </div>
+
+        <!-- RISK SIMULATOR TAB -->
+<div x-show="currentTab === 'risksim'" x-cloak class="max-w-5xl mx-auto pb-20">
+    
+    <div class="text-center mb-8">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">The Risk Dojo</h2>
+        <p class="text-textMuted text-sm">Negotiate the "Go/No-Go". Balance Trust vs. Velocity.</p>
+    </div>
+
+    <!-- 1. INTRO SCREEN -->
+    <div x-show="!riskSim.active" class="flex flex-col items-center justify-center bg-card border border-slate-700 p-10 rounded-xl text-center max-w-2xl mx-auto">
+        <div class="w-24 h-24 rounded-full bg-slate-800 border-2 border-risk flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(248,113,113,0.3)]">
+            <i class="fa-solid fa-user-shield text-4xl text-risk"></i>
+        </div>
+        <h3 class="text-2xl font-bold text-white mb-2">Opponent: Marcus (The CRO)</h3>
+        <p class="text-slate-400 mb-8 leading-relaxed">
+            "My job is to keep this bank out of the headlines. Your job is to launch features. 
+            <br>Prove to me you aren't reckless, and I might let you pass."
+        </p>
+        <button @click="riskSim.start()" class="bg-risk hover:bg-red-500 text-dark font-bold py-3 px-10 rounded-lg shadow-glow transition-all">
+            ENTER BOARDROOM
+        </button>
+    </div>
+
+    <!-- 2. GAME BOARD -->
+    <div x-show="riskSim.active && !riskSim.outcome" class="grid lg:grid-cols-12 gap-8">
+        
+        <!-- LEFT: MARCUS (The Opponent) -->
+        <div class="lg:col-span-4 space-y-6">
+            <div class="bg-card border-2 border-risk p-6 rounded-xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 p-4 opacity-10"><i class="fa-solid fa-gavel text-8xl text-risk"></i></div>
+                
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-16 h-16 rounded-full bg-slate-800 border border-slate-600 flex items-center justify-center">
+                        <i class="fa-solid fa-user-tie text-2xl text-slate-300"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-white">Marcus</h3>
+                        <p class="text-[10px] text-slate-400 uppercase tracking-widest">Chief Risk Officer</p>
+                    </div>
+                </div>
+
+                <!-- Speech Bubble -->
+                <div class="bg-slate-800 p-4 rounded-lg border-l-4 border-risk relative">
+                    <div class="absolute -top-2 left-6 w-4 h-4 bg-slate-800 transform rotate-45 border-t border-l border-slate-600"></div>
+                    <p class="text-sm text-white italic leading-relaxed">
+                        "<span x-text="riskSim.currentObjection?.objection"></span>"
+                    </p>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                <div class="mb-4">
+                    <div class="flex justify-between text-xs font-bold mb-1">
+                        <span class="text-white">Marcus's Trust</span>
+                        <span :class="riskSim.metrics.trust < 30 ? 'text-red-500' : 'text-green-400'" x-text="riskSim.metrics.trust + '%'"></span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="h-full transition-all duration-500" 
+                             :class="riskSim.metrics.trust < 30 ? 'bg-red-500' : 'bg-green-500'"
+                             :style="`width: ${riskSim.metrics.trust}%`"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-xs font-bold mb-1">
+                        <span class="text-white">Launch Velocity</span>
+                        <span class="text-blue-400" x-text="riskSim.metrics.velocity + '%'"></span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                        <div class="bg-blue-500 h-full transition-all duration-500" :style="`width: ${riskSim.metrics.velocity}%`"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: YOUR HAND (The Cards) -->
+        <div class="lg:col-span-8">
+            <h3 class="font-mono text-xs text-slate-500 uppercase mb-4 text-center">CHOOSE YOUR TACTIC (ROUND <span x-text="riskSim.round + 1"></span>/3)</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <template x-for="card in riskSim.cards" :key="card.id">
+                    <button @click="riskSim.playCard(card.id)" 
+                            class="group relative bg-slate-800 border border-slate-600 hover:border-white p-6 rounded-xl text-left transition-all hover:-translate-y-1 hover:shadow-xl">
+                        
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="w-10 h-10 rounded-full bg-slate-900 flex items-center justify-center text-lg" :class="card.id === 'speed' ? 'text-red-400' : 'text-blue-400'">
+                                <i :class="'fa-solid ' + card.icon"></i>
+                            </div>
+                            <!-- Math Preview on Hover -->
+                            <div class="text-[9px] font-mono opacity-0 group-hover:opacity-100 transition-opacity bg-black/50 px-2 py-1 rounded">
+                                <span :class="card.math.trust >= 0 ? 'text-green-400' : 'text-red-400'">Trust <span x-text="card.math.trust > 0 ? '+' : ''"></span><span x-text="card.math.trust"></span></span> | 
+                                <span :class="card.math.velocity >= 0 ? 'text-blue-400' : 'text-orange-400'">Vel <span x-text="card.math.velocity > 0 ? '+' : ''"></span><span x-text="card.math.velocity"></span></span>
+                            </div>
+                        </div>
+                        
+                        <h4 class="font-bold text-white text-sm mb-1" x-text="card.label"></h4>
+                        <p class="text-xs text-slate-400" x-text="card.desc"></p>
+                    </button>
+                </template>
+            </div>
+
+            <!-- Last Action Log -->
+            <div class="mt-6 text-center" x-show="riskSim.history.length > 0">
+                <p class="text-[10px] text-slate-500 uppercase mb-2">LAST TURN RESULT</p>
+                <p class="text-sm text-slate-300 italic">"<span x-text="riskSim.history[riskSim.history.length-1]?.outcome"></span>"</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. GAME OVER / RESULTS -->
+    <div x-show="riskSim.outcome" x-transition class="max-w-2xl mx-auto">
+        
+        <div class="text-center mb-8">
+            <div class="inline-block p-6 rounded-full border-4 mb-4 shadow-2xl"
+                 :class="riskSim.outcome.status === 'FIRED' ? 'border-red-500 bg-red-500/20 text-red-500' : 'border-green-500 bg-green-500/20 text-green-500'">
+                <i class="fa-solid text-5xl" :class="riskSim.outcome.status === 'FIRED' ? 'fa-thumbs-down' : 'fa-handshake'"></i>
+            </div>
+            <h2 class="text-4xl font-bold text-white mb-2" x-text="riskSim.outcome.status"></h2>
+            <p class="text-xl text-slate-300 font-mono mb-2" x-text="riskSim.outcome.archetype"></p>
+            <p class="text-sm text-slate-500" x-text="riskSim.outcome.msg"></p>
+        </div>
+
+        <!-- AI Prompt Box -->
+        <div class="bg-slate-900 border border-risk/30 p-6 rounded-xl relative overflow-hidden group">
+            <div class="flex justify-between items-center mb-4 relative z-10">
+                <h3 class="font-mono text-white font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-robot text-risk"></i> 
+                    NEGOTIATION COACH AI
+                </h3>
+            </div>
+
+            <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-28 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="riskSim.generateCoachingPrompt()"></pre>
+            </div>
+
+            <button @click="
+                    copyToClipboard(riskSim.generateCoachingPrompt(), 'Simulation Logs');
+                    $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                    $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                    setTimeout(() => {
+                        $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GET COACHING (AI)';
+                        $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                    }, 2000)
+                    " 
+                    class="relative z-10 w-full py-4 bg-transparent border border-risk text-risk hover:bg-risk hover:text-dark font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> GET COACHING (AI)
+            </button>
+        </div>
+
+        <div class="text-center mt-8">
+            <button @click="riskSim.start()" class="text-slate-500 hover:text-white underline text-sm">Play Again</button>
+        </div>
+
+    </div>
+</div>
+
+
+        <!-- EXCEL ESCAPE ROOM TAB -->
+<div x-show="currentTab === 'escaperoom'" x-cloak class="max-w-4xl mx-auto pb-20">
+    
+    <div class="text-center mb-8">
+        <h2 class="font-mono text-3xl font-bold text-green-400 mb-2 tracking-widest">
+            <i class="fa-solid fa-terminal mr-2"></i>EXCEL_FACTORY.EXE
+        </h2>
+        <p class="text-textMuted text-sm">Gamified Tech Debt Simulation. Survive 3 levels of legacy hell.</p>
+    </div>
+
+    <!-- 1. INTRO SCREEN -->
+    <div x-show="!excelEscape.active && !excelEscape.outcome" class="flex flex-col items-center justify-center p-10 border-2 border-green-500/30 rounded-xl bg-black/80 text-center relative overflow-hidden min-h-[400px]">
+        <div class="absolute inset-0 opacity-10" style="background-image: repeating-linear-gradient(0deg, transparent, transparent 19px, #22c55e 20px);"></div>
+        
+        <i class="fa-solid fa-ghost text-6xl text-green-500 mb-6 animate-bounce relative z-10"></i>
+        <h3 class="text-2xl font-bold text-white mb-2 relative z-10 font-mono">Escape the Spreadsheet</h3>
+        <p class="text-slate-400 max-w-md mb-8 relative z-10 text-sm font-mono">
+            You have 100 HP (Political Capital). <br>
+            Choose wisely: Manual work costs HP. Automation risks failure.
+        </p>
+        
+        <div class="relative z-10 mb-6 w-64">
+            <input type="text" x-model="excelEscape.playerName" placeholder="ENTER AGENT NAME..." 
+                   class="w-full bg-black border border-green-500 text-green-400 font-mono p-3 rounded focus:outline-none focus:shadow-[0_0_15px_#22c55e] text-center uppercase placeholder-green-900">
+        </div>
+
+        <button @click="excelEscape.start()" class="relative z-10 bg-green-600 hover:bg-green-500 text-black font-bold py-3 px-12 rounded shadow-glow transition-all text-lg font-mono">
+            > EXECUTE_SIMULATION
+        </button>
+    </div>
+
+    <!-- 2. GAMEPLAY SCREEN -->
+    <div x-show="excelEscape.active && !excelEscape.outcome" class="relative">
+        
+        <!-- HUD -->
+        <div class="flex justify-between items-center mb-6 bg-slate-900 p-4 rounded-lg border border-slate-700 font-mono">
+            <div class="flex items-center gap-4">
+                <div class="text-left">
+                    <p class="text-[10px] text-slate-500 uppercase">Political Capital (HP)</p>
+                    <div class="w-32 h-4 bg-slate-800 rounded-sm mt-1 overflow-hidden border border-slate-600">
+                        <div class="h-full transition-all duration-500" 
+                             :class="excelEscape.hp < 30 ? 'bg-red-500' : 'bg-green-500'"
+                             :style="`width: ${excelEscape.hp}%`"></div>
+                    </div>
+                </div>
+                <div class="text-left border-l border-slate-700 pl-4">
+                    <p class="text-[10px] text-slate-500 uppercase">Efficiency Score</p>
+                    <p class="text-xl text-yellow-400 font-bold" x-text="excelEscape.score"></p>
+                </div>
+            </div>
+            <div class="text-right">
+                <span class="bg-green-900/30 text-green-400 border border-green-500/30 px-3 py-1 rounded text-xs">
+                    LEVEL <span x-text="excelEscape.level"></span>/3
+                </span>
+            </div>
+        </div>
+
+        <!-- ENCOUNTER CARD -->
+        <div class="bg-black border-2 border-slate-600 rounded-xl p-8 mb-6 relative overflow-hidden min-h-[300px] flex flex-col justify-center shadow-2xl">
+            <!-- Scanline Effect -->
+            <div class="absolute inset-0 pointer-events-none opacity-5 bg-[url('https://media.giphy.com/media/oEI9uBYSzLpBK/giphy.gif')] bg-cover"></div>
+
+            <div class="text-center mb-8 relative z-10">
+                <p class="text-xs font-mono text-red-400 mb-2 animate-pulse">⚠️ INCIDENT DETECTED</p>
+                <h3 class="text-2xl font-bold text-white mb-2 font-mono" x-text="excelEscape.gamePath[excelEscape.level-1]?.enemy"></h3>
+                <p class="text-slate-300 text-sm font-mono leading-relaxed max-w-lg mx-auto" x-text="excelEscape.gamePath[excelEscape.level-1]?.desc"></p>
+            </div>
+
+            <!-- CHOICES -->
+            <div class="grid md:grid-cols-3 gap-4 relative z-10">
+                <template x-for="(opt, idx) in excelEscape.gamePath[excelEscape.level-1]?.options" :key="idx">
+                    <button @click="excelEscape.makeMove(idx)" 
+                            :disabled="excelEscape.loading"
+                            class="p-4 border rounded-lg text-left transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50 group h-full flex flex-col justify-between"
+                            :class="opt.type === 'modern' ? 'bg-green-900/10 border-green-500 hover:bg-green-900/30' : (opt.type === 'legacy' ? 'bg-yellow-900/10 border-yellow-500 hover:bg-yellow-900/30' : 'bg-slate-800 border-slate-600 hover:border-white')">
+                        
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[9px] font-mono opacity-70 uppercase tracking-widest" x-text="opt.type"></span>
+                                <i class="fa-solid" :class="opt.type === 'modern' ? 'fa-bolt text-green-400' : (opt.type === 'legacy' ? 'fa-wrench text-yellow-400' : 'fa-hand-paper text-slate-400')"></i>
+                            </div>
+                            <span class="font-bold text-xs text-white leading-tight block mb-2" x-text="opt.label"></span>
+                        </div>
+                        
+                        <div class="text-[9px] font-mono opacity-50 pt-2 border-t border-white/10 group-hover:opacity-100">
+                            Risk: <span x-text="opt.risk + '%'"></span> | Cost: <span x-text="opt.cost + ' HP'"></span>
+                        </div>
+                    </button>
+                </template>
+            </div>
+
+            <!-- LOADING OVERLAY -->
+            <div x-show="excelEscape.loading" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-20">
+                <p class="font-mono text-green-400 text-sm animate-pulse">>> EXECUTING COMMAND...</p>
+            </div>
+        </div>
+
+        <!-- LOG CONSOLE -->
+        <div class="bg-black rounded-lg p-3 font-mono text-[10px] h-32 overflow-y-auto border border-green-500/30 shadow-inner flex flex-col-reverse">
+            <template x-for="log in excelEscape.logs">
+                <div class="mb-1 border-b border-white/5 pb-1 last:border-0">
+                    <span class="text-green-500">>></span> <span class="text-slate-300" x-text="log"></span>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- 3. GAME OVER / VICTORY SCREEN -->
+    <div x-show="excelEscape.outcome" x-transition class="text-center py-6">
+        
+        <div class="inline-block p-6 rounded-full border-4 mb-6 shadow-[0_0_50px_currentColor]"
+             :class="excelEscape.outcome?.status === 'FIRED' ? 'border-red-500 bg-red-900/20 text-red-500' : 'border-green-500 bg-green-900/20 text-green-500'">
+            <i class="fa-solid text-6xl" :class="excelEscape.outcome?.status === 'FIRED' ? 'fa-skull' : 'fa-trophy'"></i>
+        </div>
+        
+        <h2 class="text-4xl font-bold text-white mb-2 font-mono tracking-widest" x-text="excelEscape.outcome?.status"></h2>
+        <p class="text-xl text-white font-bold mb-1" x-text="excelEscape.outcome?.archetype"></p>
+        <p class="text-slate-400 mb-8 text-sm" x-text="excelEscape.outcome?.msg"></p>
+
+        <!-- AI Analysis Box -->
+        <div class="bg-slate-900 border border-green-500/30 p-6 rounded-xl relative overflow-hidden group mb-8 text-left">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-mono text-white font-bold flex items-center gap-2 text-xs uppercase">
+                    <i class="fa-solid fa-user-doctor text-green-500"></i> Career Coach AI
+                </h3>
+            </div>
+            <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-24 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="excelEscape.generatePerformancePrompt()"></pre>
+            </div>
+            <button @click="
+                    copyToClipboard(excelEscape.generatePerformancePrompt(), 'Game Stats');
+                    $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                    setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GET CAREER FEEDBACK (AI)'; }, 2000)
+                    " 
+                    class="w-full border border-green-500 text-green-400 hover:bg-green-500 hover:text-black py-3 rounded text-xs font-bold transition-all flex items-center justify-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> GET CAREER FEEDBACK (AI)
+            </button>
+        </div>
+
+        <button @click="excelEscape.reset(); excelEscape.start()" class="text-slate-500 hover:text-white underline text-xs">
+            Play Again
+        </button>
+    </div>
+
+</div>
+
+
+
+        <!-- COGNITIVE LOAD CALCULATOR TAB -->
+<div x-show="currentTab === 'cognitive'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">
+            <i class="fa-solid fa-brain mr-2 text-purple-400"></i>Cognitive Load Calculator
+        </h2>
+        <p class="text-textMuted text-sm">Measure the "Extraneous Load" killing your team's ability to think.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: THE STRESSORS (INPUTS) -->
+        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-8">
+            <div class="flex justify-between items-center border-b border-slate-700 pb-2">
+                <h3 class="font-mono text-xs text-purple-400 uppercase font-bold">Team Inputs</h3>
+                <span class="text-[10px] text-slate-500">TEAM SIZE: <span x-text="cognitiveCalc.inputs.teamSize"></span></span>
+            </div>
+
+            <!-- 1. Interruptions -->
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-white font-bold"><i class="fa-solid fa-bell mr-2 text-red-400"></i>Interruptions / Day</label>
+                    <span class="text-xs font-bold text-white" x-text="cognitiveCalc.inputs.interruptions"></span>
+                </div>
+                <input type="range" min="0" max="50" x-model="cognitiveCalc.inputs.interruptions" @input="cognitiveCalc.result = null" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-red-500">
+                <p class="text-[10px] text-slate-500 mt-2">Slack pings, shoulder taps, urgent emails per person.</p>
+            </div>
+
+            <!-- 2. Ambiguity -->
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-white font-bold"><i class="fa-solid fa-cloud-fog mr-2 text-slate-400"></i>Task Ambiguity</label>
+                    <span class="text-xs font-bold text-white" x-text="cognitiveCalc.inputs.ambiguity + '/10'"></span>
+                </div>
+                <input type="range" min="1" max="10" x-model="cognitiveCalc.inputs.ambiguity" @input="cognitiveCalc.result = null" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-slate-400">
+                <p class="text-[10px] text-slate-500 mt-2">1 = "Clear Specs", 10 = "Vague one-liners".</p>
+            </div>
+
+            <!-- 3. Meetings -->
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-white font-bold"><i class="fa-solid fa-users mr-2 text-yellow-500"></i>Meeting Hours / Week</label>
+                    <span class="text-xs font-bold text-white" x-text="cognitiveCalc.inputs.meetings + ' hrs'"></span>
+                </div>
+                <input type="range" min="0" max="40" x-model="cognitiveCalc.inputs.meetings" @input="cognitiveCalc.result = null" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-yellow-500">
+            </div>
+
+            <!-- 4. Tool Frag -->
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-mono text-white font-bold"><i class="fa-solid fa-toolbox mr-2 text-blue-400"></i>Tools per Task</label>
+                    <span class="text-xs font-bold text-white" x-text="cognitiveCalc.inputs.tools"></span>
+                </div>
+                <input type="range" min="1" max="20" x-model="cognitiveCalc.inputs.tools" @input="cognitiveCalc.result = null" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                <p class="text-[10px] text-slate-500 mt-2">How many apps to ship one feature?</p>
+            </div>
+
+            <button @click="cognitiveCalc.calculate()" 
+                    :disabled="cognitiveCalc.loading"
+                    class="w-full py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
+                <span x-show="!cognitiveCalc.loading"><i class="fa-solid fa-calculator"></i> MEASURE LOAD</span>
+                <span x-show="cognitiveCalc.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> PROCESSING...</span>
+            </button>
+        </div>
+
+        <!-- RIGHT: THE BRAIN MONITOR (OUTPUT) -->
+        <div class="lg:col-span-7 relative min-h-[500px]">
+            
+            <!-- Empty State -->
+            <div x-show="!cognitiveCalc.result" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-500">
+                <i class="fa-solid fa-brain text-6xl mb-4 opacity-20"></i>
+                <p class="font-mono text-xs uppercase">Awaiting Team Data</p>
+            </div>
+
+            <!-- Results Card -->
+            <div x-show="cognitiveCalc.result" x-transition class="bg-card border-2 rounded-xl overflow-hidden shadow-2xl h-full flex flex-col relative"
+                 :class="cognitiveCalc.result?.score > 80 ? 'border-red-500' : (cognitiveCalc.result?.score > 50 ? 'border-yellow-500' : 'border-green-500')">
+                
+                <!-- Monitor Header -->
+                <div class="p-6 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">MENTAL CAPACITY</p>
+                        <h3 class="text-3xl font-bold font-mono mt-1" :class="cognitiveCalc.result?.color" x-text="cognitiveCalc.result?.zone"></h3>
+                    </div>
+                    <div class="w-16 h-16 rounded-full border-4 flex items-center justify-center"
+                         :class="cognitiveCalc.result?.score > 80 ? 'border-red-500 bg-red-900/20' : 'border-green-500 bg-green-900/20'">
+                        <i class="fa-solid fa-brain text-2xl text-white"></i>
+                    </div>
+                </div>
+
+                <!-- Metrics Body -->
+                <div class="p-6 space-y-6 flex-1">
+                    
+                    <!-- Load Bar -->
+                    <div>
+                        <div class="flex justify-between text-xs font-bold mb-2">
+                            <span class="text-white">Load Saturation</span>
+                            <span :class="cognitiveCalc.result?.color" x-text="cognitiveCalc.result?.score + '%'"></span>
+                        </div>
+                        <div class="w-full bg-slate-800 h-4 rounded-full overflow-hidden relative">
+                            <!-- Markers -->
+                            <div class="absolute top-0 bottom-0 left-[50%] w-px bg-slate-600 z-10"></div>
+                            <div class="absolute top-0 bottom-0 left-[80%] w-px bg-red-900 z-10"></div>
+                            <!-- Bar -->
+                            <div class="h-full transition-all duration-1000 ease-out"
+                                 :class="cognitiveCalc.result?.score > 80 ? 'bg-red-500' : (cognitiveCalc.result?.score > 50 ? 'bg-yellow-500' : 'bg-green-500')"
+                                 :style="`width: ${cognitiveCalc.result?.score}%`"></div>
+                        </div>
+                        <p class="text-xs text-slate-400 mt-2 italic" x-text="cognitiveCalc.result?.diagnosis"></p>
+                    </div>
+
+                    <!-- Financial Impact -->
+                    <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-700 flex gap-4 items-center">
+                        <div class="bg-slate-700 p-3 rounded-full">
+                            <i class="fa-solid fa-money-bill-wave text-green-400 text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">ANNUAL COGNITIVE TAX</p>
+                            <h4 class="text-2xl font-mono text-white font-bold" x-text="'$' + cognitiveCalc.result?.annualTax.toLocaleString()"></h4>
+                            <p class="text-[9px] text-slate-500">Wasted salary due to context switching & overhead.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- AI Prompt Box -->
+                <div class="p-6 bg-slate-900 border-t border-slate-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-mono text-white font-bold flex items-center gap-2 text-xs uppercase">
+                            <i class="fa-solid fa-robot text-purple-400"></i> Psych Analysis
+                        </h3>
+                    </div>
+
+                    <div class="relative font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-24 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                        <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="cognitiveCalc.generatePsychPrompt()"></pre>
+                    </div>
+
+                    <button @click="
+                            copyToClipboard(cognitiveCalc.generatePsychPrompt(), 'Team Audit');
+                            $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                            setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE DEEP WORK PLAN (AI)'; }, 2000)
+                            " 
+                            class="w-full border border-purple-500 text-purple-400 hover:bg-purple-500 hover:text-white font-bold py-3 rounded text-xs transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE DEEP WORK PLAN (AI)
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+        <!-- BILINGUAL BINGO TAB -->
+<div x-show="currentTab === 'bingo'" x-cloak class="max-w-4xl mx-auto pb-20">
+    
+    <div class="text-center mb-8">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">
+            <i class="fa-solid fa-table-cells mr-2 text-pink-500"></i>Bilingual Bingo
+        </h2>
+        <p class="text-textMuted text-sm">Gamify your next meeting. Click tiles when you hear/see the behavior.</p>
+    </div>
+
+    <!-- START SCREEN -->
+    <div x-show="!bingoGame.active" class="flex flex-col items-center justify-center p-12 bg-card border-2 border-slate-700 border-dashed rounded-xl text-center">
+        <i class="fa-solid fa-users-viewfinder text-6xl text-slate-600 mb-6"></i>
+        <h3 class="text-xl font-bold text-white mb-2">Ready to Observe?</h3>
+        <p class="text-slate-400 max-w-md mb-8">This generates a random 5x5 grid of "Bilingual" (Good) and "Legacy" (Bad) behaviors. Play during the meeting.</p>
+        <button @click="bingoGame.startNewGame()" class="bg-pink-600 hover:bg-pink-500 text-white font-bold py-3 px-10 rounded-full shadow-glow transition-all">
+            GENERATE BOARD
+        </button>
+    </div>
+
+    <!-- GAME BOARD -->
+    <div x-show="bingoGame.active" class="flex flex-col h-full">
+        
+        <!-- Scoreboard -->
+        <div class="flex justify-between items-center mb-6 bg-slate-900 p-4 rounded-xl border border-slate-700">
+            <div class="flex gap-6">
+                <div>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest">CULTURE SCORE</p>
+                    <h3 class="text-2xl font-mono font-bold" :class="bingoGame.metrics.score > 0 ? 'text-green-400' : 'text-red-400'">
+                        <span x-show="bingoGame.metrics.score > 0">+</span><span x-text="bingoGame.metrics.score"></span>
+                    </h3>
+                </div>
+                <div>
+                    <p class="text-[10px] text-slate-500 uppercase tracking-widest">TOXICITY</p>
+                    <h3 class="text-2xl font-mono font-bold" :class="bingoGame.metrics.toxicity > 50 ? 'text-red-500' : 'text-slate-300'">
+                        <span x-text="bingoGame.metrics.toxicity"></span>%
+                    </h3>
+                </div>
+            </div>
+            
+            <div class="text-right">
+                <span class="px-4 py-2 rounded-lg font-bold text-sm border transition-all duration-500"
+                      :class="bingoGame.metrics.status === 'BINGO!' ? 'bg-pink-600 text-white border-pink-400 animate-pulse' : 'bg-slate-800 text-slate-400 border-slate-600'">
+                    <span x-text="bingoGame.metrics.status"></span>
+                </span>
+            </div>
+        </div>
+
+        <!-- The Grid -->
+        <div class="grid grid-cols-5 gap-2 md:gap-3 aspect-square max-w-2xl mx-auto w-full">
+            <template x-for="(tile, index) in bingoGame.board" :key="tile.id">
+                <button @click="bingoGame.toggleTile(index)" 
+                        class="relative p-2 md:p-4 rounded-lg border-2 flex items-center justify-center text-center transition-all duration-200 hover:scale-105 active:scale-95"
+                        :class="
+                            tile.id === 12 ? 'bg-pink-900/50 border-pink-500 text-pink-300' : 
+                            (tile.selected ? 
+                                (tile.type === 'good' ? 'bg-green-600 border-green-400 text-white' : 'bg-red-600 border-red-400 text-white') 
+                                : 'bg-slate-800 border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-200')
+                        ">
+                    
+                    <!-- Icon Indicator -->
+                    <div x-show="tile.selected && tile.id !== 12" class="absolute top-1 right-1 text-[10px]">
+                        <i class="fa-solid" :class="tile.type === 'good' ? 'fa-check' : 'fa-triangle-exclamation'"></i>
+                    </div>
+
+                    <span class="text-[9px] md:text-xs font-bold leading-tight select-none" x-text="tile.text"></span>
+                </button>
+            </template>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="mt-8 grid md:grid-cols-2 gap-4">
+            
+            <!-- Reset -->
+            <button @click="bingoGame.startNewGame()" class="border border-slate-600 text-slate-400 hover:text-white py-3 rounded-lg text-xs font-bold transition-all">
+                <i class="fa-solid fa-rotate-right mr-2"></i> NEW GAME
+            </button>
+
+            <!-- AI Analysis -->
+            <div class="relative group">
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-pink-600 to-purple-600 rounded-lg blur opacity-50 group-hover:opacity-100 transition duration-1000 group-hover:duration-200"></div>
+                <button @click="
+                        copyToClipboard(bingoGame.generateCulturePrompt(), 'Bingo Stats');
+                        $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                        setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-robot mr-2\'></i> ANALYZE CULTURE (AI)'; }, 2000)
+                        " 
+                        class="relative w-full bg-dark text-white border border-slate-600 hover:border-white py-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center">
+                    <i class="fa-solid fa-robot mr-2"></i> ANALYZE CULTURE (AI)
+                </button>
+            </div>
+        </div>
+
+        <p class="text-center text-[10px] text-slate-500 mt-4">
+            Generated prompt uses Anthropological Analysis to diagnose team rituals.
+        </p>
+
+    </div>
+</div>
+
+        
+        
+        
+        
             <!-- COMMUNITY -->
             <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
                 <div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl relative overflow-hidden">
