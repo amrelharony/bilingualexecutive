@@ -2525,6 +2525,151 @@
         </div>
     </div>
 </div>
+
+        <!-- FUTURE BANK SCENARIO BUILDER TAB -->
+<div x-show="currentTab === 'future'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">The Future Bank Simulator</h2>
+        <p class="text-textMuted text-sm">Decisions have compounding interest. Choose a strategy and watch the P&L evolve to 2030.</p>
+    </div>
+
+    <!-- 1. SCENARIO SELECTOR -->
+    <div x-show="!futureBank.activeScenario" class="grid md:grid-cols-3 gap-6">
+        <template x-for="scenario in futureBank.scenarios" :key="scenario.id">
+            <button @click="futureBank.selectScenario(scenario.id)" 
+                    class="bg-card border border-slate-700 hover:border-purple-500 p-8 rounded-xl text-center group transition-all hover:-translate-y-2 relative overflow-hidden">
+                <div class="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-6 group-hover:bg-slate-700 transition-colors relative z-10">
+                    <i :class="'fa-solid ' + scenario.icon + ' text-3xl ' + scenario.color"></i>
+                </div>
+                <h3 class="font-bold text-white text-xl mb-2 relative z-10" x-text="scenario.title"></h3>
+                <p class="text-sm text-slate-400 leading-relaxed relative z-10" x-text="scenario.desc"></p>
+                <div class="mt-6 text-xs font-mono text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity relative z-10">
+                    INITIALIZE SIMULATION <i class="fa-solid fa-arrow-right ml-1"></i>
+                </div>
+                
+                <!-- Hover Glow -->
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-purple-900/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            </button>
+        </template>
+    </div>
+
+    <!-- 2. ACTIVE SIMULATION -->
+    <div x-show="futureBank.activeScenario" x-transition class="relative">
+        
+        <!-- Timeline Header -->
+        <div class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+            <button @click="futureBank.activeScenario = null" :disabled="futureBank.isPlaying" class="text-xs text-slate-400 hover:text-white disabled:opacity-30 flex items-center">
+                <i class="fa-solid fa-arrow-left mr-2"></i> ABORT
+            </button>
+            <div class="text-center">
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-1">FISCAL YEAR</p>
+                <h2 class="text-6xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500" 
+                    x-text="futureBank.year"></h2>
+            </div>
+            <div class="w-24 text-right">
+                <span class="text-xs font-bold px-2 py-1 rounded bg-slate-800 text-slate-300 border border-slate-600">
+                    <i class="fa-solid fa-play mr-1 text-green-400" x-show="futureBank.isPlaying"></i>
+                    <i class="fa-solid fa-check mr-1 text-blue-400" x-show="!futureBank.isPlaying"></i>
+                    <span x-text="futureBank.isPlaying ? 'RUNNING' : 'COMPLETE'"></span>
+                </span>
+            </div>
+        </div>
+
+        <!-- LIVE TELEMETRY -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            
+            <!-- Profit -->
+            <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden">
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">NET PROFIT</p>
+                <h3 class="text-2xl font-mono font-bold text-green-400 mb-2">
+                    $<span x-text="(futureBank.metrics.profit / 1000).toFixed(1)"></span>B
+                </h3>
+                <div class="w-full bg-slate-800 h-1 rounded-full mt-4">
+                    <div class="bg-green-500 h-1 rounded-full transition-all duration-500" :style="`width: ${(futureBank.metrics.profit / 5000) * 100}%`"></div>
+                </div>
+            </div>
+
+            <!-- Customers -->
+            <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden">
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">CUSTOMER BASE</p>
+                <h3 class="text-2xl font-bold text-white mb-2">
+                    <span x-text="futureBank.metrics.customers.toFixed(1)"></span>M
+                </h3>
+                <div class="w-full bg-slate-800 h-1 rounded-full mt-4">
+                    <div class="bg-blue-500 h-1 rounded-full transition-all duration-500" :style="`width: ${(futureBank.metrics.customers / 20) * 100}%`"></div>
+                </div>
+            </div>
+
+            <!-- Efficiency Ratio -->
+            <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden">
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">COST/INCOME RATIO</p>
+                <h3 class="text-2xl font-mono font-bold mb-2" :class="futureBank.metrics.efficiency < 50 ? 'text-primary' : 'text-orange-400'">
+                    <span x-text="futureBank.metrics.efficiency.toFixed(0)"></span>%
+                </h3>
+                <p class="text-[9px] text-slate-500">Lower is better</p>
+            </div>
+
+            <!-- Tech Debt -->
+            <div class="bg-card border border-slate-700 p-6 rounded-xl relative overflow-hidden">
+                <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">TECH DEBT INDEX</p>
+                <h3 class="text-2xl font-mono font-bold mb-2" :class="futureBank.metrics.techDebt > 50 ? 'text-red-500' : 'text-slate-300'">
+                    <span x-text="futureBank.metrics.techDebt"></span>/100
+                </h3>
+                <div class="w-full bg-slate-800 h-1 rounded-full mt-4">
+                    <div class="h-1 rounded-full transition-all duration-500" 
+                         :class="futureBank.metrics.techDebt > 50 ? 'bg-red-500' : 'bg-slate-500'"
+                         :style="`width: ${futureBank.metrics.techDebt}%`"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. AI PROMPT BOX (Replaces the automatic letter) -->
+        <div x-show="!futureBank.isPlaying && futureBank.year === 2030" 
+             x-transition:enter="transition ease-out duration-1000 delay-200" 
+             x-transition:enter-start="opacity-0 translate-y-10" 
+             x-transition:enter-end="opacity-100 translate-y-0"
+             class="bg-slate-900 border border-purple-500/30 p-6 rounded-xl relative overflow-hidden group">
+            
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-4 relative z-10">
+                <h3 class="font-mono text-white font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-robot text-purple-400"></i> 
+                    RETROSPECTIVE AI GENERATOR
+                </h3>
+                <span class="text-[10px] uppercase bg-purple-900/50 text-purple-400 px-2 py-1 rounded border border-purple-500/30 font-bold tracking-wider">
+                    Simulation Data Ready
+                </span>
+            </div>
+
+            <!-- Preview -->
+            <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-32 overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="futureBank.generateFuturePrompt()"></pre>
+            </div>
+
+            <!-- Copy Button -->
+            <button @click="
+                    copyToClipboard(futureBank.generateFuturePrompt(), 'Simulation Data');
+                    $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                    $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                    setTimeout(() => {
+                        $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE SHAREHOLDER LETTER (AI)';
+                        $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                    }, 2000)
+                    " 
+                    class="relative z-10 w-full py-4 bg-transparent border border-purple-500 text-purple-400 hover:bg-purple-400 hover:text-black font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(168,85,247,0.1)] hover:shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE SHAREHOLDER LETTER (AI)
+            </button>
+            
+            <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
+                Paste into AI to get the "Letter to Shareholders from 2030".
+            </p>
+        </div>
+
+    </div>
+</div>
+        
             <!-- COMMUNITY -->
             <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
                 <div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl relative overflow-hidden">
