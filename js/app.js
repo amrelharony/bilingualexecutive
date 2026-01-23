@@ -5672,6 +5672,11 @@ TONE: Technical, objective, permanent record.`;
                 }
             },
 
+                async askSecureAI(prompt, context) {
+        console.log("Mock AI Call:", prompt);
+        return JSON.stringify(this.fallbackData); // Return fallback data so app doesn't crash
+    },
+
             // --- ADVANCED MATH ENGINE ---
             submitAnswer(index) {
                 if (this.quizState !== 'pending') return;
