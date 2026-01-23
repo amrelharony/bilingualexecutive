@@ -2240,6 +2240,270 @@
         </div>
     </div>
 </div>
+
+        <!-- EXCEL CALCULATOR TAB (REDESIGNED) -->
+<div x-show="currentTab === 'excel'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-green-400 mb-2">The "Excel Factory" Auditor</h2>
+        <p class="text-textMuted text-sm">Turn hidden manual work into a quantitative business case for automation.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: INPUTS -->
+        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+            <h3 class="font-mono text-xs text-slate-400 uppercase border-b border-slate-700 pb-2 tracking-widest">Process Parameters</h3>
+            
+            <!-- Name -->
+            <div>
+                <label class="block text-xs font-bold text-white mb-1">Process Name</label>
+                <input type="text" x-model="excelCalc.inputs.process_name" placeholder="e.g. Monthly Reg Report" class="w-full bg-dark border border-slate-600 rounded p-2 text-white focus:border-green-500 focus:outline-none">
+            </div>
+
+            <!-- Steps Slider -->
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-bold text-white">Manual Actions (Copy/Pastes)</label>
+                    <span class="font-mono text-xs text-green-400" x-text="excelCalc.inputs.steps"></span>
+                </div>
+                <input type="range" min="5" max="200" step="5" x-model="excelCalc.inputs.steps" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-green-500">
+                <p class="text-[10px] text-slate-500 mt-1">Every touchpoint increases error probability.</p>
+            </div>
+
+            <!-- Frequency -->
+            <div>
+                <label class="block text-xs font-bold text-white mb-2">Frequency</label>
+                <select x-model="excelCalc.inputs.frequency" class="w-full bg-dark border border-slate-600 rounded p-2 text-sm text-white focus:border-green-500">
+                    <option value="1">Annual (1x)</option>
+                    <option value="4">Quarterly (4x)</option>
+                    <option value="12">Monthly (12x)</option>
+                    <option value="52">Weekly (52x)</option>
+                    <option value="250">Daily (250x)</option>
+                </select>
+            </div>
+
+            <!-- Criticality Buttons -->
+            <div>
+                <label class="block text-xs font-bold text-white mb-2">Risk Impact</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button @click="excelCalc.inputs.criticality = 1" :class="excelCalc.inputs.criticality === 1 ? 'bg-slate-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-2 rounded text-[10px] font-bold border border-slate-600 hover:border-white transition-all">
+                        Internal
+                    </button>
+                    <button @click="excelCalc.inputs.criticality = 2" :class="excelCalc.inputs.criticality === 2 ? 'bg-yellow-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-2 rounded text-[10px] font-bold border border-slate-600 hover:border-yellow-500 transition-all">
+                        Regulatory
+                    </button>
+                    <button @click="excelCalc.inputs.criticality = 3" :class="excelCalc.inputs.criticality === 3 ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-2 rounded text-[10px] font-bold border border-slate-600 hover:border-red-500 transition-all">
+                        Customer
+                    </button>
+                </div>
+            </div>
+
+            <button @click="excelCalc.calculate()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg shadow-glow transition-all">
+                CALCULATE EXPOSURE
+            </button>
+        </div>
+
+        <!-- RIGHT: RESULTS -->
+        <div class="lg:col-span-7">
+            
+            <!-- Empty State -->
+            <div x-show="!excelCalc.result" class="h-64 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-500">
+                <i class="fa-solid fa-calculator text-4xl mb-3 opacity-20"></i>
+                <p class="text-xs font-mono">Awaiting inputs...</p>
+            </div>
+
+            <!-- Result Card -->
+            <div x-show="excelCalc.result" x-transition class="space-y-6">
+                
+                <!-- Main Metrics -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-card border border-slate-700 p-4 rounded-xl text-center">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">ANNUAL WASTE (OPEX)</p>
+                        <h3 class="text-3xl font-bold font-mono text-white my-1" x-text="'$' + excelCalc.result?.annualCost.toLocaleString()"></h3>
+                        <p class="text-[10px] text-slate-400"><span x-text="excelCalc.result?.annualHours"></span> wasted hours</p>
+                    </div>
+                    <div class="bg-card border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-red-500/5" x-show="excelCalc.result?.errorProb > 50"></div>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">ERROR PROBABILITY</p>
+                        <h3 class="text-3xl font-bold font-mono my-1" :class="excelCalc.result?.errorProb > 50 ? 'text-red-500' : 'text-yellow-500'">
+                            <span x-text="excelCalc.result?.errorProb"></span>%
+                        </h3>
+                        <p class="text-[10px] text-slate-400">Swiss Cheese Model</p>
+                    </div>
+                </div>
+
+                <!-- Liability Warning -->
+                <div class="bg-slate-900 border-l-4 p-5 rounded-r-xl flex items-center justify-between"
+                     :class="excelCalc.result?.riskExposure > 100000 ? 'border-red-500' : 'border-yellow-500'">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase mb-1" :class="excelCalc.result?.riskExposure > 100000 ? 'text-red-500' : 'text-yellow-500'">TOTAL RISK LIABILITY</p>
+                        <h2 class="text-2xl font-mono font-bold text-white" x-text="'$' + excelCalc.result?.riskExposure.toLocaleString()"></h2>
+                    </div>
+                    <div class="text-right">
+                        <span class="block text-xs font-bold text-white bg-slate-800 px-3 py-1 rounded border border-slate-600">
+                            <span x-text="excelCalc.result?.verdict"></span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- AI Business Case Box -->
+                <div class="bg-slate-900 border border-green-500/30 p-5 rounded-xl group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-3 opacity-10 pointer-events-none"><i class="fa-solid fa-file-invoice-dollar text-6xl text-green-500"></i></div>
+                    
+                    <h4 class="font-mono text-xs text-green-400 font-bold uppercase mb-2">Automated Business Case</h4>
+                    <p class="text-[10px] text-slate-400 mb-4">Use this prompt to generate the funding request for IT.</p>
+                    
+                    <button @click="
+                            copyToClipboard(excelCalc.generateExcelPrompt(), 'Business Case');
+                            $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                            $el.classList.add('bg-white', 'text-black', 'border-white');
+                            setTimeout(() => {
+                                $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> COPY PROMPT FOR AI';
+                                $el.classList.remove('bg-white', 'text-black', 'border-white');
+                            }, 2000)
+                            " 
+                            class="w-full py-3 bg-transparent border border-green-500 text-green-400 hover:bg-green-500 hover:text-black font-bold rounded-lg transition-all flex items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-widest shadow-[0_0_10px_rgba(74,222,128,0.1)] hover:shadow-[0_0_15px_rgba(74,222,128,0.4)]">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> COPY PROMPT FOR AI
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+        <!-- EXCEL CALCULATOR TAB (REDESIGNED) -->
+<div x-show="currentTab === 'excel'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-green-400 mb-2">The "Excel Factory" Auditor</h2>
+        <p class="text-textMuted text-sm">Turn hidden manual work into a quantitative business case for automation.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: INPUTS -->
+        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+            <h3 class="font-mono text-xs text-slate-400 uppercase border-b border-slate-700 pb-2 tracking-widest">Process Parameters</h3>
+            
+            <!-- Name -->
+            <div>
+                <label class="block text-xs font-bold text-white mb-1">Process Name</label>
+                <input type="text" x-model="excelCalc.inputs.process_name" placeholder="e.g. Monthly Reg Report" class="w-full bg-dark border border-slate-600 rounded p-2 text-white focus:border-green-500 focus:outline-none">
+            </div>
+
+            <!-- Steps Slider -->
+            <div>
+                <div class="flex justify-between mb-2">
+                    <label class="text-xs font-bold text-white">Manual Actions (Copy/Pastes)</label>
+                    <span class="font-mono text-xs text-green-400" x-text="excelCalc.inputs.steps"></span>
+                </div>
+                <input type="range" min="5" max="200" step="5" x-model="excelCalc.inputs.steps" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-green-500">
+                <p class="text-[10px] text-slate-500 mt-1">Every touchpoint increases error probability.</p>
+            </div>
+
+            <!-- Frequency -->
+            <div>
+                <label class="block text-xs font-bold text-white mb-2">Frequency</label>
+                <select x-model="excelCalc.inputs.frequency" class="w-full bg-dark border border-slate-600 rounded p-2 text-sm text-white focus:border-green-500">
+                    <option value="1">Annual (1x)</option>
+                    <option value="4">Quarterly (4x)</option>
+                    <option value="12">Monthly (12x)</option>
+                    <option value="52">Weekly (52x)</option>
+                    <option value="250">Daily (250x)</option>
+                </select>
+            </div>
+
+            <!-- Criticality Buttons -->
+            <div>
+                <label class="block text-xs font-bold text-white mb-2">Risk Impact</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button @click="excelCalc.inputs.criticality = 1" :class="excelCalc.inputs.criticality === 1 ? 'bg-slate-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-2 rounded text-[10px] font-bold border border-slate-600 hover:border-white transition-all">
+                        Internal
+                    </button>
+                    <button @click="excelCalc.inputs.criticality = 2" :class="excelCalc.inputs.criticality === 2 ? 'bg-yellow-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-2 rounded text-[10px] font-bold border border-slate-600 hover:border-yellow-500 transition-all">
+                        Regulatory
+                    </button>
+                    <button @click="excelCalc.inputs.criticality = 3" :class="excelCalc.inputs.criticality === 3 ? 'bg-red-600 text-white' : 'bg-slate-800 text-slate-400'" class="p-2 rounded text-[10px] font-bold border border-slate-600 hover:border-red-500 transition-all">
+                        Customer
+                    </button>
+                </div>
+            </div>
+
+            <button @click="excelCalc.calculate()" class="w-full bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-lg shadow-glow transition-all">
+                CALCULATE EXPOSURE
+            </button>
+        </div>
+
+        <!-- RIGHT: RESULTS -->
+        <div class="lg:col-span-7">
+            
+            <!-- Empty State -->
+            <div x-show="!excelCalc.result" class="h-64 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-500">
+                <i class="fa-solid fa-calculator text-4xl mb-3 opacity-20"></i>
+                <p class="text-xs font-mono">Awaiting inputs...</p>
+            </div>
+
+            <!-- Result Card -->
+            <div x-show="excelCalc.result" x-transition class="space-y-6">
+                
+                <!-- Main Metrics -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="bg-card border border-slate-700 p-4 rounded-xl text-center">
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">ANNUAL WASTE (OPEX)</p>
+                        <h3 class="text-3xl font-bold font-mono text-white my-1" x-text="'$' + excelCalc.result?.annualCost.toLocaleString()"></h3>
+                        <p class="text-[10px] text-slate-400"><span x-text="excelCalc.result?.annualHours"></span> wasted hours</p>
+                    </div>
+                    <div class="bg-card border border-slate-700 p-4 rounded-xl text-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-red-500/5" x-show="excelCalc.result?.errorProb > 50"></div>
+                        <p class="text-[10px] text-slate-500 uppercase tracking-widest">ERROR PROBABILITY</p>
+                        <h3 class="text-3xl font-bold font-mono my-1" :class="excelCalc.result?.errorProb > 50 ? 'text-red-500' : 'text-yellow-500'">
+                            <span x-text="excelCalc.result?.errorProb"></span>%
+                        </h3>
+                        <p class="text-[10px] text-slate-400">Swiss Cheese Model</p>
+                    </div>
+                </div>
+
+                <!-- Liability Warning -->
+                <div class="bg-slate-900 border-l-4 p-5 rounded-r-xl flex items-center justify-between"
+                     :class="excelCalc.result?.riskExposure > 100000 ? 'border-red-500' : 'border-yellow-500'">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase mb-1" :class="excelCalc.result?.riskExposure > 100000 ? 'text-red-500' : 'text-yellow-500'">TOTAL RISK LIABILITY</p>
+                        <h2 class="text-2xl font-mono font-bold text-white" x-text="'$' + excelCalc.result?.riskExposure.toLocaleString()"></h2>
+                    </div>
+                    <div class="text-right">
+                        <span class="block text-xs font-bold text-white bg-slate-800 px-3 py-1 rounded border border-slate-600">
+                            <span x-text="excelCalc.result?.verdict"></span>
+                        </span>
+                    </div>
+                </div>
+
+                <!-- AI Business Case Box -->
+                <div class="bg-slate-900 border border-green-500/30 p-5 rounded-xl group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-3 opacity-10 pointer-events-none"><i class="fa-solid fa-file-invoice-dollar text-6xl text-green-500"></i></div>
+                    
+                    <h4 class="font-mono text-xs text-green-400 font-bold uppercase mb-2">Automated Business Case</h4>
+                    <p class="text-[10px] text-slate-400 mb-4">Use this prompt to generate the funding request for IT.</p>
+                    
+                    <button @click="
+                            copyToClipboard(excelCalc.generateExcelPrompt(), 'Business Case');
+                            $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                            $el.classList.add('bg-white', 'text-black', 'border-white');
+                            setTimeout(() => {
+                                $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> COPY PROMPT FOR AI';
+                                $el.classList.remove('bg-white', 'text-black', 'border-white');
+                            }, 2000)
+                            " 
+                            class="w-full py-3 bg-transparent border border-green-500 text-green-400 hover:bg-green-500 hover:text-black font-bold rounded-lg transition-all flex items-center justify-center gap-2 font-mono text-[10px] uppercase tracking-widest shadow-[0_0_10px_rgba(74,222,128,0.1)] hover:shadow-[0_0_15px_rgba(74,222,128,0.4)]">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> COPY PROMPT FOR AI
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
         
             <!-- COMMUNITY -->
             <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
