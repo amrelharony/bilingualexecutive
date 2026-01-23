@@ -1352,9 +1352,7 @@ tools: {
             { id: 'capex', label: 'FinOps Auditor', icon: 'fa-solid fa-file-invoice-dollar', color: 'text-green-400' },
             { id: 'legacy', label: 'Legacy Explainer', icon: 'fa-solid fa-microchip', color: 'text-slate-400' },
             { id: 'flow', label: 'Flow Efficiency', icon: 'fa-solid fa-water', color: 'text-blue-400' },
-            { id: 'adr', label: 'Decision Journal', icon: 'fa-solid fa-book-journal-whills', color: 'text-indigo-300' },
-              { id: 'sandbox', label: 'Sandbox Gen', icon: 'fa-solid fa-box-open', color: 'text-blue-400' }
-
+            { id: 'adr', label: 'Decision Journal', icon: 'fa-solid fa-book-journal-whills', color: 'text-indigo-300' }
 
     ],
     sims: [
@@ -1407,7 +1405,6 @@ tools: {
            { id: 'flow', label: 'Value Stream Calc', desc: 'Measure the hidden waste (Wait Time) in your processes.', icon: 'fa-solid fa-stopwatch', color: 'text-blue-400', vip: false },
            { id: 'adr', label: 'ADR Builder', desc: 'Create weighted decision matrices and generate Architecture Decision Records.', icon: 'fa-solid fa-scale-unbalanced-flip', color: 'text-indigo-300', vip: false },
            { id: 'library', label: 'Bilingual Library', desc: 'Curated books & tech stack definitions for leaders.', icon: 'fa-solid fa-book-bookmark', color: 'text-cyan-300', vip: false },
-           { id: 'sandbox', label: 'Sandbox Architect', desc: 'Design a "Safe-to-Fail" experiment with calculated risk boundaries.', icon: 'fa-solid fa-file-shield', color: 'text-blue-400', vip: false },
 
 
 
@@ -1426,11 +1423,6 @@ tools: {
            { id: 'sprintcheck', label: 'Sprint Diagnostic', desc: '60-second pulse check on velocity, creep, and morale.', icon: 'fa-solid fa-heart-pulse', color: 'text-orange-400', vip: false },
          { id: 'adaptation', label: 'Adaptation Health', desc: 'Measure organizational plasticity and rigidity.', icon: 'fa-solid fa-dna', color: 'text-cyan-400', vip: false },
            { id: 'dt_tracker', label: 'Transformation ROI', desc: 'Track the J-Curve: Hard costs vs. Soft value realization.', icon: 'fa-solid fa-chart-line', color: 'text-green-400', vip: false },
-
-
-
-
-
 
 
 
@@ -5726,126 +5718,6 @@ TONE: Concise, executive-level, high-signal.`;
             }
 
         }, 
-
-        // ------------------------------------------------------------------
-        // REGULATORY SANDBOX GENERATOR (Deterministic Risk Engine)
-        // ------------------------------------------------------------------
-        sandboxGen: {
-            inputs: {
-                project: '',
-                users: 100,          // User Cap
-                transactions: 1000,  // Max $ per user
-                duration: 4,         // Weeks
-                dataLevel: 1,        // 1=Public, 2=Internal, 3=Confidential, 4=PII/Financial
-                fallback: 1          // 1=None, 2=Logs, 3=Human Review
-            },
-            analysis: null,
-            loading: false,
-
-            // Static Data for UI
-            dataTypes: [
-                { val: 1, label: "Public Data", risk: 1 },
-                { val: 2, label: "Internal Ops", risk: 1.5 },
-                { val: 3, label: "Customer PII", risk: 5 }, // Big jump
-                { val: 4, label: "Live Financials", risk: 10 } // Massive risk
-            ],
-            mitigations: [
-                { val: 1, label: "None (Fully Automated)", reduction: 1.0 },
-                { val: 2, label: "Async Audit Logs", reduction: 0.8 },
-                { val: 3, label: "Human-in-the-Loop (Approval)", reduction: 0.3 } // Massive safety boost
-            ],
-
-            calculateRisk() {
-                // 1. Calculate "Blast Radius" (Potential Damage)
-                // Formula: Users * Exposure * DataSensitivity
-                const i = this.inputs;
-                
-                // Normalize inputs to a base score
-                const volumeScore = (i.users * i.transactions); 
-                const sensitivityMult = this.dataTypes.find(d => d.val === i.dataLevel).risk;
-                
-                let rawRisk = volumeScore * sensitivityMult;
-
-                // 2. Apply Mitigations (The "Safety Net")
-                const mitigationFactor = this.mitigations.find(m => m.val === i.fallback).reduction;
-                
-                // Duration Multiplier (Longer = Riskier)
-                const timeMult = 1 + (i.duration / 52); // Small penalty for time
-
-                let adjustedRisk = rawRisk * mitigationFactor * timeMult;
-
-                // 3. Normalize to 0-100 Score for UI
-                // Cap arbitrary math to a gauge
-                let score = Math.min(100, Math.round(adjustedRisk / 5000)); 
-                if (score < 5 && i.dataLevel >= 3) score = 15; // Minimum floor for PII
-
-                // 4. Verdict Logic
-                let verdict = "";
-                let color = "";
-                let badge = "";
-
-                if (score > 80) {
-                    verdict = "BOARD APPROVAL REQUIRED";
-                    color = "text-red-500";
-                    badge = "border-red-500 bg-red-900/10";
-                } else if (score > 40) {
-                    verdict = "RISK COMMITTEE REVIEW";
-                    color = "text-yellow-400";
-                    badge = "border-yellow-500 bg-yellow-900/10";
-                } else {
-                    verdict = "FAST TRACK (DEPT HEAD)";
-                    color = "text-green-400";
-                    badge = "border-green-500 bg-green-900/10";
-                }
-
-                this.analysis = {
-                    score,
-                    verdict,
-                    color,
-                    badge,
-                    exposure: (i.users * i.transactions).toLocaleString(),
-                    dataLabel: this.dataTypes.find(d => d.val === i.dataLevel).label,
-                    mitigationLabel: this.mitigations.find(m => m.val === i.fallback).label
-                };
-            },
-
-            // --- ADVANCED PROMPT GENERATOR ---
-            generateWaiverPrompt() {
-                if (!this.analysis) return "Run calculation first.";
-                const a = this.analysis;
-                const i = this.inputs;
-
-                let defense = "";
-                if (i.fallback === 3) defense = "The 'Human-in-the-Loop' ensures that no algorithm can finalize a transaction without staff review, neutralizing AI hallucination risk.";
-                else if (i.fallback === 2) defense = "Full asynchronous logging allows for forensic rollback within 24 hours.";
-                else defense = "Risk is contained solely via the hard cap on User Volume.";
-
-                return `ACT AS: A Chief Risk Officer (CRO) and Innovation Architect.
-
-## THE REGULATORY SANDBOX PROPOSAL
-I am requesting a "Waiver to Operate" for a pilot project: "${i.project || 'Untitled Innovation'}".
-
-## THE CONTAINMENT PARAMETERS (BLAST RADIUS)
-- **Risk Score:** ${a.score}/100 (${a.verdict})
-- **Volume Cap:** ${i.users} Users / $${i.transactions} max exposure per user.
-- **Total Financial Exposure:** $${a.exposure} (Worst Case Scenario).
-- **Data Sensitivity:** ${a.dataLabel}.
-- **Duration:** ${i.duration} Weeks.
-
-## THE SAFETY NET
-**Mitigation Strategy:** ${a.mitigationLabel}.
-**Defense Logic:** ${defense}
-
-## YOUR MISSION
-Draft the **Formal Waiver Document** for the Risk Committee.
-1. **The Justification:** Explain why this specific configuration constitutes "Acceptable Risk" for a learning experiment.
-2. **The Kill Switch:** Define the exact trigger condition that forces an immediate shutdown (e.g., "If fraud rate exceeds 0.1%, pull the plug").
-3. **The Exit Strategy:** What happens at week ${i.duration}? (e.g., "Automatic deletion of data unless migrated to Prod").
-
-TONE: Compliant, precise, safety-first.`;
-            }
-        },
-        
         // ------------------------------------------------------------------
         // DT ROI TRACKER (Financial J-Curve Engine)
         // ------------------------------------------------------------------
