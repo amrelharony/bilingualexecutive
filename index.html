@@ -5640,6 +5640,351 @@ END-IF."></textarea>
 
 
 
+        <!-- REGULATORY SANDBOX GENERATOR TAB -->
+<div x-show="currentTab === 'sandbox'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">
+            <i class="fa-solid fa-box-open mr-2 text-blue-400"></i>Sandbox Architect
+        </h2>
+        <p class="text-textMuted text-sm">Design a "Safe-to-Fail" experiment. Lower the blast radius to get approved.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: THE CONTROLS (INPUTS) -->
+        <div class="lg:col-span-5 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+            <div class="border-b border-slate-700 pb-4">
+                <label class="text-[10px] text-slate-500 uppercase font-bold">Experiment Name</label>
+                <input type="text" x-model="sandboxGen.inputs.project" class="w-full bg-dark border border-slate-600 rounded p-2 text-white text-sm focus:border-blue-500 outline-none mt-1" placeholder="e.g. GenAI Chatbot Alpha">
+            </div>
+
+            <!-- Volume Sliders -->
+            <div class="bg-slate-800/50 p-4 rounded-lg border border-slate-600">
+                <p class="text-[10px] text-blue-400 font-bold uppercase mb-4">Volume Controls</p>
+                
+                <div class="mb-4">
+                    <div class="flex justify-between mb-1">
+                        <label class="text-xs text-slate-300">User Cap</label>
+                        <span class="text-xs font-mono text-white" x-text="sandboxGen.inputs.users"></span>
+                    </div>
+                    <input type="range" min="10" max="10000" step="10" x-model="sandboxGen.inputs.users" @input="sandboxGen.calculateRisk()" class="w-full h-1 bg-dark rounded-lg appearance-none cursor-pointer accent-blue-500">
+                </div>
+
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <label class="text-xs text-slate-300">Max Transaction ($)</label>
+                        <span class="text-xs font-mono text-white" x-text="'$' + sandboxGen.inputs.transactions"></span>
+                    </div>
+                    <input type="range" min="0" max="50000" step="100" x-model="sandboxGen.inputs.transactions" @input="sandboxGen.calculateRisk()" class="w-full h-1 bg-dark rounded-lg appearance-none cursor-pointer accent-green-500">
+                </div>
+            </div>
+
+            <!-- Sensitivity Buttons -->
+            <div>
+                <label class="text-[10px] text-slate-500 uppercase font-bold mb-2 block">Data Sensitivity</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <template x-for="type in sandboxGen.dataTypes">
+                        <button @click="sandboxGen.inputs.dataLevel = type.val; sandboxGen.calculateRisk()" 
+                                class="text-xs py-2 px-3 rounded border transition-all text-left"
+                                :class="sandboxGen.inputs.dataLevel === type.val ? 'bg-blue-600 border-blue-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-slate-500'">
+                            <i class="fa-solid fa-database mr-2"></i><span x-text="type.label"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Mitigation Buttons -->
+            <div>
+                <label class="text-[10px] text-slate-500 uppercase font-bold mb-2 block">Safety Net (Mitigation)</label>
+                <div class="flex flex-col gap-2">
+                    <template x-for="mit in sandboxGen.mitigations">
+                        <button @click="sandboxGen.inputs.fallback = mit.val; sandboxGen.calculateRisk()" 
+                                class="text-xs py-2 px-3 rounded border transition-all text-left flex justify-between items-center"
+                                :class="sandboxGen.inputs.fallback === mit.val ? 'bg-green-600 border-green-400 text-white' : 'bg-slate-800 border-slate-600 text-slate-400 hover:border-slate-500'">
+                            <span><i class="fa-solid fa-shield-halved mr-2"></i><span x-text="mit.label"></span></span>
+                            <span class="text-[9px] opacity-70" x-text="'-' + ((1-mit.reduction)*100).toFixed(0) + '% Risk'"></span>
+                        </button>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Duration -->
+            <div>
+                <div class="flex justify-between mb-1">
+                    <label class="text-[10px] text-slate-500 uppercase font-bold">Duration (Weeks)</label>
+                    <span class="text-xs font-mono text-white" x-text="sandboxGen.inputs.duration"></span>
+                </div>
+                <input type="range" min="1" max="52" x-model="sandboxGen.inputs.duration" @input="sandboxGen.calculateRisk()" class="w-full h-1 bg-dark rounded-lg appearance-none cursor-pointer accent-purple-500">
+            </div>
+
+        </div>
+
+        <!-- RIGHT: THE RISK GAUGE (OUTPUT) -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Analysis Card -->
+            <div class="bg-card border-2 rounded-xl overflow-hidden shadow-2xl relative"
+                 :class="sandboxGen.analysis ? sandboxGen.analysis.badge : 'border-slate-700'">
+                
+                <!-- Init State -->
+                <div x-show="!sandboxGen.analysis" class="p-10 text-center text-slate-500" x-init="sandboxGen.calculateRisk()">
+                    <i class="fa-solid fa-calculator text-4xl mb-4 opacity-50"></i>
+                    <p class="text-xs uppercase">Adjust sliders to calculate risk</p>
+                </div>
+
+                <!-- Active State -->
+                <div x-show="sandboxGen.analysis">
+                    <div class="p-8 text-center border-b border-slate-700/50 relative overflow-hidden">
+                        <!-- Background pulse -->
+                        <div class="absolute inset-0 opacity-20 bg-gradient-to-t from-black to-transparent"></div>
+                        
+                        <p class="text-[10px] font-mono text-slate-400 uppercase tracking-widest mb-4 relative z-10">CALCULATED RISK SCORE</p>
+                        
+                        <div class="relative w-48 h-24 mx-auto overflow-hidden z-10">
+                            <div class="w-48 h-48 rounded-full border-[16px] border-slate-800 border-t-transparent border-l-transparent -rotate-45 absolute top-0 left-0"></div>
+                            <div class="w-48 h-48 rounded-full border-[16px] border-transparent border-t-current border-l-current -rotate-45 absolute top-0 left-0 transition-all duration-700"
+                                 :class="sandboxGen.analysis?.color"
+                                 :style="`transform: rotate(${(sandboxGen.analysis?.score / 100 * 180) - 135}deg)`"></div>
+                        </div>
+                        <div class="relative -mt-10 z-10">
+                            <span class="text-6xl font-bold font-mono text-white" x-text="sandboxGen.analysis?.score"></span>
+                        </div>
+                        
+                        <div class="mt-6 inline-block px-4 py-2 rounded border font-bold text-sm tracking-wide uppercase shadow-lg"
+                             :class="sandboxGen.analysis?.badge + ' ' + sandboxGen.analysis?.color">
+                            <i class="fa-solid" :class="sandboxGen.analysis?.score > 80 ? 'fa-ban' : 'fa-check'"></i>
+                            <span x-text="sandboxGen.analysis?.verdict"></span>
+                        </div>
+                    </div>
+
+                    <div class="p-6 bg-dark/50 grid grid-cols-2 gap-4 text-center">
+                        <div>
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">TOTAL EXPOSURE</p>
+                            <p class="text-lg font-mono text-white" x-text="'$' + sandboxGen.analysis?.exposure"></p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-500 uppercase font-bold">DATA LEVEL</p>
+                            <p class="text-lg font-mono text-white" x-text="sandboxGen.analysis?.dataLabel"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Prompt Box -->
+            <div class="bg-slate-900 border border-blue-500/30 p-6 rounded-xl relative overflow-hidden group">
+                <div class="flex justify-between items-center mb-4 relative z-10">
+                    <h3 class="font-mono text-white font-bold flex items-center gap-2 text-xs uppercase">
+                        <i class="fa-solid fa-robot text-blue-400"></i> WAIVER GENERATOR AI
+                    </h3>
+                </div>
+
+                <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-24 overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                    <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="sandboxGen.generateWaiverPrompt()"></pre>
+                </div>
+
+                <button @click="
+                        copyToClipboard(sandboxGen.generateWaiverPrompt(), 'Waiver Request');
+                        $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                        setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE WAIVER DOCUMENT (AI)'; }, 2000)
+                        " 
+                        class="relative z-10 w-full border border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-black font-bold py-3 rounded-lg transition-all text-xs flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE WAIVER DOCUMENT (AI)
+                </button>
+                
+                <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
+                    Paste into AI to get a compliant "Permission to Operate" letter.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+
+
+        <!-- DT ROI TRACKER TAB -->
+<div x-show="currentTab === 'dt_tracker'" x-cloak class="max-w-6xl mx-auto pb-20">
+    
+    <div class="text-center mb-10">
+        <h2 class="font-mono text-3xl font-bold text-white mb-2">
+            <i class="fa-solid fa-magnifying-glass-dollar mr-2 text-green-400"></i>ROI Tracker
+        </h2>
+        <p class="text-textMuted text-sm">Visualize the "J-Curve". Prove the value of Soft Benefits.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-12 gap-8 items-start">
+        
+        <!-- LEFT: FINANCIAL INPUTS -->
+        <div class="lg:col-span-4 bg-card border border-slate-700 p-6 rounded-xl space-y-6">
+            <h3 class="font-mono text-xs text-green-400 uppercase font-bold border-b border-slate-700 pb-2">Cost Structure</h3>
+            
+            <div>
+                <label class="text-[10px] text-slate-500 uppercase font-bold">Project Name</label>
+                <input type="text" x-model="dtTracker.inputs.projectName" class="w-full bg-dark border border-slate-600 rounded p-2 text-white text-sm focus:border-green-500 outline-none">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] text-slate-500 uppercase font-bold">Upfront Cost ($)</label>
+                    <input type="number" x-model="dtTracker.inputs.initialCost" class="w-full bg-dark border border-slate-600 rounded p-2 text-white font-mono">
+                </div>
+                <div>
+                    <label class="text-[10px] text-slate-500 uppercase font-bold">Monthly Run Cost ($)</label>
+                    <input type="number" x-model="dtTracker.inputs.monthlyCost" class="w-full bg-dark border border-slate-600 rounded p-2 text-white font-mono">
+                </div>
+            </div>
+
+            <h3 class="font-mono text-xs text-blue-400 uppercase font-bold border-b border-slate-700 pb-2 pt-2">Benefit Drivers</h3>
+
+            <div>
+                <label class="text-[10px] text-slate-500 uppercase font-bold">Hard Savings / Month ($)</label>
+                <input type="number" x-model="dtTracker.inputs.monthlyHardSavings" class="w-full bg-dark border border-slate-600 rounded p-2 text-white font-mono placeholder-slate-600" placeholder="Server cuts, etc.">
+            </div>
+
+            <div class="bg-blue-900/10 p-3 rounded border border-blue-500/30">
+                <p class="text-[10px] text-blue-300 font-bold mb-2">SOFT VALUE ENGINE</p>
+                <div class="grid grid-cols-2 gap-4 mb-2">
+                    <div>
+                        <label class="text-[9px] text-slate-400">Team Size</label>
+                        <input type="number" x-model="dtTracker.inputs.teamSize" class="w-full bg-dark border border-slate-600 rounded p-1 text-white text-xs">
+                    </div>
+                    <div>
+                        <label class="text-[9px] text-slate-400">Efficiency Gain %</label>
+                        <input type="number" x-model="dtTracker.inputs.efficiencyGain" class="w-full bg-dark border border-slate-600 rounded p-1 text-white text-xs">
+                    </div>
+                </div>
+                
+                <!-- Confidence Slider -->
+                <div>
+                    <div class="flex justify-between mb-1">
+                        <label class="text-[9px] text-slate-400">CFO Confidence Level</label>
+                        <span class="text-[9px] font-bold text-white" x-text="dtTracker.inputs.confidence + '%'"></span>
+                    </div>
+                    <input type="range" min="0" max="100" step="10" x-model="dtTracker.inputs.confidence" class="w-full h-1 bg-dark rounded-lg appearance-none cursor-pointer accent-blue-400">
+                </div>
+            </div>
+
+            <!-- Fixed Button -->
+            <button @click="dtTracker.calculate()" 
+                    :disabled="dtTracker.loading"
+                    class="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
+                
+                <!-- Template tag used to prevent flickering logic issues -->
+                <template x-if="!dtTracker.loading">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> MODEL THE J-CURVE</span>
+                </template>
+                
+                <template x-if="dtTracker.loading">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-circle-notch fa-spin"></i> CALCULATING...</span>
+                </template>
+            </button>
+        </div>
+
+        <!-- RIGHT: THE J-CURVE (OUTPUT) -->
+        <div class="lg:col-span-8">
+            
+            <!-- Empty State (Fixed height for clean look initially) -->
+            <div x-show="!dtTracker.results" class="h-96 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-500">
+                <i class="fa-solid fa-sack-dollar text-6xl mb-4 opacity-20"></i>
+                <p class="font-mono text-xs uppercase">Input Financials to Begin</p>
+            </div>
+
+            <!-- Results Card (Auto height to avoid empty space) -->
+            <div x-show="dtTracker.results" x-transition class="bg-card border-2 rounded-xl overflow-hidden shadow-2xl relative"
+                 :class="dtTracker.results?.roi24 > 0 ? 'border-green-500' : 'border-red-500'">
+                
+                <!-- Header -->
+                <div class="p-6 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">24-MONTH OUTLOOK</p>
+                        <h3 class="text-3xl font-bold font-mono mt-1" 
+                            :class="dtTracker.results?.endingBalance > 0 ? 'text-green-400' : 'text-red-400'" 
+                            x-text="dtTracker.results?.endingBalance > 0 ? '$' + dtTracker.results?.endingBalance.toLocaleString() : '-$' + Math.abs(dtTracker.results?.endingBalance).toLocaleString()"></h3>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-bold px-3 py-1 rounded bg-slate-800 border uppercase" :class="dtTracker.results?.color" x-text="dtTracker.results?.verdict"></span>
+                        <p class="text-[9px] text-slate-500 mt-1">Payback: <span x-text="dtTracker.results?.payback"></span></p>
+                    </div>
+                </div>
+
+                <!-- The Visual Graph (CSS Bar Chart) -->
+                <div class="p-6 bg-dark/50 relative h-64">
+                    <div class="absolute top-2 left-4 text-[10px] text-slate-500 font-mono">CUMULATIVE CASH FLOW (2 Years)</div>
+                    
+                    <!-- Zero Line -->
+                    <div class="w-full h-px bg-slate-500 absolute" style="top: 50%;"></div>
+
+                    <div class="flex items-end justify-between h-full w-full gap-1 pt-6 pb-2">
+                        <template x-for="(val, index) in dtTracker.results?.chartData">
+                            <div class="flex-1 flex flex-col justify-center relative group h-full">
+                                <!-- The Bar Container -->
+                                <div class="relative h-full w-full">
+                                    <div class="absolute w-full rounded-t-sm transition-all duration-500"
+                                         :class="val >= 0 ? 'bg-green-500 bottom-1/2 origin-bottom' : 'bg-red-500 top-1/2 origin-top'"
+                                         :style="`height: ${Math.min(50, Math.abs(val) / (Math.max(...dtTracker.results.chartData.map(Math.abs)) * 1.2) * 50)}%`">
+                                    </div>
+                                </div>
+                                <!-- Tooltip -->
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-black text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-20 font-mono border border-slate-600">
+                                    M<span x-text="index+1"></span>: $<span x-text="val.toLocaleString()"></span>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Composition Analysis -->
+                <div class="p-4 grid grid-cols-2 gap-4 bg-slate-900 border-t border-slate-800">
+                    <div>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold">HARD VALUE (P&L)</p>
+                        <p class="text-sm font-mono text-white" x-text="'$' + dtTracker.results?.hardContribution.toLocaleString()"></p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold">SOFT VALUE (Strategic)</p>
+                        <p class="text-sm font-mono text-blue-300" x-text="'$' + dtTracker.results?.softContribution.toLocaleString()"></p>
+                    </div>
+                </div>
+
+                <!-- AI Prompt Box -->
+                <div class="p-6 bg-slate-800 border-t border-slate-700">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-mono text-white font-bold flex items-center gap-2 text-xs uppercase">
+                            <i class="fa-solid fa-robot text-green-400"></i> CFO Narrative Generator
+                        </h3>
+                    </div>
+
+                    <div class="relative font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-600 mb-4 h-24 overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
+                        <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="dtTracker.generateCFOReport()"></pre>
+                    </div>
+
+                    <button @click="
+                            copyToClipboard(dtTracker.generateCFOReport(), 'Financial Model');
+                            $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> COPIED';
+                            setTimeout(() => { $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> GENERATE BOARD MEMO (AI)'; }, 2000)
+                            " 
+                            class="w-full border border-green-500 text-green-400 hover:bg-green-500 hover:text-white font-bold py-3 rounded text-xs transition-all flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> GENERATE BOARD MEMO (AI)
+                    </button>
+                    <p class="text-center text-[10px] text-slate-500 mt-3">
+                        Ready to paste into your GenAI tool of choice.
+                    </p>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+        
         
         
         
