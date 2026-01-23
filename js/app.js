@@ -1329,6 +1329,7 @@ tools: {
     ],
     sims: [
         { id: 'simulator', label: 'Case Study', icon: 'fa-solid fa-chess-knight', color: 'text-white' },
+        { id: 'future', label: 'Future Bank', icon: 'fa-solid fa-forward', color: 'text-purple-400' }, 
         { id: 'roleplay', label: 'Negotiation Dojo', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
         { id: 'whatif', label: 'War Games', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
         { id: 'sandbox', label: 'Arch Sandbox', icon: 'fa-solid fa-shapes', color: 'text-cyan-500' }
@@ -1338,6 +1339,7 @@ tools: {
        dashboardTools: [ 
             // 1. Simulations & Games
             { id: 'simulator', label: 'Case Simulator', desc: '90-Day Turnaround Simulation.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
+           { id: 'future', label: 'Future Bank 2030', desc: 'Simulate your strategy to 2030.', icon: 'fa-solid fa-forward', color: 'text-purple-400', vip: false }, 
             { id: 'whatif', label: 'War Games', desc: 'Strategic Pre-Mortem & Risk Analysis.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
             { id: 'roleplay', label: 'Negotiation Dojo', desc: 'Spar against skeptical stakeholders.', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
             { id: 'escaperoom', label: 'Excel Escape', desc: 'Gamified technical debt simulation.', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
@@ -2808,6 +2810,137 @@ Write a **"Board Defense Script"** to secure funding.
 3. **The "Cost of Inaction" closing:** Use the Cost of Delay ($${r.weeklyValue.toLocaleString()}/week) to make *doing nothing* sound more expensive than *doing something*.
 
 TONE: Fiscally conservative but strategically aggressive. Use terms like "Free Cash Flow" and "Asset Velocity".`;
+            }
+        },
+
+        // ------------------------------------------------------------------
+        // FUTURE BANK SIMULATOR (Deterministic Math + Prompt Gen)
+        // ------------------------------------------------------------------
+        futureBank: {
+            activeScenario: null,
+            year: 2026,
+            isPlaying: false,
+            metrics: { profit: 0, customers: 0, efficiency: 0, techDebt: 0 },
+            
+            // The Strategic Paths
+            scenarios: [
+                {
+                    id: 'ai_first',
+                    title: 'The Bionic Bank',
+                    icon: 'fa-robot',
+                    color: 'text-purple-400',
+                    desc: 'Aggressive automation. High initial cost (J-Curve), exponential payoff.',
+                    baseGrowth: 1.15, // 15% YoY growth
+                    efficiencyGain: 0.05, // Efficiency improves 5% per year
+                    riskFactor: 0.2 // High execution risk
+                },
+                {
+                    id: 'partnership',
+                    title: 'The Invisible Bank',
+                    icon: 'fa-handshake',
+                    color: 'text-green-400',
+                    desc: 'Embedded Finance. Low brand visibility, massive volume via Partners.',
+                    baseGrowth: 1.25, // 25% YoY growth (Volume)
+                    efficiencyGain: 0.02, 
+                    riskFactor: 0.1
+                },
+                {
+                    id: 'fortress',
+                    title: 'The Legacy Fortress',
+                    icon: 'fa-shield-halved',
+                    color: 'text-risk',
+                    desc: 'Defensive posture. Cost cutting and compliance focus.',
+                    baseGrowth: 1.02, // 2% YoY growth (Stagnant)
+                    efficiencyGain: -0.01, // Tech debt eats efficiency
+                    riskFactor: 0.05
+                }
+            ],
+
+            selectScenario(id) {
+                this.activeScenario = this.scenarios.find(s => s.id === id);
+                this.year = 2026;
+                // Initial Baseline
+                this.metrics = { 
+                    profit: 1000, // $1.0B
+                    customers: 5, // 5M
+                    efficiency: 60, // Cost/Income Ratio (Lower is better)
+                    techDebt: 20 // Index 0-100
+                };
+                this.playSimulation();
+            },
+
+            playSimulation() {
+                this.isPlaying = true;
+                let timer = setInterval(() => {
+                    if (this.year < 2030) {
+                        this.year++;
+                        this.calculateYearlyMath();
+                    } else {
+                        clearInterval(timer);
+                        this.isPlaying = false;
+                    }
+                }, 1200); // 1.2 seconds per year
+            },
+
+            calculateYearlyMath() {
+                const s = this.activeScenario;
+                
+                // 1. Math: Compound Growth
+                // J-Curve logic for 'ai_first': Dip in 2027, spike in 2029
+                let yearFactor = 1.0;
+                if (s.id === 'ai_first' && this.year === 2027) yearFactor = 0.8; // The "Valley of Despair"
+                if (s.id === 'ai_first' && this.year >= 2029) yearFactor = 1.3; // The "Bionic Payoff"
+
+                this.metrics.profit = Math.round(this.metrics.profit * s.baseGrowth * yearFactor);
+                
+                // 2. Math: Efficiency (Cost to Income Ratio)
+                this.metrics.efficiency = Math.max(30, this.metrics.efficiency - (s.efficiencyGain * 100));
+                
+                // 3. Math: Customer Base vs Brand
+                if (s.id === 'fortress') this.metrics.customers *= 0.95; // Churn
+                if (s.id === 'partnership') this.metrics.customers *= 1.40; // Massive volume (via partners)
+                if (s.id === 'ai_first') this.metrics.customers *= 1.10; // Steady growth
+
+                // 4. Tech Debt Accumulation
+                if (s.id === 'fortress') this.metrics.techDebt += 15;
+                else this.metrics.techDebt = Math.max(0, this.metrics.techDebt - 10);
+            },
+
+            // --- ADVANCED PROMPT GENERATOR ---
+            generateFuturePrompt() {
+                const s = this.activeScenario;
+                const m = this.metrics;
+                
+                // Formulate the narrative based on final math
+                let outcome = "";
+                if (m.profit > 2000) outcome = "EXPONENTIAL SUCCESS. We dominated the market.";
+                else if (m.profit > 1200) outcome = "SURVIVAL. We exist, but margins are thin.";
+                else outcome = "IRRELEVANCE. We are a utility or being acquired.";
+
+                return `ACT AS: A Futurist and Investment Banker in the year 2030.
+
+## THE SIMULATION REPORT (2026-2030)
+I chose the strategic path: "${s.title}" (${s.desc}).
+Here is the 5-year outcome of that decision:
+
+## FINANCIAL TELEMETRY (2030)
+- **Net Profit:** $${(m.profit/1000).toFixed(1)} Billion
+- **Efficiency Ratio:** ${m.efficiency.toFixed(0)}% (Industry Avg: 50%)
+- **Customer Base:** ${(m.customers).toFixed(1)} Million
+- **Technical Debt Index:** ${m.techDebt}/100
+
+## THE NARRATIVE ARC
+${s.id === 'ai_first' ? "We suffered the 'J-Curve' dip in 2027 but automation eventually compounded returns." : ""}
+${s.id === 'partnership' ? "We lost our consumer brand but became the infrastructure rail for Big Tech." : ""}
+${s.id === 'fortress' ? "We saved money on OpEx but starved innovation. Our Tech Debt is now toxic." : ""}
+
+## YOUR MISSION (RETROSPECTIVE)
+Write a **"Letter to Shareholders (2030)"** explaining this result.
+1. ** The 'I told you so' moment:** Analyze why this specific strategy led to this specific Profit/Efficiency number.
+2. **The Talent Shift:** Describe what kind of employees thrive here now (e.g., "We have more API Engineers than Tellers").
+3. **The Warning:** What is the single biggest threat to this new business model?
+
+TONE: Visionary, retrospective, analytical.`;
             }
         },
         
