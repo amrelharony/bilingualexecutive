@@ -287,12 +287,22 @@
 
         
         <!-- Tool Header (Sticky) -->
-        <div class="sticky top-0 z-[60] p-4 border-b border-white/10 flex justify-between items-center bg-slate-900/90 backdrop-blur-md">
-            <button @click="currentTab = 'dashboard'" class="text-slate-400 hover:text-white flex items-center gap-2 font-mono text-xs uppercase">
-                <i class="fa-solid fa-chevron-left"></i> Back to Hub
+        <div class="sticky top-0 z-[60] p-4 border-b border-white/10 flex items-center justify-between bg-slate-900/90 backdrop-blur-md relative">
+            
+            <!-- Back Button: Shortened text for mobile to prevent overlap -->
+            <button @click="currentTab = 'dashboard'" class="relative z-10 text-slate-400 hover:text-white flex items-center gap-2 font-mono text-xs uppercase">
+                <i class="fa-solid fa-chevron-left"></i> 
+                <span class="hidden md:inline">Back to Hub</span>
+                <span class="md:hidden">Back</span>
             </button>
-            <div class="font-bold text-white tracking-tight">THE BILINGUAL EXECUTIVE</div>
-            <div class="w-8"></div> <!-- Spacer -->
+            
+            <!-- Title: Absolutely centered to ignore button width -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="font-bold text-white tracking-tight text-center text-sm md:text-base">THE BILINGUAL EXECUTIVE</div>
+            </div>
+            
+            <!-- Right Spacer -->
+            <div class="w-8"></div> 
         </div>
 
         <!-- Tool Content Container -->
@@ -5308,7 +5318,7 @@ END-IF."></textarea>
         <h2 class="font-mono text-3xl font-bold text-white mb-2">
             <i class="fa-solid fa-magnifying-glass-dollar mr-2 text-green-400"></i>ROI Tracker
         </h2>
-        <p class="text-textMuted text-sm">Visualize the "J-Curve" of transformation. Prove the value of 'Soft' benefits.</p>
+        <p class="text-textMuted text-sm">Visualize the "J-Curve". Prove the value of Soft Benefits.</p>
     </div>
 
     <div class="grid lg:grid-cols-12 gap-8 items-start">
@@ -5363,25 +5373,33 @@ END-IF."></textarea>
                 </div>
             </div>
 
+            <!-- Fixed Button -->
             <button @click="dtTracker.calculate()" 
                     :disabled="dtTracker.loading"
                     class="w-full py-4 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-glow transition-all flex items-center justify-center gap-2">
-                <span x-show="!dtTracker.loading"><i class="fa-solid fa-chart-line"></i> MODEL THE J-CURVE</span>
-                <span x-show="dtTracker.loading"><i class="fa-solid fa-circle-notch fa-spin"></i> CALCULATING...</span>
+                
+                <!-- Template tag used to prevent flickering logic issues -->
+                <template x-if="!dtTracker.loading">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-chart-line"></i> MODEL THE J-CURVE</span>
+                </template>
+                
+                <template x-if="dtTracker.loading">
+                    <span class="flex items-center gap-2"><i class="fa-solid fa-circle-notch fa-spin"></i> CALCULATING...</span>
+                </template>
             </button>
         </div>
 
         <!-- RIGHT: THE J-CURVE (OUTPUT) -->
-        <div class="lg:col-span-8 relative min-h-[500px]">
+        <div class="lg:col-span-8">
             
-            <!-- Empty State -->
-            <div x-show="!dtTracker.results" class="absolute inset-0 flex flex-col items-center justify-center border-2 border-dashed border-slate-700 rounded-xl text-slate-500">
+            <!-- Empty State (Fixed height for clean look initially) -->
+            <div x-show="!dtTracker.results" class="h-96 border-2 border-dashed border-slate-700 rounded-xl flex flex-col items-center justify-center text-slate-500">
                 <i class="fa-solid fa-sack-dollar text-6xl mb-4 opacity-20"></i>
                 <p class="font-mono text-xs uppercase">Input Financials to Begin</p>
             </div>
 
-            <!-- Results Card -->
-            <div x-show="dtTracker.results" x-transition class="bg-card border-2 rounded-xl overflow-hidden shadow-2xl h-full flex flex-col relative"
+            <!-- Results Card (Auto height to avoid empty space) -->
+            <div x-show="dtTracker.results" x-transition class="bg-card border-2 rounded-xl overflow-hidden shadow-2xl relative"
                  :class="dtTracker.results?.roi24 > 0 ? 'border-green-500' : 'border-red-500'">
                 
                 <!-- Header -->
@@ -5390,7 +5408,7 @@ END-IF."></textarea>
                         <p class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">24-MONTH OUTLOOK</p>
                         <h3 class="text-3xl font-bold font-mono mt-1" 
                             :class="dtTracker.results?.endingBalance > 0 ? 'text-green-400' : 'text-red-400'" 
-                            x-text="'$' + dtTracker.results?.endingBalance.toLocaleString()"></h3>
+                            x-text="dtTracker.results?.endingBalance > 0 ? '$' + dtTracker.results?.endingBalance.toLocaleString() : '-$' + Math.abs(dtTracker.results?.endingBalance).toLocaleString()"></h3>
                     </div>
                     <div class="text-right">
                         <span class="text-xs font-bold px-3 py-1 rounded bg-slate-800 border uppercase" :class="dtTracker.results?.color" x-text="dtTracker.results?.verdict"></span>
@@ -5399,22 +5417,24 @@ END-IF."></textarea>
                 </div>
 
                 <!-- The Visual Graph (CSS Bar Chart) -->
-                <div class="p-6 flex-1 flex flex-col justify-end relative bg-dark/50">
+                <div class="p-6 bg-dark/50 relative h-64">
                     <div class="absolute top-2 left-4 text-[10px] text-slate-500 font-mono">CUMULATIVE CASH FLOW (2 Years)</div>
                     
                     <!-- Zero Line -->
                     <div class="w-full h-px bg-slate-500 absolute" style="top: 50%;"></div>
 
-                    <div class="flex items-end justify-between h-48 w-full gap-1">
+                    <div class="flex items-end justify-between h-full w-full gap-1 pt-6 pb-2">
                         <template x-for="(val, index) in dtTracker.results?.chartData">
-                            <div class="flex-1 flex flex-col justify-center relative group">
-                                <!-- The Bar -->
-                                <div class="w-full rounded-t-sm transition-all duration-500"
-                                     :class="val >= 0 ? 'bg-green-500' : 'bg-red-500'"
-                                     :style="`height: ${Math.abs(val) / (Math.max(...dtTracker.results.chartData.map(Math.abs)) * 1.2) * 50}%; margin-bottom: ${val >= 0 ? '50%' : '0'}; margin-top: ${val < 0 ? '50%' : '0'}`">
+                            <div class="flex-1 flex flex-col justify-center relative group h-full">
+                                <!-- The Bar Container -->
+                                <div class="relative h-full w-full">
+                                    <div class="absolute w-full rounded-t-sm transition-all duration-500"
+                                         :class="val >= 0 ? 'bg-green-500 bottom-1/2 origin-bottom' : 'bg-red-500 top-1/2 origin-top'"
+                                         :style="`height: ${Math.min(50, Math.abs(val) / (Math.max(...dtTracker.results.chartData.map(Math.abs)) * 1.2) * 50)}%`">
+                                    </div>
                                 </div>
                                 <!-- Tooltip -->
-                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-black text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 font-mono">
+                                <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 bg-black text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-20 font-mono border border-slate-600">
                                     M<span x-text="index+1"></span>: $<span x-text="val.toLocaleString()"></span>
                                 </div>
                             </div>
@@ -5465,8 +5485,6 @@ END-IF."></textarea>
 
     </div>
 </div>
-
-
         <!-- DAILY FEED TAB -->
 <div x-show="currentTab === 'feed'" x-cloak class="max-w-2xl mx-auto pb-20" x-init="dailyFeed.init()">
     
