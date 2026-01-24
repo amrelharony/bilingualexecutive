@@ -14,7 +14,7 @@ document.addEventListener('alpine:init', () => {
         // ==========================================
         // ACADEMY CONFIG & STATE
         // ==========================================
-         navVisible: false,
+         navVisible: true,
          navTimer: null,
         viewMode: 'academy', // Toggles between 'academy' and 'tools'
         activeChapterId: null,
@@ -455,7 +455,7 @@ document.addEventListener('alpine:init', () => {
                 window.addEventListener(evt, resetNav, { passive: true, capture: true });
             });
 
-            },
+            }
 
         // 3. THE TIMER LOGIC
         resetNavTimer() {
