@@ -5825,6 +5825,127 @@ END-IF."></textarea>
 
 
 
+        <!-- MEETING TICKER TOOL -->
+<div x-show="activeTool === 'ticker'" class="max-w-2xl mx-auto space-y-6">
+    
+    <!-- Header -->
+    <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-500/20 text-green-400 mb-2">
+            <i class="fa-solid fa-stopwatch text-2xl"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-white">The Meeting Tax Ticker</h2>
+        <p class="text-slate-400">Real-time FinOps. Visualize the burn rate of bureaucracy.</p>
+    </div>
+
+    <!-- The Ticker Display -->
+    <div class="bg-slate-800 rounded-xl p-8 text-center border border-slate-700 shadow-2xl relative overflow-hidden">
+        
+        <!-- Background Pulse Effect for High Cost -->
+        <div x-show="meetingTicker.currentCost > 500" 
+             class="absolute inset-0 bg-red-500/5 pointer-events-none transition-opacity duration-1000"
+             :class="meetingTicker.currentCost > 1000 ? 'animate-pulse' : ''"></div>
+
+        <!-- Timer -->
+        <div class="text-slate-400 font-mono text-sm mb-2" x-text="meetingTicker.formatTime()">0:00</div>
+
+        <!-- BIG MONEY -->
+        <div class="text-6xl font-black mb-2 tracking-tighter"
+             :class="meetingTicker.statusColor">
+            $<span x-text="meetingTicker.currentCost.toFixed(2)">0.00</span>
+        </div>
+
+        <!-- Burn Rate Subtitle -->
+        <div class="text-slate-500 text-sm">
+            Burning <span class="text-slate-300 font-bold">$<span x-text="meetingTicker.burnRatePerMinute.toFixed(0)">0</span>/min</span>
+        </div>
+
+        <!-- Dynamic Feedback -->
+        <div class="mt-6 p-3 rounded-lg bg-slate-900/50 border border-slate-700/50">
+            <p class="text-sm font-medium" :class="meetingTicker.statusColor" x-text="meetingTicker.statusMessage"></p>
+        </div>
+    </div>
+
+    <!-- Controls & Inputs -->
+    <div class="grid md:grid-cols-2 gap-6">
+        
+        <!-- Sliders (Disable while running to prevent math jumping) -->
+        <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-6">
+            
+            <!-- Attendees Slider -->
+            <div>
+                <div class="flex justify-between text-sm mb-2">
+                    <label class="text-slate-300">Attendees</label>
+                    <span class="text-green-400 font-bold" x-text="meetingTicker.attendees"></span>
+                </div>
+                <input type="range" min="1" max="50" step="1" 
+                       x-model="meetingTicker.attendees"
+                       class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-green-400">
+            </div>
+
+            <!-- Hourly Rate Slider -->
+            <div>
+                <div class="flex justify-between text-sm mb-2">
+                    <label class="text-slate-300">Avg. Hourly Cost ($)</label>
+                    <span class="text-green-400 font-bold" x-text="'$' + meetingTicker.avgRate"></span>
+                </div>
+                <input type="range" min="50" max="500" step="25" 
+                       x-model="meetingTicker.avgRate"
+                       class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-green-400">
+                <p class="text-xs text-slate-500 mt-1">Include salary + overhead + benefits.</p>
+            </div>
+
+            <!-- Context Tax Toggle -->
+            <div class="flex items-center justify-between pt-2 border-t border-slate-700/50">
+                <div class="text-xs text-slate-400">
+                    <span class="text-slate-200 font-bold block">Context Switch Tax (+20%)</span>
+                    Applies cost for interruption recovery.
+                </div>
+                <button 
+                    @click="meetingTicker.includeContextTax = !meetingTicker.includeContextTax"
+                    class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none"
+                    :class="meetingTicker.includeContextTax ? 'bg-green-500' : 'bg-slate-600'">
+                    <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
+                        :class="meetingTicker.includeContextTax ? 'translate-x-6' : 'translate-x-1'"></span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col justify-center space-y-4">
+            
+            <!-- Start/Pause -->
+            <button @click="meetingTicker.toggle()"
+                    class="w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2"
+                    :class="meetingTicker.active 
+                        ? 'bg-yellow-500 hover:bg-yellow-400 text-slate-900' 
+                        : 'bg-green-500 hover:bg-green-400 text-slate-900'">
+                <i class="fa-solid" :class="meetingTicker.active ? 'fa-pause' : 'fa-play'"></i>
+                <span x-text="meetingTicker.active ? 'Pause Meeting' : (meetingTicker.paused ? 'Resume Meeting' : 'Start Ticker')"></span>
+            </button>
+
+            <!-- Reset -->
+            <button @click="meetingTicker.reset()"
+                    class="w-full py-3 rounded-xl border border-slate-600 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
+                <i class="fa-solid fa-rotate-left"></i>
+                Reset
+            </button>
+            
+            <!-- "The Bilingual Insight" Box -->
+            <div class="bg-blue-500/10 border border-blue-500/20 p-4 rounded-lg">
+                <h4 class="text-blue-400 text-xs font-bold uppercase mb-1">
+                    <i class="fa-solid fa-lightbulb mr-1"></i> Bilingual Insight
+                </h4>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    "If you wouldn't sign a PO for $<span x-text="Math.max(100, meetingTicker.currentCost).toFixed(0)">100</span> to buy software, why are you spending it on a status update?"
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+        
 
         
         
