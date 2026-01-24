@@ -430,15 +430,33 @@ document.addEventListener('alpine:init', () => {
         // ------------------------------------------------------------------
         init() {
 
-                        // --- SETUP AUTO-HIDE LISTENERS ---
+                      // 1. SET DEFAULT TO HIDDEN (Modified)
+            this.navVisible = false; 
 
-                        const resetNav = () => this.resetNavTimer();
+            // 2. SETUP INTERACTION LISTENERS
+            // Triggers on: Mouse move, Scroll, Touch, Click, Keypress
+            const resetNav = () => this.resetNavTimer();
             ['mousemove', 'scroll', 'touchstart', 'click', 'keydown'].forEach(evt => {
-                document.addEventListener(evt, resetNav, { passive: true });
+                // Use capture: true to ensure we catch events even if propagation stops
+                window.addEventListener(evt, resetNav, { passive: true, capture: true });
             });
-            this.resetNavTimer(); // Start timer on load
 
+            },
 
+        // 3. THE TIMER LOGIC
+        resetNavTimer() {
+            // Show UI immediately
+            this.navVisible = true;
+            
+            // Clear pending hide timer
+            if (this.navTimer) clearTimeout(this.navTimer);
+            
+            // Set new timer to hide after 3 seconds of no activity
+            this.navTimer = setTimeout(() => {
+                this.navVisible = false;
+            }, 3000); 
+        },
+        
             // check if user previously entered
 const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
 
