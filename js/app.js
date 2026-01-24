@@ -23,7 +23,7 @@ document.addEventListener('alpine:init', () => {
         
         // GitHub Raw (Images/Slides/CSV)
         // Note: Using 'raw.githubusercontent.com' to allow direct file loading
-        ghBase: 'https://raw.githubusercontent.com/amrelharony/bilingualexecutive/ad5c60bd79f51e08ccf0bf5811965772524a0653/assets',
+        ghBase: 'https://github.com/amrelharony/bilingualexecutive/tree/3e71ec0fae6e738cced7c893618982a3b626947e/assets',
 
         // FLASHCARD STATE
         showFlashcards: false,
@@ -1492,10 +1492,10 @@ currentGroup: 'radar', // Default view
 // New Navigation Groups
 navGroups: [
     { id: 'radar', label: 'Radar', icon: 'fa-solid fa-bullseye', desc: 'Diagnostics & Metrics' },
-    { id: 'academy', label: 'Academy', icon: 'fa-solid fa-graduation-cap', desc: 'Learning & Audio' },
     { id: 'forge', label: 'Forge', icon: 'fa-solid fa-hammer', desc: 'Builders & Tools' },
     { id: 'sims', label: 'Sims', icon: 'fa-solid fa-gamepad', desc: 'Roleplay & Scenarios' }
 ],
+
 
 // Group the tools
 tools: {
