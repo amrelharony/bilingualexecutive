@@ -44,41 +44,48 @@ document.addEventListener('alpine:init', () => {
             title: ''
         },
 
-        // --- DOWNLOAD MANAGER (Quota Logic) ---
-        downloadManager: {
-            limit: 2, // Chapters per day
+// --- OFFLINE MANAGER (Caching Engine) ---
+        offlineManager: {
+            limit: 2, 
+            cacheName: 'bilingual-content-v1', // Dynamic cache name
+            loading: null, // Stores ID of chapter currently downloading
             
-            // Methods needed inside Alpine scope
+            // Helper: Read quota from localStorage
             getQuota() {
                 const today = new Date().toDateString();
-                const stored = JSON.parse(localStorage.getItem('bilingual_downloads') || '{}');
+                const stored = JSON.parse(localStorage.getItem('bilingual_offline_quota') || '{}');
                 
                 // Reset if new day
                 if (stored.date !== today) {
-                    return { date: today, chapters: [] };
+                    return { date: today, downloadedCount: 0, cachedIds: stored.cachedIds || [] };
                 }
                 return stored;
             },
 
-            saveQuota(quota) {
-                localStorage.setItem('bilingual_downloads', JSON.stringify(quota));
+            // Helper: Save quota state
+            updateQuota(chapterId) {
+                const q = this.getQuota();
+                if (!q.cachedIds.includes(chapterId)) {
+                    q.downloadedCount++;
+                    q.cachedIds.push(chapterId);
+                    localStorage.setItem('bilingual_offline_quota', JSON.stringify(q));
+                }
+                // Trigger Alpine reactivity hack
+                this.offlineManager = { ...this.offlineManager }; 
             },
 
-            isChapterUnlocked(chapterId) {
-                const quota = this.getQuota();
-                return quota.chapters.includes(chapterId);
+            isCached(chapterId) {
+                const q = this.getQuota();
+                return q.cachedIds && q.cachedIds.includes(chapterId);
             },
 
             getQuotaText() {
-                const quota = this.getQuota();
-                const used = quota.chapters.length;
-                const remaining = this.limit - used;
-                if (remaining <= 0) return "QUOTA REACHED";
-                return `${remaining} LEFT TODAY`;
+                const q = this.getQuota();
+                const left = this.limit - q.downloadedCount;
+                if (left <= 0) return "QUOTA FULL";
+                return `${left} LEFT TODAY`;
             }
         },
-
-
         
         // ==========================================
         // 2. THE METRO MAP DATA (Full 10 Chapters)
@@ -233,6 +240,120 @@ document.addEventListener('alpine:init', () => {
             if(!chapter) return '';
             // GitHub Structure: /assets/ch01/infographic.png
             return `${this.ghBase}/${chapter.folder}/${type}.png`;
+        },
+
+        
+        // --- CACHING ACTIONS ---
+        async toggleOfflineCache(chapter) {
+            const om = this.offlineManager;
+            
+            // 1. If already cached, do nothing (or add delete logic if you want)
+            if (om.isCached(chapter.id)) {
+                alert("This chapter is already saved for offline use.");
+                return;
+            }
+
+            // 2. Check Quota
+            const quota = om.getQuota();
+            if (quota.downloadedCount >= om.limit) {
+                alert(`Daily Offline Limit Reached (${om.limit}/day).\n\nCome back tomorrow to save more chapters.`);
+                return;
+            }
+
+            // 3. Confirm
+            if (!confirm(`Save Chapter ${chapter.id} for offline use?\n\nThis will download Audio, Slides, and Images to this device.\n(Quota: ${om.limit - quota.downloadedCount} left today)`)) {
+                return;
+            }
+
+            // 4. Start Caching Process
+            om.loading = chapter.id; // Triggers UI spinner
+
+            try {
+                // Determine cache name dynamically or use fixed
+                const cacheName = om.cacheName || 'bilingual-content-v1';
+                const cache = await caches.open(cacheName);
+                
+                const urlsToCache = [
+                    this.getAudioUrl(chapter),
+                    this.getSlideUrl(chapter),
+                    this.getImageUrl(chapter, 'infographic'),
+                    this.getImageUrl(chapter, 'mindmap')
+                ];
+
+                // Perform the fetch and put into Cache Storage
+                await cache.addAll(urlsToCache);
+
+                // 5. Success
+                om.updateQuota(chapter.id);
+                alert("Chapter saved! You can now play audio and view slides in Airplane Mode.");
+
+            } catch (error) {
+                console.error("Cache failed:", error);
+                alert("Download failed. Please check your internet connection.");
+            } finally {
+                om.loading = null; // Stop spinner
+            }
+        },
+
+        // --- UPDATED VIEWER LOGIC (Handles Offline) ---
+        async viewPdf(chapter) {
+            this.viewer.title = `${chapter.title} - Slides`;
+            this.viewer.type = 'pdf';
+            const originalUrl = this.getSlideUrl(chapter);
+
+            // INTELLIGENT ROUTING:
+            if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
+                try {
+                    // Try to fetch from cache explicitly
+                    const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
+                    const cache = await caches.open(cacheName);
+                    const response = await cache.match(originalUrl);
+                    
+                    if (response) {
+                        const blob = await response.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+                        this.viewer.url = blobUrl; // Load local blob
+                        this.viewer.isBlob = true; // Flag to tell HTML NOT to use Google Viewer
+                    } else {
+                        this.viewer.url = originalUrl;
+                        this.viewer.isBlob = true;
+                    }
+                } catch(e) {
+                    this.viewer.url = originalUrl;
+                    this.viewer.isBlob = true;
+                }
+            } else {
+                // Online and not cached? Use Google Viewer
+                this.viewer.url = originalUrl;
+                this.viewer.isBlob = false;
+            }
+            
+            this.viewer.active = true;
+        },
+
+        // Helper for images (Mind Map / Infographic)
+        async viewImage(chapter, type) {
+            this.viewer.title = `${chapter.title} - ${type.toUpperCase()}`;
+            this.viewer.type = 'image';
+            const originalUrl = this.getImageUrl(chapter, type);
+
+            // Check cache for images too
+            if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
+                try {
+                    const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
+                    const cache = await caches.open(cacheName);
+                    const response = await cache.match(originalUrl);
+                    if (response) {
+                        const blob = await response.blob();
+                        this.viewer.url = URL.createObjectURL(blob);
+                    } else {
+                        this.viewer.url = originalUrl;
+                    }
+                } catch(e) { this.viewer.url = originalUrl; }
+            } else {
+                this.viewer.url = originalUrl;
+            }
+            this.viewer.active = true;
         },
 
         // Navigation
