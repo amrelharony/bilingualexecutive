@@ -14,7 +14,7 @@ document.addEventListener('alpine:init', () => {
         // ==========================================
         // ACADEMY CONFIG & STATE
         // ==========================================
-         navVisible: true,
+         navVisible: false,
          navTimer: null,
         viewMode: 'academy', // Toggles between 'academy' and 'tools'
         activeChapterId: null,
