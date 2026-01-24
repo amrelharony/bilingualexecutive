@@ -456,8 +456,9 @@ document.addEventListener('alpine:init', () => {
                 window.addEventListener(evt, resetNav, { passive: true, capture: true });
             });
 
+        },
 
-        // 3. THE TIMER LOGIC
+                // 3. THE TIMER LOGIC
         resetNavTimer() {
             // Show UI immediately
             this.navVisible = true;
@@ -470,7 +471,7 @@ document.addEventListener('alpine:init', () => {
                 this.navVisible = false;
             }, 3000); 
         },
-        
+
             // check if user previously entered
 const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
 
