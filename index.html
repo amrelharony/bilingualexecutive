@@ -764,167 +764,161 @@
 
             </div>
 
-<!-- API SANDBOX TAB (REDESIGNED) -->
-<div x-show="currentTab === 'sandbox'" x-cloak class="max-w-6xl mx-auto pb-20">
+
+<!-- VISUAL ARCHITECTURE SANDBOX -->
+<div x-show="activeTool === 'sandbox'" class="max-w-5xl mx-auto space-y-6">
     
     <!-- Header -->
-    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between border-b border-slate-800 pb-6">
-        <div>
-            <h2 class="font-mono text-3xl font-bold text-cyan-400 flex items-center">
-                <i class="fa-solid fa-shapes mr-3"></i>Architecture Sandbox
-            </h2>
-            <p class="text-textMuted text-sm mt-2">
-                Simulate your stack. See how legacy "hops" destroy customer experience.
-            </p>
+    <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-cyan-500/20 text-cyan-400 mb-2">
+            <i class="fa-solid fa-shapes text-2xl"></i>
         </div>
-        <!-- Live Result Badge -->
-        <div class="mt-4 md:mt-0 text-right" x-show="apiSandbox.pipeline.length > 0">
-            <span class="text-[10px] font-mono text-slate-500 uppercase tracking-widest block mb-1">THEORETICAL LATENCY</span>
-            <div class="text-2xl font-bold font-mono text-white">
-                <span x-text="apiSandbox.pipeline.reduce((sum, i) => sum + i.latency, 0)"></span> ms
-            </div>
-        </div>
+        <h2 class="text-2xl font-bold text-white">Architecture Canvas</h2>
+        <p class="text-slate-400">Drag & drop to visualize coupling, bottlenecks, and security risks.</p>
     </div>
 
-    <!-- WORKBENCH GRID -->
-    <div class="grid lg:grid-cols-12 gap-8 mb-8">
-        
-        <!-- Left: Component Palette -->
-        <div class="lg:col-span-3 space-y-4">
-            <p class="text-[10px] font-mono text-slate-500 uppercase tracking-widest">COMPONENT RACK</p>
-            <template x-for="item in apiSandbox.catalog" :key="item.id">
-                <button @click="apiSandbox.addComponent(item)" 
-                        :disabled="apiSandbox.isRunning"
-                        class="w-full flex items-center gap-3 p-3 rounded-lg border border-slate-700 bg-slate-900 hover:border-cyan-500 hover:bg-slate-800 transition-all group disabled:opacity-50">
-                    <div class="w-8 h-8 rounded flex items-center justify-center text-sm" :class="item.color">
-                        <i :class="item.icon"></i>
-                    </div>
-                    <div class="text-left">
-                        <span class="block text-xs font-bold text-white group-hover:text-cyan-400" x-text="item.label"></span>
-                        <span class="block text-[9px] text-slate-500 font-mono">+<span x-text="item.latency"></span>ms</span>
-                    </div>
-                    <i class="fa-solid fa-plus text-slate-600 ml-auto group-hover:text-cyan-400"></i>
-                </button>
-            </template>
-            <button @click="apiSandbox.reset()" class="w-full mt-4 border border-red-900/50 text-red-500 text-xs py-2 rounded hover:bg-red-900/20 transition-colors">
-                <i class="fa-solid fa-trash mr-2"></i>CLEAR BOARD
+    <!-- Toolbar -->
+    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-wrap gap-2 justify-center shadow-lg relative z-10">
+        <template x-for="tool in apiSandbox.catalog">
+            <button @click="apiSandbox.addNode(tool.type)"
+                    class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold text-white flex gap-2 items-center transition-colors border border-slate-600">
+                <i :class="'fa-solid ' + tool.icon"></i>
+                <span x-text="tool.label"></span>
             </button>
-        </div>
-
-        <!-- Right: The Blueprint Canvas -->
-        <div class="lg:col-span-9">
-            <div class="bg-slate-900 border border-slate-700 rounded-xl p-8 min-h-[300px] relative flex items-center justify-center overflow-hidden shadow-inner"
-                 style="background-image: radial-gradient(#334155 1px, transparent 1px); background-size: 20px 20px;">
-                
-                <!-- Empty State -->
-                <div x-show="apiSandbox.pipeline.length === 0" class="text-center opacity-50">
-                    <div class="w-16 h-16 border-2 border-dashed border-slate-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i class="fa-solid fa-plus text-slate-600"></i>
-                    </div>
-                    <p class="font-mono text-xs text-slate-500">Select components to build pipeline</p>
-                </div>
-
-                <!-- The Pipeline Visual -->
-                <div x-show="apiSandbox.pipeline.length > 0" class="flex flex-wrap items-center justify-center gap-2 z-10 w-full relative">
-                    
-                    <!-- Start Node -->
-                    <div class="flex items-center">
-                        <div class="bg-white text-black px-3 py-1 rounded font-bold text-[10px] font-mono shadow-glow">USER</div>
-                        <div class="w-6 h-0.5 bg-slate-600"></div>
-                    </div>
-
-                    <!-- Stack Items -->
-                    <template x-for="(block, index) in apiSandbox.pipeline" :key="block.uid">
-                        <div class="flex items-center animate-[fadeIn_0.3s_ease-out]">
-                            <!-- Block -->
-                            <div @click="apiSandbox.removeComponent(index)" 
-                                 class="relative group cursor-pointer w-24 h-24 border rounded-lg flex flex-col items-center justify-center text-center transition-all hover:scale-105 bg-slate-900/90 backdrop-blur"
-                                 :class="block.color.replace('bg-', 'hover:bg-')">
-                                
-                                <div class="absolute -top-2 -right-2 bg-red-500 text-white w-4 h-4 rounded-full flex items-center justify-center text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <i class="fa-solid fa-xmark"></i>
-                                </div>
-
-                                <i :class="block.icon" class="text-xl mb-2"></i>
-                                <span class="text-[9px] font-bold leading-tight px-1" x-text="block.label"></span>
-                                <span class="text-[8px] mt-1 font-mono opacity-70">+<span x-text="block.latency"></span>ms</span>
-                            </div>
-
-                            <!-- Connector -->
-                            <div x-show="index < apiSandbox.pipeline.length - 1" class="w-6 h-0.5 bg-slate-600 mx-1"></div>
-                        </div>
-                    </template>
-                </div>
-
-                <!-- Packet Simulation Animation -->
-                <div x-show="apiSandbox.isRunning" class="absolute left-0 right-0 h-0.5 bg-cyan-500/20 top-1/2 -mt-px pointer-events-none">
-                    <div class="absolute top-1/2 -mt-1.5 w-3 h-3 bg-cyan-400 rounded-full shadow-[0_0_10px_#22d3ee] animate-[moveRight_2s_linear_infinite]"></div>
-                </div>
-
-            </div>
-
-            <!-- Run Button -->
-            <button @click="apiSandbox.runSimulation()" 
-                    :disabled="apiSandbox.pipeline.length === 0 || apiSandbox.isRunning"
-                    class="mt-4 w-full py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg shadow-glow transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                <span x-show="!apiSandbox.isRunning"><i class="fa-solid fa-play"></i> TEST ARCHITECTURE</span>
-                <span x-show="apiSandbox.isRunning"><i class="fa-solid fa-circle-notch fa-spin"></i> TRACING REQUEST...</span>
-            </button>
-
-            <!-- Quick Result -->
-            <div x-show="apiSandbox.result" x-transition class="mt-4 p-4 rounded-lg border-l-4 bg-slate-800"
-                 :class="apiSandbox.result?.time < 300 ? 'border-primary' : 'border-risk'">
-                <p class="text-sm text-white font-medium" x-text="apiSandbox.result?.message"></p>
-            </div>
-        </div>
-    </div>
-
-    <!-- AI ARCHITECT BOX -->
-    <div class="mt-8 bg-slate-900 border border-cyan-500/30 p-6 rounded-xl relative overflow-hidden group">
-        
-        <!-- Icon -->
-        <div class="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
-            <i class="fa-solid fa-microchip text-9xl text-cyan-500"></i>
-        </div>
-
-        <div class="flex justify-between items-center mb-4 relative z-10">
-            <h3 class="font-mono text-white font-bold flex items-center gap-2">
-                <i class="fa-solid fa-robot text-cyan-400"></i> 
-                CHIEF ARCHITECT AI
-            </h3>
-            <span class="text-[10px] uppercase bg-cyan-900/50 text-cyan-400 px-2 py-1 rounded border border-cyan-500/30 font-bold tracking-wider">
-                Blueprint Analysis
-            </span>
-        </div>
-
-        <div class="relative z-10 font-mono text-xs text-slate-300 bg-black/60 p-4 rounded border border-slate-700 mb-4 h-28 overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/90 pointer-events-none"></div>
-            <pre class="whitespace-pre-wrap font-sans leading-relaxed" x-text="apiSandbox.generateArchPrompt()"></pre>
-        </div>
-
-        <button @click="
-                copyToClipboard(apiSandbox.generateArchPrompt(), 'Arch Spec');
-                $el.innerHTML = '<i class=\'fa-solid fa-check\'></i> SPEC COPIED';
-                $el.classList.remove('border-cyan-500', 'text-cyan-400', 'hover:bg-cyan-400', 'hover:text-black');
-                $el.classList.add('bg-green-500', 'text-white', 'border-green-500');
-                setTimeout(() => {
-                    $el.innerHTML = '<i class=\'fa-solid fa-wand-magic-sparkles\'></i> COPY BLUEPRINT FOR AI';
-                    $el.classList.remove('bg-green-500', 'text-white', 'border-green-500');
-                    $el.classList.add('border-cyan-500', 'text-cyan-400', 'hover:bg-cyan-400', 'hover:text-black');
-                }, 2000)
-                " 
-                class="relative z-10 w-full py-4 bg-transparent border border-cyan-500 text-cyan-400 hover:bg-cyan-400 hover:text-black font-bold rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-mono text-xs uppercase tracking-widest shadow-[0_0_10px_rgba(34,211,238,0.1)] hover:shadow-[0_0_20px_rgba(34,211,238,0.4)]">
-            <i class="fa-solid fa-wand-magic-sparkles"></i> COPY BLUEPRINT FOR AI
+        </template>
+        <div class="w-px h-8 bg-slate-600 mx-2"></div>
+        <button @click="apiSandbox.clearBoard()" class="px-4 py-2 text-red-400 hover:text-red-300 text-xs font-bold">
+            <i class="fa-solid fa-trash mr-1"></i> Reset
         </button>
-        
-        <p class="text-center text-[10px] text-slate-500 mt-3 relative z-10">
-            Ask AI to design the "Strangler Fig" pattern to modernize this specific stack.
-        </p>
+    </div>
 
+    <!-- The Canvas Area -->
+    <div class="relative w-full h-[500px] bg-slate-900 rounded-xl border border-slate-700 overflow-hidden shadow-inner group"
+         @mousemove="apiSandbox.onDrag($event)" 
+         @mouseup="apiSandbox.stopDrag()"
+         @mouseleave="apiSandbox.stopDrag()">
+        
+        <!-- Background Grid -->
+        <div class="absolute inset-0 opacity-10 pointer-events-none" 
+             style="background-image: radial-gradient(#94a3b8 1px, transparent 1px); background-size: 20px 20px;">
+        </div>
+
+        <!-- Hint Text (Empty State) -->
+        <div x-show="apiSandbox.nodes.length === 0" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <p class="text-slate-600 font-mono text-sm">Add components from the toolbar...</p>
+        </div>
+
+        <!-- LAYER 1: SVG Lines (The Wires) -->
+        <!-- pointer-events-none ensures we can click through the lines to the divs below if needed -->
+        <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+            <defs>
+                <!-- Arrowhead marker -->
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
+                  <path d="M0,0 L0,6 L9,3 z" fill="#64748b" />
+                </marker>
+            </defs>
+            <template x-for="edge in apiSandbox.edges" :key="edge.id">
+                <line 
+                    :x1="apiSandbox.nodes.find(n => n.id === edge.from).x + 60" 
+                    :y1="apiSandbox.nodes.find(n => n.id === edge.from).y + 30"
+                    :x2="apiSandbox.nodes.find(n => n.id === edge.to).x + 60" 
+                    :y2="apiSandbox.nodes.find(n => n.id === edge.to).y + 30"
+                    stroke="#64748b" 
+                    stroke-width="2" 
+                    marker-end="url(#arrow)"
+                />
+            </template>
+            <!-- Draw the "active" line if linking -->
+            <template x-if="apiSandbox.linkingNode">
+               <!-- Placeholder for dynamic line visual if desired later -->
+            </template>
+        </svg>
+
+        <!-- LAYER 2: The Nodes (Draggable Divs) -->
+        <template x-for="node in apiSandbox.nodes" :key="node.id">
+            <div class="absolute w-[120px] h-[60px] bg-slate-800 border rounded-lg flex flex-col items-center justify-center shadow-lg cursor-grab active:cursor-grabbing select-none transition-shadow z-10"
+                 :class="apiSandbox.linkingNode === node.id ? 'border-yellow-400 ring-2 ring-yellow-400/50' : 'border-slate-600 hover:border-cyan-400'"
+                 :style="`left: ${node.x}px; top: ${node.y}px`"
+                 @mousedown="apiSandbox.startDrag(node.id, $event)">
+                
+                <!-- Icon & Label -->
+                <i class="fa-solid text-lg mb-1" 
+                   :class="{
+                       'fa-mobile-screen text-blue-400': node.type==='mobile',
+                       'fa-server text-red-400': node.type==='core',
+                       'fa-network-wired text-green-400': node.type==='api',
+                       'fa-database text-yellow-400': node.type==='db',
+                       'fa-cubes text-purple-400': node.type==='micro',
+                       'fa-cloud text-slate-400': node.type==='3rd'
+                   }"></i>
+                <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wide" x-text="node.label"></span>
+
+                <!-- Link Action Button -->
+                <button @click.stop="apiSandbox.startLink(node.id)" 
+                        title="Connect"
+                        class="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-700 border border-slate-500 text-slate-300 hover:bg-cyan-500 hover:text-white hover:border-cyan-400 flex items-center justify-center transition-all shadow-md z-20">
+                    <i class="fa-solid fa-link text-[10px]"></i>
+                </button>
+
+                <!-- Delete Button (Hover Only) -->
+                <button @click.stop="apiSandbox.removeNode(node.id)"
+                        class="absolute -top-2 -left-2 w-5 h-5 rounded-full bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
+                        title="Delete">
+                    <i class="fa-solid fa-xmark text-[10px]"></i>
+                </button>
+            </div>
+        </template>
+
+    </div>
+
+    <!-- 3. Diagnostics Panel -->
+    <div class="grid md:grid-cols-2 gap-4">
+        
+        <!-- Scorecard -->
+        <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 flex items-center justify-between">
+            <div>
+                <h4 class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Architecture Score</h4>
+                <div class="text-3xl font-black" :class="apiSandbox.analysis.color" x-text="apiSandbox.analysis.score + '%'"></div>
+                <div class="text-sm font-bold text-white mt-1" x-text="apiSandbox.analysis.verdict"></div>
+            </div>
+            <div class="h-12 w-12 rounded-full bg-slate-700 flex items-center justify-center">
+                 <i class="fa-solid fa-stethoscope text-slate-400"></i>
+            </div>
+        </div>
+
+        <!-- Issues List -->
+        <div class="bg-slate-800 p-5 rounded-xl border border-slate-700">
+            <h4 class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-3">Detected Risks</h4>
+            
+            <template x-if="apiSandbox.analysis.issues.length === 0">
+                <div class="text-green-400 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-check-circle"></i> System appears stable.
+                </div>
+            </template>
+
+            <ul class="space-y-2">
+                <template x-for="issue in apiSandbox.analysis.issues">
+                    <li class="text-xs text-slate-300 bg-slate-900/50 p-2 rounded border border-slate-700/50 flex gap-2 items-start">
+                        <span x-text="issue.includes('CRITICAL') ? '🔥' : '⚠️'"></span>
+                        <span x-text="issue"></span>
+                    </li>
+                </template>
+            </ul>
+        </div>
+    </div>
+
+    <!-- AI Prompt Button -->
+    <div class="text-center pt-4">
+        <button @click="copyToClipboard(apiSandbox.generateArchPrompt(), 'Architecture Assessment')"
+                class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold transition-all shadow-lg shadow-indigo-900/20">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            Generate Architect's Memo
+        </button>
+        <p class="text-xs text-slate-500 mt-2">Copies a blueprint analysis prompt for ChatGPT.</p>
     </div>
 
 </div>
-
+             
              <!-- WAR GAMES TAB (REDESIGNED) -->
 <div x-show="currentTab === 'whatif'" x-cloak class="max-w-5xl mx-auto pb-20">
     
