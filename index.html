@@ -6194,49 +6194,42 @@ END-IF."></textarea>
 </div> 
 
 
-        <div x-show="viewMode === 'tools'">
+    <div x-show="viewMode === 'tools'" x-cloak>
 
-            <!-- Floating Navigation Dock for Desktop/Tablet -->
-<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden">
-    <div class="flex items-center gap-1 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl shadow-black/50">
-        
-        <template x-for="group in navGroups" :key="group.id">
-            <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
-                    class="relative px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
-                    :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
-                
-                <i :class="group.icon" class="text-lg mb-0.5 transition-transform group-active:scale-90"></i>
-                <span class="text-[9px] font-bold uppercase tracking-widest" x-text="group.label"></span>
-                
-                <!-- Active Indicator Dot -->
-                <div x-show="currentGroup === group.id" 
-                     class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
-            </button>
-        </template>
+               <!-- Desktop/Tablet Dock -->
+        <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden">
+            <div class="flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl shadow-black/50">
+                <template x-for="group in navGroups" :key="group.id">
+                    <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
+                            class="relative px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
+                            :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+                        <i :class="group.icon" class="text-lg mb-0.5 transition-transform group-active:scale-90"></i>
+                        <span class="text-[9px] font-bold uppercase tracking-widest" x-text="group.label"></span>
+                        <div x-show="currentGroup === group.id" class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
+                    </button>
+                </template>
+            </div>
+        </div>
 
-    </div>
-</div>
+        <!-- Mobile Dock -->
+        <div class="md:hidden fixed bottom-6 left-4 right-4 z-40">
+            <div class="flex items-center justify-between gap-1 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl shadow-black/50">
+                <template x-for="group in navGroups" :key="group.id">
+                    <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
+                            class="relative h-14 rounded-xl transition-all duration-300 group flex flex-col items-center justify-center flex-1"
+                            :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+                        <i :class="group.icon" class="text-lg mb-1 transition-transform group-active:scale-90"></i>
+                        <span class="text-[9px] font-bold uppercase tracking-widest truncate w-full text-center" x-text="group.label"></span>
+                        <div x-show="currentGroup === group.id" class="absolute bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
+                    </button>
+                </template>
+            </div>
+        </div>
 
-<!-- Mobile Navigation Dock -->
-<div class="md:hidden fixed bottom-4 left-0 right-0 z-40 px-4 pb-safe">
-    <div class="flex items-center justify-center gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-1 shadow-2xl shadow-black/50 mx-auto max-w-md">
-        <template x-for="group in navGroups" :key="group.id">
-            <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
-                    class="relative px-3 py-2.5 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-0.5 flex-1 min-w-0"
-                    :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
-                
-                <i :class="group.icon" class="text-sm mb-0.5 transition-transform group-active:scale-90"></i>
-                <span class="text-[8px] font-bold uppercase tracking-widest truncate w-full text-center" x-text="group.label"></span>
-                
-                <!-- Active Indicator Dot -->
-                <div x-show="currentGroup === group.id" 
-                     class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
-            </button>
-        </template>
-    </div>
-   </div>
-</div>
-      
+    </div> <!-- End viewMode='tools' Wrapper -->
+
+</main>
+
 
     <!-- Service Worker -->
 
