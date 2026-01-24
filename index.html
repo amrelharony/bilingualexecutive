@@ -442,11 +442,18 @@
         </button>
     </div>
 
-    <!-- Viewer Body -->
+<!-- Viewer Body -->
     <div class="flex-1 relative w-full h-full overflow-hidden flex items-center justify-center p-2">
         
+        <!-- Loading Spinner (Shows while URL is being prepared) -->
+        <div x-show="!viewer.url" class="text-slate-500 flex flex-col items-center">
+            <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+            <span class="text-xs font-mono uppercase">Loading Document...</span>
+        </div>
+
         <!-- PDF Case 1: Online / Google Wrapper -->
-        <template x-if="viewer.type === 'pdf' && !viewer.isBlob">
+        <!-- Added check: viewer.url.length > 5 -->
+        <template x-if="viewer.type === 'pdf' && !viewer.isBlob && viewer.url.length > 5">
             <iframe 
                 :src="'https://docs.google.com/gview?url=' + encodeURIComponent(viewer.url) + '&embedded=true'" 
                 class="w-full h-full rounded border border-slate-700 bg-white" 
@@ -455,7 +462,7 @@
         </template>
 
         <!-- PDF Case 2: Offline / Cached Blob -->
-        <template x-if="viewer.type === 'pdf' && viewer.isBlob">
+        <template x-if="viewer.type === 'pdf' && viewer.isBlob && viewer.url">
             <iframe 
                 :src="viewer.url" 
                 class="w-full h-full rounded border border-slate-700 bg-white" 
@@ -464,13 +471,11 @@
         </template>
 
         <!-- Image Viewer -->
-        <template x-if="viewer.type === 'image'">
+        <template x-if="viewer.type === 'image' && viewer.url">
             <img :src="viewer.url" class="max-w-full max-h-full object-contain rounded shadow-2xl">
         </template>
 
     </div>
-</div>
-
 
                     
 <!-- FLASHCARD MODAL OVERLAY -->
