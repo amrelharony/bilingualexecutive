@@ -70,7 +70,7 @@ document.addEventListener('alpine:init', () => {
         ],
 
         // ==========================================
-        // 3. ACADEMY HELPER METHODS
+        // 3. ACADEMY HELPER METHODS (CORRECTED)
         // ==========================================
         get activeChapter() {
             if (!this.activeChapterId) return null;
@@ -81,7 +81,7 @@ document.addEventListener('alpine:init', () => {
             return null;
         },
 
-        // URL Generators (with folder name fix: ch01 -> Chap 1)
+        // URL Generators - SIMPLIFIED for 'assets/ch01' structure
         getAudioUrl(chapter) {
             if(!chapter) return '';
             // R2 Structure: root/ch01_deepdive.m4a
@@ -89,12 +89,13 @@ document.addEventListener('alpine:init', () => {
         },
         getSlideUrl(chapter) {
             if(!chapter) return '';
-            // GitHub Structure: /assets/Chap 1/slides.pdf
-            return `${this.ghBase}/${chapter.folder.replace('ch0', 'Chap ').replace('ch', 'Chap ')}/slides.pdf`;
+            // GitHub Structure: /assets/ch01/slides.pdf
+            return `${this.ghBase}/${chapter.folder}/slides.pdf`;
         },
         getImageUrl(chapter, type) {
             if(!chapter) return '';
-            return `${this.ghBase}/${chapter.folder.replace('ch0', 'Chap ').replace('ch', 'Chap ')}/${type}.png`;
+            // GitHub Structure: /assets/ch01/infographic.png
+            return `${this.ghBase}/${chapter.folder}/${type}.png`;
         },
 
         // Navigation
@@ -117,9 +118,8 @@ document.addEventListener('alpine:init', () => {
             this.isFlipped = false;
 
             try {
-                // Adjust folder match: ch01 -> Chap 1
-                const folderName = chapter.folder.replace('ch0', 'Chap ').replace('ch', 'Chap ');
-                const csvUrl = `${this.ghBase}/${folderName}/flashcards.csv`;
+                // FIXED: Use chapter.folder directly (e.g. 'ch01')
+                const csvUrl = `${this.ghBase}/${chapter.folder}/flashcards.csv`;
                 
                 const response = await fetch(csvUrl);
                 if (!response.ok) throw new Error("CSV not found");
