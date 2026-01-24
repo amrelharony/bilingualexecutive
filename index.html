@@ -129,8 +129,8 @@
         </template>
 
 
-        <!-- MAIN VIEW SWITCHER -->
-<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 border border-slate-600 rounded-full p-1 flex shadow-2xl">
+  <!-- MAIN VIEW SWITCHER -->
+<div class="fixed top-4 right-4 z-[80] bg-slate-900/90 border border-slate-600 backdrop-blur-md rounded-full p-1 flex shadow-2xl scale-75 md:scale-90 origin-top-right">
     <button @click="viewMode = 'academy'" 
             :class="viewMode === 'academy' ? 'bg-white text-black' : 'text-slate-400 hover:text-white'"
             class="px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all">
@@ -6194,7 +6194,8 @@ END-IF."></textarea>
 </div> 
 
 
-        
+        <div x-show="viewMode === 'tools'">
+
             <!-- Floating Navigation Dock for Desktop/Tablet -->
 <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden">
     <div class="flex items-center gap-1 bg-slate-900/80 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl shadow-black/50">
@@ -6233,8 +6234,8 @@ END-IF."></textarea>
             </button>
         </template>
     </div>
+   </div>
 </div>
-        
       
 
     <!-- Service Worker -->
