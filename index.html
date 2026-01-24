@@ -361,51 +361,49 @@
                         </audio>
                     </div>
 
-<!-- C. Asset Grid (UPDATED) -->
+<!-- C. Asset Grid (UPDATED FOR OFFLINE CACHING) -->
 <div class="grid grid-cols-2 gap-4">
-    <!-- VIEW SLIDES (In-App) -->
+    <!-- VIEW SLIDES -->
     <button @click="viewPdf(activeChapter)" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-blue-400 hover:bg-slate-700 transition-all text-center group">
         <i class="fa-solid fa-file-pdf text-3xl text-slate-400 group-hover:text-blue-400 mb-2 transition-colors"></i>
         <p class="text-xs font-bold text-white">VIEW SLIDES</p>
     </button>
     
-    <!-- DOWNLOAD PACK (Quota Limited) -->
-    <button @click="downloadChapterAssets(activeChapter)" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-green-400 hover:bg-slate-700 transition-all text-center group relative overflow-hidden">
+    <!-- SAVE FOR OFFLINE (Caching) -->
+    <button @click="toggleOfflineCache(activeChapter)" 
+            class="p-6 rounded-xl border transition-all text-center group relative overflow-hidden"
+            :class="offlineManager.isCached(activeChapter.id) ? 'bg-green-900/20 border-green-500' : 'bg-slate-800 border-slate-700 hover:border-green-400'">
         
-        <!-- Quota Badge -->
-        <div class="absolute top-2 right-2 text-[9px] font-mono px-2 py-0.5 rounded bg-black/50 border border-slate-600"
-             :class="downloadManager.isChapterUnlocked(activeChapter.id) ? 'text-green-400 border-green-500' : 'text-slate-400'">
-            <span x-text="downloadManager.isChapterUnlocked(activeChapter.id) ? 'UNLOCKED' : downloadManager.getQuotaText()"></span>
+        <!-- Status Badge -->
+        <div class="absolute top-2 right-2 text-[9px] font-mono px-2 py-0.5 rounded border"
+             :class="offlineManager.isCached(activeChapter.id) ? 'bg-green-500 text-black border-green-500' : 'bg-black/50 text-slate-400 border-slate-600'">
+            <span x-text="offlineManager.isCached(activeChapter.id) ? 'OFFLINE READY' : offlineManager.getQuotaText()"></span>
         </div>
 
-        <i class="fa-solid fa-download text-3xl text-slate-400 group-hover:text-green-400 mb-2 transition-colors"></i>
-        <p class="text-xs font-bold text-white">DOWNLOAD PACK</p>
+        <!-- Icon Swaps based on state -->
+        <div class="mb-2">
+            <i class="fa-solid text-3xl transition-colors"
+               :class="offlineManager.loading === activeChapter.id ? 'fa-circle-notch fa-spin text-white' : (offlineManager.isCached(activeChapter.id) ? 'fa-circle-check text-green-500' : 'fa-cloud-arrow-down text-slate-400 group-hover:text-green-400')"></i>
+        </div>
+        
+        <p class="text-xs font-bold" 
+           :class="offlineManager.isCached(activeChapter.id) ? 'text-green-400' : 'text-white'"
+           x-text="offlineManager.loading === activeChapter.id ? 'SAVING...' : (offlineManager.isCached(activeChapter.id) ? 'SAVED LOCALLY' : 'SAVE OFFLINE')"></p>
     </button>
-                        
-                        <!-- Flashcards -->
-                        <button @click="launchFlashcards(activeChapter)" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-yellow-400 hover:bg-slate-700 transition-all text-center group">
-                            <i class="fa-solid fa-layer-group text-3xl text-slate-400 group-hover:text-yellow-400 mb-2 transition-colors"></i>
-                            <p class="text-xs font-bold text-white">FLASHCARDS</p>
-                        </button>
 
-                        <!-- Infographic -->
-                        <a :href="getImageUrl(activeChapter, 'infographic')" target="_blank" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-green-400 hover:bg-slate-700 transition-all text-center group">
-                            <i class="fa-solid fa-image text-3xl text-slate-400 group-hover:text-green-400 mb-2 transition-colors"></i>
-                            <p class="text-xs font-bold text-white">VISUAL SUMMARY</p>
-                        </a>
+    <!-- Flashcards -->
+    <button @click="launchFlashcards(activeChapter)" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-yellow-400 hover:bg-slate-700 transition-all text-center group">
+        <i class="fa-solid fa-layer-group text-3xl text-slate-400 group-hover:text-yellow-400 mb-2 transition-colors"></i>
+        <p class="text-xs font-bold text-white">FLASHCARDS</p>
+    </button>
 
-                        <!-- Mind Map -->
-                        <a :href="getImageUrl(activeChapter, 'mindmap')" target="_blank" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-purple-400 hover:bg-slate-700 transition-all text-center group">
-                            <i class="fa-solid fa-diagram-project text-3xl text-slate-400 group-hover:text-purple-400 mb-2 transition-colors"></i>
-                            <p class="text-xs font-bold text-white">MIND MAP</p>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </template>
-    </div>
+    <!-- Mind Map -->
+    <button @click="viewImage(activeChapter, 'mindmap')" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-purple-400 hover:bg-slate-700 transition-all text-center group">
+        <i class="fa-solid fa-diagram-project text-3xl text-slate-400 group-hover:text-purple-400 mb-2 transition-colors"></i>
+        <p class="text-xs font-bold text-white">MIND MAP</p>
+    </button>
 </div>
-
+                    
    <!-- PDF / IMAGE VIEWER MODAL -->
 <div x-show="viewer.active" x-cloak x-transition.opacity 
      class="fixed inset-0 z-[150] bg-black/95 flex flex-col">
