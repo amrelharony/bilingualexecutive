@@ -307,16 +307,19 @@ document.addEventListener('alpine:init', () => {
             }
         },
         
-        // --- UPDATED VIEWER LOGIC (Handles Offline) ---
+        // --- UPDATED VIEWER LOGIC ---
         async viewPdf(chapter) {
-            this.viewer.title = `${chapter.title} - Slides`;
+            // 1. RESET STATE IMMEDIATELY (Prevents 400 Error)
+            this.viewer.title = "Loading...";
+            this.viewer.url = ""; // Clear previous URL
             this.viewer.type = 'pdf';
+            this.viewer.active = true; // Open modal with spinner first
+
             const originalUrl = this.getSlideUrl(chapter);
 
             // INTELLIGENT ROUTING:
             if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
                 try {
-                    // Try to fetch from cache explicitly
                     const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
                     const cache = await caches.open(cacheName);
                     const response = await cache.match(originalUrl);
@@ -324,23 +327,34 @@ document.addEventListener('alpine:init', () => {
                     if (response) {
                         const blob = await response.blob();
                         const blobUrl = URL.createObjectURL(blob);
-                        this.viewer.url = blobUrl; // Load local blob
-                        this.viewer.isBlob = true; // Flag to tell HTML NOT to use Google Viewer
+                        this.viewer.isBlob = true; 
+                        
+                        // Slight delay to ensure DOM is ready
+                        setTimeout(() => { 
+                            this.viewer.url = blobUrl; 
+                            this.viewer.title = `${chapter.title} - Slides`;
+                        }, 50);
                     } else {
-                        this.viewer.url = originalUrl;
+                        // Fallback
                         this.viewer.isBlob = true;
+                        this.viewer.url = originalUrl;
+                        this.viewer.title = `${chapter.title} - Slides`;
                     }
                 } catch(e) {
-                    this.viewer.url = originalUrl;
                     this.viewer.isBlob = true;
+                    this.viewer.url = originalUrl;
+                    this.viewer.title = `${chapter.title} - Slides`;
                 }
             } else {
-                // Online and not cached? Use Google Viewer
-                this.viewer.url = originalUrl;
+                // Online Case
                 this.viewer.isBlob = false;
+                
+                // Slight delay to ensure the iframe has unmounted the previous src
+                setTimeout(() => {
+                    this.viewer.url = originalUrl;
+                    this.viewer.title = `${chapter.title} - Slides`;
+                }, 100);
             }
-            
-            this.viewer.active = true;
         },
 
         // Helper for images (Mind Map / Infographic)
