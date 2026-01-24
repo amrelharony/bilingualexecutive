@@ -131,7 +131,7 @@
 
 <!-- MAIN VIEW SWITCHER -->
 <div class="fixed top-4 right-4 z-[80] bg-slate-900/90 border border-slate-600 backdrop-blur-md rounded-full p-1 flex shadow-2xl scale-75 md:scale-90 origin-top-right transition-all duration-500"
-     :class="(navVisible && !activeChapterId && ((viewMode === 'academy') || (viewMode === 'tools' && currentTab === 'dashboard'))) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'">
+     :class="(navVisible && !activeChapterId && (viewMode === 'academy' || currentTab === 'dashboard')) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'">
 
     <button @click="viewMode = 'academy'" 
             :class="viewMode === 'academy' ? 'bg-white text-black' : 'text-slate-400 hover:text-white'"
@@ -143,8 +143,9 @@
             class="px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all">
         TOOLKIT
     </button>
-</div>      
+</div>
 
+        
         <!-- LANDING PAGE / COVER SIMULATOR -->
 <div x-show="showLanding" 
      x-transition:leave="transition ease-in duration-700"
@@ -319,41 +320,33 @@
         </div>
     </div>
 
-    <!-- 2. CHAPTER DASHBOARD (Detail View) -->
-    <div x-show="activeChapterId" x-cloak class="min-h-screen bg-dark">
+<!-- 2. CHAPTER DASHBOARD (Detail View) -->
+    <div x-show="activeChapterId" x-cloak 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         class="fixed inset-0 z-[100] bg-dark overflow-y-auto"> <!-- Changed to fixed inset-0 to fix gap -->
+        
         <template x-if="activeChapter">
-            <div>
+            <div class="relative w-full min-h-full">
                 
-              <!-- Sticky Header (UPDATED) -->
-<div class="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800 px-6 py-4 -mt-6 -mx-6 flex justify-between items-center transition-all duration-500 pt-safe shadow-2xl"
-     :class="navVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'">
-    
-    <!-- LEFT: Back & Title -->
-    <div class="flex items-center gap-4">
-        <button @click="closeChapter()" class="w-10 h-10 rounded-full border border-slate-600 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all shrink-0">
-            <i class="fa-solid fa-arrow-left"></i>
-        </button>
-        <div class="overflow-hidden">
-            <p class="text-[9px] font-mono text-slate-500 uppercase tracking-widest">NOW PLAYING</p>
-            <h3 class="font-bold text-white text-sm md:text-base truncate" x-text="activeChapter.title"></h3>
-        </div>
-    </div>
+                <!-- Sticky Header (Auto-Hiding) -->
+                <div class="fixed top-0 left-0 right-0 z-40 bg-dark/90 backdrop-blur border-b border-slate-800 p-4 flex items-center gap-4 transition-all duration-500 ease-in-out"
+                     :class="navVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 pointer-events-none'">
+                    
+                    <button @click="closeChapter()" class="w-10 h-10 rounded-full border border-slate-600 flex items-center justify-center text-white hover:bg-white hover:text-black transition-all">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+                    <div>
+                        <p class="text-[10px] font-mono text-slate-500 uppercase">NOW PLAYING</p>
+                        <h3 class="font-bold text-white text-sm md:text-base truncate" x-text="activeChapter.title"></h3>
+                    </div>
+                </div>
 
-    <!-- RIGHT: Embedded Switcher -->
-    <div class="bg-black/40 border border-slate-700 rounded-full p-1 flex shrink-0 scale-90 md:scale-100">
-        <button @click="viewMode = 'academy'" 
-                class="px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all bg-white text-black">
-            ACADEMY
-        </button>
-        <button @click="viewMode = 'tools'; closeChapter()" 
-                class="px-4 py-2 rounded-full text-[10px] font-bold uppercase tracking-widest transition-all text-slate-400 hover:text-white">
-            TOOLKIT
-        </button>
-    </div>
+                <!-- Spacer div to prevent content from hiding behind the fixed header when it is visible -->
+                <div class="h-20"></div>
 
-</div>
-
-                <div class="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
+                <div class="max-w-4xl mx-auto p-4 md:p-8 space-y-8 pb-32">
                     
                     <!-- A. Video Player -->
                     <div class="aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
@@ -378,66 +371,64 @@
                             Your browser does not support the audio element.
                         </audio>
                     </div>
-                    
 
-<!-- C. Asset Grid (FIXED LAYOUT) -->
-<div class="grid grid-cols-2 gap-4">
-    
-    <!-- 1. VIEW SLIDES -->
-    <button @click="viewPdf(activeChapter)" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-blue-400 hover:bg-slate-700 transition-all text-center group">
-        <i class="fa-solid fa-file-pdf text-3xl text-slate-400 group-hover:text-blue-400 mb-2 transition-colors"></i>
-        <p class="text-xs font-bold text-white">VIEW SLIDES</p>
-    </button>
-    
-    <!-- 2. SAVE OFFLINE (With Status) -->
-    <button @click="toggleOfflineCache(activeChapter)" 
-            class="p-6 rounded-xl border transition-all text-center group relative overflow-hidden"
-            :class="offlineManager.isCached(activeChapter.id) ? 'bg-green-900/20 border-green-500' : 'bg-slate-800 border-slate-700 hover:border-green-400'">
-        
-        <!-- Status Badge -->
-        <div class="absolute top-2 right-2 text-[9px] font-mono px-2 py-0.5 rounded border"
-             :class="offlineManager.isCached(activeChapter.id) ? 'bg-green-500 text-black border-green-500' : 'bg-black/50 text-slate-400 border-slate-600'">
-            <span x-text="offlineManager.isCached(activeChapter.id) ? 'READY' : offlineManager.getQuotaText()"></span>
-        </div>
+                    <!-- C. Asset Grid (OFFLINE & CACHING ENABLED) -->
+                    <div class="grid grid-cols-2 gap-4">
+                        
+                        <!-- 1. VIEW SLIDES -->
+                        <button @click="viewPdf(activeChapter)" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-blue-400 hover:bg-slate-700 transition-all text-center group">
+                            <i class="fa-solid fa-file-pdf text-3xl text-slate-400 group-hover:text-blue-400 mb-2 transition-colors"></i>
+                            <p class="text-xs font-bold text-white">VIEW SLIDES</p>
+                        </button>
+                        
+                        <!-- 2. SAVE OFFLINE (Caches 2 Chapters/Day) -->
+                        <button @click="toggleOfflineCache(activeChapter)" 
+                                class="p-6 rounded-xl border transition-all text-center group relative overflow-hidden"
+                                :class="offlineManager.isCached(activeChapter.id) ? 'bg-green-900/20 border-green-500' : 'bg-slate-800 border-slate-700 hover:border-green-400'">
+                            
+                            <!-- Status Badge -->
+                            <div class="absolute top-2 right-2 text-[9px] font-mono px-2 py-0.5 rounded border"
+                                 :class="offlineManager.isCached(activeChapter.id) ? 'bg-green-500 text-black border-green-500' : 'bg-black/50 text-slate-400 border-slate-600'">
+                                <span x-text="offlineManager.isCached(activeChapter.id) ? 'OFFLINE READY' : offlineManager.getQuotaText()"></span>
+                            </div>
 
-        <!-- Spinner / Icon -->
-        <div class="mb-2">
-            <i class="fa-solid text-3xl transition-colors"
-               :class="offlineManager.loading === activeChapter.id ? 'fa-circle-notch fa-spin text-white' : (offlineManager.isCached(activeChapter.id) ? 'fa-circle-check text-green-500' : 'fa-cloud-arrow-down text-slate-400 group-hover:text-green-400')"></i>
-        </div>
-        
-        <p class="text-xs font-bold" 
-           :class="offlineManager.isCached(activeChapter.id) ? 'text-green-400' : 'text-white'"
-           x-text="offlineManager.loading === activeChapter.id ? 'SAVING...' : (offlineManager.isCached(activeChapter.id) ? 'SAVED' : 'SAVE OFFLINE')"></p>
-    </button>
+                            <!-- Dynamic Icon -->
+                            <div class="mb-2">
+                                <i class="fa-solid text-3xl transition-colors"
+                                   :class="offlineManager.loading === activeChapter.id ? 'fa-circle-notch fa-spin text-white' : (offlineManager.isCached(activeChapter.id) ? 'fa-circle-check text-green-500' : 'fa-cloud-arrow-down text-slate-400 group-hover:text-green-400')"></i>
+                            </div>
+                            
+                            <p class="text-xs font-bold" 
+                               :class="offlineManager.isCached(activeChapter.id) ? 'text-green-400' : 'text-white'"
+                               x-text="offlineManager.loading === activeChapter.id ? 'SAVING...' : (offlineManager.isCached(activeChapter.id) ? 'SAVED LOCALLY' : 'SAVE OFFLINE')"></p>
+                        </button>
 
-    <!-- 3. FLASHCARDS -->
-    <button @click="launchFlashcards(activeChapter)" class="col-span-2 p-4 bg-slate-800 rounded-xl border border-slate-700 hover:border-yellow-400 hover:bg-slate-700 transition-all text-center group">
-        <div class="flex items-center justify-center gap-3">
-            <i class="fa-solid fa-layer-group text-xl text-slate-400 group-hover:text-yellow-400 transition-colors"></i>
-            <span class="text-xs font-bold text-white">PRACTICE FLASHCARDS</span>
-        </div>
-    </button>
+                        <!-- 3. FLASHCARDS -->
+                        <button @click="launchFlashcards(activeChapter)" class="col-span-2 p-4 bg-slate-800 rounded-xl border border-slate-700 hover:border-yellow-400 hover:bg-slate-700 transition-all text-center group">
+                            <div class="flex items-center justify-center gap-3">
+                                <i class="fa-solid fa-layer-group text-xl text-slate-400 group-hover:text-yellow-400 transition-colors"></i>
+                                <span class="text-xs font-bold text-white">PRACTICE FLASHCARDS</span>
+                            </div>
+                        </button>
 
-    <!-- 4. VISUAL SUMMARY (Infographic) -->
-    <button @click="viewImage(activeChapter, 'infographic')" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-green-400 hover:bg-slate-700 transition-all text-center group">
-        <i class="fa-solid fa-image text-3xl text-slate-400 group-hover:text-green-400 mb-2 transition-colors"></i>
-        <p class="text-xs font-bold text-white">VISUAL SUMMARY</p>
-    </button>
+                        <!-- 4. VISUAL SUMMARY -->
+                        <button @click="viewImage(activeChapter, 'infographic')" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-green-400 hover:bg-slate-700 transition-all text-center group">
+                            <i class="fa-solid fa-image text-3xl text-slate-400 group-hover:text-green-400 mb-2 transition-colors"></i>
+                            <p class="text-xs font-bold text-white">VISUAL SUMMARY</p>
+                        </button>
 
-    <!-- 5. MIND MAP -->
-    <button @click="viewImage(activeChapter, 'mindmap')" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-purple-400 hover:bg-slate-700 transition-all text-center group">
-        <i class="fa-solid fa-diagram-project text-3xl text-slate-400 group-hover:text-purple-400 mb-2 transition-colors"></i>
-        <p class="text-xs font-bold text-white">MIND MAP</p>
-    </button>
-</div>
-                    
-                     </div> <!-- End of max-w-4xl container -->
+                        <!-- 5. MIND MAP -->
+                        <button @click="viewImage(activeChapter, 'mindmap')" class="p-6 bg-slate-800 rounded-xl border border-slate-700 hover:border-purple-400 hover:bg-slate-700 transition-all text-center group">
+                            <i class="fa-solid fa-diagram-project text-3xl text-slate-400 group-hover:text-purple-400 mb-2 transition-colors"></i>
+                            <p class="text-xs font-bold text-white">MIND MAP</p>
+                        </button>
+                    </div>
+
+                </div> <!-- End of max-w-4xl container -->
             </div> <!-- End of content wrapper -->
         </template>
     </div> <!-- End of activeChapterId view -->
-</div> <!-- End of viewMode === 'academy' -->
-                    
+    
                     
     <!-- PDF / IMAGE VIEWER MODAL -->
 <div x-show="viewer.active" x-cloak x-transition.opacity 
