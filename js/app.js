@@ -243,36 +243,30 @@ document.addEventListener('alpine:init', () => {
         },
 
         
-        // --- CACHING ACTIONS ---
+       // --- CACHING ACTIONS (FAULT TOLERANT) ---
         async toggleOfflineCache(chapter) {
             const om = this.offlineManager;
             
-            // 1. If already cached, do nothing (or add delete logic if you want)
             if (om.isCached(chapter.id)) {
-                alert("This chapter is already saved for offline use.");
+                alert("This chapter is already saved.");
                 return;
             }
 
-            // 2. Check Quota
             const quota = om.getQuota();
             if (quota.downloadedCount >= om.limit) {
-                alert(`Daily Offline Limit Reached (${om.limit}/day).\n\nCome back tomorrow to save more chapters.`);
+                alert(`Daily Limit Reached (${om.limit}/day).`);
                 return;
             }
 
-            // 3. Confirm
-            if (!confirm(`Save Chapter ${chapter.id} for offline use?\n\nThis will download Audio, Slides, and Images to this device.\n(Quota: ${om.limit - quota.downloadedCount} left today)`)) {
-                return;
-            }
+            if (!confirm(`Save Chapter ${chapter.id} offline?\n(Quota: ${om.limit - quota.downloadedCount} left)`)) return;
 
-            // 4. Start Caching Process
-            om.loading = chapter.id; // Triggers UI spinner
+            om.loading = chapter.id;
 
             try {
-                // Determine cache name dynamically or use fixed
                 const cacheName = om.cacheName || 'bilingual-content-v1';
                 const cache = await caches.open(cacheName);
                 
+                // List of potential files
                 const urlsToCache = [
                     this.getAudioUrl(chapter),
                     this.getSlideUrl(chapter),
@@ -280,21 +274,39 @@ document.addEventListener('alpine:init', () => {
                     this.getImageUrl(chapter, 'mindmap')
                 ];
 
-                // Perform the fetch and put into Cache Storage
-                await cache.addAll(urlsToCache);
+                let successCount = 0;
 
-                // 5. Success
-                om.updateQuota(chapter.id);
-                alert("Chapter saved! You can now play audio and view slides in Airplane Mode.");
+                // Download one by one (Fault Tolerant)
+                // If one file is missing (404), we skip it instead of crashing.
+                for (const url of urlsToCache) {
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            console.warn(`Skipping missing file: ${url}`);
+                            continue; // Skip 404s
+                        }
+                        await cache.put(url, response);
+                        successCount++;
+                    } catch (e) {
+                        console.warn(`Network error for: ${url}`, e);
+                    }
+                }
+
+                if (successCount > 0) {
+                    om.updateQuota(chapter.id);
+                    alert(`Saved ${successCount} assets for offline use!`);
+                } else {
+                    throw new Error("No files could be downloaded.");
+                }
 
             } catch (error) {
                 console.error("Cache failed:", error);
-                alert("Download failed. Please check your internet connection.");
+                alert("Download failed. Check internet or file availability.");
             } finally {
-                om.loading = null; // Stop spinner
+                om.loading = null;
             }
         },
-
+        
         // --- UPDATED VIEWER LOGIC (Handles Offline) ---
         async viewPdf(chapter) {
             this.viewer.title = `${chapter.title} - Slides`;
