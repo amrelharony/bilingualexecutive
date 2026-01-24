@@ -459,18 +459,18 @@ document.addEventListener('alpine:init', () => {
         },
 
                 // 3. THE TIMER LOGIC
-        resetNavTimer() {
+        // resetNavTimer() {
             // Show UI immediately
-            this.navVisible = true;
+        //    this.navVisible = true;
             
             // Clear pending hide timer
-            if (this.navTimer) clearTimeout(this.navTimer);
+        //    if (this.navTimer) clearTimeout(this.navTimer);
             
             // Set new timer to hide after 3 seconds of no activity
-            this.navTimer = setTimeout(() => {
-                this.navVisible = false;
-            }, 3000); 
-        },
+       //     this.navTimer = setTimeout(() => {
+        //        this.navVisible = false;
+       //     }, 3000); 
+      //  },
 
             // check if user previously entered
 const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
