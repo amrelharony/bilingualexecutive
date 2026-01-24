@@ -16,6 +16,7 @@ document.addEventListener('alpine:init', () => {
         // ==========================================
          navVisible: true,
          navTimer: null,
+        currentTab: 'dashboard',
         viewMode: 'academy', // Toggles between 'academy' and 'tools'
         activeChapterId: null,
    
