@@ -456,7 +456,6 @@ document.addEventListener('alpine:init', () => {
                 window.addEventListener(evt, resetNav, { passive: true, capture: true });
             });
 
-            }
 
         // 3. THE TIMER LOGIC
         resetNavTimer() {
@@ -591,14 +590,7 @@ this.$watch('talentSkills', () => {
 
         },
 
-        
-resetNavTimer() {
-            this.navVisible = true;
-            if (this.navTimer) clearTimeout(this.navTimer);
-            this.navTimer = setTimeout(() => {
-                this.navVisible = false;
-            }, 3000); // 3 seconds
-        },
+
 
     
         // YouTube Player Initialization Method
