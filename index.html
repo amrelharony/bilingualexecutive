@@ -130,7 +130,7 @@
 
 
 <!-- MAIN VIEW SWITCHER -->
-<div class="fixed top-4 right-4 z-[80] bg-slate-900/90 border border-slate-600 backdrop-blur-md rounded-full p-1 flex shadow-2xl scale-75 md:scale-90 origin-top-right transition-all duration-500"
+<div class="fixed top-4 right-4 z-[80] bg-slate-900/90 border border-slate-600 backdrop-blur-md rounded-full p-1 flex shadow-2xl scale-75 md:scale-90 origin-top-right transition-all duration-500 ease-in-out"
      :class="(navVisible && !activeChapterId && (viewMode === 'academy' || currentTab === 'dashboard')) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'">
 
     <button @click="viewMode = 'academy'" 
@@ -144,7 +144,7 @@
         TOOLKIT
     </button>
 </div>
-
+        
         
         <!-- LANDING PAGE / COVER SIMULATOR -->
 <div x-show="showLanding" 
@@ -6304,7 +6304,7 @@ END-IF."></textarea>
 
 
                <!-- Desktop/Tablet Dock -->
-<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden transition-all duration-500"
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden transition-all duration-500 ease-in-out"
      :class="navVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'">
             <div class="flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl shadow-black/50">
                 <template x-for="group in navGroups" :key="group.id">
@@ -6320,7 +6320,7 @@ END-IF."></textarea>
         </div>
 
         <!-- Mobile Dock -->
-<div class="md:hidden fixed bottom-6 left-4 right-4 z-40 transition-all duration-500"
+<div class="md:hidden fixed bottom-6 left-4 right-4 z-40 transition-all duration-500 ease-in-out"
      :class="navVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'">
             <div class="flex items-center justify-between gap-1 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl shadow-black/50">
                 <template x-for="group in navGroups" :key="group.id">
