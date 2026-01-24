@@ -36,6 +36,50 @@ document.addEventListener('alpine:init', () => {
         isFlipped: false,
         flashcardLoading: false,
 
+        // --- VIEWER STATE ---
+        viewer: {
+            active: false,
+            type: 'pdf', // 'pdf' or 'image'
+            url: '',
+            title: ''
+        },
+
+        // --- DOWNLOAD MANAGER (Quota Logic) ---
+        downloadManager: {
+            limit: 2, // Chapters per day
+            
+            // Methods needed inside Alpine scope
+            getQuota() {
+                const today = new Date().toDateString();
+                const stored = JSON.parse(localStorage.getItem('bilingual_downloads') || '{}');
+                
+                // Reset if new day
+                if (stored.date !== today) {
+                    return { date: today, chapters: [] };
+                }
+                return stored;
+            },
+
+            saveQuota(quota) {
+                localStorage.setItem('bilingual_downloads', JSON.stringify(quota));
+            },
+
+            isChapterUnlocked(chapterId) {
+                const quota = this.getQuota();
+                return quota.chapters.includes(chapterId);
+            },
+
+            getQuotaText() {
+                const quota = this.getQuota();
+                const used = quota.chapters.length;
+                const remaining = this.limit - used;
+                if (remaining <= 0) return "QUOTA REACHED";
+                return `${remaining} LEFT TODAY`;
+            }
+        },
+
+
+        
         // ==========================================
         // 2. THE METRO MAP DATA (Full 10 Chapters)
         // ==========================================
@@ -85,6 +129,95 @@ document.addEventListener('alpine:init', () => {
             return null;
         },
 
+        
+// --- VIEWER ACTIONS ---
+        viewPdf(chapter) {
+            this.viewer.title = `${chapter.title} - Slides`;
+            this.viewer.type = 'pdf';
+            this.viewer.url = this.getSlideUrl(chapter); // Uses your existing URL generator
+            this.viewer.active = true;
+        },
+
+        viewImage(chapter, type) {
+            this.viewer.title = `${chapter.title} - ${type.toUpperCase()}`;
+            this.viewer.type = 'image';
+            this.viewer.url = this.getImageUrl(chapter, type);
+            this.viewer.active = true;
+        },
+
+        // --- DOWNLOAD LOGIC ---
+        async downloadChapterAssets(chapter) {
+            const dm = this.downloadManager;
+            const quota = dm.getQuota();
+
+            // 1. Check if already unlocked
+            if (!quota.chapters.includes(chapter.id)) {
+                // 2. Check Limit
+                if (quota.chapters.length >= dm.limit) {
+                    alert(`Daily Download Limit Reached (${dm.limit}/day).\n\nCome back tomorrow to unlock more resources.`);
+                    return;
+                }
+                
+                // 3. Unlock
+                if(confirm(`Unlock resources for "${chapter.title}"?\nThis counts towards your daily limit (${quota.chapters.length}/${dm.limit}).`)) {
+                    quota.chapters.push(chapter.id);
+                    dm.saveQuota(quota);
+                    // Force refresh of Alpine reactivity if needed
+                    this.downloadManager = { ...this.downloadManager }; 
+                } else {
+                    return; // User cancelled
+                }
+            }
+
+            // 4. Trigger Downloads
+            alert(`Downloading Asset Pack for Chapter ${chapter.id}...`);
+            
+            // Define assets to download
+            const assets = [
+                { url: this.getSlideUrl(chapter), name: `Ch${chapter.id}_Slides.pdf` },
+                { url: this.getAudioUrl(chapter), name: `Ch${chapter.id}_Audio.m4a` },
+                { url: this.getImageUrl(chapter, 'infographic'), name: `Ch${chapter.id}_Infographic.png` },
+                { url: this.getImageUrl(chapter, 'mindmap'), name: `Ch${chapter.id}_Mindmap.png` }
+            ];
+
+            // Sequential download to prevent browser blocking
+            for (const asset of assets) {
+                try {
+                    await this.forceDownload(asset.url, asset.name);
+                    // Small delay between downloads
+                    await new Promise(r => setTimeout(r, 500));
+                } catch (e) {
+                    console.error(`Failed to download ${asset.name}`, e);
+                }
+            }
+        },
+
+        // Helper to force download (bypassing "open in new tab")
+        async forceDownload(url, filename) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network error');
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (e) {
+                // Fallback for simple link if fetch fails (e.g. CORS issues)
+                console.warn("Fetch download failed, trying direct link", e);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                link.target = '_blank';
+                link.click();
+            }
+        },
+        
         // URL Generators - SIMPLIFIED for 'assets/ch01' structure
         getAudioUrl(chapter) {
             if(!chapter) return '';
