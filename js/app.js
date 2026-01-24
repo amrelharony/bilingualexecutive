@@ -12,11 +12,15 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('toolkit', () => ({
 
         // ==========================================
-        // 1. ACADEMY CONFIG & STATE
+        // ACADEMY CONFIG & STATE
         // ==========================================
+         navVisible: true,
+         navTimer: null,
         viewMode: 'academy', // Toggles between 'academy' and 'tools'
         activeChapterId: null,
+   
 
+        
         // HOSTING CONFIG
         // Cloudflare R2 (Audio) - Ensure your bucket has public access enabled
         cfBase: 'https://pub-fafafe2a62594937b094305a3b9ef698.r2.dev', 
@@ -109,6 +113,7 @@ document.addEventListener('alpine:init', () => {
             if(audio) audio.pause();
         },
 
+
         // Flashcard Engine
         async launchFlashcards(chapter) {
             this.showFlashcards = true;
@@ -158,6 +163,15 @@ document.addEventListener('alpine:init', () => {
         // INITIALIZATION
         // ------------------------------------------------------------------
         init() {
+
+                        // --- SETUP AUTO-HIDE LISTENERS ---
+
+                        const resetNav = () => this.resetNavTimer();
+            ['mousemove', 'scroll', 'touchstart', 'click', 'keydown'].forEach(evt => {
+                document.addEventListener(evt, resetNav, { passive: true });
+            });
+            this.resetNavTimer(); // Start timer on load
+
 
             // check if user previously entered
 const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
@@ -279,6 +293,13 @@ this.$watch('talentSkills', () => {
         },
 
         
+resetNavTimer() {
+            this.navVisible = true;
+            if (this.navTimer) clearTimeout(this.navTimer);
+            this.navTimer = setTimeout(() => {
+                this.navVisible = false;
+            }, 3000); // 3 seconds
+        },
 
     
         // YouTube Player Initialization Method
