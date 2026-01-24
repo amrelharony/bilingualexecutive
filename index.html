@@ -404,7 +404,7 @@
     </button>
 </div>
                     
-   <!-- PDF / IMAGE VIEWER MODAL -->
+    <!-- PDF / IMAGE VIEWER MODAL -->
 <div x-show="viewer.active" x-cloak x-transition.opacity 
      class="fixed inset-0 z-[150] bg-black/95 flex flex-col">
     
@@ -419,8 +419,8 @@
     <!-- Viewer Body -->
     <div class="flex-1 relative w-full h-full overflow-hidden flex items-center justify-center p-2">
         
-        <!-- PDF Viewer (Using Google Docs Viewer) -->
-        <template x-if="viewer.type === 'pdf'">
+        <!-- PDF Case 1: Online / Google Wrapper -->
+        <template x-if="viewer.type === 'pdf' && !viewer.isBlob">
             <iframe 
                 :src="'https://docs.google.com/gview?url=' + encodeURIComponent(viewer.url) + '&embedded=true'" 
                 class="w-full h-full rounded border border-slate-700 bg-white" 
@@ -428,14 +428,23 @@
             </iframe>
         </template>
 
-        <!-- Image Viewer (Unchanged) -->
+        <!-- PDF Case 2: Offline / Cached Blob -->
+        <template x-if="viewer.type === 'pdf' && viewer.isBlob">
+            <iframe 
+                :src="viewer.url" 
+                class="w-full h-full rounded border border-slate-700 bg-white" 
+                frameborder="0">
+            </iframe>
+        </template>
+
+        <!-- Image Viewer -->
         <template x-if="viewer.type === 'image'">
             <img :src="viewer.url" class="max-w-full max-h-full object-contain rounded shadow-2xl">
         </template>
 
     </div>
 </div>
-    
+                    
 <!-- FLASHCARD MODAL OVERLAY -->
 <div x-show="showFlashcards" x-transition.opacity class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6">
     <div class="w-full max-w-md bg-transparent perspective-1000 relative">
