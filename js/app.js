@@ -10,6 +10,150 @@ if (typeof YT === 'undefined' && document.getElementById('youtube-player')) {
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('toolkit', () => ({
+
+        // ==========================================
+        // 1. ACADEMY CONFIG & STATE
+        // ==========================================
+        viewMode: 'academy', // Toggles between 'academy' and 'tools'
+        activeChapterId: null,
+
+        // HOSTING CONFIG
+        // Cloudflare R2 (Audio) - Ensure your bucket has public access enabled
+        cfBase: 'https://pub-fafafe2a62594937b094305a3b9ef698.r2.dev', 
+        
+        // GitHub Raw (Images/Slides/CSV)
+        // Note: Using 'raw.githubusercontent.com' to allow direct file loading
+        ghBase: 'https://raw.githubusercontent.com/amrelharony/bilingualexecutive/ad5c60bd79f51e08ccf0bf5811965772524a0653/assets',
+
+        // FLASHCARD STATE
+        showFlashcards: false,
+        flashcardDeck: [],
+        currentCardIndex: 0,
+        isFlipped: false,
+        flashcardLoading: false,
+
+        // ==========================================
+        // 2. THE METRO MAP DATA (Full 10 Chapters)
+        // ==========================================
+        metroMap: [
+            {
+                id: 'part1',
+                label: 'PART 1: THE BURNING PLATFORM',
+                color: 'border-red-500', 
+                chapters: [
+                    { id: 1, title: 'The Fintech Tsunami', desc: "Why the 'Universal Bank' model is dead.", status: 'completed', youtubeId: 'chE__fmgnbE', folder: 'ch01' },
+                    { id: 2, title: 'Data: Millstone or Engine?', desc: "Turning legacy data swamps into a fuel source.", status: 'active', youtubeId: 'Ht2s73CULak', folder: 'ch02' },
+                    { id: 3, title: 'The Cultural Debt', desc: "Why 'Green Light' status reports are killing you.", status: 'locked', youtubeId: 'pRcu6nihR2k', folder: 'ch03' }
+                ]
+            },
+            {
+                id: 'part2',
+                label: 'PART 2: THE FRAMEWORK',
+                color: 'border-blue-400',
+                chapters: [
+                    { id: 4, title: 'Agile as Strategy', desc: "Moving from Project to Product.", status: 'locked', youtubeId: 'dcxHBnDhYUw', folder: 'ch04' },
+                    { id: 5, title: 'Governing the Goldmine', desc: "Automated Governance.", status: 'locked', youtubeId: 'wWBIUlHv0W0', folder: 'ch05' },
+                    { id: 6, title: 'The Bilingual Executive', desc: "Speaking Tech & Money.", status: 'locked', youtubeId: 'MZ-HaSQJDzA', folder: 'ch06' }
+                ]
+            },
+            {
+                id: 'part3',
+                label: 'PART 3: EXECUTION',
+                color: 'border-green-400',
+                chapters: [
+                    { id: 7, title: 'The Lighthouse Strategy', desc: "How to launch a pilot.", status: 'locked', youtubeId: 'Jhn1Dwcd864', folder: 'ch07' },
+                    { id: 8, title: 'Killing Zombies', desc: "Stopping dead projects.", status: 'locked', youtubeId: 'ygsm8hBt_xA', folder: 'ch08' },
+                    { id: 9, title: 'The Future Bank', desc: "AI Agents & Embedded Finance.", status: 'locked', youtubeId: 'OWwVtVDTNHs', folder: 'ch09' },
+                    { id: 10, title: 'The Day 1 Playbook', desc: "Your first 90 days.", status: 'locked', youtubeId: 'fNLPI6nWCDk', folder: 'ch10' }
+                ]
+            }
+        ],
+
+        // ==========================================
+        // 3. ACADEMY HELPER METHODS
+        // ==========================================
+        get activeChapter() {
+            if (!this.activeChapterId) return null;
+            for (const part of this.metroMap) {
+                const found = part.chapters.find(c => c.id === this.activeChapterId);
+                if (found) return found;
+            }
+            return null;
+        },
+
+        // URL Generators (with folder name fix: ch01 -> Chap 1)
+        getAudioUrl(chapter) {
+            if(!chapter) return '';
+            // R2 Structure: root/ch01_deepdive.m4a
+            return `${this.cfBase}/${chapter.folder}_deepdive.m4a`;
+        },
+        getSlideUrl(chapter) {
+            if(!chapter) return '';
+            // GitHub Structure: /assets/Chap 1/slides.pdf
+            return `${this.ghBase}/${chapter.folder.replace('ch0', 'Chap ').replace('ch', 'Chap ')}/slides.pdf`;
+        },
+        getImageUrl(chapter, type) {
+            if(!chapter) return '';
+            return `${this.ghBase}/${chapter.folder.replace('ch0', 'Chap ').replace('ch', 'Chap ')}/${type}.png`;
+        },
+
+        // Navigation
+        openChapter(id) {
+            this.activeChapterId = id;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
+        closeChapter() {
+            this.activeChapterId = null;
+            const audio = document.querySelector('audio');
+            if(audio) audio.pause();
+        },
+
+        // Flashcard Engine
+        async launchFlashcards(chapter) {
+            this.showFlashcards = true;
+            this.flashcardLoading = true;
+            this.flashcardDeck = [];
+            this.currentCardIndex = 0;
+            this.isFlipped = false;
+
+            try {
+                // Adjust folder match: ch01 -> Chap 1
+                const folderName = chapter.folder.replace('ch0', 'Chap ').replace('ch', 'Chap ');
+                const csvUrl = `${this.ghBase}/${folderName}/flashcards.csv`;
+                
+                const response = await fetch(csvUrl);
+                if (!response.ok) throw new Error("CSV not found");
+                const text = await response.text();
+                
+                const rows = text.split('\n').filter(r => r.trim() !== '');
+                this.flashcardDeck = rows.map(row => {
+                    const firstComma = row.indexOf(',');
+                    if (firstComma === -1) return null; 
+                    return { 
+                        q: row.substring(0, firstComma).trim(), 
+                        a: row.substring(firstComma + 1).trim().replace(/^"|"$/g, '') 
+                    };
+                }).filter(c => c !== null);
+
+            } catch (e) {
+                console.error("Flashcard Error:", e);
+                this.flashcardDeck = [{ q: "Error", a: "Could not load cards from GitHub." }];
+            } finally {
+                this.flashcardLoading = false;
+            }
+        },
+
+        nextCard() {
+            this.isFlipped = false;
+            setTimeout(() => {
+                if (this.currentCardIndex < this.flashcardDeck.length - 1) {
+                    this.currentCardIndex++;
+                } else {
+                    this.showFlashcards = false; // End of deck
+                }
+            }, 300);
+        },
+        
         // ------------------------------------------------------------------
         // INITIALIZATION
         // ------------------------------------------------------------------
