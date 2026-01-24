@@ -1045,99 +1045,219 @@ ${skills.map(s => `- ${s.label}: ${s.val}/5`).join('\n')}
 
         
 // ------------------------------------------------------------------
-        //  API SANDBOX (Updated with Architecture Blueprint Prompt)
-        // ------------------------------------------------------------------
-        apiSandbox: {
-            pipeline: [], 
-            isRunning: false,
-            result: null,
+// ARCHITECTURE SANDBOX (Visual Graph Engine)
+// ------------------------------------------------------------------
+apiSandbox: {
+    // 1. Graph State
+    nodes: [
+        { id: 1, type: 'mobile', label: 'Mobile App', x: 50, y: 150 },
+        { id: 2, type: 'core', label: 'Legacy Core', x: 450, y: 150 }
+    ],
+    edges: [
+        { id: 'e1', from: 1, to: 2 } // Initial direct connection (Bad practice example)
+    ],
+    
+    // 2. Interaction State
+    draggingNode: null,
+    linkingNode: null,
+    
+    // 3. Component Palette
+    catalog: [
+        { type: 'mobile', label: 'Channel', icon: 'fa-mobile-screen' },
+        { type: 'api', label: 'API Gateway', icon: 'fa-network-wired' },
+        { type: 'micro', label: 'Microservice', icon: 'fa-cubes' },
+        { type: 'core', label: 'Mainframe', icon: 'fa-server' },
+        { type: 'db', label: 'Database', icon: 'fa-database' },
+        { type: '3rd', label: '3rd Party', icon: 'fa-cloud' }
+    ],
+
+    // 4. Computed Metrics
+    analysis: {
+        score: 0,
+        verdict: "",
+        color: "",
+        issues: []
+    },
+
+    // --- ACTIONS ---
+
+    addNode(type) {
+        // Add with slight random offset to prevent stacking
+        this.nodes.push({
+            id: Date.now(),
+            type: type,
+            label: type === 'mobile' ? 'App' : (type === 'core' ? 'Core' : type.toUpperCase()),
+            x: 100 + (Math.random() * 50),
+            y: 100 + (Math.random() * 50)
+        });
+        this.analyzeArchitecture();
+    },
+
+    clearBoard() {
+        if(confirm("Clear the whiteboard?")) {
+            this.nodes = [];
+            this.edges = [];
+            this.analyzeArchitecture();
+        }
+    },
+
+    // --- DRAG & DROP LOGIC ---
+    
+    startDrag(id, event) {
+        this.draggingNode = id;
+    },
+
+    onDrag(event) {
+        if (this.draggingNode) {
+            const node = this.nodes.find(n => n.id === this.draggingNode);
+            // Constrain to container (approx 800x500 canvas)
+            // Use event.movementX/Y if possible, or simple offset logic
+            // Note: For simplicity in Alpine without complex event binding, 
+            // we rely on relative movement if bound to window, or absolute if bound to container.
+            // Here we assume container-bound mousemove.
             
-            catalog: [
-                { id: 'mainframe', label: 'Legacy Core (COBOL)', latency: 2000, risk: 'High', icon: 'fa-server', color: 'text-risk border-risk bg-risk/10' },
-                { id: 'esb', label: 'Enterprise Bus (ESB)', latency: 800, risk: 'Med', icon: 'fa-network-wired', color: 'text-warn border-warn bg-warn/10' },
-                { id: 'api', label: 'Modern REST API', latency: 100, risk: 'Low', icon: 'fa-cloud', color: 'text-blue-400 border-blue-400 bg-blue-400/10' },
-                { id: 'cache', label: 'Redis Cache', latency: 10, risk: 'Low', icon: 'fa-bolt', color: 'text-yellow-400 border-yellow-400 bg-yellow-400/10' },
-                { id: 'firewall', label: 'Legacy Firewall', latency: 500, risk: 'Low', icon: 'fa-shield-halved', color: 'text-slate-400 border-slate-400 bg-slate-400/10' }
-            ],
+            node.x = Math.max(0, Math.min(700, event.offsetX - 60)); // Center cursor
+            node.y = Math.max(0, Math.min(450, event.offsetY - 30));
+        }
+    },
 
-            addComponent(item) {
-                if (this.pipeline.length < 5) {
-                    this.pipeline.push({ ...item, uid: Date.now() });
-                    this.result = null;
-                }
-            },
+    stopDrag() {
+        this.draggingNode = null;
+        this.analyzeArchitecture();
+    },
 
-            removeComponent(index) {
-                this.pipeline.splice(index, 1);
-                this.result = null;
-            },
+    // --- LINKING LOGIC ---
 
-            reset() {
-                this.pipeline = [];
-                this.result = null;
-                this.isRunning = false;
-            },
+    startLink(id) {
+        if (this.linkingNode === id) {
+            this.linkingNode = null; // Cancel
+            return;
+        }
 
-            async runSimulation() {
-                if (this.pipeline.length === 0) return;
-                
-                this.isRunning = true;
-                this.result = null;
+        if (this.linkingNode) {
+            // Check if connection already exists
+            const exists = this.edges.find(e => e.from === this.linkingNode && e.to === id);
+            const reverse = this.edges.find(e => e.from === id && e.to === this.linkingNode);
+            
+            if (!exists && !reverse) {
+                this.edges.push({ id: Date.now(), from: this.linkingNode, to: id });
+                this.analyzeArchitecture();
+            }
+            this.linkingNode = null;
+        } else {
+            this.linkingNode = id;
+        }
+    },
 
-                const totalLatency = this.pipeline.reduce((sum, item) => sum + item.latency, 0);
-                
-                // Visual delay (capped at 3s for UX)
-                const animationTime = Math.min(totalLatency, 2500); 
-                await new Promise(r => setTimeout(r, animationTime));
+    removeNode(id) {
+        this.nodes = this.nodes.filter(n => n.id !== id);
+        this.edges = this.edges.filter(e => e.from !== id && e.to !== id);
+        this.analyzeArchitecture();
+    },
 
-                this.isRunning = false;
-                
-                let message = "";
-                if (totalLatency < 300) message = "🚀 REAL-TIME READY. This stack can handle high-frequency trading or instant payments.";
-                else if (totalLatency < 1500) message = "⚠️ HYBRID LAG. Functional, but the legacy hops are killing your customer experience.";
-                else message = "🐢 TIMEOUT RISK. This architecture is too brittle for mobile banking.";
+    // --- THE MATH ENGINE (Deterministic Architecture Scoring) ---
 
-                this.result = {
-                    time: totalLatency,
-                    message: message
-                };
-            },
+    analyzeArchitecture() {
+        let score = 100;
+        let issues = [];
 
-            // --- NEW: ARCHITECT PROMPT GENERATOR ---
-            generateArchPrompt() {
-                if (this.pipeline.length === 0) return "Please add components to the board first.";
+        if (this.nodes.length < 2) {
+            this.analysis = { score: 0, verdict: "EMPTY BOARD", color: "text-slate-500", issues: [] };
+            return;
+        }
 
-                const stack = this.pipeline.map(p => p.label).join(" --> ");
-                const totalLatency = this.pipeline.reduce((sum, item) => sum + item.latency, 0);
-                const hasMainframe = this.pipeline.some(p => p.id === 'mainframe');
-                const hasCache = this.pipeline.some(p => p.id === 'cache');
+        // 1. TIGHT COUPLING CHECK (Direct Channel -> Core)
+        const directLegacy = this.edges.some(e => {
+            const from = this.nodes.find(n => n.id === e.from);
+            const to = this.nodes.find(n => n.id === e.to);
+            return (from.type === 'mobile' || from.type === '3rd') && to.type === 'core';
+        });
 
-                let bottleneck = "";
-                if (hasMainframe) bottleneck = "The Mainframe Core is the bottleneck. Direct dependency creates coupling.";
-                else if (totalLatency > 1000) bottleneck = "Too many hops. The Enterprise Bus (ESB) is adding unnecessary drag.";
-                else bottleneck = "Latency is acceptable, but check for Single Points of Failure.";
+        if (directLegacy) {
+            score -= 40;
+            issues.push("🔥 CRITICAL: Direct coupling between Channel and Core. High fragility.");
+        }
 
-                return `ACT AS: A Chief Enterprise Architect.
+        // 2. SPOF CHECK (Single Point of Failure)
+        // Find nodes with > 3 incoming connections
+        const incoming = {};
+        this.edges.forEach(e => { incoming[e.to] = (incoming[e.to] || 0) + 1; });
+        
+        Object.entries(incoming).forEach(([id, count]) => {
+            if (count >= 3) {
+                const node = this.nodes.find(n => n.id == id);
+                score -= 20;
+                issues.push(`⚠️ BOTTLENECK: '${node.label}' is overloaded (SPOF).`);
+            }
+        });
 
-## THE CURRENT ARCHITECTURE (DATA PATH)
-I have mapped the "Happy Path" of a critical transaction:
-**USER REQUEST** --> ${stack}
+        // 3. POSITIVE PATTERN: API GATEWAY
+        const hasGateway = this.nodes.some(n => n.type === 'api');
+        if (hasGateway) {
+            score += 10; // Bonus
+        } else {
+            score -= 10;
+            issues.push("ℹ️ MISSING: No API Gateway abstraction layer.");
+        }
 
-## PERFORMANCE METRICS
-- **Total Round-Trip Latency:** ${totalLatency}ms
-- **Bottleneck Identified:** ${bottleneck}
-- **Modernization Status:** ${hasCache ? "Partial (Caching Layer Active)" : "Raw (Direct Hits)"}
+        // 4. DATABASE EXPOSURE
+        // Channel talking directly to DB is a security sin
+        const exposedDB = this.edges.some(e => {
+            const from = this.nodes.find(n => n.id === e.from);
+            const to = this.nodes.find(n => n.id === e.to);
+            return from.type === 'mobile' && to.type === 'db';
+        });
 
-## YOUR MISSION (MODERNIZATION ROADMAP)
-Draft a **Technical Architecture Standard** document to fix this flow.
-1. **The Pattern:** Recommend a specific pattern to decouple this (e.g., Strangler Fig, Anti-Corruption Layer, or CQRS).
-2. **The Fix:** Explain how to drop the latency by 50% without rewriting the Core immediately.
-3. **The Governance:** Write a "Thou Shalt Not" rule for developers regarding this specific stack (e.g., "No direct calls to Mainframe from Mobile").
+        if (exposedDB) {
+            score -= 30;
+            issues.push("🛡️ SECURITY: Mobile App connecting directly to Database.");
+        }
+
+        // Clamp Score
+        score = Math.max(0, Math.min(100, score));
+
+        // Verdict
+        let verdict = "SOLID";
+        let color = "text-green-400";
+        if (score < 50) { verdict = "FRAGILE"; color = "text-red-500"; }
+        else if (score < 80) { verdict = "RISKY"; color = "text-yellow-400"; }
+
+        this.analysis = { score, verdict, color, issues };
+    },
+
+    // --- AI PROMPT GENERATOR ---
+    generateArchPrompt() {
+        const a = this.analysis;
+        if (this.nodes.length === 0) return "Build a diagram first.";
+
+        // Serialize the graph description
+        const graphDesc = this.edges.map(e => {
+            const f = this.nodes.find(n => n.id === e.from);
+            const t = this.nodes.find(n => n.id === e.to);
+            return `${f.label} (${f.type}) --> ${t.label} (${t.type})`;
+        }).join("\n");
+
+        return `ACT AS: A Chief Enterprise Architect.
+
+## THE ARCHITECTURE REVIEW
+I have diagrammed our current system topology.
+- **Health Score:** ${a.score}/100
+- **Verdict:** ${a.verdict}
+- **Detected Issues:** 
+${a.issues.map(i => `- ${i}`).join('\n') || "None detected."}
+
+## THE TOPOLOGY MAP
+${graphDesc}
+
+## YOUR MISSION
+Draft an **Architecture Decision Record (ADR)** to modernize this stack.
+1. **The Risk:** Explain specifically why the current topology creates business risk (e.g. "Direct coupling prevents independent scaling").
+2. **The Target State:** Propose a specific pattern (e.g. "Implement Anti-Corruption Layer" or "BFF Pattern") to decouple the components.
+3. **The Migration:** Give me a 3-step plan to move from this current state to the target state without downtime.
 
 TONE: Technical, authoritative, pragmatic.`;
-            }
-        },
-        
+    }
+},        
         // ------------------------------------------------------------------
         // WAR GAMES (Deterministic Strategy Logic)
         // ------------------------------------------------------------------
