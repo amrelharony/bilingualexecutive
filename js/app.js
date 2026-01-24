@@ -23,7 +23,7 @@ document.addEventListener('alpine:init', () => {
         
         // GitHub Raw (Images/Slides/CSV)
         // Note: Using 'raw.githubusercontent.com' to allow direct file loading
-        ghBase: 'https://raw.githubusercontent.com/amrelharony/bilingualexecutive/3e71ec0fae6e738cced7c893618982a3b626947e/main/assets',
+        ghBase: 'https://raw.githubusercontent.com/amrelharony/bilingualexecutive/3e71ec0fae6e738cced7c893618982a3b626947e/assets',
 
         // FLASHCARD STATE
         showFlashcards: false,
