@@ -803,13 +803,13 @@
         <div class="bg-card border-l-4 border-orange-500 p-8 rounded-r-xl shadow-2xl relative">
             <span class="absolute top-4 left-4 text-[10px] font-mono text-orange-400 uppercase tracking-widest" x-text="negotiationDojo.currentScenario?.opponent"></span>
             <p class="text-xl md:text-2xl text-white font-medium mt-4 leading-relaxed italic">
-                "<span x-text="negotiationDojo.currentScenario?.nodes[negotiationDojo.currentNode].text"></span>"
+                "<span x-text="negotiationDojo.currentScenario?.nodes[negotiationDojo.currentNode]?.text"></span>"
             </p>
         </div>
 
         <!-- Tactical Options -->
         <div class="grid gap-4">
-            <template x-for="(opt, idx) in negotiationDojo.currentScenario?.nodes[negotiationDojo.currentNode].options" :key="idx">
+            <template x-for="(opt, idx) in negotiationDojo.currentScenario?.nodes[negotiationDojo.currentNode]?.options || []" :key="idx">
                 <button @click="negotiationDojo.choose(opt)" 
                         class="group text-left p-5 rounded-xl border border-slate-600 bg-slate-800 hover:bg-slate-700 hover:border-white transition-all relative overflow-hidden">
                     
@@ -1080,32 +1080,23 @@
             <p class="text-slate-600 font-mono text-sm">Add components from the toolbar...</p>
         </div>
 
-        <!-- LAYER 1: SVG Lines (The Wires) -->
-        <!-- pointer-events-none ensures we can click through the lines to the divs below if needed -->
-        <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
-            <defs>
-                <!-- Arrowhead marker -->
-                <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
-                  <path d="M0,0 L0,6 L9,3 z" fill="#64748b" />
-                </marker>
-            </defs>
+<!-- LAYER 1: SVG Lines (The Wires) -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+    <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,6 L9,3 z" fill="#64748b" />
+        </marker>
+    </defs>
 <template x-for="edge in apiSandbox.edges" :key="edge.id">
     <line 
-        :x1="(apiSandbox.nodes.find(n => n.id === edge.from) || {x:0}).x + 60" 
-        :y1="(apiSandbox.nodes.find(n => n.id === edge.from) || {y:0}).y + 30"
-        :x2="(apiSandbox.nodes.find(n => n.id === edge.to) || {x:0}).x + 60" 
-        :y2="(apiSandbox.nodes.find(n => n.id === edge.to) || {y:0}).y + 30"
-        stroke="#64748b" 
-        stroke-width="2" 
-        marker-end="url(#arrow)"
+        :x1="(apiSandbox.nodes.find(n => n.id === edge.from)?.x || 0) + 60" 
+        :y1="(apiSandbox.nodes.find(n => n.id === edge.from)?.y || 0) + 30"
+        :x2="(apiSandbox.nodes.find(n => n.id === edge.to)?.x || 0) + 60" 
+        :y2="(apiSandbox.nodes.find(n => n.id === edge.to)?.y || 0) + 30"
+        stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"
     />
 </template>
-            <!-- Draw the "active" line if linking -->
-            <template x-if="apiSandbox.linkingNode">
-               <!-- Placeholder for dynamic line visual if desired later -->
-            </template>
-        </svg>
-
+</svg>
         <!-- LAYER 2: The Nodes (Draggable Divs) -->
         <template x-for="node in apiSandbox.nodes" :key="node.id">
             <div class="absolute w-[120px] h-[60px] bg-slate-800 border rounded-lg flex flex-col items-center justify-center shadow-lg cursor-grab active:cursor-grabbing select-none transition-shadow z-10"
@@ -3775,18 +3766,17 @@
             <!-- Leverage Card -->
             <div class="bg-card border border-slate-700 p-6 rounded-xl text-center relative overflow-hidden">
                 <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">YOUR LEVERAGE SCORE</p>
-                <h3 class="text-5xl font-bold font-mono" :class="vendorCoach.analysis.leverage > 60 ? 'text-green-400' : 'text-red-400'">
-                    <span x-text="vendorCoach.analysis.leverage"></span>/100
-                </h3>
-                <div class="mt-4 text-xs font-bold px-3 py-1 rounded bg-slate-800 border border-slate-600 inline-block" x-text="vendorCoach.analysis.readiness"></div>
-            </div>
+                <h3 class="text-5xl font-bold font-mono" :class="(vendorCoach.analysis?.leverage || 0) > 60 ? 'text-green-400' : 'text-red-400'">
+    <span x-text="vendorCoach.analysis?.leverage || 0"></span>/100
+</h3>
+<div class="mt-4 text-xs font-bold px-3 py-1 rounded bg-slate-800 border border-slate-600 inline-block" x-text="vendorCoach.analysis?.readiness || 'PENDING'"></div>
 
             <!-- Waste Card -->
             <div class="bg-card border border-slate-700 p-6 rounded-xl text-center">
                 <p class="text-[10px] text-slate-500 uppercase tracking-widest mb-2">ESTIMATED ANNUAL WASTE</p>
-                <h3 class="text-3xl font-bold font-mono text-white mb-1">
-                    $<span x-text="vendorCoach.analysis.waste.toLocaleString()"></span>
-                </h3>
+               <h3 class="text-3xl font-bold font-mono text-white mb-1">
+    $<span x-text="(vendorCoach.analysis?.waste || 0).toLocaleString()"></span>
+</h3>
                 <p class="text-[10px] text-red-400 italic">Paying for bad quality / rework</p>
             </div>
 
@@ -3795,7 +3785,7 @@
                 <div class="flex items-center gap-2 mb-2 text-yellow-500 text-xs font-bold uppercase">
                     <i class="fa-solid fa-triangle-exclamation"></i> Diagnosed Trap
                 </div>
-                <p class="text-xs text-white leading-relaxed" x-text="vendorCoach.analysis.trap"></p>
+               <p class="text-xs text-white leading-relaxed" x-text="vendorCoach.analysis?.trap || '...'"></p>
             </div>
 
             <button @click="vendorCoach.step = 'input'" class="w-full border border-slate-600 text-slate-400 hover:text-white py-2 rounded text-xs">
@@ -5163,7 +5153,7 @@ END-IF."></textarea>
 
             <div x-show="regSimulator.selectedReg" x-transition>
                 <div class="bg-slate-800/50 p-3 rounded border border-slate-700 mb-6">
-                    <p class="text-xs text-slate-300 italic" x-text="regSimulator.selectedReg.desc"></p>
+             <p class="text-xs text-slate-300 italic" x-text="regSimulator.selectedReg?.desc"></p>
                 </div>
 
                 <h3 class="font-mono text-xs text-yellow-500 uppercase font-bold border-b border-slate-700 pb-2 mb-4">2. Org Context</h3>
@@ -6240,8 +6230,6 @@ END-IF."></textarea>
         </div>
     </div>
 </div>
-
-</div>
         
         
             <!-- COMMUNITY -->
@@ -6307,7 +6295,7 @@ END-IF."></textarea>
 
 </div> 
 
-
+</div>
                <!-- Desktop/Tablet Dock -->
 <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden transition-all duration-500 ease-in-out"
      :class="navVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'">
