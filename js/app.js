@@ -1909,7 +1909,7 @@ tools: {
             { id: 'excel', label: 'Excel Auditor', desc: 'Calculate OpEx waste & risk liability.', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
             { id: 'roi', label: 'Lighthouse ROI', desc: 'Calculate NPV & Cost of Delay.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
             { id: 'kpi', label: 'Outcome Gen',  desc: 'Turn Project Outputs into Business Outcomes.',  icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400'},
-            { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture latency.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
+         //   { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture latency.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
            { id: 'vendor', label: 'Vendor Negotiator', desc: 'Shift contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-signature', color: 'text-yellow-400', vip: false },
            { id: 'capex', label: 'CapEx Classifier', desc: 'Audit agile tickets against IAS 38 Accounting Standards.', icon: 'fa-solid fa-scale-balanced', color: 'text-green-400', vip: false },
            { id: 'legacy', label: 'Legacy Translator', desc: 'Scan COBOL/SQL for business logic risks.', icon: 'fa-solid fa-code', color: 'text-slate-400', vip: false },
