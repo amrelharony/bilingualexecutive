@@ -6204,26 +6204,32 @@ END-IF."></textarea>
     </div>
 </div>
 
-<!-- COMMUNITY (Inside Overlay) -->
+<!-- COMMUNITY (Now correctly inside the Overlay) -->
 <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
     <div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl relative overflow-hidden">
         <div class="mb-6"><i class="fa-brands fa-whatsapp text-6xl text-[#25D366]"></i></div>
         <h2 class="font-mono text-3xl font-bold text-white mb-4">The Fintech Bilinguals</h2>
-        <p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders.</p>
+        <p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders. Access exclusive playbooks and peer support.</p>
+        
+        <!-- DESKTOP VIEW -->
         <div class="hidden md:flex flex-col items-center">
             <div class="bg-white p-4 rounded-xl shadow-lg mb-4">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://chat.whatsapp.com/DgFrhnzrKpAJnmLM1Oqmgg" alt="WhatsApp QR Code" class="w-40 h-40">
             </div>
+            <p class="text-xs text-textMuted font-mono uppercase tracking-widest">Scan with your phone to join</p>
         </div>
+
+        <!-- MOBILE VIEW -->
         <div class="md:hidden">
             <a href="https://chat.whatsapp.com/DgFrhnzrKpAJnmLM1Oqmgg" target="_blank" class="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#128c7e] text-white font-bold py-4 px-6 rounded-full shadow-glow transition-all active:scale-95">
                 <i class="fa-brands fa-whatsapp text-2xl"></i><span class="font-mono text-sm">JOIN COMMUNITY</span>
             </a>
+            <p class="text-[10px] text-textMuted mt-4">Opens directly in WhatsApp</p>
         </div>
     </div> 
 </div>  
 
-<!-- ARCHITECT CONSOLE (Inside Overlay) -->
+<!-- ARCHITECT CONSOLE (Now correctly inside the Overlay) -->
 <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
     <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
         <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-microchip text-9xl text-hotpink"></i></div>
@@ -6248,8 +6254,9 @@ END-IF."></textarea>
     </div>
 </div>
 
-</div> <!-- Closes the "p-4 md:p-8 pb-20" container -->
+</div> <!-- Closes the "p-4 md:p-8" container -->
 </div> <!-- Closes the "ACTIVE TOOL RENDERER" Overlay -->
+
 
 <!-- Desktop/Tablet Dock -->
 <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden transition-all duration-500 ease-in-out"
