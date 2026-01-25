@@ -137,12 +137,11 @@
             class="px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all">
         ACADEMY
     </button>
-    <button @click="viewMode = 'tools'" 
-            :class="viewMode === 'tools' ? 'bg-white text-black' : 'text-slate-400 hover:text-white'"
-            class="px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all">
-        TOOLKIT
-    </button>
-</div>
+ <button @click="viewMode = 'tools'; currentTab = 'dashboard'; currentGroup = 'radar'" 
+        :class="viewMode === 'tools' ? 'bg-white text-black' : 'text-slate-400 hover:text-white'"
+        class="px-6 py-3 rounded-full text-xs font-bold uppercase tracking-widest transition-all">
+    TOOLKIT
+</button>
         
         
         <!-- LANDING PAGE / COVER SIMULATOR -->
