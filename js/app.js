@@ -481,9 +481,7 @@ if (window.supabase) {
                 this.deferredPrompt = e;
             });
 
-                this.$nextTick(() => {
-        this.updateTalentChart();
-    });
+            
 
 
             // VIP & Challenger Logic
@@ -1705,9 +1703,6 @@ tools: {
         { id: 'escaperoom', label: 'Excel Escape', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
         { id: 'bingo', label: 'Bilingual Bingo', icon: 'fa-solid fa-table-cells', color: 'text-pink-500' },
         { id: 'regsim', label: 'Reg Simulator', icon: 'fa-solid fa-gavel', color: 'text-yellow-500' }
-
-
-        
         
         
     ]
@@ -2238,6 +2233,10 @@ updateTalentChart() {
         setTimeout(() => this.updateTalentChart(), 500);
         return;
     }
+
+        // 2. Safety Check: If we aren't on the talent tab, don't render.
+    if (this.currentTab !== 'talent') return; // <--- ADD THIS LINE
+
 
     // Wait for DOM to be ready
     setTimeout(() => {
