@@ -12,11 +12,15 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('toolkit', () => ({
 
         // ==========================================
-        // 1. ACADEMY CONFIG & STATE
+        // ACADEMY CONFIG & STATE
         // ==========================================
+         navVisible: true,
+         navTimer: null,
         viewMode: 'academy', // Toggles between 'academy' and 'tools'
         activeChapterId: null,
+   
 
+        
         // HOSTING CONFIG
         // Cloudflare R2 (Audio) - Ensure your bucket has public access enabled
         cfBase: 'https://pub-fafafe2a62594937b094305a3b9ef698.r2.dev', 
@@ -32,6 +36,57 @@ document.addEventListener('alpine:init', () => {
         isFlipped: false,
         flashcardLoading: false,
 
+        // --- VIEWER STATE ---
+        viewer: {
+            active: false,
+            type: 'pdf', // 'pdf' or 'image'
+            url: '',
+            title: ''
+        },
+
+// --- OFFLINE MANAGER (Caching Engine) ---
+        offlineManager: {
+            limit: 2, 
+            cacheName: 'bilingual-content-v1', // Dynamic cache name
+            loading: null, // Stores ID of chapter currently downloading
+            
+            // Helper: Read quota from localStorage
+            getQuota() {
+                const today = new Date().toDateString();
+                const stored = JSON.parse(localStorage.getItem('bilingual_offline_quota') || '{}');
+                
+                // Reset if new day
+                if (stored.date !== today) {
+                    return { date: today, downloadedCount: 0, cachedIds: stored.cachedIds || [] };
+                }
+                return stored;
+            },
+
+            // Helper: Save quota state
+            updateQuota(chapterId) {
+                const q = this.getQuota();
+                if (!q.cachedIds.includes(chapterId)) {
+                    q.downloadedCount++;
+                    q.cachedIds.push(chapterId);
+                    localStorage.setItem('bilingual_offline_quota', JSON.stringify(q));
+                }
+                // Trigger Alpine reactivity hack
+                this.offlineManager = { ...this.offlineManager }; 
+            },
+
+            isCached(chapterId) {
+                const q = this.getQuota();
+                return q.cachedIds && q.cachedIds.includes(chapterId);
+            },
+
+            getQuotaText() {
+                const q = this.getQuota();
+                const left = this.limit - q.downloadedCount;
+                if (left <= 0) return "QUOTA FULL";
+                return `${left} LEFT TODAY`;
+            }
+        },
+        
         // ==========================================
         // 2. THE METRO MAP DATA (Full 10 Chapters)
         // ==========================================
@@ -81,6 +136,95 @@ document.addEventListener('alpine:init', () => {
             return null;
         },
 
+        
+// --- VIEWER ACTIONS ---
+        viewPdf(chapter) {
+            this.viewer.title = `${chapter.title} - Slides`;
+            this.viewer.type = 'pdf';
+            this.viewer.url = this.getSlideUrl(chapter); // Uses your existing URL generator
+            this.viewer.active = true;
+        },
+
+        viewImage(chapter, type) {
+            this.viewer.title = `${chapter.title} - ${type.toUpperCase()}`;
+            this.viewer.type = 'image';
+            this.viewer.url = this.getImageUrl(chapter, type);
+            this.viewer.active = true;
+        },
+
+        // --- DOWNLOAD LOGIC ---
+        async downloadChapterAssets(chapter) {
+            const dm = this.downloadManager;
+            const quota = dm.getQuota();
+
+            // 1. Check if already unlocked
+            if (!quota.chapters.includes(chapter.id)) {
+                // 2. Check Limit
+                if (quota.chapters.length >= dm.limit) {
+                    alert(`Daily Download Limit Reached (${dm.limit}/day).\n\nCome back tomorrow to unlock more resources.`);
+                    return;
+                }
+                
+                // 3. Unlock
+                if(confirm(`Unlock resources for "${chapter.title}"?\nThis counts towards your daily limit (${quota.chapters.length}/${dm.limit}).`)) {
+                    quota.chapters.push(chapter.id);
+                    dm.saveQuota(quota);
+                    // Force refresh of Alpine reactivity if needed
+                    this.downloadManager = { ...this.downloadManager }; 
+                } else {
+                    return; // User cancelled
+                }
+            }
+
+            // 4. Trigger Downloads
+            alert(`Downloading Asset Pack for Chapter ${chapter.id}...`);
+            
+            // Define assets to download
+            const assets = [
+                { url: this.getSlideUrl(chapter), name: `Ch${chapter.id}_Slides.pdf` },
+                { url: this.getAudioUrl(chapter), name: `Ch${chapter.id}_Audio.m4a` },
+                { url: this.getImageUrl(chapter, 'infographic'), name: `Ch${chapter.id}_Infographic.png` },
+                { url: this.getImageUrl(chapter, 'mindmap'), name: `Ch${chapter.id}_Mindmap.png` }
+            ];
+
+            // Sequential download to prevent browser blocking
+            for (const asset of assets) {
+                try {
+                    await this.forceDownload(asset.url, asset.name);
+                    // Small delay between downloads
+                    await new Promise(r => setTimeout(r, 500));
+                } catch (e) {
+                    console.error(`Failed to download ${asset.name}`, e);
+                }
+            }
+        },
+
+        // Helper to force download (bypassing "open in new tab")
+        async forceDownload(url, filename) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network error');
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobUrl);
+            } catch (e) {
+                // Fallback for simple link if fetch fails (e.g. CORS issues)
+                console.warn("Fetch download failed, trying direct link", e);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                link.target = '_blank';
+                link.click();
+            }
+        },
+        
         // URL Generators - SIMPLIFIED for 'assets/ch01' structure
         getAudioUrl(chapter) {
             if(!chapter) return '';
@@ -98,6 +242,146 @@ document.addEventListener('alpine:init', () => {
             return `${this.ghBase}/${chapter.folder}/${type}.png`;
         },
 
+        
+       // --- CACHING ACTIONS (FAULT TOLERANT) ---
+        async toggleOfflineCache(chapter) {
+            const om = this.offlineManager;
+            
+            if (om.isCached(chapter.id)) {
+                alert("This chapter is already saved.");
+                return;
+            }
+
+            const quota = om.getQuota();
+            if (quota.downloadedCount >= om.limit) {
+                alert(`Daily Limit Reached (${om.limit}/day).`);
+                return;
+            }
+
+            if (!confirm(`Save Chapter ${chapter.id} offline?\n(Quota: ${om.limit - quota.downloadedCount} left)`)) return;
+
+            om.loading = chapter.id;
+
+            try {
+                const cacheName = om.cacheName || 'bilingual-content-v1';
+                const cache = await caches.open(cacheName);
+                
+                // List of potential files
+                const urlsToCache = [
+                    this.getAudioUrl(chapter),
+                    this.getSlideUrl(chapter),
+                    this.getImageUrl(chapter, 'infographic'),
+                    this.getImageUrl(chapter, 'mindmap')
+                ];
+
+                let successCount = 0;
+
+                // Download one by one (Fault Tolerant)
+                // If one file is missing (404), we skip it instead of crashing.
+                for (const url of urlsToCache) {
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            console.warn(`Skipping missing file: ${url}`);
+                            continue; // Skip 404s
+                        }
+                        await cache.put(url, response);
+                        successCount++;
+                    } catch (e) {
+                        console.warn(`Network error for: ${url}`, e);
+                    }
+                }
+
+                if (successCount > 0) {
+                    om.updateQuota(chapter.id);
+                    alert(`Saved ${successCount} assets for offline use!`);
+                } else {
+                    throw new Error("No files could be downloaded.");
+                }
+
+            } catch (error) {
+                console.error("Cache failed:", error);
+                alert("Download failed. Check internet or file availability.");
+            } finally {
+                om.loading = null;
+            }
+        },
+        
+        // --- UPDATED VIEWER LOGIC ---
+        async viewPdf(chapter) {
+            // 1. RESET STATE IMMEDIATELY (Prevents 400 Error)
+            this.viewer.title = "Loading...";
+            this.viewer.url = ""; // Clear previous URL
+            this.viewer.type = 'pdf';
+            this.viewer.active = true; // Open modal with spinner first
+
+            const originalUrl = this.getSlideUrl(chapter);
+
+            // INTELLIGENT ROUTING:
+            if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
+                try {
+                    const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
+                    const cache = await caches.open(cacheName);
+                    const response = await cache.match(originalUrl);
+                    
+                    if (response) {
+                        const blob = await response.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+                        this.viewer.isBlob = true; 
+                        
+                        // Slight delay to ensure DOM is ready
+                        setTimeout(() => { 
+                            this.viewer.url = blobUrl; 
+                            this.viewer.title = `${chapter.title} - Slides`;
+                        }, 50);
+                    } else {
+                        // Fallback
+                        this.viewer.isBlob = true;
+                        this.viewer.url = originalUrl;
+                        this.viewer.title = `${chapter.title} - Slides`;
+                    }
+                } catch(e) {
+                    this.viewer.isBlob = true;
+                    this.viewer.url = originalUrl;
+                    this.viewer.title = `${chapter.title} - Slides`;
+                }
+            } else {
+                // Online Case
+                this.viewer.isBlob = false;
+                
+                // Slight delay to ensure the iframe has unmounted the previous src
+                setTimeout(() => {
+                    this.viewer.url = originalUrl;
+                    this.viewer.title = `${chapter.title} - Slides`;
+                }, 100);
+            }
+        },
+
+        // Helper for images (Mind Map / Infographic)
+        async viewImage(chapter, type) {
+            this.viewer.title = `${chapter.title} - ${type.toUpperCase()}`;
+            this.viewer.type = 'image';
+            const originalUrl = this.getImageUrl(chapter, type);
+
+            // Check cache for images too
+            if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
+                try {
+                    const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
+                    const cache = await caches.open(cacheName);
+                    const response = await cache.match(originalUrl);
+                    if (response) {
+                        const blob = await response.blob();
+                        this.viewer.url = URL.createObjectURL(blob);
+                    } else {
+                        this.viewer.url = originalUrl;
+                    }
+                } catch(e) { this.viewer.url = originalUrl; }
+            } else {
+                this.viewer.url = originalUrl;
+            }
+            this.viewer.active = true;
+        },
+
         // Navigation
         openChapter(id) {
             this.activeChapterId = id;
@@ -108,6 +392,7 @@ document.addEventListener('alpine:init', () => {
             const audio = document.querySelector('audio');
             if(audio) audio.pause();
         },
+
 
         // Flashcard Engine
         async launchFlashcards(chapter) {
@@ -159,6 +444,33 @@ document.addEventListener('alpine:init', () => {
         // ------------------------------------------------------------------
         init() {
 
+                      // 1. SET DEFAULT TO HIDDEN (Modified)
+            this.navVisible = false; 
+
+            // 2. SETUP INTERACTION LISTENERS
+            // Triggers on: Mouse move, Scroll, Touch, Click, Keypress
+            const resetNav = () => this.resetNavTimer();
+            ['mousemove', 'scroll', 'touchstart', 'click', 'keydown'].forEach(evt => {
+                // Use capture: true to ensure we catch events even if propagation stops
+                window.addEventListener(evt, resetNav, { passive: true, capture: true });
+            });
+
+            },
+
+        // 3. THE TIMER LOGIC
+        resetNavTimer() {
+            // Show UI immediately
+            this.navVisible = true;
+            
+            // Clear pending hide timer
+            if (this.navTimer) clearTimeout(this.navTimer);
+            
+            // Set new timer to hide after 3 seconds of no activity
+            this.navTimer = setTimeout(() => {
+                this.navVisible = false;
+            }, 3000); 
+        },
+        
             // check if user previously entered
 const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
 
@@ -279,6 +591,13 @@ this.$watch('talentSkills', () => {
         },
 
         
+resetNavTimer() {
+            this.navVisible = true;
+            if (this.navTimer) clearTimeout(this.navTimer);
+            this.navTimer = setTimeout(() => {
+                this.navVisible = false;
+            }, 3000); // 3 seconds
+        },
 
     
         // YouTube Player Initialization Method
