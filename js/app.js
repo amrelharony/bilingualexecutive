@@ -10,7 +10,7 @@ document.addEventListener('alpine:init', () => {
          navVisible: true,
          navTimer: null,
         currentTab: 'dashboard', // Make sure this is set
-        currentGroup: 'strategy', // Make sure this matches a valid group
+        currentGroup: 'radar', // Make sure this matches a valid group
         viewMode: 'academy', // Toggles between 'academy' and 'tools'
         activeChapterId: null,
    
