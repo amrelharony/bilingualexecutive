@@ -1005,7 +1005,7 @@ TONE: Senior, direct, mentorship-focused.`;
 
             // --- NEW: ADVANCED PROMPT GENERATOR ---
             generateNegotiationPrompt() {
-             if (!this.currentScenario || !this.result) return ""; // GUARD CLAUSE
+    if (!this.currentScenario || !this.result) return "PLAY GAME FIRST"; // Add this line
                 const s = this.currentScenario;
                 const path = this.history.map((h, i) => 
                     `Step ${i+1}: When asked about [${h.stage}], I chose: "${h.choice}". (Impact: Trust ${h.impact.trust > 0 ? '+' : ''}${h.impact.trust})`
@@ -1756,7 +1756,7 @@ apiSandbox: {
 
             // --- NEW: STRATEGIC POST-MORTEM PROMPT ---
 generateWarGamePrompt() {
-    if (!this.currentScenario || !this.result) return ""; // GUARD CLAUSE
+    if (!this.currentScenario || !this.result) return "PLAY SIMULATION FIRST"; 
     const decisionPath = this.history.map((h, i) =>
                     `Turn ${i+1}: ${h.decision} (Intent: ${h.rationale})`
                 ).join("\n");
@@ -3498,7 +3498,7 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
 
             // --- PROMPT GENERATOR ---
 generateFuturePrompt() {
-    if (!this.activeScenario) return ""; // GUARD CLAUSE
+    if (!this.activeScenario) return "RUN SIMULATION FIRST"; 
     const s = this.activeScenario;
                 const m = this.metrics;
                 
@@ -4264,7 +4264,7 @@ TONE: Regulatory, precise, risk-averse.`;
 
             // --- ADVANCED PROMPT GENERATOR ---
             generateNegotiationPrompt() {
-    if (!this.analysis || !this.inputs.vendorName) return ""; // GUARD CLAUSE
+    if (!this.analysis) return "RUN ANALYSIS FIRST"; // Add this line
     const a = this.analysis;
                 const i = this.inputs;
 
@@ -4797,7 +4797,7 @@ TONE: Skeptical, experienced, piercing.`;
 
             // --- ADVANCED PROMPT GENERATOR ---
             generateCoachingPrompt() {
-            if (!this.outcome) return ""; // GUARD CLAUSE
+    if (!this.outcome) return "PLAY GAME FIRST"; // Add this line
                 
                 const path = this.history.map(h => `Round ${h.round} (${h.topic}): I used "${h.tactic}". Result: Trust ${h.stats.trust}, Velocity ${h.stats.velocity}.`).join("\n");
 
