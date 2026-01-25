@@ -10,14 +10,21 @@ const GROUPS = {
 document.addEventListener('alpine:init', () => {
     Alpine.data('toolkit', () => ({
 
-        
+                currentGroup: GROUPS.RADAR, // Safe initialization
+        // ...
+        tools: {
+            [GROUPS.RADAR]: [ ... ],
+            [GROUPS.FORGE]: [ ... ],
+            [GROUPS.SIMS]: [ ... ]
+        }
+    }));
+});
+
         // ==========================================
         // ACADEMY CONFIG & STATE
         // ==========================================
          navVisible: true,
          navTimer: null,
-        currentTab: 'dashboard', // Make sure this is set
-        currentGroup: 'radar', // Make sure this matches a valid group
         viewMode: 'academy', // Toggles between 'academy' and 'tools'
         activeChapterId: null,
    
