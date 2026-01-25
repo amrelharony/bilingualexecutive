@@ -439,61 +439,66 @@ document.addEventListener('alpine:init', () => {
             }, 300);
         },
         
+        // 3. THE TIMER LOGIC
+        resetNavTimer() {
+            this.navVisible = true;
+            if (this.navTimer) clearTimeout(this.navTimer);
+            this.navTimer = setTimeout(() => {
+                this.navVisible = false;
+            }, 3000); 
+        },
+
         // ------------------------------------------------------------------
         // INITIALIZATION
         // ------------------------------------------------------------------
         init() {
-
-                      // 1. SET DEFAULT TO HIDDEN (Modified)
+            // 1. SET DEFAULT TO HIDDEN
             this.navVisible = false; 
 
             // 2. SETUP INTERACTION LISTENERS
-            // Triggers on: Mouse move, Scroll, Touch, Click, Keypress
             const resetNav = () => this.resetNavTimer();
             ['mousemove', 'scroll', 'touchstart', 'click', 'keydown'].forEach(evt => {
-                // Use capture: true to ensure we catch events even if propagation stops
                 window.addEventListener(evt, resetNav, { passive: true, capture: true });
             });
 
-            },
+            // 3. CHECK USER ENTRY (Moved here)
+            const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
+            if (hasEnteredBefore) {
+                this.showLanding = false;
+                this.setupActivityTracking(); // Ensure this method exists or is defined below
+            }
 
-        
-            // check if user previously entered
-const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
-
-// If they entered before, skip landing page
-if (hasEnteredBefore) {
-    this.showLanding = false;
-    this.setupActivityTracking();
-}
-
+            // 4. MOBILE CHECK (Moved here)
             this.isMobile = window.innerWidth < 768;
             window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
 
-
-            // Initialize Supabase Client
-const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
-    
-if (window.supabase) {
-    this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-    this.teamManager.supabase = this.supabase; 
-} else {
-    console.error("Supabase library not loaded.");
-}
+            // 5. SUPABASE (Moved here)
+            const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
+            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Your key
             
-            // PWA & Install Logic
-            const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+            if (window.supabase) {
+                this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+                // Ensure teamManager exists before assigning
+                if(this.teamManager) this.teamManager.supabase = this.supabase; 
+            } else {
+                console.error("Supabase library not loaded.");
+            }
 
-            // 1. Capture the event for Android/Chrome (so we can trigger it later)
+            // 6. PWA INSTALL (Moved here)
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 this.deferredPrompt = e;
             });
 
-                this.$nextTick(() => {
-        this.updateTalentChart();
-    });
+            // 7. RESTORE DATA & CHARTS
+            this.$nextTick(() => {
+                if(this.updateTalentChart) this.updateTalentChart();
+            });
+            
+            // ... (Keep the rest of your original init code here like culturalMonitor.init()) ...
+             this.culturalMonitor.init(); 
+             this.initYouTubePlayer(); 
+        },
 
 
             // VIP & Challenger Logic
