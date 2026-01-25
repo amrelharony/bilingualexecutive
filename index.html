@@ -1080,22 +1080,23 @@
             <p class="text-slate-600 font-mono text-sm">Add components from the toolbar...</p>
         </div>
 
-<!-- LAYER 1: SVG Lines (The Wires) -->
-<svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+        <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
     <defs>
         <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
             <path d="M0,0 L0,6 L9,3 z" fill="#64748b" />
         </marker>
     </defs>
+    <!-- FIX: Loop moves to a group <g> tag which browsers handle better -->
     <template x-for="edge in apiSandbox.edges" :key="edge.id">
-        <!-- Added fallback values (|| 0) to prevent crashing on load -->
-        <line 
-            :x1="(apiSandbox.nodes.find(n => n.id === edge.from)?.x || 0) + 60" 
-            :y1="(apiSandbox.nodes.find(n => n.id === edge.from)?.y || 0) + 30"
-            :x2="(apiSandbox.nodes.find(n => n.id === edge.to)?.x || 0) + 60" 
-            :y2="(apiSandbox.nodes.find(n => n.id === edge.to)?.y || 0) + 30"
-            stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"
-        />
+        <g>
+            <line 
+                :x1="(apiSandbox.nodes.find(n => n.id === edge.from)?.x || 0) + 60" 
+                :y1="(apiSandbox.nodes.find(n => n.id === edge.from)?.y || 0) + 30"
+                :x2="(apiSandbox.nodes.find(n => n.id === edge.to)?.x || 0) + 60" 
+                :y2="(apiSandbox.nodes.find(n => n.id === edge.to)?.y || 0) + 30"
+                stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"
+            />
+        </g>
     </template>
 </svg>
         
