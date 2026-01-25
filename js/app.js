@@ -1484,167 +1484,6 @@ ${skills.map(s => `- ${s.label}: ${s.val}/5`).join('\n')}
             }
         },
 
-// ------------------------------------------------------------------
-// ARCHITECTURE SANDBOX (Visual Graph Engine)
-// ------------------------------------------------------------------
-apiSandbox: {
-            // 1. Graph State
-            nodes: [
-                { id: 1, type: 'mobile', label: 'Mobile App', x: 50, y: 150 },
-                { id: 2, type: 'core', label: 'Legacy Core', x: 450, y: 150 }
-            ],
-            edges: [
-                { id: 'e1', from: 1, to: 2 } 
-            ],
-            
-            // 2. Interaction State
-            draggingNode: null,
-            linkingNode: null,
-            
-            // 3. Component Palette
-            catalog: [
-                { type: 'mobile', label: 'Channel', icon: 'fa-mobile-screen' },
-                { type: 'api', label: 'API Gateway', icon: 'fa-network-wired' },
-                { type: 'micro', label: 'Microservice', icon: 'fa-cubes' },
-                { type: 'core', label: 'Mainframe', icon: 'fa-server' },
-                { type: 'db', label: 'Database', icon: 'fa-database' },
-                { type: '3rd', label: '3rd Party', icon: 'fa-cloud' }
-            ],
-
-            // 4. Computed Metrics
-            analysis: {
-                score: 0,
-                verdict: "",
-                color: "",
-                issues: []
-            },
-
-            // --- THE FIX: ROBUST GETTER ---
-            get calculatedEdges() {
-                if (!this.edges || !this.nodes) return [];
-                return this.edges.map(edge => {
-                    const start = this.nodes.find(n => n.id === edge.from);
-                    const end = this.nodes.find(n => n.id === edge.to);
-                    
-                    // Fallback to 0,0 if node deleted but edge remains
-                    if (!start || !end) return null; 
-
-                    return {
-                        id: edge.id,
-                        x1: start.x + 60, // Center X (Width 120/2)
-                        y1: start.y + 30, // Center Y (Height 60/2)
-                        x2: end.x + 60,
-                        y2: end.y + 30
-                    };
-                }).filter(e => e !== null); // Remove broken edges
-            },
-            // -----------------------------
-
-            // --- ACTIONS ---
-            addNode(type) {
-                this.nodes.push({
-                    id: Date.now(),
-                    type: type,
-                    label: type === 'mobile' ? 'App' : (type === 'core' ? 'Core' : type.toUpperCase()),
-                    x: 100 + (Math.random() * 50),
-                    y: 100 + (Math.random() * 50)
-                });
-                this.analyzeArchitecture();
-            },
-
-            clearBoard() {
-                if(confirm("Clear the whiteboard?")) {
-                    this.nodes = [];
-                    this.edges = [];
-                    this.analyzeArchitecture();
-                }
-            },
-
-            startDrag(id, event) {
-                this.draggingNode = id;
-            },
-
-            onDrag(event) {
-                if (this.draggingNode) {
-                    const node = this.nodes.find(n => n.id === this.draggingNode);
-                    if(node) {
-                        // Offset by half width/height to drag from center
-                        node.x = Math.max(0, Math.min(800, event.offsetX - 60)); 
-                        node.y = Math.max(0, Math.min(500, event.offsetY - 30));
-                    }
-                }
-            },
-
-            stopDrag() {
-                this.draggingNode = null;
-                this.analyzeArchitecture();
-            },
-
-            startLink(id) {
-                if (this.linkingNode === id) {
-                    this.linkingNode = null;
-                    return;
-                }
-                if (this.linkingNode) {
-                    const exists = this.edges.find(e => e.from === this.linkingNode && e.to === id);
-                    const reverse = this.edges.find(e => e.from === id && e.to === this.linkingNode);
-                    
-                    if (!exists && !reverse) {
-                        this.edges.push({ id: Date.now(), from: this.linkingNode, to: id });
-                        this.analyzeArchitecture();
-                    }
-                    this.linkingNode = null;
-                } else {
-                    this.linkingNode = id;
-                }
-            },
-
-            removeNode(id) {
-                this.nodes = this.nodes.filter(n => n.id !== id);
-                this.edges = this.edges.filter(e => e.from !== id && e.to !== id);
-                this.analyzeArchitecture();
-            },
-
-            analyzeArchitecture() {
-                let score = 100;
-                let issues = [];
-
-                if (this.nodes.length < 2) {
-                    this.analysis = { score: 0, verdict: "EMPTY BOARD", color: "text-slate-500", issues: [] };
-                    return;
-                }
-
-                // Rule: Direct Channel -> Core = Bad
-                const directLegacy = this.edges.some(e => {
-                    const from = this.nodes.find(n => n.id === e.from);
-                    const to = this.nodes.find(n => n.id === e.to);
-                    if(!from || !to) return false;
-                    return (from.type === 'mobile' || from.type === '3rd') && to.type === 'core';
-                });
-
-                if (directLegacy) {
-                    score -= 40;
-                    issues.push("🔥 CRITICAL: Direct coupling Channel to Core.");
-                }
-
-                // Rule: API Gateway = Good
-                const hasGateway = this.nodes.some(n => n.type === 'api');
-                if (hasGateway) score += 10;
-                else { score -= 10; issues.push("ℹ️ MISSING: No API Gateway."); }
-
-                this.analysis = { 
-                    score: Math.max(0, Math.min(100, score)), 
-                    verdict: score < 50 ? "FRAGILE" : "STABLE",
-                    color: score < 50 ? "text-red-500" : "text-green-400",
-                    issues 
-                };
-            },
-
-            generateArchPrompt() {
-                return `ACT AS: Architect. REVIEW: Topology with score ${this.analysis.score}. ISSUES: ${this.analysis.issues.join(',')}.`;
-            }
-        },
-        
         // ------------------------------------------------------------------
         // WAR GAMES (Deterministic Strategy Logic)
         // ------------------------------------------------------------------
@@ -1827,27 +1666,16 @@ tools: {
         { id: 'cognitive', label: 'Cognitive Load', icon: 'fa-solid fa-brain', color: 'text-purple-400' },
         { id: 'sprintcheck', label: 'Sprint Health', icon: 'fa-solid fa-stopwatch', color: 'text-orange-400' },
         { id: 'adaptation', label: 'Adaptability Monitor', icon: 'fa-solid fa-dna', color: 'text-cyan-400' },
-        { id: 'dt_tracker', label: 'ROI Tracker', icon: 'fa-solid fa-magnifying-glass-dollar', color: 'text-green-400' }
-
-
-
-
-
-
-    ],
-    academy: [
-        { id: 'manual', label: 'Field Manual', icon: 'fa-solid fa-headphones', color: 'text-white' }, // NotebookLM Feature
-        { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language', color: 'text-blue-300' },
+        { id: 'dt_tracker', label: 'ROI Tracker', icon: 'fa-solid fa-magnifying-glass-dollar', color: 'text-green-400' },
+          { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language', color: 'text-blue-300' },
         { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king', color: 'text-yellow-400' },
         { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book', color: 'text-slate-400' },
             { id: 'feed', label: 'Daily Insight', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
             { id: 'library', label: 'Executive Library', icon: 'fa-solid fa-book-open-reader', color: 'text-cyan-300' }
 
-        
-
-
-        
     ],
+
+    
     forge: [
         { id: 'kpi', label: 'Outcome Gen', icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400' },
         { id: 'lighthouse', label: 'Lighthouse Kit', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
@@ -1898,9 +1726,6 @@ tools: {
            { id: 'bingo', label: 'Meeting Bingo', desc: 'Gamify cultural transformation during actual meetings.', icon: 'fa-solid fa-table-cells', color: 'text-pink-500', vip: false },
            { id: 'regsim', label: 'Regulation Impact', desc: 'Simulate the cost & tech blast radius of PSD3, AI Act, and DORA.', icon: 'fa-solid fa-scale-balanced', color: 'text-yellow-500', vip: false },
            { id: 'feed', label: 'Daily Wisdom', desc: 'AI-generated micro-lessons to build tech fluency.', icon: 'fa-solid fa-mug-hot', color: 'text-yellow-400', vip: false },
-
-
-
 
 
 
