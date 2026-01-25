@@ -3395,6 +3395,8 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
             timer: null,
             activeEvent: null, // Stores the current crisis
             decisionLog: [],   // Tracks user choices for the AI prompt
+            metrics: { profit: 0, customers: 0, efficiency: 0, techDebt: 0 },
+
             
             // The 3 Core Paths
             scenarios: [
@@ -5815,7 +5817,25 @@ TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
                     color,
                     analysis
                 };
-                }
+              },
+            generateLeanPrompt() {
+    if (!this.metrics) return "Calculate flow first.";
+    const m = this.metrics;
+    return `ACT AS: Lean Six Sigma Master.
+## PROCESS AUDIT: "${this.processName}"
+- **Flow Efficiency:** ${m.efficiency}% (Industry Goal: >25%)
+- **Total Lead Time:** ${m.totalLeadTime} ${this.unit}
+- **Value Added Time:** ${m.totalWork} ${this.unit}
+- **Waste (Wait Time):** ${m.totalWait} ${this.unit}
+
+## BOTTLENECK
+Step: "${m.bottleneck.name}" (Wait Time: ${m.bottleneck.wait} ${this.unit})
+
+## MISSION
+1. Identify the root cause of the wait time at the bottleneck.
+2. Propose a way to run steps in parallel instead of sequence.
+3. Calculate the cost savings if efficiency improves to 50%.`;
+        }
             },
 
         // ------------------------------------------------------------------
