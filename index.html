@@ -803,14 +803,15 @@
         <div class="bg-card border-l-4 border-orange-500 p-8 rounded-r-xl shadow-2xl relative">
             <span class="absolute top-4 left-4 text-[10px] font-mono text-orange-400 uppercase tracking-widest" x-text="negotiationDojo.currentScenario?.opponent"></span>
             <p class="text-xl md:text-2xl text-white font-medium mt-4 leading-relaxed italic">
-                "<span x-text="negotiationDojo.currentScenario?.nodes[negotiationDojo.currentNode]?.text"></span>"
-            </p>
+    "<span x-text="negotiationDojo.currentScenario ? negotiationDojo.currentScenario.nodes[negotiationDojo.currentNode].text : ''"></span>"
+</p>
+            
         </div>
 
         <!-- Tactical Options -->
-        <div class="grid gap-4">
-            <template x-for="(opt, idx) in negotiationDojo.currentScenario?.nodes[negotiationDojo.currentNode]?.options || []" :key="idx">
-                <button @click="negotiationDojo.choose(opt)" 
+<div class="grid gap-4">
+    <template x-for="(opt, idx) in (negotiationDojo.currentScenario ? negotiationDojo.currentScenario.nodes[negotiationDojo.currentNode].options : [])" :key="idx">
+        <button @click="negotiationDojo.choose(opt)" 
                         class="group text-left p-5 rounded-xl border border-slate-600 bg-slate-800 hover:bg-slate-700 hover:border-white transition-all relative overflow-hidden">
                     
                     <div class="relative z-10 flex justify-between items-center">
@@ -1240,9 +1241,10 @@
         <!-- The Situation Board -->
         <div class="bg-card border border-slate-700 p-8 rounded-xl shadow-lg relative min-h-[200px] flex items-center justify-center">
             <div class="absolute top-0 left-0 w-1 h-full bg-purple-500 rounded-l-xl"></div>
-            <p class="text-xl md:text-2xl text-white font-medium text-center leading-relaxed">
-                "<span x-text="warGames.currentScenario?.nodes[warGames.currentNode]?.text"></span>"
-            </p>
+<p class="text-xl md:text-2xl text-white font-medium text-center leading-relaxed">
+    <!-- Check if currentScenario exists before trying to read nodes -->
+    "<span x-text="warGames.currentScenario ? warGames.currentScenario.nodes[warGames.currentNode].text : ''"></span>"
+</p>
         </div>
 
         <!-- Command Console (Choices) -->
