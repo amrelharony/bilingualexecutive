@@ -154,7 +154,7 @@ document.addEventListener('alpine:init', () => {
 
         // --- DOWNLOAD LOGIC ---
         async downloadChapterAssets(chapter) {
-            const dm = this.downloadManager;
+            const dm = this.offlineManager;
             const quota = dm.getQuota();
 
             // 1. Check if already unlocked
@@ -170,7 +170,7 @@ document.addEventListener('alpine:init', () => {
                     quota.chapters.push(chapter.id);
                     dm.saveQuota(quota);
                     // Force refresh of Alpine reactivity if needed
-                    this.downloadManager = { ...this.downloadManager }; 
+                    this.offlineManager = { ...this.offlineManager }; 
                 } else {
                     return; // User cancelled
                 }
@@ -457,19 +457,6 @@ document.addEventListener('alpine:init', () => {
 
             },
 
-        // 3. THE TIMER LOGIC
-        resetNavTimer() {
-            // Show UI immediately
-            this.navVisible = true;
-            
-            // Clear pending hide timer
-            if (this.navTimer) clearTimeout(this.navTimer);
-            
-            // Set new timer to hide after 3 seconds of no activity
-            this.navTimer = setTimeout(() => {
-                this.navVisible = false;
-            }, 3000); 
-        },
         
             // check if user previously entered
 const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
@@ -599,7 +586,8 @@ resetNavTimer() {
             }, 3000); // 3 seconds
         },
 
-    
+
+
         // YouTube Player Initialization Method
 initYouTubePlayer() {
     const initPlayer = () => {
