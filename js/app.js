@@ -154,7 +154,7 @@ document.addEventListener('alpine:init', () => {
 
         // --- DOWNLOAD LOGIC ---
         async downloadChapterAssets(chapter) {
-            const dm = this.offlineManager;
+            const dm = this.downloadManager;
             const quota = dm.getQuota();
 
             // 1. Check if already unlocked
@@ -170,7 +170,7 @@ document.addEventListener('alpine:init', () => {
                     quota.chapters.push(chapter.id);
                     dm.saveQuota(quota);
                     // Force refresh of Alpine reactivity if needed
-                    this.offlineManager = { ...this.offlineManager }; 
+                    this.downloadManager = { ...this.downloadManager }; 
                 } else {
                     return; // User cancelled
                 }
@@ -439,66 +439,74 @@ document.addEventListener('alpine:init', () => {
             }, 300);
         },
         
-        // 3. THE TIMER LOGIC
-        resetNavTimer() {
-            this.navVisible = true;
-            if (this.navTimer) clearTimeout(this.navTimer);
-            this.navTimer = setTimeout(() => {
-                this.navVisible = false;
-            }, 3000); 
-        },
-
         // ------------------------------------------------------------------
         // INITIALIZATION
         // ------------------------------------------------------------------
         init() {
-            // 1. SET DEFAULT TO HIDDEN
+
+                      // 1. SET DEFAULT TO HIDDEN (Modified)
             this.navVisible = false; 
 
             // 2. SETUP INTERACTION LISTENERS
+            // Triggers on: Mouse move, Scroll, Touch, Click, Keypress
             const resetNav = () => this.resetNavTimer();
             ['mousemove', 'scroll', 'touchstart', 'click', 'keydown'].forEach(evt => {
+                // Use capture: true to ensure we catch events even if propagation stops
                 window.addEventListener(evt, resetNav, { passive: true, capture: true });
             });
 
-            // 3. CHECK USER ENTRY (Moved here)
-            const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
-            if (hasEnteredBefore) {
-                this.showLanding = false;
-                this.setupActivityTracking(); // Ensure this method exists or is defined below
-            }
+            },
 
-            // 4. MOBILE CHECK (Moved here)
+        // 3. THE TIMER LOGIC
+        resetNavTimer() {
+            // Show UI immediately
+            this.navVisible = true;
+            
+            // Clear pending hide timer
+            if (this.navTimer) clearTimeout(this.navTimer);
+            
+            // Set new timer to hide after 3 seconds of no activity
+            this.navTimer = setTimeout(() => {
+                this.navVisible = false;
+            }, 3000); 
+        },
+        
+            // check if user previously entered
+const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
+
+// If they entered before, skip landing page
+if (hasEnteredBefore) {
+    this.showLanding = false;
+    this.setupActivityTracking();
+}
+
             this.isMobile = window.innerWidth < 768;
             window.addEventListener('resize', () => { this.isMobile = window.innerWidth < 768; });
 
-            // 5. SUPABASE (Moved here)
-            const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
-            const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Your key
-            
-            if (window.supabase) {
-                this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
-                // Ensure teamManager exists before assigning
-                if(this.teamManager) this.teamManager.supabase = this.supabase; 
-            } else {
-                console.error("Supabase library not loaded.");
-            }
 
-            // 6. PWA INSTALL (Moved here)
+            // Initialize Supabase Client
+const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
+    
+if (window.supabase) {
+    this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+    this.teamManager.supabase = this.supabase; 
+} else {
+    console.error("Supabase library not loaded.");
+}
+            
+            // PWA & Install Logic
+            const isPWA = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || document.referrer.includes('android-app://');
+
+            // 1. Capture the event for Android/Chrome (so we can trigger it later)
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 this.deferredPrompt = e;
             });
 
-            // 7. RESTORE DATA & CHARTS
-            this.$nextTick(() => {
-                if(this.updateTalentChart) this.updateTalentChart();
-            });
-            
-            // ... (Keep the rest of your original init code here like culturalMonitor.init()) ...
-             this.culturalMonitor.init(); 
-             this.initYouTubePlayer(); 
-        },
+                this.$nextTick(() => {
+        this.updateTalentChart();
+    });
 
 
             // VIP & Challenger Logic
@@ -591,8 +599,7 @@ resetNavTimer() {
             }, 3000); // 3 seconds
         },
 
-
-
+    
         // YouTube Player Initialization Method
 initYouTubePlayer() {
     const initPlayer = () => {
@@ -6489,4 +6496,3 @@ const offlineBenchmarks = [
     {"score":25,"industry":"Traditional Bank"}, 
     {"score":75,"industry":"Neobank"}
 ];        
-
