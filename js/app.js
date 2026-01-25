@@ -1496,6 +1496,23 @@ apiSandbox: {
     edges: [
         { id: 'e1', from: 1, to: 2 } 
     ],
+
+     // --- NEW: PRE-CALCULATE LINES TO PREVENT SVG CRASH ---
+    get calculatedEdges() {
+        return this.edges.map(edge => {
+            const start = this.nodes.find(n => n.id === edge.from) || {x:0, y:0};
+            const end = this.nodes.find(n => n.id === edge.to) || {x:0, y:0};
+            return {
+                id: edge.id,
+                from: edge.from,
+                to: edge.to,
+                x1: start.x + 60,
+                y1: start.y + 30,
+                x2: end.x + 60,
+                y2: end.y + 30
+            };
+        });
+    },
     
     // 2. Interaction State
     draggingNode: null,
