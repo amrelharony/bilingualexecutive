@@ -6113,10 +6113,8 @@ END-IF."></textarea>
     </div>
 </div>
 
-
 <!-- MEETING TICKER TOOL -->
 <div x-show="currentTab === 'ticker'" class="max-w-2xl mx-auto space-y-6">
-    
     <!-- Header -->
     <div class="text-center space-y-2">
         <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-green-500/20 text-green-400 mb-2">
@@ -6150,6 +6148,7 @@ END-IF."></textarea>
 
     <!-- Controls & Inputs -->
     <div class="grid md:grid-cols-2 gap-6">
+        <!-- Sliders -->
         <div class="bg-slate-800 p-6 rounded-xl border border-slate-700 space-y-6">
             <div>
                 <div class="flex justify-between text-sm mb-2">
@@ -6164,7 +6163,6 @@ END-IF."></textarea>
                     <span class="text-green-400 font-bold" x-text="'$' + meetingTicker.avgRate"></span>
                 </div>
                 <input type="range" min="50" max="500" step="25" x-model="meetingTicker.avgRate" class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-green-400">
-                <p class="text-xs text-slate-500 mt-1">Include salary + overhead + benefits.</p>
             </div>
             <div class="flex items-center justify-between pt-2 border-t border-slate-700/50">
                 <div class="text-xs text-slate-400">
@@ -6180,6 +6178,7 @@ END-IF."></textarea>
             </div>
         </div>
 
+        <!-- Buttons -->
         <div class="flex flex-col justify-center space-y-4">
             <button @click="meetingTicker.toggle()"
                     class="w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform active:scale-95 flex items-center justify-center gap-2"
@@ -6205,33 +6204,26 @@ END-IF."></textarea>
     </div>
 </div>
 
-<!-- COMMUNITY -->
+<!-- COMMUNITY (Inside Overlay) -->
 <div x-show="currentTab === 'community'" x-cloak class="max-w-3xl mx-auto mt-12 text-center">
     <div class="bg-gradient-to-b from-slate-800 to-dark p-10 rounded-2xl border border-primary/30 shadow-2xl relative overflow-hidden">
         <div class="mb-6"><i class="fa-brands fa-whatsapp text-6xl text-[#25D366]"></i></div>
         <h2 class="font-mono text-3xl font-bold text-white mb-4">The Fintech Bilinguals</h2>
-        <p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders. Access exclusive playbooks and peer support.</p>
-        
-        <!-- DESKTOP VIEW -->
+        <p class="text-textMuted max-w-lg mx-auto mb-8">Join the collective of execution-focused leaders.</p>
         <div class="hidden md:flex flex-col items-center">
             <div class="bg-white p-4 rounded-xl shadow-lg mb-4">
                 <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=https://chat.whatsapp.com/DgFrhnzrKpAJnmLM1Oqmgg" alt="WhatsApp QR Code" class="w-40 h-40">
             </div>
-            <p class="text-xs text-textMuted font-mono uppercase tracking-widest">Scan with your phone to join</p>
         </div>
-
-        <!-- MOBILE VIEW -->
         <div class="md:hidden">
             <a href="https://chat.whatsapp.com/DgFrhnzrKpAJnmLM1Oqmgg" target="_blank" class="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#128c7e] text-white font-bold py-4 px-6 rounded-full shadow-glow transition-all active:scale-95">
-                <i class="fa-brands fa-whatsapp text-2xl"></i>
-                <span class="font-mono text-sm">JOIN COMMUNITY</span>
+                <i class="fa-brands fa-whatsapp text-2xl"></i><span class="font-mono text-sm">JOIN COMMUNITY</span>
             </a>
-            <p class="text-[10px] text-textMuted mt-4">Opens directly in WhatsApp</p>
         </div>
     </div> 
 </div>  
 
-<!-- ARCHITECT CONSOLE (VIP ONLY) -->
+<!-- ARCHITECT CONSOLE (Inside Overlay) -->
 <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
     <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
         <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-microchip text-9xl text-hotpink"></i></div>
@@ -6256,8 +6248,8 @@ END-IF."></textarea>
     </div>
 </div>
 
-</div> <!-- This closes the PADDING container -->
-</div> <!-- This closes the "ACTIVE TOOL RENDERER" Overlay -->
+</div> <!-- Closes the "p-4 md:p-8 pb-20" container -->
+</div> <!-- Closes the "ACTIVE TOOL RENDERER" Overlay -->
 
 <!-- Desktop/Tablet Dock -->
 <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden transition-all duration-500 ease-in-out"
@@ -6292,41 +6284,6 @@ END-IF."></textarea>
 </div>
 
 </div> <!-- End viewMode='tools' Wrapper -->
-
-
-               <!-- Desktop/Tablet Dock -->
-<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden transition-all duration-500 ease-in-out"
-     :class="navVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'">
-            <div class="flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl shadow-black/50">
-                <template x-for="group in navGroups" :key="group.id">
-                    <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
-                            class="relative px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
-                            :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
-                        <i :class="group.icon" class="text-lg mb-0.5 transition-transform group-active:scale-90"></i>
-                        <span class="text-[9px] font-bold uppercase tracking-widest" x-text="group.label"></span>
-                        <div x-show="currentGroup === group.id" class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
-                    </button>
-                </template>
-            </div>
-        </div>
-
-        <!-- Mobile Dock -->
-<div class="md:hidden fixed bottom-6 left-4 right-4 z-40 transition-all duration-500 ease-in-out"
-     :class="navVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'">
-            <div class="flex items-center justify-between gap-1 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl shadow-black/50">
-                <template x-for="group in navGroups" :key="group.id">
-                    <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
-                            class="relative h-14 rounded-xl transition-all duration-300 group flex flex-col items-center justify-center flex-1"
-                            :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
-                        <i :class="group.icon" class="text-lg mb-1 transition-transform group-active:scale-90"></i>
-                        <span class="text-[9px] font-bold uppercase tracking-widest truncate w-full text-center" x-text="group.label"></span>
-                        <div x-show="currentGroup === group.id" class="absolute bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
-                    </button>
-                </template>
-            </div>
-        </div>
-
-    </div> <!-- End viewMode='tools' Wrapper -->
 
 </main>
 
