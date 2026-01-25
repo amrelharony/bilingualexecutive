@@ -1,16 +1,9 @@
 // js/app.js
 
-if (typeof Alpine === 'undefined') {
-    console.error('Alpine.js is not loaded. Please check script order.');
-}
-
-if (typeof YT === 'undefined' && document.getElementById('youtube-player')) {
-    console.warn('YouTube API not loaded. Video may not play.');
-}
-
 document.addEventListener('alpine:init', () => {
     Alpine.data('toolkit', () => ({
 
+        
         // ==========================================
         // ACADEMY CONFIG & STATE
         // ==========================================
