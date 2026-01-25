@@ -1087,14 +1087,16 @@
             <path d="M0,0 L0,6 L9,3 z" fill="#64748b" />
         </marker>
     </defs>
+    <!-- FIX: Loop directly on a group <g> element to prevent crash -->
     <template x-for="edge in apiSandbox.edges" :key="edge.id">
-        <!-- We use x-bind to safely calculate coordinates -->
-        <line stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"
-              :x1="(apiSandbox.nodes.find(n => n.id === edge.from) || {x:0}).x + 60"
-              :y1="(apiSandbox.nodes.find(n => n.id === edge.from) || {y:0}).y + 30"
-              :x2="(apiSandbox.nodes.find(n => n.id === edge.to) || {x:0}).x + 60"
-              :y2="(apiSandbox.nodes.find(n => n.id === edge.to) || {y:0}).y + 30">
-        </line>
+        <g>
+            <line stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"
+                :x1="(apiSandbox.nodes.find(n => n.id === edge.from) || {x:0}).x + 60" 
+                :y1="(apiSandbox.nodes.find(n => n.id === edge.from) || {y:0}).y + 30"
+                :x2="(apiSandbox.nodes.find(n => n.id === edge.to) || {x:0}).x + 60" 
+                :y2="(apiSandbox.nodes.find(n => n.id === edge.to) || {y:0}).y + 30">
+            </line>
+        </g>
     </template>
 </svg>
         
