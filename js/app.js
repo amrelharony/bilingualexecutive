@@ -1,5 +1,12 @@
 // js/app.js
 
+const GROUPS = {
+    RADAR: 'radar',
+    FORGE: 'forge',
+    SIMS: 'sims'
+};
+
+ 
 document.addEventListener('alpine:init', () => {
     Alpine.data('toolkit', () => ({
 
