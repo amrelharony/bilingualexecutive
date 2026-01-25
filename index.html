@@ -1089,17 +1089,17 @@
                   <path d="M0,0 L0,6 L9,3 z" fill="#64748b" />
                 </marker>
             </defs>
-            <template x-for="edge in apiSandbox.edges" :key="edge.id">
-                <line 
-                    :x1="apiSandbox.nodes.find(n => n.id === edge.from).x + 60" 
-                    :y1="apiSandbox.nodes.find(n => n.id === edge.from).y + 30"
-                    :x2="apiSandbox.nodes.find(n => n.id === edge.to).x + 60" 
-                    :y2="apiSandbox.nodes.find(n => n.id === edge.to).y + 30"
-                    stroke="#64748b" 
-                    stroke-width="2" 
-                    marker-end="url(#arrow)"
-                />
-            </template>
+<template x-for="edge in apiSandbox.edges" :key="edge.id">
+    <line 
+        :x1="(apiSandbox.nodes.find(n => n.id === edge.from) || {x:0}).x + 60" 
+        :y1="(apiSandbox.nodes.find(n => n.id === edge.from) || {y:0}).y + 30"
+        :x2="(apiSandbox.nodes.find(n => n.id === edge.to) || {x:0}).x + 60" 
+        :y2="(apiSandbox.nodes.find(n => n.id === edge.to) || {y:0}).y + 30"
+        stroke="#64748b" 
+        stroke-width="2" 
+        marker-end="url(#arrow)"
+    />
+</template>
             <!-- Draw the "active" line if linking -->
             <template x-if="apiSandbox.linkingNode">
                <!-- Placeholder for dynamic line visual if desired later -->
@@ -1294,7 +1294,7 @@
                }"></i>
         </div>
 
-        <h2 class="text-4xl font-bold text-white mb-2 uppercase" x-text="warGames.result.replace('_', ' ')"></h2>
+    <h2 class="text-4xl font-bold text-white mb-2 uppercase" x-text="(warGames.result || '').replace('_', ' ')"></h2>
         <p class="text-slate-400 mb-10 text-lg" x-text="warGames.finalMessage"></p>
 
         <!-- AI Post-Mortem Box -->
@@ -3767,7 +3767,7 @@
     </div>
 
     <!-- 2. ANALYSIS & SIMULATION PHASE -->
-    <div x-show="vendorCoach.step === 'analysis' || vendorCoach.step === 'sim'" class="grid lg:grid-cols-12 gap-6">
+   <div x-show="vendorCoach.analysis && (vendorCoach.step === 'analysis' || vendorCoach.step === 'sim')" class="grid lg:grid-cols-12 gap-6">
         
         <!-- LEFT: DASHBOARD -->
         <div class="lg:col-span-4 space-y-4">
@@ -4371,9 +4371,9 @@ END-IF."></textarea>
                  :class="riskSim.outcome.status === 'FIRED' ? 'border-red-500 bg-red-500/20 text-red-500' : 'border-green-500 bg-green-500/20 text-green-500'">
                 <i class="fa-solid text-5xl" :class="riskSim.outcome.status === 'FIRED' ? 'fa-thumbs-down' : 'fa-handshake'"></i>
             </div>
-            <h2 class="text-4xl font-bold text-white mb-2" x-text="riskSim.outcome.status"></h2>
-            <p class="text-xl text-slate-300 font-mono mb-2" x-text="riskSim.outcome.archetype"></p>
-            <p class="text-sm text-slate-500" x-text="riskSim.outcome.msg"></p>
+            <h2 class="text-4xl font-bold text-white mb-2" x-text="riskSim.outcome?.status"></h2>
+           <p class="text-xl text-slate-300 font-mono mb-2" x-text="riskSim.outcome?.archetype"></p>
+       <p class="text-sm text-slate-500" x-text="riskSim.outcome?.msg"></p>
         </div>
 
         <!-- AI Prompt Box -->
