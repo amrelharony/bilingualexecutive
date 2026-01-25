@@ -1080,23 +1080,26 @@
             <p class="text-slate-600 font-mono text-sm">Add components from the toolbar...</p>
         </div>
 
-        <!-- LAYER 1: SVG Lines (The Wires) -->
-<svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
-    <defs>
-        <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
-            <path d="M0,0 L0,6 L9,3 z" fill="#64748b" />
-        </marker>
-    </defs>
-    <!-- FIX: Loop directly on a group <g> element to prevent crash -->
-<template x-for="line in apiSandbox.calculatedEdges" :key="line.id">
-    <line stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"
-          :x1="line.x1" 
-          :y1="line.y1" 
-          :x2="line.x2" 
-          :y2="line.y2">
-    </line>
-</template>
-</svg>
+<!-- LAYER 1: SVG Lines (The Wires) -->
+        <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
+            <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
+                    <path d="M0,0 L0,6 L9,3 z" fill="#64748b" />
+                </marker>
+            </defs>
+            
+            <!-- FIX: Wrap in <g> to satisfy SVG parser for Alpine Loop -->
+            <template x-for="line in apiSandbox.calculatedEdges" :key="line.id">
+                <g>
+                    <line stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"
+                          :x1="line.x1" 
+                          :y1="line.y1" 
+                          :x2="line.x2" 
+                          :y2="line.y2">
+                    </line>
+                </g>
+            </template>
+        </svg>
         
         <!-- LAYER 2: The Nodes (Draggable Divs) -->
         <template x-for="node in apiSandbox.nodes" :key="node.id">
