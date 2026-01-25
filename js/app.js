@@ -12,13 +12,9 @@ document.addEventListener('alpine:init', () => {
 
                 currentGroup: GROUPS.RADAR, // Safe initialization
         // ...
-        tools: {
-            [GROUPS.RADAR]: [ ... ],
-            [GROUPS.FORGE]: [ ... ],
-            [GROUPS.SIMS]: [ ... ]
-        }
-    }));
-});
+       
+      
+     
 
         // ==========================================
         // ACADEMY CONFIG & STATE
@@ -1664,9 +1660,12 @@ navGroups: [
 ],
 
 
+                  
+             
+            
 // Group the tools
 tools: {
-    radar: [
+    [GROUPS.RADAR]: [
         { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check', color: 'text-primary' },
         { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
         { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' },
@@ -1690,7 +1689,7 @@ tools: {
     ],
 
     
-    forge: [
+   [GROUPS.FORGE]: [
         { id: 'kpi', label: 'Outcome Gen', icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400' },
         { id: 'lighthouse', label: 'Lighthouse Kit', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
         { id: 'canvas', label: 'Data Product', icon: 'fa-solid fa-file-contract', color: 'text-blue-500' },
@@ -1708,7 +1707,7 @@ tools: {
         
 
     ],
-    sims: [
+    [GROUPS.SIMS]:  [
         { id: 'simulator', label: 'Case Study', icon: 'fa-solid fa-chess-knight', color: 'text-white' },
         { id: 'future', label: 'Future Bank', icon: 'fa-solid fa-forward', color: 'text-purple-400' }, 
         { id: 'roleplay', label: 'Negotiation Dojo', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
