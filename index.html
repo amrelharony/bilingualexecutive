@@ -519,8 +519,8 @@
 
     <!-- Header Area -->
     <div class="mb-8 pt-8">
-        <h1 class="text-3xl font-sans font-bold tracking-tight text-white mb-1" x-text="navGroups.find(g => g.id === currentGroup).label"></h1>
-        <p class="text-slate-400 font-mono text-xs uppercase tracking-widest" x-text="navGroups.find(g => g.id === currentGroup).desc"></p>
+        <h1 class="text-3xl font-sans font-bold tracking-tight text-white mb-1" x-text="navGroups.find(g => g.id === currentGroup)?.label || 'Loading...'"></h1>
+        <p class="text-slate-400 font-mono text-xs uppercase tracking-widest" x-text="navGroups.find(g => g.id === currentGroup)?.desc || ''"></p>
     </div>
 
     <!-- The Grid of Tools for the Current Group -->
