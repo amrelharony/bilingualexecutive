@@ -454,22 +454,6 @@ document.addEventListener('alpine:init', () => {
                 // Use capture: true to ensure we catch events even if propagation stops
                 window.addEventListener(evt, resetNav, { passive: true, capture: true });
             });
-
-            },
-
-        // 3. THE TIMER LOGIC
-        resetNavTimer() {
-            // Show UI immediately
-            this.navVisible = true;
-            
-            // Clear pending hide timer
-            if (this.navTimer) clearTimeout(this.navTimer);
-            
-            // Set new timer to hide after 3 seconds of no activity
-            this.navTimer = setTimeout(() => {
-                this.navVisible = false;
-            }, 3000); 
-        },
         
             // check if user previously entered
 const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
