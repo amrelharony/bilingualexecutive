@@ -5137,6 +5137,7 @@ TONE: Mentorship, tough love, growth-oriented.`;
                     diagnosis,
                     annualTax: annualCost
                 };
+            },
 
             // --- ADVANCED PROMPT GENERATOR ---
             generatePsychPrompt() {
