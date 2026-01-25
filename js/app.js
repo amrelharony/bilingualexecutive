@@ -1005,6 +1005,7 @@ TONE: Senior, direct, mentorship-focused.`;
 
             // --- NEW: ADVANCED PROMPT GENERATOR ---
             generateNegotiationPrompt() {
+             if (!this.currentScenario || !this.result) return ""; // GUARD CLAUSE
                 const s = this.currentScenario;
                 const path = this.history.map((h, i) => 
                     `Step ${i+1}: When asked about [${h.stage}], I chose: "${h.choice}". (Impact: Trust ${h.impact.trust > 0 ? '+' : ''}${h.impact.trust})`
@@ -1754,8 +1755,9 @@ apiSandbox: {
             },
 
             // --- NEW: STRATEGIC POST-MORTEM PROMPT ---
-            generateWarGamePrompt() {
-                const decisionPath = this.history.map((h, i) => 
+generateWarGamePrompt() {
+    if (!this.currentScenario || !this.result) return ""; // GUARD CLAUSE
+    const decisionPath = this.history.map((h, i) =>
                     `Turn ${i+1}: ${h.decision} (Intent: ${h.rationale})`
                 ).join("\n");
 
@@ -3495,8 +3497,9 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
             },
 
             // --- PROMPT GENERATOR ---
-            generateFuturePrompt() {
-                const s = this.activeScenario;
+generateFuturePrompt() {
+    if (!this.activeScenario) return ""; // GUARD CLAUSE
+    const s = this.activeScenario;
                 const m = this.metrics;
                 
                 const decisions = this.decisionLog.map(d => `In ${d.year}, faced with "${d.event}", I chose to "${d.decision}".`).join("\n");
@@ -4261,7 +4264,8 @@ TONE: Regulatory, precise, risk-averse.`;
 
             // --- ADVANCED PROMPT GENERATOR ---
             generateNegotiationPrompt() {
-                const a = this.analysis;
+    if (!this.analysis || !this.inputs.vendorName) return ""; // GUARD CLAUSE
+    const a = this.analysis;
                 const i = this.inputs;
 
                 return `ACT AS: A Chief Procurement Officer and Agile Coach.
@@ -4793,7 +4797,7 @@ TONE: Skeptical, experienced, piercing.`;
 
             // --- ADVANCED PROMPT GENERATOR ---
             generateCoachingPrompt() {
-                if (!this.outcome) return "Complete simulation first.";
+            if (!this.outcome) return ""; // GUARD CLAUSE
                 
                 const path = this.history.map(h => `Round ${h.round} (${h.topic}): I used "${h.tactic}". Result: Trust ${h.stats.trust}, Velocity ${h.stats.velocity}.`).join("\n");
 
