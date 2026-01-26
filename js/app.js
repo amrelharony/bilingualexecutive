@@ -5669,7 +5669,7 @@ TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
                     verdict,
                     color,
                     analysis
-                };
+                }
             
             },
 
