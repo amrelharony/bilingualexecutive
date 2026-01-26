@@ -454,8 +454,7 @@ document.addEventListener('alpine:init', () => {
         this.isVipMode = false; // "Sims" tab remains hidden
     }
 
-                      // 1. SET DEFAULT TO HIDDEN (Modified)
-            this.navVisible = true; 
+            this.navVisible = false; 
 
             // 2. SETUP INTERACTION LISTENERS
             // Triggers on: Mouse move, Scroll, Touch, Click, Keypress
@@ -588,9 +587,11 @@ this.$watch('talentSkills', () => {
 resetNavTimer() {
     this.navVisible = true;
     if (this.navTimer) clearTimeout(this.navTimer);
-    // this.navTimer = setTimeout(() => {   <-- Comment out these 3 lines
-    //    this.navVisible = false;          <-- to stop it from hiding
-    // }, 3000);                            <-- automatically.
+    
+    // Auto-hide after 3 seconds of inactivity
+    this.navTimer = setTimeout(() => {
+        this.navVisible = false;
+    }, 3000);
 },
 
 
