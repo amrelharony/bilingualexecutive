@@ -255,20 +255,22 @@
         <!-- Main Content Area -->
 <main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pt-8 pb-32 md:pb-24">
 
-<!-- ALPINE DEBUG - ALWAYS VISIBLE -->
-<div class="fixed top-20 right-4 z-[200] bg-red-500 text-white p-4 rounded shadow-lg text-xs font-mono space-y-1">
+<!-- Red Debug Box (top-right corner, small) -->
+<div class="fixed top-4 right-4 bg-red-500 text-white p-2 rounded text-xs z-[100] max-w-[200px]">
+    <p class="font-bold mb-1">DEBUG</p>
     <p>viewMode: <span x-text="viewMode"></span></p>
     <p>currentGroup: <span x-text="currentGroup"></span></p>
     <p>currentTab: <span x-text="currentTab"></span></p>
-    <p>tools exists: <span x-text="typeof tools !== 'undefined' ? 'YES' : 'NO'"></span></p>
-    <p>tools.radar exists: <span x-text="tools?.radar ? 'YES' : 'NO'"></span></p>
-    <p>tools.radar.length: <span x-text="tools?.radar?.length || 0"></span></p>
-    <p>tools.forge.length: <span x-text="tools?.forge?.length || 0"></span></p>
+    <p>tools exists: <span x-text="tools ? 'YES' : 'NO'"></span></p>
+    <p>tools.radar exists: <span x-text="tools.radar ? 'YES' : 'NO'"></span></p>
+    <p>tools.radar.length: <span x-text="tools.radar?.length"></span></p>
+    <p>tools.forge.length: <span x-text="tools.forge?.length"></span></p>
     <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'" 
-            class="bg-white text-black px-2 py-1 mt-2 rounded text-xs w-full">
+            class="mt-2 bg-white text-red-500 px-2 py-1 rounded text-xs font-bold w-full">
         FORCE RADAR
     </button>
 </div>
+
 
 
 
