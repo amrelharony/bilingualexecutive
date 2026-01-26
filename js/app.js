@@ -1719,68 +1719,6 @@ tools: {
     ]
 },
         
-       dashboardTools: [ 
-            // 1. Simulations & Games
-            { id: 'simulator', label: 'Case Simulator', desc: '90-Day Turnaround Simulation.', icon: 'fa-solid fa-chess-knight', color: 'text-primary' },
-           { id: 'future', label: 'Future Bank 2030', desc: 'Simulate your strategy to 2030.', icon: 'fa-solid fa-forward', color: 'text-purple-400', vip: false }, 
-            { id: 'whatif', label: 'War Games', desc: 'Strategic Pre-Mortem & Risk Analysis.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
-            { id: 'roleplay', label: 'Negotiation Dojo', desc: 'Spar against skeptical stakeholders.', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
-           { id: 'conway', label: 'Org Mirror', desc: 'Simulate how Org Chart breaks Architecture.', icon: 'fa-solid fa-sitemap', color: 'text-indigo-400', vip: false },
-            { id: 'escaperoom', label: 'Excel Escape', desc: 'Gamified technical debt simulation.', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
-           { id: 'risksim', label: 'Risk Negotiator', desc: 'Simulate a high-stakes "Go/No-Go" meeting with a CRO.', icon: 'fa-solid fa-gavel', color: 'text-risk', vip: false },
-           { id: 'escaperoom', label: 'Escape the Factory', desc: 'Gamified technical debt simulation.', icon: 'fa-solid fa-dungeon', color: 'text-green-500', vip: false },
-           { id: 'bingo', label: 'Meeting Bingo', desc: 'Gamify cultural transformation during actual meetings.', icon: 'fa-solid fa-table-cells', color: 'text-pink-500', vip: false },
-           { id: 'regsim', label: 'Regulation Impact', desc: 'Simulate the cost & tech blast radius of PSD3, AI Act, and DORA.', icon: 'fa-solid fa-scale-balanced', color: 'text-yellow-500', vip: false },
-           { id: 'feed', label: 'Daily Wisdom', desc: 'AI-generated micro-lessons to build tech fluency.', icon: 'fa-solid fa-mug-hot', color: 'text-yellow-400', vip: false },
-
-
-
-
-
-
-            // 2. Calculators & Builders (Forge)
-            { id: 'squad', label: 'Squad Builder', desc: 'Design teams using Brooks Law.', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
-            { id: 'excel', label: 'Excel Auditor', desc: 'Calculate OpEx waste & risk liability.', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
-            { id: 'roi', label: 'Lighthouse ROI', desc: 'Calculate NPV & Cost of Delay.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
-            { id: 'kpi', label: 'Outcome Gen',  desc: 'Turn Project Outputs into Business Outcomes.',  icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400'},
-            { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture latency.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
-           { id: 'vendor', label: 'Vendor Negotiator', desc: 'Shift contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-signature', color: 'text-yellow-400', vip: false },
-           { id: 'capex', label: 'CapEx Classifier', desc: 'Audit agile tickets against IAS 38 Accounting Standards.', icon: 'fa-solid fa-scale-balanced', color: 'text-green-400', vip: false },
-           { id: 'legacy', label: 'Legacy Translator', desc: 'Scan COBOL/SQL for business logic risks.', icon: 'fa-solid fa-code', color: 'text-slate-400', vip: false },
-           { id: 'flow', label: 'Value Stream Calc', desc: 'Measure the hidden waste (Wait Time) in your processes.', icon: 'fa-solid fa-stopwatch', color: 'text-blue-400', vip: false },
-           { id: 'adr', label: 'ADR Builder', desc: 'Create weighted decision matrices and generate Architecture Decision Records.', icon: 'fa-solid fa-scale-unbalanced-flip', color: 'text-indigo-300', vip: false },
-           { id: 'library', label: 'Bilingual Library', desc: 'Curated books & tech stack definitions for leaders.', icon: 'fa-solid fa-book-bookmark', color: 'text-cyan-300', vip: false },
-           { id: 'ticker', label: 'Meeting Tax', desc: 'Calculate the real-time cash burn of your meetings.', icon: 'fa-solid fa-money-bill-wave',  color: 'text-green-500', vip: false },
-
-
-
-
-
-
-            // 3. Diagnostics (Radar)
-            { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational friction.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
-            { id: 'assessment', label: 'Agile Audit', desc: 'Assess maturity across Data/Delivery.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' }, 
-            { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in leadership.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' }, 
-           { id: 'dumbpipe', label: 'Utility Risk', desc: 'Calculate the probability of losing the customer interface.', icon: 'fa-solid fa-link-slash', color: 'text-red-400', vip: false },
-           { id: 'datagov', label: 'Live Data Governance', desc: 'Monitor SLOs, Lineage, and Quality in real-time.', icon: 'fa-solid fa-server', color: 'text-blue-500', vip: false },
-           { id: 'shadow', label: 'Shadow IT Scanner', desc: 'Audit SaaS sprawl and calculate the "Integration Tax".', icon: 'fa-solid fa-ghost', color: 'text-purple-400', vip: false },
-           { id: 'detector', label: 'AI Risk Scanner', desc: 'Mathematically verify AI outputs against Golden Source data.', icon: 'fa-solid fa-user-secret', color: 'text-risk', vip: false },
-           { id: 'cognitive', label: 'Brain Bandwidth', desc: 'Measure team mental overhead and burnout risk.', icon: 'fa-solid fa-brain', color: 'text-purple-400', vip: false },
-           { id: 'sprintcheck', label: 'Sprint Diagnostic', desc: '60-second pulse check on velocity, creep, and morale.', icon: 'fa-solid fa-heart-pulse', color: 'text-orange-400', vip: false },
-         { id: 'adaptation', label: 'Adaptation Health', desc: 'Measure organizational plasticity and rigidity.', icon: 'fa-solid fa-dna', color: 'text-cyan-400', vip: false },
-           { id: 'dt_tracker', label: 'Transformation ROI', desc: 'Track the J-Curve: Hard costs vs. Soft value realization.', icon: 'fa-solid fa-chart-line', color: 'text-green-400', vip: false },
-
-
-
-            
-            // 4. Strategy Tools
-            { id: 'matrix', label: 'Strategy Matrix', desc: 'Build vs Buy decision framework.', icon: 'fa-solid fa-chess-board', color: 'text-purple-400' }, 
-            { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for pilot success.', icon: 'fa-solid fa-lightbulb', color: 'text-warn' }, 
-            { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-400' }, 
-            { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-risk' }, 
-            { id: 'architect', label: 'Architect Console', desc: 'Access High-Level Scripts.', icon: 'fa-solid fa-microchip', color: 'text-hotpink', vip: true },
-           { id: 'watermelon', label: 'Green Light Detector', desc: 'Detect the "Watermelon Effect" in status reports.', icon: 'fa-solid fa-user-secret', color: 'text-red-500', vip: false }
-        ],
         
         // ------------------------------------------------------------------
         // METHODS
