@@ -253,7 +253,7 @@
 </div>
             
         <!-- Main Content Area -->
-<main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pb-32 md:pb-24">
+<main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pt-8 pb-32 md:pb-24">
 
     <!-- ACADEMY VIEW -->
 <div x-show="viewMode === 'academy'" class="pb-24">
@@ -509,6 +509,12 @@
         <h1 class="text-3xl font-sans font-bold tracking-tight text-white mb-1" x-text="navGroups.find(g => g.id === currentGroup).label"></h1>
         <p class="text-slate-400 font-mono text-xs uppercase tracking-widest" x-text="navGroups.find(g => g.id === currentGroup).desc"></p>
     </div>
+
+            <!-- ADD THIS DEBUG CHECK: -->
+<div class="bg-yellow-500 text-black p-4 mb-4">
+    <p>Current Group: <span x-text="currentGroup"></span></p>
+    <p>Tools Available: <span x-text="tools[currentGroup] ? tools[currentGroup].length : 'NONE'"></span></p>
+</div>
 
     <!-- The Grid of Tools for the Current Group -->
   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
