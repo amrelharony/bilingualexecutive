@@ -130,8 +130,8 @@
 
 <!-- MAIN VIEW SWITCHER -->
 <!-- ADD style="display: none;" HERE -->
-<div class="fixed top-4 right-4 z-[80] bg-slate-900/90 border border-slate-600 backdrop-blur-md rounded-full p-1 flex shadow-2xl scale-75 md:scale-90 origin-top-right transition-all duration-500 ease-in-out opacity-100 translate-y-0"
-     x-show="!activeChapterId && currentTab === 'dashboard'"
+<div class="fixed top-4 right-4 z-[80] bg-slate-900/90 border border-slate-600 backdrop-blur-md rounded-full p-1 flex shadow-2xl scale-75 md:scale-90 origin-top-right transition-all duration-500 ease-in-out"
+     x-show="!activeChapterId"
      x-transition>
     
     <button @click="viewMode = 'academy'" 
