@@ -1024,6 +1024,7 @@ TONE: Senior, direct, mentorship-focused.`;
 
             // --- NEW: ADVANCED PROMPT GENERATOR ---
             generateNegotiationPrompt() {
+                if (!this.currentScenario || !this.result) return "Complete the simulation to generate prompt.";
                 const s = this.currentScenario;
                 const path = this.history.map((h, i) => 
                     `Step ${i+1}: When asked about [${h.stage}], I chose: "${h.choice}". (Impact: Trust ${h.impact.trust > 0 ? '+' : ''}${h.impact.trust})`
@@ -1629,6 +1630,7 @@ ${skills.map(s => `- ${s.label}: ${s.val}/5`).join('\n')}
 
             // --- NEW: STRATEGIC POST-MORTEM PROMPT ---
             generateWarGamePrompt() {
+                if (!this.currentScenario || !this.result) return "Complete the simulation first.";
                 const decisionPath = this.history.map((h, i) => 
                     `Turn ${i+1}: ${h.decision} (Intent: ${h.rationale})`
                 ).join("\n");
@@ -3234,6 +3236,7 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
         futureBank: {
             activeScenario: null,
             year: 2026,
+            metrics: { profit: 0, customers: 0, efficiency: 0, techDebt: 0 },
             isPlaying: false,
             timer: null,
             activeEvent: null, // Stores the current crisis
@@ -3378,6 +3381,7 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
 
             // --- PROMPT GENERATOR ---
             generateFuturePrompt() {
+                if (!this.activeScenario) return "Start simulation first.";
                 const s = this.activeScenario;
                 const m = this.metrics;
                 
