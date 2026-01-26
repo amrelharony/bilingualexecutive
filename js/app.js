@@ -1658,73 +1658,78 @@ ${decisionPath}
 TONE: Brutally honest, high-level strategic insight.`;
             }
         },
+
+
+        // ==========================================
+        // NAVIGATION CONFIGURATION
+        // ==========================================
+        currentGroup: 'radar', // Default Start View
         
-        // ------------------------------------------------------------------
-        // NAVIGATION & TOOLS
-        // ------------------------------------------------------------------
-       // Inside Alpine.data('toolkit', ...)
+        // 1. The Menu Buttons (The "Remote Control")
+        navGroups: [
+            { id: 'radar', label: 'Radar', icon: 'fa-solid fa-bullseye', desc: 'Diagnostics & Metrics' },
+            { id: 'forge', label: 'Forge', icon: 'fa-solid fa-hammer', desc: 'Builders & Tools' },
+            { id: 'sims', label: 'Sims', icon: 'fa-solid fa-gamepad', desc: 'Roleplay & Scenarios' },
+            { id: 'academy', label: 'Academy', icon: 'fa-solid fa-graduation-cap', desc: 'Learning Modules' }
+        ],
 
-currentGroup: 'radar', // Default view
+        // 2. The Content (The "Database")
+        tools: {
+            radar: [
+                { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-stethoscope', color: 'text-primary' },
+                { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
+                { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' },
+                { id: 'dumbpipe', label: 'Utility Risk', icon: 'fa-solid fa-link-slash', color: 'text-red-400' },
+                { id: 'datagov', label: 'Data Health', icon: 'fa-solid fa-traffic-light', color: 'text-blue-500' },
+                { id: 'shadow', label: 'Shadow IT', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
+                { id: 'detector', label: 'AI Risk Scan', icon: 'fa-solid fa-shield-cat', color: 'text-risk' },
+                { id: 'cognitive', label: 'Brain Load', icon: 'fa-solid fa-brain', color: 'text-purple-400' },
+                { id: 'sprintcheck', label: 'Sprint Check', icon: 'fa-solid fa-stopwatch', color: 'text-orange-400' },
+                { id: 'adaptation', label: 'Adaptability', icon: 'fa-solid fa-dna', color: 'text-cyan-400' },
+                { id: 'dt_tracker', label: 'ROI Tracker', icon: 'fa-solid fa-chart-line', color: 'text-green-400' }
+            ],
+            forge: [
+                { id: 'kpi', label: 'Outcome Gen', icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400' },
+                { id: 'lighthouse', label: 'Lighthouse', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
+                { id: 'canvas', label: 'Data Product', icon: 'fa-solid fa-file-contract', color: 'text-blue-500' },
+                { id: 'roi', label: 'Pilot ROI', icon: 'fa-solid fa-calculator', color: 'text-green-500' },
+                { id: 'excel', label: 'Excel Auditor', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
+                { id: 'squad', label: 'Squad Builder', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
+                { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox', color: 'text-red-400' },
+                { id: 'vendor', label: 'Vendor Coach', icon: 'fa-solid fa-handshake', color: 'text-yellow-400' },
+                { id: 'capex', label: 'FinOps Audit', icon: 'fa-solid fa-file-invoice-dollar', color: 'text-green-400' },
+                { id: 'legacy', label: 'Legacy Code', icon: 'fa-solid fa-microchip', color: 'text-slate-400' },
+                { id: 'flow', label: 'Flow Efficiency', icon: 'fa-solid fa-water', color: 'text-blue-400' },
+                { id: 'adr', label: 'Decision Log', icon: 'fa-solid fa-book-journal-whills', color: 'text-indigo-300' },
+                { id: 'ticker', label: 'Meeting Tax', icon: 'fa-solid fa-money-bill-wave', color: 'text-green-500' }
+            ],
+            sims: [
+                { id: 'simulator', label: 'Case Study', icon: 'fa-solid fa-chess-knight', color: 'text-white' },
+                { id: 'future', label: 'Future Bank', icon: 'fa-solid fa-forward', color: 'text-purple-400' },
+                { id: 'roleplay', label: 'Negotiation', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
+                { id: 'conway', label: 'Conway Sim', icon: 'fa-solid fa-project-diagram', color: 'text-indigo-400' },
+                { id: 'whatif', label: 'War Games', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
+                { id: 'risksim', label: 'Risk Dojo', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
+                { id: 'escaperoom', label: 'Excel Escape', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
+                { id: 'bingo', label: 'Bingo', icon: 'fa-solid fa-table-cells', color: 'text-pink-500' },
+                { id: 'regsim', label: 'Reg Impact', icon: 'fa-solid fa-gavel', color: 'text-yellow-500' }
+            ],
+            academy: [] // Empty placeholder for safety
+        },
 
-// New Navigation Groups
-navGroups: [
-    { id: 'radar', label: 'Radar', icon: 'fa-solid fa-bullseye', desc: 'Diagnostics & Metrics' },
-    { id: 'forge', label: 'Forge', icon: 'fa-solid fa-hammer', desc: 'Builders & Tools' },
-    { id: 'sims', label: 'Sims', icon: 'fa-solid fa-gamepad', desc: 'Roleplay & Scenarios' }
-],
+        // 3. The Safety Mechanism (Add this method!)
+        // This ensures the HTML never receives "undefined"
+        get activeTools() {
+            if (!this.tools) return [];
+            if (!this.currentGroup) return [];
+            return this.tools[this.currentGroup] || [];
+        },
 
 
-x-data="{       
-// Group the tools
-tools: {
-    radar: [
-        { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-stethoscope', color: 'text-primary' },
-        { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
-        { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' },
-        { id: 'dumbpipe', label: 'Utility Risk', icon: 'fa-solid fa-link-slash', color: 'text-red-400' },
-        { id: 'datagov', label: 'Data Health', icon: 'fa-solid fa-traffic-light', color: 'text-blue-500' },
-        { id: 'shadow', label: 'Shadow IT', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
-        { id: 'detector', label: 'AI Risk Scan', icon: 'fa-solid fa-shield-cat', color: 'text-risk' },
-        { id: 'cognitive', label: 'Brain Load', icon: 'fa-solid fa-brain', color: 'text-purple-400' },
-        { id: 'sprintcheck', label: 'Sprint Check', icon: 'fa-solid fa-stopwatch', color: 'text-orange-400' },
-        { id: 'adaptation', label: 'Adaptability', icon: 'fa-solid fa-dna', color: 'text-cyan-400' },
-        { id: 'dt_tracker', label: 'ROI Tracker', icon: 'fa-solid fa-chart-line', color: 'text-green-400' }
-    ],
-    academy: [
-        { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language', color: 'text-blue-300' },
-        { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king', color: 'text-yellow-400' },
-        { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book', color: 'text-slate-400' },
-        { id: 'feed', label: 'Daily Insight', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
-        { id: 'library', label: 'Exec Library', icon: 'fa-solid fa-book-open-reader', color: 'text-cyan-300' }
-    ],
-    forge: [
-        { id: 'kpi', label: 'Outcome Gen', icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400' },
-        { id: 'lighthouse', label: 'Lighthouse', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
-        { id: 'canvas', label: 'Data Product', icon: 'fa-solid fa-file-contract', color: 'text-blue-500' },
-        { id: 'roi', label: 'Pilot ROI', icon: 'fa-solid fa-calculator', color: 'text-green-500' },
-        { id: 'excel', label: 'Excel Auditor', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
-        { id: 'squad', label: 'Squad Builder', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
-        { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox', color: 'text-red-400' },
-        { id: 'vendor', label: 'Vendor Coach', icon: 'fa-solid fa-handshake', color: 'text-yellow-400' },
-        { id: 'capex', label: 'FinOps Audit', icon: 'fa-solid fa-file-invoice-dollar', color: 'text-green-400' },
-        { id: 'legacy', label: 'Legacy Code', icon: 'fa-solid fa-microchip', color: 'text-slate-400' },
-        { id: 'flow', label: 'Flow Efficiency', icon: 'fa-solid fa-water', color: 'text-blue-400' },
-        { id: 'adr', label: 'Decision Log', icon: 'fa-solid fa-book-journal-whills', color: 'text-indigo-300' },
-        { id: 'ticker', label: 'Meeting Tax', icon: 'fa-solid fa-money-bill-wave', color: 'text-green-500' }
-    ],
-    sims: [
-        { id: 'simulator', label: 'Case Study', icon: 'fa-solid fa-chess-knight', color: 'text-white' },
-        { id: 'future', label: 'Future Bank', icon: 'fa-solid fa-forward', color: 'text-purple-400' },
-        { id: 'roleplay', label: 'Negotiation', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
-        { id: 'conway', label: 'Conway Sim', icon: 'fa-solid fa-project-diagram', color: 'text-indigo-400' },
-        { id: 'whatif', label: 'War Games', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
-        { id: 'risksim', label: 'Risk Dojo', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
-        { id: 'escaperoom', label: 'Excel Escape', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
-        { id: 'bingo', label: 'Bingo', icon: 'fa-solid fa-table-cells', color: 'text-pink-500' },
-        { id: 'regsim', label: 'Reg Impact', icon: 'fa-solid fa-gavel', color: 'text-yellow-500' }
-    ]
-},
-   }"     
+        
+ 
+
+
         
         // ------------------------------------------------------------------
         // METHODS
