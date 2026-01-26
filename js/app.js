@@ -1,20 +1,7 @@
 // js/app.js
 
-const GROUPS = {
-    RADAR: 'radar',
-    FORGE: 'forge',
-    SIMS: 'sims'
-};
-
- 
 document.addEventListener('alpine:init', () => {
     Alpine.data('toolkit', () => ({
-
-                currentGroup: GROUPS.RADAR, // Safe initialization
-        // ...
-       
-      
-     
 
         // ==========================================
         // ACADEMY CONFIG & STATE
@@ -459,6 +446,9 @@ document.addEventListener('alpine:init', () => {
                 // Use capture: true to ensure we catch events even if propagation stops
                 window.addEventListener(evt, resetNav, { passive: true, capture: true });
             });
+
+            },
+
         
             // check if user previously entered
 const hasEnteredBefore = localStorage.getItem('app_entered') === 'true';
@@ -493,7 +483,9 @@ if (window.supabase) {
                 this.deferredPrompt = e;
             });
 
-            
+                this.$nextTick(() => {
+        this.updateTalentChart();
+    });
 
 
             // VIP & Challenger Logic
@@ -1015,7 +1007,6 @@ TONE: Senior, direct, mentorship-focused.`;
 
             // --- NEW: ADVANCED PROMPT GENERATOR ---
             generateNegotiationPrompt() {
-    if (!this.currentScenario || !this.result) return "PLAY GAME FIRST"; // Add this line
                 const s = this.currentScenario;
                 const path = this.history.map((h, i) => 
                     `Step ${i+1}: When asked about [${h.stage}], I chose: "${h.choice}". (Impact: Trust ${h.impact.trust > 0 ? '+' : ''}${h.impact.trust})`
@@ -1493,7 +1484,7 @@ ${skills.map(s => `- ${s.label}: ${s.val}/5`).join('\n')}
                 return "⚠️ PROCEED WITH CAUTION: Lacks extreme spikes.";
             }
         },
-
+        
         // ------------------------------------------------------------------
         // WAR GAMES (Deterministic Strategy Logic)
         // ------------------------------------------------------------------
@@ -1620,9 +1611,8 @@ ${skills.map(s => `- ${s.label}: ${s.val}/5`).join('\n')}
             },
 
             // --- NEW: STRATEGIC POST-MORTEM PROMPT ---
-generateWarGamePrompt() {
-    if (!this.currentScenario || !this.result) return "PLAY SIMULATION FIRST"; 
-    const decisionPath = this.history.map((h, i) =>
+            generateWarGamePrompt() {
+                const decisionPath = this.history.map((h, i) => 
                     `Turn ${i+1}: ${h.decision} (Intent: ${h.rationale})`
                 ).join("\n");
 
@@ -1660,12 +1650,9 @@ navGroups: [
 ],
 
 
-                  
-             
-            
 // Group the tools
 tools: {
-    [GROUPS.RADAR]: [
+    radar: [
         { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-clipboard-check', color: 'text-primary' },
         { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
         { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' },
@@ -1679,17 +1666,28 @@ tools: {
         { id: 'cognitive', label: 'Cognitive Load', icon: 'fa-solid fa-brain', color: 'text-purple-400' },
         { id: 'sprintcheck', label: 'Sprint Health', icon: 'fa-solid fa-stopwatch', color: 'text-orange-400' },
         { id: 'adaptation', label: 'Adaptability Monitor', icon: 'fa-solid fa-dna', color: 'text-cyan-400' },
-        { id: 'dt_tracker', label: 'ROI Tracker', icon: 'fa-solid fa-magnifying-glass-dollar', color: 'text-green-400' },
-          { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language', color: 'text-blue-300' },
+        { id: 'dt_tracker', label: 'ROI Tracker', icon: 'fa-solid fa-magnifying-glass-dollar', color: 'text-green-400' }
+
+
+
+
+
+
+    ],
+    academy: [
+        { id: 'manual', label: 'Field Manual', icon: 'fa-solid fa-headphones', color: 'text-white' }, // NotebookLM Feature
+        { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language', color: 'text-blue-300' },
         { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king', color: 'text-yellow-400' },
         { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book', color: 'text-slate-400' },
             { id: 'feed', label: 'Daily Insight', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
             { id: 'library', label: 'Executive Library', icon: 'fa-solid fa-book-open-reader', color: 'text-cyan-300' }
 
-    ],
+        
 
-    
-   [GROUPS.FORGE]: [
+
+        
+    ],
+    forge: [
         { id: 'kpi', label: 'Outcome Gen', icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400' },
         { id: 'lighthouse', label: 'Lighthouse Kit', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
         { id: 'canvas', label: 'Data Product', icon: 'fa-solid fa-file-contract', color: 'text-blue-500' },
@@ -1707,7 +1705,7 @@ tools: {
         
 
     ],
-    [GROUPS.SIMS]:  [
+    sims: [
         { id: 'simulator', label: 'Case Study', icon: 'fa-solid fa-chess-knight', color: 'text-white' },
         { id: 'future', label: 'Future Bank', icon: 'fa-solid fa-forward', color: 'text-purple-400' }, 
         { id: 'roleplay', label: 'Negotiation Dojo', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
@@ -1718,6 +1716,9 @@ tools: {
         { id: 'escaperoom', label: 'Excel Escape', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
         { id: 'bingo', label: 'Bilingual Bingo', icon: 'fa-solid fa-table-cells', color: 'text-pink-500' },
         { id: 'regsim', label: 'Reg Simulator', icon: 'fa-solid fa-gavel', color: 'text-yellow-500' }
+
+
+        
         
         
     ]
@@ -1739,12 +1740,15 @@ tools: {
 
 
 
+
+
+
             // 2. Calculators & Builders (Forge)
             { id: 'squad', label: 'Squad Builder', desc: 'Design teams using Brooks Law.', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
             { id: 'excel', label: 'Excel Auditor', desc: 'Calculate OpEx waste & risk liability.', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
             { id: 'roi', label: 'Lighthouse ROI', desc: 'Calculate NPV & Cost of Delay.', icon: 'fa-solid fa-chart-pie', color: 'text-green-400', vip: false },
             { id: 'kpi', label: 'Outcome Gen',  desc: 'Turn Project Outputs into Business Outcomes.',  icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400'},
-         //   { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture latency.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
+            { id: 'sandbox', label: 'API Sandbox', desc: 'Visualize architecture latency.', icon: 'fa-solid fa-shapes', color: 'text-cyan-400' },
            { id: 'vendor', label: 'Vendor Negotiator', desc: 'Shift contracts from "Time & Materials" to "Shared Outcomes".', icon: 'fa-solid fa-file-signature', color: 'text-yellow-400', vip: false },
            { id: 'capex', label: 'CapEx Classifier', desc: 'Audit agile tickets against IAS 38 Accounting Standards.', icon: 'fa-solid fa-scale-balanced', color: 'text-green-400', vip: false },
            { id: 'legacy', label: 'Legacy Translator', desc: 'Scan COBOL/SQL for business logic risks.', icon: 'fa-solid fa-code', color: 'text-slate-400', vip: false },
@@ -1942,6 +1946,40 @@ toggleVideoMute() {
         }
     }, 60000);
 }, 
+
+        
+        // Set up event listeners for activity tracking
+setupActivityTracking() {
+    // Reset any previous tracking
+    this.resetActivityTracking();
+    
+    // Track clicks (anywhere on the page)
+    document.addEventListener('click', () => {
+        this.trackUserActivity();
+    }, { passive: true });
+    
+    // Track scrolling
+    document.addEventListener('scroll', () => {
+        this.trackUserActivity();
+    }, { passive: true });
+    
+    // Track keyboard input
+    document.addEventListener('keydown', () => {
+        this.trackUserActivity();
+    }, { passive: true });
+    
+    // Track tool changes (when user selects different tools)
+    const trackToolChange = () => {
+        this.trackUserActivity();
+    };
+    
+    // Watch for Alpine.js updates to currentTab
+    this.$watch('currentTab', trackToolChange);
+    this.$watch('currentGroup', trackToolChange);
+},
+
+        
+
 
         // Add this method to your main Alpine data object (around other methods)
 copyToClipboard(text, label = "Content") {
@@ -2248,10 +2286,6 @@ updateTalentChart() {
         setTimeout(() => this.updateTalentChart(), 500);
         return;
     }
-
-        // 2. Safety Check: If we aren't on the talent tab, don't render.
-    if (this.currentTab !== 'talent') return; // <--- ADD THIS LINE
-
 
     // Wait for DOM to be ready
     setTimeout(() => {
@@ -3211,8 +3245,6 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
             timer: null,
             activeEvent: null, // Stores the current crisis
             decisionLog: [],   // Tracks user choices for the AI prompt
-            metrics: { profit: 0, customers: 0, efficiency: 0, techDebt: 0 },
-
             
             // The 3 Core Paths
             scenarios: [
@@ -3352,9 +3384,8 @@ TONE: Fiscally conservative but strategically aggressive. Use terms like "Free C
             },
 
             // --- PROMPT GENERATOR ---
-generateFuturePrompt() {
-    if (!this.activeScenario) return "RUN SIMULATION FIRST"; 
-    const s = this.activeScenario;
+            generateFuturePrompt() {
+                const s = this.activeScenario;
                 const m = this.metrics;
                 
                 const decisions = this.decisionLog.map(d => `In ${d.year}, faced with "${d.event}", I chose to "${d.decision}".`).join("\n");
@@ -4119,8 +4150,7 @@ TONE: Regulatory, precise, risk-averse.`;
 
             // --- ADVANCED PROMPT GENERATOR ---
             generateNegotiationPrompt() {
-    if (!this.analysis) return "RUN ANALYSIS FIRST"; // Add this line
-    const a = this.analysis;
+                const a = this.analysis;
                 const i = this.inputs;
 
                 return `ACT AS: A Chief Procurement Officer and Agile Coach.
@@ -4652,7 +4682,7 @@ TONE: Skeptical, experienced, piercing.`;
 
             // --- ADVANCED PROMPT GENERATOR ---
             generateCoachingPrompt() {
-    if (!this.outcome) return "PLAY GAME FIRST"; // Add this line
+                if (!this.outcome) return "Complete simulation first.";
                 
                 const path = this.history.map(h => `Round ${h.round} (${h.topic}): I used "${h.tactic}". Result: Trust ${h.stats.trust}, Velocity ${h.stats.velocity}.`).join("\n");
 
@@ -5635,11 +5665,13 @@ TONE: Urgent, strategic, turning "Red Tape" into "Transformation".`;
                     color,
                     analysis
                 };
-              },
+            
+            },
+
             generateLeanPrompt() {
-    if (!this.metrics) return "Calculate flow first.";
-    const m = this.metrics;
-    return `ACT AS: Lean Six Sigma Master.
+                if (!this.metrics) return "Calculate flow first.";
+                const m = this.metrics;
+                return `ACT AS: Lean Six Sigma Master.
 ## PROCESS AUDIT: "${this.processName}"
 - **Flow Efficiency:** ${m.efficiency}% (Industry Goal: >25%)
 - **Total Lead Time:** ${m.totalLeadTime} ${this.unit}
@@ -5653,8 +5685,8 @@ Step: "${m.bottleneck.name}" (Wait Time: ${m.bottleneck.wait} ${this.unit})
 1. Identify the root cause of the wait time at the bottleneck.
 2. Propose a way to run steps in parallel instead of sequence.
 3. Calculate the cost savings if efficiency improves to 50%.`;
-        }
-            },
+            }
+        },
 
         // ------------------------------------------------------------------
         // ADR BUILDER (Weighted Decision Matrix Engine)
@@ -6317,4 +6349,4 @@ const offlineBenchmarks = [
     {"score":18,"industry":"Traditional Bank"}, 
     {"score":25,"industry":"Traditional Bank"}, 
     {"score":75,"industry":"Neobank"}
-];        
+];
