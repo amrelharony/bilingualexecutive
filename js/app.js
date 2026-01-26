@@ -4030,7 +4030,7 @@ TONE: Regulatory, precise, risk-averse.`;
                 dependency: 8, // 1-10 (How hard to replace?)
                 quality: 5 // 1-10 (Current satisfaction)
             },
-            analysis: null,
+            analysis: {},
             
             // Simulation State
             sim: {
@@ -4537,7 +4537,7 @@ TONE: Skeptical, experienced, piercing.`;
             
             history: [],
             currentObjection: null,
-            outcome: null,
+            outcome: false,
 
             // The Opponent (Marcus) Logic
             scenarios: [
