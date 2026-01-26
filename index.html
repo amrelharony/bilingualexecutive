@@ -518,8 +518,16 @@
     </div>
 
             <!-- TOOLS DASHBOARD VIEW (When viewing Radar/Forge/Sims) -->
-<div x-show="viewMode === 'tools' && currentTab === 'dashboard'" class="pb-24">
-
+<!-- Replace the template x-for with this TEST: -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+    <!-- Manual Test Card -->
+    <button class="group relative bg-slate-800/40 backdrop-blur-sm border border-slate-700/50 rounded-xl p-6">
+        <div class="w-12 h-12 mb-4 rounded-lg bg-slate-900/80 flex items-center justify-center">
+            <i class="fa-solid fa-stethoscope text-2xl text-primary"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-100 mb-1">TEST CARD</h3>
+    </button>
+</div>
             <!-- ADD THIS DEBUG CHECK: -->
 <div class="bg-yellow-500 text-black p-4 mb-4">
     <p>Current Group: <span x-text="currentGroup"></span></p>
