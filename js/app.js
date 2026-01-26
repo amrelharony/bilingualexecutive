@@ -494,7 +494,7 @@ if (window.supabase) {
             if (params.get('access') === 'vip_nfc_001') {
     this.vipAccess = true;       
     this.triggerVipSequence();  
-
+            }
             
             const teamCode = params.get('team_code');
             if (teamCode) {
