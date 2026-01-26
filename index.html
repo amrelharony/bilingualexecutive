@@ -260,17 +260,19 @@
 <!-- Red Debug Box (top-right corner, small) -->
 <div class="fixed top-4 right-4 bg-red-500 text-white p-2 rounded text-xs z-[100] max-w-[200px]">
     <p class="font-bold mb-1">DEBUG</p>
-    <p>viewMode: <span x-text="viewMode"></span></p>
-    <p>currentGroup: <span x-text="currentGroup"></span></p>
-    <p>currentTab: <span x-text="currentTab"></span></p>
+    <p>Alpine Loaded: <span x-text="typeof $data !== 'undefined' ? 'YES' : 'NO'"></span></p>
+    <p>Toolkit Loaded: <span x-text="typeof tools !== 'undefined' ? 'YES' : 'NO'"></span></p>
+    <p>viewMode: <span x-text="viewMode || 'UNDEFINED'"></span></p>
+    <p>currentGroup: <span x-text="currentGroup || 'UNDEFINED'"></span></p>
+    <p>currentTab: <span x-text="currentTab || 'UNDEFINED'"></span></p>
     <p>tools exists: <span x-text="tools ? 'YES' : 'NO'"></span></p>
-    <p>tools.radar exists: <span x-text="tools.radar ? 'YES' : 'NO'"></span></p>
-    <p>tools.radar.length: <span x-text="tools.radar?.length"></span></p>
-    <p>tools.forge.length: <span x-text="tools.forge?.length"></span></p>
-    <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'; console.log('State:', viewMode, currentGroup, currentTab)" 
-        class="mt-2 bg-white text-red-500 px-2 py-1 rounded text-xs font-bold w-full">
-    FORCE RADAR
-</button>
+    <p>tools.radar exists: <span x-text="tools && tools.radar ? 'YES' : 'NO'"></span></p>
+    <p>tools.radar.length: <span x-text="tools && tools.radar ? tools.radar.length : 'N/A'"></span></p>
+    <p>tools.forge.length: <span x-text="tools && tools.forge ? tools.forge.length : 'N/A'"></span></p>
+    <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'" 
+            class="mt-2 bg-white text-red-500 px-2 py-1 rounded text-xs font-bold w-full">
+        FORCE RADAR
+    </button>
 </div>
 
 
