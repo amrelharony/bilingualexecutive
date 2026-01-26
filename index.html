@@ -531,7 +531,16 @@
 
 <!-- TOOLS DASHBOARD VIEW (When viewing Radar/Forge/Sims) -->
 <div x-show="currentTab === 'dashboard'">
-    
+
+            <!-- Yellow Debug Box (INSIDE tools section) -->
+        <div class="bg-yellow-500 text-black p-4 mb-4 rounded">
+            <p class="font-bold">DEBUG: Inside tools section</p>
+            <p>viewMode: <span x-text="viewMode"></span></p>
+            <p>currentGroup: <span x-text="currentGroup"></span></p>
+            <p>currentTab: <span x-text="currentTab"></span></p>
+            <p>tools[currentGroup]: <span x-text="tools[currentGroup]?.length || 0"></span> tools</p>
+        </div>
+
     <!-- The Grid of Tools for the Current Group -->
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
         <template x-for="tool in tools[currentGroup]" :key="tool.id">
