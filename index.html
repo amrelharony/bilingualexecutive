@@ -129,7 +129,8 @@
 
 
 <!-- MAIN VIEW SWITCHER -->
-<div class="fixed top-4 right-4 z-[80] bg-slate-900/90 border border-slate-600 backdrop-blur-md rounded-full p-1 flex shadow-2xl scale-75 md:scale-90 origin-top-right transition-all duration-500 ease-in-out"
+<!-- ADD style="display: none;" HERE -->
+<div style="display: none;" class="fixed top-4 right-4 z-[80] bg-slate-900/90 border border-slate-600 backdrop-blur-md rounded-full p-1 flex shadow-2xl scale-75 md:scale-90 origin-top-right transition-all duration-500 ease-in-out"
      :class="(navVisible && !activeChapterId && (viewMode === 'academy' || currentTab === 'dashboard')) ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'">
 
     <button @click="viewMode = 'academy'" 
@@ -6153,37 +6154,57 @@ END-IF."></textarea>
 </div> 
 
 
-               <!-- Desktop/Tablet Dock -->
-<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-auto md:block hidden transition-all duration-500 ease-in-out"
+<!-- UNIFIED FLOATING DOCK -->
+<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-auto transition-all duration-500 ease-in-out"
      :class="navVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'">
-            <div class="flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl shadow-black/50">
-                <template x-for="group in navGroups" :key="group.id">
-                    <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
-                            class="relative px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
-                            :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
-                        <i :class="group.icon" class="text-lg mb-0.5 transition-transform group-active:scale-90"></i>
-                        <span class="text-[9px] font-bold uppercase tracking-widest" x-text="group.label"></span>
-                        <div x-show="currentGroup === group.id" class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
-                    </button>
-                </template>
-            </div>
-        </div>
+    
+    <div class="flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl shadow-black/50">
+        
+        <!-- 1. ACADEMY TAB -->
+        <button @click="viewMode = 'academy'; currentTab = 'dashboard'"
+                class="relative px-4 md:px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
+                :class="viewMode === 'academy' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+            <i class="fa-solid fa-graduation-cap text-lg mb-0.5 transition-transform group-active:scale-90"></i>
+            <span class="text-[9px] font-bold uppercase tracking-widest">Academy</span>
+            <div x-show="viewMode === 'academy'" class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
+        </button>
 
-        <!-- Mobile Dock -->
-<div class="md:hidden fixed bottom-6 left-4 right-4 z-40 transition-all duration-500 ease-in-out"
-     :class="navVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10 pointer-events-none'">
-            <div class="flex items-center justify-between gap-1 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl shadow-black/50">
-                <template x-for="group in navGroups" :key="group.id">
-                    <button @click="currentGroup = group.id; currentTab = 'dashboard'" 
-                            class="relative h-14 rounded-xl transition-all duration-300 group flex flex-col items-center justify-center flex-1"
-                            :class="currentGroup === group.id ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
-                        <i :class="group.icon" class="text-lg mb-1 transition-transform group-active:scale-90"></i>
-                        <span class="text-[9px] font-bold uppercase tracking-widest truncate w-full text-center" x-text="group.label"></span>
-                        <div x-show="currentGroup === group.id" class="absolute bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
-                    </button>
-                </template>
-            </div>
-        </div>
+        <!-- DIVIDER -->
+        <div class="w-px h-8 bg-white/10 mx-1"></div>
+
+        <!-- 2. RADAR TAB -->
+        <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'"
+                class="relative px-4 md:px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
+                :class="viewMode === 'tools' && currentGroup === 'radar' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+            <i class="fa-solid fa-bullseye text-lg mb-0.5 transition-transform group-active:scale-90"></i>
+            <span class="text-[9px] font-bold uppercase tracking-widest">Radar</span>
+            <div x-show="viewMode === 'tools' && currentGroup === 'radar'" class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
+        </button>
+
+        <!-- 3. FORGE TAB -->
+        <button @click="viewMode = 'tools'; currentGroup = 'forge'; currentTab = 'dashboard'"
+                class="relative px-4 md:px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
+                :class="viewMode === 'tools' && currentGroup === 'forge' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+            <i class="fa-solid fa-hammer text-lg mb-0.5 transition-transform group-active:scale-90"></i>
+            <span class="text-[9px] font-bold uppercase tracking-widest">Forge</span>
+            <div x-show="viewMode === 'tools' && currentGroup === 'forge'" class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
+        </button>
+
+        <!-- 4. SIMS TAB (VIP ONLY) -->
+        <button x-show="vipAccess"
+                @click="viewMode = 'tools'; currentGroup = 'sims'; currentTab = 'dashboard'"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-50"
+                x-transition:enter-end="opacity-100 scale-100"
+                class="relative px-4 md:px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
+                :class="viewMode === 'tools' && currentGroup === 'sims' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+            <i class="fa-solid fa-gamepad text-lg mb-0.5 transition-transform group-active:scale-90 text-hotpink"></i>
+            <span class="text-[9px] font-bold uppercase tracking-widest text-hotpink">Sims</span>
+            <div x-show="viewMode === 'tools' && currentGroup === 'sims'" class="absolute -bottom-1 w-1 h-1 bg-hotpink rounded-full shadow-glow"></div>
+        </button>
+
+    </div>
+</div>
 
     </div> <!-- End viewMode='tools' Wrapper -->
 
