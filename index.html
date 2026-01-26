@@ -144,12 +144,11 @@
 </button>
         
         
-        <!-- LANDING PAGE / COVER SIMULATOR -->
+<!-- LANDING PAGE / COVER SIMULATOR -->
 <div x-show="showLanding" 
-     x-transition:leave="transition ease-in duration-700"
-     x-transition:leave-start="opacity-100 transform scale-100"
-     x-transition:leave-end="opacity-0 transform scale-110"
-     class="fixed inset-0 z-[200] bg-black overflow-y-auto">
+     x-cloak 
+     class="fixed inset-0 z-[200] bg-black overflow-y-scroll overscroll-contain"> 
+     <!-- ADDED x-cloak and overflow-y-scroll -->
 
     <!-- Background Texture -->
     <div class="fixed inset-0 opacity-20 pointer-events-none" 
@@ -157,9 +156,10 @@
     </div>
 
     <!-- Main Container -->
-<div class="min-h-screen w-full flex flex-col items-center justify-start md:justify-center pt-20 pb-20 md:py-0 p-6 text-center relative z-10">
+    <!-- CHANGED: removed 'justify-center', added 'py-20', switched to 'min-h-full' -->
+    <div class="w-full min-h-full flex flex-col items-center py-20 px-6 text-center relative z-10">
         
-        <div class="max-w-xl w-full flex flex-col items-center py-10 md:py-0">
+        <div class="max-w-xl w-full flex flex-col items-center">
             
             <p class="text-[10px] md:text-xs font-mono text-slate-400 tracking-[0.3em] uppercase mb-4 animate-pulse">
                 System Initializing...
@@ -178,76 +178,45 @@
                 AND SURVIVE THE FINTECH TSUNAMI
             </p>
 
-        <!-- Video Player Container -->
-<div class="w-full h-[50vh] md:h-[60vh] max-h-[600px] bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] mb-8 relative group">
-    
-    <!-- YouTube Player -->
-    <div id="youtube-player" class="w-full h-full"></div>
-
-    <!-- Video Overlay for Click-to-Play (covers entire video area) -->
-    <div class="absolute inset-0 video-overlay z-20" 
-         @click="toggleVideoPlay()"
-         :title="videoPlaying ? 'Pause video' : 'Play video'">
-    </div>
-
-    <!-- Custom Controls Bar (NOW AT BOTTOM) -->
-    <div class="absolute bottom-0 left-0 right-0 z-30 video-controls-bar p-4 opacity-90 group-hover:opacity-100 transition-opacity duration-300">
-        <div class="flex items-center gap-3 md:gap-4">
-            
-            <!-- Play/Pause Button -->
-            <button @click="toggleVideoPlay()" 
-                    class="video-control-btn w-10 h-10 rounded-full flex items-center justify-center text-white">
-                <i class="fa-solid text-sm" :class="videoPlaying ? 'fa-pause' : 'fa-play'"></i>
-            </button>
-            
-            <!-- Time Display -->
-            <div class="video-time-display flex items-center gap-1 text-xs text-white font-mono">
-                <span x-text="formatTime(videoCurrentTime)"></span>
-                <span>/</span>
-                <span x-text="formatTime(videoDuration)"></span>
-            </div>
-            
-            <!-- Seek Bar -->
-            <div class="flex-1 mx-2">
-                <input type="range" 
-                       x-model="videoCurrentTime"
-                       @input="seekVideo($event.target.value)"
-                       :max="videoDuration"
-                       step="1"
-                       class="seek-bar w-full"
-                       :style="'--seek-progress: ' + (videoDuration > 0 ? (videoCurrentTime / videoDuration * 100) : 0) + '%'">
-            </div>
-            
-            <!-- Volume Controls -->
-            <div class="flex items-center gap-2">
-                <button @click="toggleVideoMute()" 
-                        class="video-control-btn w-8 h-8 rounded-full flex items-center justify-center text-white">
-                    <i class="fa-solid text-sm" :class="videoMuted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
-                </button>
+            <!-- Video Player Container -->
+            <!-- CHANGED: 'aspect-video' instead of fixed height -->
+            <div class="w-full aspect-video max-h-[400px] bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(255,255,255,0.1)] mb-8 relative group">
                 
-                <!-- Volume Slider -->
-                <input type="range"
-                       x-model="videoVolume"
-                       @input="setPlayerVolume($event.target.value)"
-                       min="0"
-                       max="100"
-                       class="volume-slider"
-                       :style="'--volume-level: ' + videoVolume + '%'">
-                
-                <!-- NEW: Fullscreen Button -->
-                                <button @click="toggleFullscreen()" 
-                        class="video-control-btn w-8 h-8 rounded-full flex items-center justify-center text-white ml-2">
-                    <i class="fa-solid text-sm" :class="isFullscreen ? 'fa-compress' : 'fa-expand'"></i>
-                </button>
+                <div id="youtube-player" class="w-full h-full"></div>
+
+                <!-- Video Overlay for Click-to-Play -->
+                <div class="absolute inset-0 video-overlay z-20" 
+                     @click="toggleVideoPlay()"
+                     :title="videoPlaying ? 'Pause video' : 'Play video'">
+                </div>
+
+                <!-- Controls (Keep existing controls code inside here) -->
+                <div class="absolute bottom-0 left-0 right-0 z-30 video-controls-bar p-4 opacity-90 group-hover:opacity-100 transition-opacity duration-300">
+                    <div class="flex items-center gap-3 md:gap-4">
+                        <button @click="toggleVideoPlay()" class="video-control-btn w-10 h-10 rounded-full flex items-center justify-center text-white">
+                            <i class="fa-solid text-sm" :class="videoPlaying ? 'fa-pause' : 'fa-play'"></i>
+                        </button>
+                        
+                        <!-- Keep remaining controls as they were... -->
+                        <div class="flex-1 mx-2">
+                             <input type="range" x-model="videoCurrentTime" @input="seekVideo($event.target.value)" :max="videoDuration" class="seek-bar w-full" :style="'--seek-progress: ' + (videoDuration > 0 ? (videoCurrentTime / videoDuration * 100) : 0) + '%'">
+                        </div>
+                        
+                        <!-- Volume & Fullscreen buttons... -->
+                         <div class="flex items-center gap-2">
+                            <button @click="toggleVideoMute()" class="video-control-btn w-8 h-8 rounded-full flex items-center justify-center text-white">
+                                <i class="fa-solid text-sm" :class="videoMuted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
+                            </button>
+                            <button @click="toggleFullscreen()" class="video-control-btn w-8 h-8 rounded-full flex items-center justify-center text-white ml-2">
+                                <i class="fa-solid text-sm" :class="isFullscreen ? 'fa-compress' : 'fa-expand'"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
             </div>
-            
-        </div>
-    </div>
 
-</div>
-
-              <!-- Enter Button -->
+            <!-- Enter Button -->
             <button @click="enterApp()" 
                     class="group relative px-8 py-3 bg-white text-black font-bold font-mono text-xs md:text-sm tracking-widest uppercase rounded-full hover:bg-red-600 hover:text-white transition-all duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)] hover:shadow-[0_0_30px_rgba(220,38,38,0.6)] mb-8">
                 <span class="relative z-10 flex items-center gap-2">
@@ -255,7 +224,6 @@
                 </span>
             </button>
 
-            <!-- Footer Info -->
             <div class="text-[10px] text-slate-500 font-mono tracking-widest">
                 &copy; Amr Elharony 2026
             </div>
@@ -263,7 +231,7 @@
         </div>
     </div>
 </div>
-            
+    
         <!-- Main Content Area -->
 <main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pb-32 md:pb-24">
 
