@@ -504,27 +504,15 @@
     </div>
 </div>
 
-        <div x-show="viewMode === 'tools'">
+    
+<!-- TOOLS DASHBOARD VIEW (When viewing Radar/Forge/Sims) -->
+<div x-show="viewMode === 'tools' && currentTab === 'dashboard'">
 
     <!-- Header Area -->
     <div class="mb-8 pt-8">
         <h1 class="text-3xl font-sans font-bold tracking-tight text-white mb-1" x-text="navGroups.find(g => g.id === currentGroup).label"></h1>
         <p class="text-slate-400 font-mono text-xs uppercase tracking-widest" x-text="navGroups.find(g => g.id === currentGroup).desc"></p>
     </div>
-
-  
-<!-- TOOLS DASHBOARD VIEW (When viewing Radar/Forge/Sims) -->
-<div x-show="viewMode === 'tools' && currentTab === 'dashboard'">
-    
-        <!-- Show what values we have -->
-    <div class="bg-yellow-500 text-black p-4 mb-4">
-        <p>viewMode: <span x-text="viewMode"></span></p>
-        <p>currentGroup: <span x-text="currentGroup"></span></p>
-        <p>currentTab: <span x-text="currentTab"></span></p>
-        <p>tools[currentGroup] exists: <span x-text="tools[currentGroup] ? 'YES' : 'NO'"></span></p>
-        <p>tools[currentGroup] length: <span x-text="tools[currentGroup]?.length || 0"></span></p>
-    </div>
-
 
     <!-- The Grid of Tools for the Current Group -->
   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
