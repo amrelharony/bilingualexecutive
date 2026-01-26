@@ -437,6 +437,23 @@ document.addEventListener('alpine:init', () => {
         // ------------------------------------------------------------------
         init() {
 
+            // 1. VIP ACCESS CHECK (URL DETECTOR)
+    const params = new URLSearchParams(window.location.search);
+    
+    // Check if the URL contains the access key
+    if (params.get('access') === 'vip_nfc_001') {
+        this.isVipMode = true; // Unlocks the "Sims" tab
+        console.log("VIP Mode Activated");
+        
+        // Optional: Trigger your existing VIP intro sequence
+        if (!localStorage.getItem('vip_intro_shown')) {
+             this.triggerVipSequence(); 
+             localStorage.setItem('vip_intro_shown', 'true');
+        }
+    } else {
+        this.isVipMode = false; // "Sims" tab remains hidden
+    }
+
                       // 1. SET DEFAULT TO HIDDEN (Modified)
             this.navVisible = true; 
 
@@ -489,12 +506,6 @@ if (window.supabase) {
     });
 
 
-            // VIP & Challenger Logic
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('access') === 'vip_nfc_001') {
-    this.vipAccess = true;       
-    this.triggerVipSequence();  
-            }
             
             const teamCode = params.get('team_code');
             if (teamCode) {
