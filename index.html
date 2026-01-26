@@ -517,6 +517,9 @@
         <p class="text-slate-400 font-mono text-xs uppercase tracking-widest" x-text="navGroups.find(g => g.id === currentGroup).desc"></p>
     </div>
 
+            <!-- TOOLS DASHBOARD VIEW (When viewing Radar/Forge/Sims) -->
+<div x-show="viewMode === 'tools' && currentTab === 'dashboard'" class="pb-24">
+
             <!-- ADD THIS DEBUG CHECK: -->
 <div class="bg-yellow-500 text-black p-4 mb-4">
     <p>Current Group: <span x-text="currentGroup"></span></p>
