@@ -1,5 +1,5 @@
 /* sw.js */
-const CACHE_NAME = 'bilingual-toolkit-v1.0';
+const CACHE_NAME = 'bilingual-toolkit-v0.1';
 
 // 1. Core Assets: These are critical for the app shell and must be cached immediately.
 const CORE_ASSETS = [
