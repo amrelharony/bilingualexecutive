@@ -1,5 +1,6 @@
 // js/app.js
 
+
 document.addEventListener('alpine:init', () => {
     Alpine.data('toolkit', () => ({
 
@@ -490,7 +491,10 @@ if (window.supabase) {
 
             // VIP & Challenger Logic
             const params = new URLSearchParams(window.location.search);
-            if (params.get('access') === 'vip_nfc_001') this.triggerVipSequence();
+            if (params.get('access') === 'vip_nfc_001') {
+    this.vipAccess = true;       
+    this.triggerVipSequence();  
+
             
             const teamCode = params.get('team_code');
             if (teamCode) {
@@ -714,6 +718,7 @@ initYouTubePlayer() {
         deferredPrompt: null,
         
         isVipMode: false,
+            vipAccess: false, 
         showVipIntro: false,
         bootStep: 0,
         bootProgress: 0,
