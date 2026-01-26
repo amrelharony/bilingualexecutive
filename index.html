@@ -255,6 +255,15 @@
         <!-- Main Content Area -->
 <main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pt-8 pb-32 md:pb-24">
 
+    <!-- ALPINE DEBUG - ALWAYS VISIBLE -->
+<div class="fixed top-20 right-4 z-[200] bg-red-500 text-white p-4 rounded shadow-lg">
+    <p class="font-mono text-xs">Alpine Working: <span x-text="viewMode || 'BROKEN'"></span></p>
+    <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'" 
+            class="bg-white text-black px-2 py-1 mt-2 rounded text-xs">
+        FORCE RADAR
+    </button>
+</div>
+
 
 
     <!-- ACADEMY VIEW -->
