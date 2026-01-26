@@ -30,7 +30,6 @@
 
     <!-- YOUR LOCAL FILES -->
     <link rel="stylesheet" href="css/styles.css">
-    <script src="js/app.js"></script>
 
     <script>
         tailwind.config = {
@@ -1036,160 +1035,6 @@
 
             </div>
 
-
-<!-- VISUAL ARCHITECTURE SANDBOX -->
-<div x-show="currentTab === 'sandbox'" class="max-w-5xl mx-auto space-y-6">
-    
-    <!-- Header -->
-    <div class="text-center space-y-2">
-        <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-cyan-500/20 text-cyan-400 mb-2">
-            <i class="fa-solid fa-shapes text-2xl"></i>
-        </div>
-        <h2 class="text-2xl font-bold text-white">Architecture Canvas</h2>
-        <p class="text-slate-400">Drag & drop to visualize coupling, bottlenecks, and security risks.</p>
-    </div>
-
-    <!-- Toolbar -->
-    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 flex flex-wrap gap-2 justify-center shadow-lg relative z-10">
-        <template x-for="tool in apiSandbox.catalog">
-            <button @click="apiSandbox.addNode(tool.type)"
-                    class="px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg text-xs font-bold text-white flex gap-2 items-center transition-colors border border-slate-600">
-                <i :class="'fa-solid ' + tool.icon"></i>
-                <span x-text="tool.label"></span>
-            </button>
-        </template>
-        <div class="w-px h-8 bg-slate-600 mx-2"></div>
-        <button @click="apiSandbox.clearBoard()" class="px-4 py-2 text-red-400 hover:text-red-300 text-xs font-bold">
-            <i class="fa-solid fa-trash mr-1"></i> Reset
-        </button>
-    </div>
-
-    <!-- The Canvas Area -->
-    <div class="relative w-full h-[500px] bg-slate-900 rounded-xl border border-slate-700 overflow-hidden shadow-inner group"
-         @mousemove="apiSandbox.onDrag($event)" 
-         @mouseup="apiSandbox.stopDrag()"
-         @mouseleave="apiSandbox.stopDrag()">
-        
-        <!-- Background Grid -->
-        <div class="absolute inset-0 opacity-10 pointer-events-none" 
-             style="background-image: radial-gradient(#94a3b8 1px, transparent 1px); background-size: 20px 20px;">
-        </div>
-
-        <!-- Hint Text (Empty State) -->
-        <div x-show="apiSandbox.nodes.length === 0" class="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <p class="text-slate-600 font-mono text-sm">Add components from the toolbar...</p>
-        </div>
-
-        <!-- LAYER 1: SVG Lines (The Wires) -->
-        <!-- pointer-events-none ensures we can click through the lines to the divs below if needed -->
-        <svg class="absolute inset-0 w-full h-full pointer-events-none z-0">
-            <defs>
-                <!-- Arrowhead marker -->
-                <marker id="arrow" markerWidth="10" markerHeight="10" refX="10" refY="3" orient="auto" markerUnits="strokeWidth">
-                  <path d="M0,0 L0,6 L9,3 z" fill="#64748b" />
-                </marker>
-            </defs>
-            <template x-for="edge in apiSandbox.edges" :key="edge.id">
-                <line 
-                    :x1="apiSandbox.nodes.find(n => n.id === edge.from).x + 60" 
-                    :y1="apiSandbox.nodes.find(n => n.id === edge.from).y + 30"
-                    :x2="apiSandbox.nodes.find(n => n.id === edge.to).x + 60" 
-                    :y2="apiSandbox.nodes.find(n => n.id === edge.to).y + 30"
-                    stroke="#64748b" 
-                    stroke-width="2" 
-                    marker-end="url(#arrow)"
-                />
-            </template>
-            <!-- Draw the "active" line if linking -->
-            <template x-if="apiSandbox.linkingNode">
-               <!-- Placeholder for dynamic line visual if desired later -->
-            </template>
-        </svg>
-
-        <!-- LAYER 2: The Nodes (Draggable Divs) -->
-        <template x-for="node in apiSandbox.nodes" :key="node.id">
-            <div class="absolute w-[120px] h-[60px] bg-slate-800 border rounded-lg flex flex-col items-center justify-center shadow-lg cursor-grab active:cursor-grabbing select-none transition-shadow z-10"
-                 :class="apiSandbox.linkingNode === node.id ? 'border-yellow-400 ring-2 ring-yellow-400/50' : 'border-slate-600 hover:border-cyan-400'"
-                 :style="`left: ${node.x}px; top: ${node.y}px`"
-                 @mousedown="apiSandbox.startDrag(node.id, $event)">
-                
-                <!-- Icon & Label -->
-                <i class="fa-solid text-lg mb-1" 
-                   :class="{
-                       'fa-mobile-screen text-blue-400': node.type==='mobile',
-                       'fa-server text-red-400': node.type==='core',
-                       'fa-network-wired text-green-400': node.type==='api',
-                       'fa-database text-yellow-400': node.type==='db',
-                       'fa-cubes text-purple-400': node.type==='micro',
-                       'fa-cloud text-slate-400': node.type==='3rd'
-                   }"></i>
-                <span class="text-[10px] font-bold text-slate-300 uppercase tracking-wide" x-text="node.label"></span>
-
-                <!-- Link Action Button -->
-                <button @click.stop="apiSandbox.startLink(node.id)" 
-                        title="Connect"
-                        class="absolute -right-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-slate-700 border border-slate-500 text-slate-300 hover:bg-cyan-500 hover:text-white hover:border-cyan-400 flex items-center justify-center transition-all shadow-md z-20">
-                    <i class="fa-solid fa-link text-[10px]"></i>
-                </button>
-
-                <!-- Delete Button (Hover Only) -->
-                <button @click.stop="apiSandbox.removeNode(node.id)"
-                        class="absolute -top-2 -left-2 w-5 h-5 rounded-full bg-red-500/20 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity"
-                        title="Delete">
-                    <i class="fa-solid fa-xmark text-[10px]"></i>
-                </button>
-            </div>
-        </template>
-
-    </div>
-
-    <!-- 3. Diagnostics Panel -->
-    <div class="grid md:grid-cols-2 gap-4">
-        
-        <!-- Scorecard -->
-        <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 flex items-center justify-between">
-            <div>
-                <h4 class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-1">Architecture Score</h4>
-                <div class="text-3xl font-black" :class="apiSandbox.analysis.color" x-text="apiSandbox.analysis.score + '%'"></div>
-                <div class="text-sm font-bold text-white mt-1" x-text="apiSandbox.analysis.verdict"></div>
-            </div>
-            <div class="h-12 w-12 rounded-full bg-slate-700 flex items-center justify-center">
-                 <i class="fa-solid fa-stethoscope text-slate-400"></i>
-            </div>
-        </div>
-
-        <!-- Issues List -->
-        <div class="bg-slate-800 p-5 rounded-xl border border-slate-700">
-            <h4 class="text-xs text-slate-400 uppercase font-bold tracking-wider mb-3">Detected Risks</h4>
-            
-            <template x-if="apiSandbox.analysis.issues.length === 0">
-                <div class="text-green-400 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-check-circle"></i> System appears stable.
-                </div>
-            </template>
-
-            <ul class="space-y-2">
-                <template x-for="issue in apiSandbox.analysis.issues">
-                    <li class="text-xs text-slate-300 bg-slate-900/50 p-2 rounded border border-slate-700/50 flex gap-2 items-start">
-                        <span x-text="issue.includes('CRITICAL') ? '🔥' : '⚠️'"></span>
-                        <span x-text="issue"></span>
-                    </li>
-                </template>
-            </ul>
-        </div>
-    </div>
-
-    <!-- AI Prompt Button -->
-    <div class="text-center pt-4">
-        <button @click="copyToClipboard(apiSandbox.generateArchPrompt(), 'Architecture Assessment')"
-                class="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold transition-all shadow-lg shadow-indigo-900/20">
-            <i class="fa-solid fa-wand-magic-sparkles"></i>
-            Generate Architect's Memo
-        </button>
-        <p class="text-xs text-slate-500 mt-2">Copies a blueprint analysis prompt for ChatGPT.</p>
-    </div>
-
-</div>
              
              <!-- WAR GAMES TAB (REDESIGNED) -->
 <div x-show="currentTab === 'whatif'" x-cloak class="max-w-5xl mx-auto pb-20">
@@ -6362,6 +6207,7 @@ END-IF."></textarea>
             });
         }
     </script>
+   <script src="js/app.js"></script>
 </body>
 </html>
 
