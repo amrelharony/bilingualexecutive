@@ -6156,6 +6156,14 @@ END-IF."></textarea>
 </main>
 
 
+    <div x-show="viewMode === 'tools'">
+<!-- Header Area -->
+<div class="mb-8 pt-8">
+    <div class="bg-blue-500 text-white p-4 mb-4">HEADER VISIBLE TEST</div>
+    <h1 class="text-3xl font-sans font-bold tracking-tight text-white mb-1" x-text="navGroups.find(g => g.id === currentGroup).label"></h1>
+
+
+    
         <!-- NAVIGATION BAR  -->
 
 
