@@ -1891,36 +1891,7 @@ toggleVideoMute() {
     }, 60000);
 }, 
 
-        
-        // Set up event listeners for activity tracking
-setupActivityTracking() {
-    // Reset any previous tracking
-    this.resetActivityTracking();
     
-    // Track clicks (anywhere on the page)
-    document.addEventListener('click', () => {
-        this.trackUserActivity();
-    }, { passive: true });
-    
-    // Track scrolling
-    document.addEventListener('scroll', () => {
-        this.trackUserActivity();
-    }, { passive: true });
-    
-    // Track keyboard input
-    document.addEventListener('keydown', () => {
-        this.trackUserActivity();
-    }, { passive: true });
-    
-    // Track tool changes (when user selects different tools)
-    const trackToolChange = () => {
-        this.trackUserActivity();
-    };
-    
-    // Watch for Alpine.js updates to currentTab
-    this.$watch('currentTab', trackToolChange);
-    this.$watch('currentGroup', trackToolChange);
-},
 
         
 
