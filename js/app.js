@@ -4813,7 +4813,7 @@ TONE: Constructive, psychological, tactical.`;
                 if (!this.supabase && window.supabase) {
                      const supabaseUrl = 'https://qbgfduhsgrdfonxpqywu.supabase.co';
                      const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFiZ2ZkdWhzZ3JkZm9ueHBxeXd1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczNjQ0MzcsImV4cCI6MjA4Mjk0MDQzN30.0FGzq_Vg2oYwl8JZXBrAqNmqTBWUnzJTEAdgPap7up4';
-                                this.supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);                }
+                              this.supabase = window.supabase.createClient(supabaseUrl, supabaseKey); 
 
                 if (this.supabase) {
                     try {
