@@ -3597,7 +3597,9 @@
     </div>
 
     <!-- 2. ANALYSIS & SIMULATION PHASE -->
-    <div x-show="vendorCoach.step === 'analysis' || vendorCoach.step === 'sim'" class="grid lg:grid-cols-12 gap-6">
+<template x-if="vendorCoach.step === 'analysis' || vendorCoach.step === 'sim'">
+    
+    <div class="grid lg:grid-cols-12 gap-6">
         
         <!-- LEFT: DASHBOARD -->
         <div class="lg:col-span-4 space-y-4">
@@ -3702,7 +3704,7 @@
 
         </div>
     </div>
-</div>
+</template> </div> 
 
         <!-- FINOPS AUDITOR TAB -->
 <div x-show="currentTab === 'capex'" x-cloak class="max-w-6xl mx-auto pb-20">
