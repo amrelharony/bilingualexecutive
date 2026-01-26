@@ -1674,6 +1674,7 @@ navGroups: [
 ],
 
 
+x-data="{       
 // Group the tools
 tools: {
     radar: [
@@ -1723,7 +1724,7 @@ tools: {
         { id: 'regsim', label: 'Reg Impact', icon: 'fa-solid fa-gavel', color: 'text-yellow-500' }
     ]
 },
-        
+   }"     
         
         // ------------------------------------------------------------------
         // METHODS
