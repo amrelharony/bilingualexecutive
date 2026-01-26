@@ -448,7 +448,7 @@ document.addEventListener('alpine:init', () => {
                 window.addEventListener(evt, resetNav, { passive: true, capture: true });
             });
 
-            },
+        
 
         
             // check if user previously entered
