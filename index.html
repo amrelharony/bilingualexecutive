@@ -255,11 +255,6 @@
         <!-- Main Content Area -->
 <main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pt-8 pb-32 md:pb-24">
 
-        <!-- ADD THIS DEBUG AT THE VERY TOP: -->
-    <div class="fixed top-0 left-0 bg-red-500 text-white p-2 z-[999] text-xs font-mono">
-        viewMode: <span x-text="viewMode"></span> | 
-        currentGroup: <span x-text="currentGroup"></span>
-    </div>
 
 
     <!-- ACADEMY VIEW -->
@@ -517,7 +512,8 @@
         <p class="text-slate-400 font-mono text-xs uppercase tracking-widest" x-text="navGroups.find(g => g.id === currentGroup).desc"></p>
     </div>
 
-            <!-- TOOLS DASHBOARD VIEW (When viewing Radar/Forge/Sims) -->
+  
+<!-- TOOLS DASHBOARD VIEW (When viewing Radar/Forge/Sims) -->
 <div x-show="viewMode === 'tools' && currentTab === 'dashboard'">
 
     <!-- The Grid of Tools for the Current Group -->
