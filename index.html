@@ -255,11 +255,17 @@
         <!-- Main Content Area -->
 <main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pt-8 pb-32 md:pb-24">
 
-    <!-- ALPINE DEBUG - ALWAYS VISIBLE -->
-<div class="fixed top-20 right-4 z-[200] bg-red-500 text-white p-4 rounded shadow-lg">
-    <p class="font-mono text-xs">Alpine Working: <span x-text="viewMode || 'BROKEN'"></span></p>
+<!-- ALPINE DEBUG - ALWAYS VISIBLE -->
+<div class="fixed top-20 right-4 z-[200] bg-red-500 text-white p-4 rounded shadow-lg text-xs font-mono space-y-1">
+    <p>viewMode: <span x-text="viewMode"></span></p>
+    <p>currentGroup: <span x-text="currentGroup"></span></p>
+    <p>currentTab: <span x-text="currentTab"></span></p>
+    <p>tools exists: <span x-text="typeof tools !== 'undefined' ? 'YES' : 'NO'"></span></p>
+    <p>tools.radar exists: <span x-text="tools?.radar ? 'YES' : 'NO'"></span></p>
+    <p>tools.radar.length: <span x-text="tools?.radar?.length || 0"></span></p>
+    <p>tools.forge.length: <span x-text="tools?.forge?.length || 0"></span></p>
     <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'" 
-            class="bg-white text-black px-2 py-1 mt-2 rounded text-xs">
+            class="bg-white text-black px-2 py-1 mt-2 rounded text-xs w-full">
         FORCE RADAR
     </button>
 </div>
