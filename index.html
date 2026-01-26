@@ -521,7 +521,14 @@
     </div>
 </div>
 
+
+    <div x-show="viewMode === 'tools'">
     
+    <!-- Header Area -->
+    <div class="mb-8 pt-8">
+        <h1 class="text-3xl font-sans font-bold tracking-tight text-white mb-1" x-text="navGroups.find(g => g.id === currentGroup).label"></h1>
+    </div>
+
 <!-- TOOLS DASHBOARD VIEW (When viewing Radar/Forge/Sims) -->
 <div x-show="currentTab === 'dashboard'">
     
