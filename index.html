@@ -6193,6 +6193,13 @@ END-IF."></textarea>
             <span class="text-xs font-mono uppercase">RADAR</span>
         </button>
 
+
+
+        <button @click="alert('Test: viewMode=' + viewMode)" class="bg-red-500 p-2">TEST</button>
+
+
+
+        
         <button @click="viewMode = 'tools'; currentGroup = 'forge'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
                 :class="currentGroup === 'forge' && viewMode === 'tools' ? 'text-cyan-400' : 'text-slate-400'"
                 class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg hover:bg-slate-800/50 transition-all">
