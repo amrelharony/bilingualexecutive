@@ -6173,10 +6173,9 @@ END-IF."></textarea>
 
 
     <!-- NAVIGATION BAR -->
-<div class="fixed bottom-0 left-0 right-0 z-50 pb-safe flex justify-center">
-    <div class="flex items-center gap-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 px-4 shadow-2xl shadow-black/50">
-        
-        <!-- Academy Button -->
+<div class="fixed bottom-0 left-0 right-0 z-[100] pb-safe flex justify-center pointer-events-none">
+    <div class="flex items-center gap-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 px-4 shadow-2xl shadow-black/50 pointer-events-auto">
+       
         <button @click="viewMode = 'academy'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
                 class="relative px-2 py-2 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1 w-16"
                 :class="viewMode === 'academy' ? 'text-white' : 'text-slate-500 hover:text-slate-300'">
@@ -6187,7 +6186,6 @@ END-IF."></textarea>
             <div x-show="viewMode === 'academy'" class="absolute bottom-0 w-1 h-1 bg-white rounded-full shadow-glow"></div>
         </button>
 
-        <!-- RADAR Button -->
         <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
                 :class="currentGroup === 'radar' && viewMode === 'tools' ? 'text-pink-400' : 'text-slate-400'"
                 class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg hover:bg-slate-800/50 transition-all">
@@ -6195,7 +6193,6 @@ END-IF."></textarea>
             <span class="text-xs font-mono uppercase">RADAR</span>
         </button>
 
-        <!-- FORGE Button -->
         <button @click="viewMode = 'tools'; currentGroup = 'forge'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
                 :class="currentGroup === 'forge' && viewMode === 'tools' ? 'text-cyan-400' : 'text-slate-400'"
                 class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg hover:bg-slate-800/50 transition-all">
@@ -6203,7 +6200,6 @@ END-IF."></textarea>
             <span class="text-xs font-mono uppercase">FORGE</span>
         </button>
 
-        <!-- VIP SIMS Button (conditional) -->
         <template x-if="isVipMode">
             <button @click="viewMode = 'tools'; currentGroup = 'sims'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
                     x-transition:enter="transition ease-out duration-500"
@@ -6218,9 +6214,9 @@ END-IF."></textarea>
                 <div x-show="viewMode === 'tools' && currentGroup === 'sims'" class="absolute bottom-0 w-1 h-1 bg-yellow-400 rounded-full shadow-glow"></div>
             </button>
         </template>
-        
+       
+    </div>
 </div>
-
 </div> <!-- End viewMode='tools' wrapper -->
 
     
