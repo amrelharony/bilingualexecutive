@@ -35,7 +35,19 @@ document.addEventListener('alpine:init', () => {
             active: false,
             type: 'pdf', // 'pdf' or 'image'
             url: '',
-            title: ''
+            title: '',
+            loading: false
+
+        },
+        
+        // --- PDF ENGINE STATE ---
+        pdfState: {
+            pdfDoc: null,
+            pageNum: 1,
+            pageRendering: false,
+            pageNumPending: null,
+            scale: 1.5, // Crisp quality multiplier (1.5 is good for Retina)
+            numPages: 0
         },
 
 // --- OFFLINE MANAGER (Caching Engine) ---
@@ -139,6 +151,72 @@ document.addEventListener('alpine:init', () => {
             this.viewer.active = true;
         },
 
+
+        // --- PDF.JS RENDERING ENGINE ---
+    
+    renderPage(num) {
+        this.pdfState.pageRendering = true;
+        
+        // Fetch page
+        this.pdfState.pdfDoc.getPage(num).then((page) => {
+            const canvas = document.getElementById('the-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Calculate scale to fit width of container
+            const container = document.getElementById('pdf-container');
+            const desiredWidth = container.clientWidth - 20; // Padding
+            const viewport = page.getViewport({ scale: 1 });
+            const scale = desiredWidth / viewport.width;
+            const scaledViewport = page.getViewport({ scale: scale });
+
+            // Set dimensions
+            canvas.height = scaledViewport.height;
+            canvas.width = scaledViewport.width;
+
+            // Render
+            const renderContext = {
+                canvasContext: ctx,
+                viewport: scaledViewport
+            };
+            const renderTask = page.render(renderContext);
+
+            // Wait for render to finish
+            renderTask.promise.then(() => {
+                this.pdfState.pageRendering = false;
+                
+                // Check if next page requested while rendering
+                if (this.pdfState.pageNumPending !== null) {
+                    this.renderPage(this.pdfState.pageNumPending);
+                    this.pdfState.pageNumPending = null;
+                }
+            });
+        });
+
+        // Update current page counter
+        this.pdfState.pageNum = num;
+    },
+
+    queueRenderPage(num) {
+        if (this.pdfState.pageRendering) {
+            this.pdfState.pageNumPending = num;
+        } else {
+            this.renderPage(num);
+        }
+    },
+
+    prevPage() {
+        if (this.pdfState.pageNum <= 1) return;
+        this.pdfState.pageNum--;
+        this.queueRenderPage(this.pdfState.pageNum);
+    },
+
+    nextPage() {
+        if (this.pdfState.pageNum >= this.pdfState.numPages) return;
+        this.pdfState.pageNum++;
+        this.queueRenderPage(this.pdfState.pageNum);
+    },
+
+        
         viewImage(chapter, type) {
             this.viewer.title = `${chapter.title} - ${type.toUpperCase()}`;
             this.viewer.type = 'image';
@@ -179,6 +257,8 @@ document.addEventListener('alpine:init', () => {
                 { url: this.getAudioUrl(chapter), name: `Ch${chapter.id}_Audio.m4a` },
                 { url: this.getImageUrl(chapter, 'infographic'), name: `Ch${chapter.id}_Infographic.png` },
                 { url: this.getImageUrl(chapter, 'mindmap'), name: `Ch${chapter.id}_Mindmap.png` }
+                { url: `${this.ghBase}/${chapter.folder}/flashcards.csv`, name: `Ch${chapter.id}_Flashcards.csv` }
+
             ];
 
             // Sequential download to prevent browser blocking
@@ -599,6 +679,7 @@ if (window.supabase) {
     });
 
 
+            
             
             const teamCode = params.get('team_code');
             if (teamCode) {
