@@ -28,6 +28,7 @@ document.addEventListener('alpine:init', () => {
         currentCardIndex: 0,
         isFlipped: false,
         flashcardLoading: false,
+        cardTransitioning: false,
 
         // --- VIEWER STATE ---
         viewer: {
@@ -503,6 +504,27 @@ document.addEventListener('alpine:init', () => {
             }
         },
         
+
+        nextCard() {
+            // 1. Prevent double-taps while animation runs
+            if (this.cardTransitioning) return; 
+            
+            this.cardTransitioning = true;
+            this.isFlipped = false; // Flip back to front
+
+            // 2. Wait for the flip animation to finish (300ms matches CSS duration)
+            setTimeout(() => {
+                if (this.currentCardIndex < this.flashcardDeck.length - 1) {
+                    this.currentCardIndex++;
+                } else {
+                    // Loop back to start
+                    this.currentCardIndex = 0; 
+                }
+                
+                // Unlock the button
+                this.cardTransitioning = false;
+            }, 300);
+        },
         
         // ------------------------------------------------------------------
         // INITIALIZATION
