@@ -377,14 +377,74 @@ document.addEventListener('alpine:init', () => {
 
         // Navigation
         openChapter(id) {
-            this.activeChapterId = id;
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        },
+    this.activeChapterId = id;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // 1. Destroy landing page player if it exists (save resources)
+    if (this.player && this.player.destroy) {
+        this.player.destroy();
+    }
+
+    // 2. Reset Player State
+    this.videoPlaying = false;
+    this.videoCurrentTime = 0;
+    this.videoDuration = 0;
+
+    // 3. Initialize Academy Player
+    this.$nextTick(() => {
+        // Find the active chapter object to get the ID
+        const chapter = this.activeChapter; 
+        if (!chapter) return;
+
+        this.player = new YT.Player('academy-player', {
+            videoId: chapter.youtubeId,
+            playerVars: {
+                'autoplay': 0, 'controls': 0, 'rel': 0, 
+                'modestbranding': 1, 'playsinline': 1, 'enablejsapi': 1
+            },
+            events: {
+                'onReady': (event) => {
+                    this.videoDuration = event.target.getDuration();
+                    this.videoVolume = 50;
+                    event.target.setVolume(50);
+                },
+                'onStateChange': (event) => {
+                    if (event.data === YT.PlayerState.PLAYING) {
+                        this.videoPlaying = true;
+                        // Start tracking time
+                        if(this.updateTimeInterval) clearInterval(this.updateTimeInterval);
+                        this.updateTimeInterval = setInterval(() => {
+                            if (this.player && this.player.getCurrentTime) {
+                                this.videoCurrentTime = this.player.getCurrentTime();
+                            }
+                        }, 500);
+                    } else {
+                        this.videoPlaying = false;
+                        if(this.updateTimeInterval) clearInterval(this.updateTimeInterval);
+                    }
+                }
+            }
+        });
+    });
+},
         closeChapter() {
-            this.activeChapterId = null;
-            const audio = document.querySelector('audio');
-            if(audio) audio.pause();
-        },
+    this.activeChapterId = null;
+    
+    // Stop/Destroy Player to stop audio
+    if (this.player && this.player.destroy) {
+        this.player.destroy();
+        this.player = null;
+    }
+    if (this.updateTimeInterval) {
+        clearInterval(this.updateTimeInterval);
+    }
+    
+    // Stop Audio Deep Dive if playing
+    const audio = document.querySelector('audio');
+    if(audio) audio.pause();
+},
+
+        
 
 
         // Flashcard Engine
@@ -1849,30 +1909,20 @@ toggleVideoPlay() {
 },
 
 // Toggle Fullscreen
-toggleFullscreen() {
-    const videoContainer = document.querySelector('.group'); // The video container div
+toggleFullscreen(elementId) {
+    // Default to landing container if no ID passed (backward compatibility)
+    const targetId = elementId || 'youtube-player-container'; 
+    // You might need to add id="youtube-player-container" to your landing page div if it's missing
     
+    const el = document.getElementById(targetId) || document.querySelector('.group'); // Fallback
+
     if (!this.isFullscreen) {
-        // Enter fullscreen
-        if (videoContainer.requestFullscreen) {
-            videoContainer.requestFullscreen();
-        } else if (videoContainer.webkitRequestFullscreen) { /* Safari */
-            videoContainer.webkitRequestFullscreen();
-        } else if (videoContainer.msRequestFullscreen) { /* IE11 */
-            videoContainer.msRequestFullscreen();
-        }
-        
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
         this.isFullscreen = true;
     } else {
-        // Exit fullscreen
-        if (document.exitFullscreen) {
-            document.exitFullscreen();
-        } else if (document.webkitExitFullscreen) { /* Safari */
-            document.webkitExitFullscreen();
-        } else if (document.msExitFullscreen) { /* IE11 */
-            document.msExitFullscreen();
-        }
-        
+        if (document.exitFullscreen) document.exitFullscreen();
+        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
         this.isFullscreen = false;
     }
 },
