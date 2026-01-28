@@ -406,10 +406,11 @@
                                 <p class="text-xs text-slate-400">Listen on the go (Background Play)</p>
                             </div>
                         </div>
-                        <audio controls class="w-full h-10 rounded">
-                            <source :src="getAudioUrl(activeChapter)" type="audio/mp4">
-                            Your browser does not support the audio element.
-                        </audio>
+                        <audio controls controlsList="nodownload" oncontextmenu="return false;" class="w-full h-10 rounded">
+    <source :src="getAudioUrl(activeChapter)" type="audio/mp4">
+    Your browser does not support the audio element.
+</audio>
+                     
                     </div>
 
                     <!-- C. Asset Grid (OFFLINE & CACHING ENABLED) -->
