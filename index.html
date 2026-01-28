@@ -28,6 +28,13 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
 
+    <!-- PDF.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    // Initialize PDF.js Worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+</script>
+
     <!-- YOUR LOCAL FILES -->
     <link rel="stylesheet" href="css/styles.css">
 
@@ -471,64 +478,54 @@
     </div> <!-- End of activeChapterId view -->
   </div>
                     
-    <!-- PDF / IMAGE VIEWER MODAL -->
+  <!-- PDF / IMAGE VIEWER MODAL (PDF.JS VERSION) -->
 <div x-show="viewer.active" x-cloak x-transition.opacity 
-     class="fixed inset-0 z-[150] bg-black/95 flex flex-col">
+     class="fixed inset-0 z-[150] bg-black/95 flex flex-col h-full w-full">
     
     <!-- Viewer Header -->
-    <div class="flex justify-between items-center p-4 border-b border-slate-800 bg-slate-900">
-        <h3 class="text-white font-bold text-sm truncate" x-text="viewer.title"></h3>
-        <button @click="viewer.active = false" class="text-slate-400 hover:text-white px-4">
+    <div class="flex justify-between items-center p-4 border-b border-slate-800 bg-slate-900 shrink-0">
+        <h3 class="text-white font-bold text-sm truncate w-1/2" x-text="viewer.title"></h3>
+        
+        <!-- PDF Controls (Only visible for PDFs) -->
+        <div x-show="viewer.type === 'pdf' && !viewer.loading" class="flex items-center gap-4">
+            <button @click="prevPage()" class="text-slate-300 hover:text-white disabled:opacity-30 p-2" :disabled="pdfState.pageNum <= 1">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <span class="text-xs font-mono text-slate-400">
+                <span x-text="pdfState.pageNum"></span> / <span x-text="pdfState.numPages"></span>
+            </span>
+            <button @click="nextPage()" class="text-slate-300 hover:text-white disabled:opacity-30 p-2" :disabled="pdfState.pageNum >= pdfState.numPages">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <button @click="viewer.active = false" class="text-slate-400 hover:text-white px-2">
             <i class="fa-solid fa-xmark text-xl"></i>
         </button>
     </div>
 
-<!-- Viewer Body -->
-    <div class="flex-1 relative w-full h-full overflow-hidden flex items-center justify-center p-2">
+    <!-- Viewer Body -->
+    <div class="flex-1 relative w-full h-full overflow-hidden flex items-center justify-center bg-slate-900 touch-pan-y">
         
-        <!-- Loading Spinner (Shows while URL is being prepared) -->
-        <div x-show="!viewer.url" class="text-slate-500 flex flex-col items-center">
-            <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
-            <span class="text-xs font-mono uppercase">Loading Document...</span>
+        <!-- Loading Spinner -->
+        <div x-show="viewer.loading" class="text-center">
+            <i class="fa-solid fa-circle-notch fa-spin text-4xl text-primary mb-4"></i>
+            <p class="text-slate-400 font-mono text-xs">RENDERING DOCUMENT...</p>
         </div>
 
-       
-
-<!-- PDF Case 1: Online / Google Wrapper (Cropped Toolbar + Blocker) -->
-<template x-if="viewer.type === 'pdf' && !viewer.isBlob && viewer.url.length > 5">
-    <div class="w-full h-full overflow-hidden relative bg-white rounded border border-slate-700 group">
-        
-        <!-- The Cropped Iframe -->
-        <iframe 
-            :src="'https://docs.google.com/gview?url=' + encodeURIComponent(viewer.url) + '&embedded=true'" 
-            class="w-full h-[calc(100%+60px)] -mt-[60px]" 
-            frameborder="0">
-        </iframe>
-
-        <!-- Interaction Blocker Layer (Transparent) -->
-        <!-- This prevents right-clicks or dragging the iframe to reveal the bar -->
-        <div class="absolute inset-0 z-10 w-full h-full" 
-             style="background: transparent;"
-             oncontextmenu="return false;">
+        <!-- PDF Canvas Container -->
+        <div x-show="viewer.type === 'pdf' && !viewer.loading" class="w-full h-full overflow-auto flex justify-center p-2 md:p-4" id="pdf-container">
+            <canvas id="the-canvas" class="shadow-2xl max-w-full h-auto self-start"></canvas>
         </div>
-        
-        <!-- Visual Blocker for top edge -->
-        <div class="absolute top-0 left-0 right-0 h-2 bg-slate-900 z-20"></div>
-    </div>
-</template>
 
-<!-- PDF Case 2: Offline / Cached Blob (Native Controls Disabled) -->
-<template x-if="viewer.type === 'pdf' && viewer.isBlob && viewer.url">
-    <iframe 
-        :src="viewer.url + '#toolbar=0&navpanes=0&scrollbar=0'" 
-        class="w-full h-full rounded border border-slate-700 bg-white" 
-        frameborder="0"
-        oncontextmenu="return false;">
-    </iframe>
-</template>
-
+        <!-- Image Fallback (Mind Maps / Infographics) -->
+        <img x-show="viewer.type === 'image' && !viewer.loading" 
+             :src="viewer.url" 
+             @load="viewer.loading = false"
+             class="max-w-full max-h-full object-contain p-2">
+             
     </div>
-    </div> <!-- ADD THIS: Closes viewer.active -->
+</div>
 
 
 <!-- FLASHCARD MODAL OVERLAY -->
