@@ -445,9 +445,7 @@ document.addEventListener('alpine:init', () => {
 },
 
         
-
-
-        // Flashcard Engine
+       // Flashcard Engine
         async launchFlashcards(chapter) {
             this.showFlashcards = true;
             this.flashcardLoading = true;
@@ -463,34 +461,48 @@ document.addEventListener('alpine:init', () => {
                 if (!response.ok) throw new Error("CSV not found");
                 const text = await response.text();
                 
-                const rows = text.split('\n').filter(r => r.trim() !== '');
-                this.flashcardDeck = rows.map(row => {
-                    const firstComma = row.indexOf(',');
-                    if (firstComma === -1) return null; 
-                    return { 
-                        q: row.substring(0, firstComma).trim(), 
-                        a: row.substring(firstComma + 1).trim().replace(/^"|"$/g, '') 
-                    };
-                }).filter(c => c !== null);
+                // 1. ROBUST CSV PARSER
+                // This regex matches: 
+                // Group 1: Quoted string (handles escaped quotes "") OR
+                // Group 2: Unquoted string (stops at comma or newline)
+                const regex = /(?:^|\n)(?:"([^"]*(?:""[^"]*)*)"|([^,\n]*)),(?:"([^"]*(?:""[^"]*)*)"|([^,\n]*))/g;
+                
+                let match;
+                const deck = [];
+
+                while ((match = regex.exec(text)) !== null) {
+                    // Column 1 (Question): Group 1 (Quoted) OR Group 2 (Unquoted)
+                    let q = match[1] || match[2];
+                    
+                    // Column 2 (Answer): Group 3 (Quoted) OR Group 4 (Unquoted)
+                    let a = match[3] || match[4];
+
+                    // Cleanup: Remove extra whitespace and unescape double quotes ("" -> ")
+                    if (q) q = q.replace(/""/g, '"').trim();
+                    if (a) a = a.replace(/""/g, '"').trim();
+
+                    if (q && a) {
+                        deck.push({ q, a });
+                    }
+                }
+
+                if (deck.length === 0) {
+                    throw new Error("No valid flashcards found in CSV");
+                }
+
+                this.flashcardDeck = deck;
 
             } catch (e) {
                 console.error("Flashcard Error:", e);
-                this.flashcardDeck = [{ q: "Error", a: "Could not load cards from GitHub." }];
+                this.flashcardDeck = [{ 
+                    q: "Error Loading Deck", 
+                    a: "Could not parse CSV. Please check console for details." 
+                }];
             } finally {
                 this.flashcardLoading = false;
             }
         },
-
-        nextCard() {
-            this.isFlipped = false;
-            setTimeout(() => {
-                if (this.currentCardIndex < this.flashcardDeck.length - 1) {
-                    this.currentCardIndex++;
-                } else {
-                    this.showFlashcards = false; // End of deck
-                }
-            }, 300);
-        },
+        
         
         // ------------------------------------------------------------------
         // INITIALIZATION
