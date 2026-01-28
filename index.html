@@ -520,14 +520,20 @@
     </div> <!-- ADD THIS: Closes viewer.active -->
 
 
-   <!-- FLASHCARD MODAL OVERLAY -->
+<!-- FLASHCARD MODAL OVERLAY -->
 <div x-show="showFlashcards" x-transition.opacity 
-     class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-6">
+     class="fixed inset-0 z-[100] flex items-center justify-center">
     
-    <div class="w-full max-w-md relative">
+    <!-- 1. BACKDROP (Click to Close) -->
+    <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" 
+         @click="showFlashcards = false"></div>
+
+    <!-- 2. CONTENT CONTAINER (Pointer Events Safe) -->
+    <div class="relative z-10 w-full max-w-md p-6 flex flex-col items-center pointer-events-none">
         
-        <!-- Close Button -->
-        <button @click="showFlashcards = false" class="absolute -top-12 right-0 text-white text-xl p-2">
+        <!-- Close Button (Enable pointer events) -->
+        <button @click="showFlashcards = false" 
+                class="absolute -top-12 right-6 text-slate-400 hover:text-white text-2xl p-4 pointer-events-auto">
             <i class="fa-solid fa-xmark"></i>
         </button>
 
@@ -537,44 +543,45 @@
             <p>Shuffling Deck...</p>
         </div>
 
-        <!-- 1. THE CARD (Click to Flip) -->
+        <!-- THE CARD (Enable pointer events) -->
         <div x-show="!flashcardLoading && flashcardDeck.length > 0" 
              @click="isFlipped = !isFlipped"
-             class="relative w-full aspect-[4/5] transition-all duration-500 transform-style-3d cursor-pointer mb-6"
+             class="relative w-full aspect-[4/5] transition-all duration-300 transform-style-3d cursor-pointer mb-8 pointer-events-auto perspective-1000"
              :class="isFlipped ? 'rotate-y-180' : ''">
             
-            <!-- Front (Question) -->
+            <!-- Front -->
             <div class="absolute inset-0 backface-hidden bg-slate-800 rounded-2xl border-2 border-slate-600 flex flex-col items-center justify-center p-8 text-center shadow-2xl">
                 <span class="text-xs font-mono text-slate-400 uppercase tracking-widest mb-4">QUESTION</span>
                 <h3 class="text-xl md:text-2xl font-bold text-white leading-tight select-none" x-text="flashcardDeck[currentCardIndex]?.q"></h3>
-                <p class="text-[10px] text-slate-500 mt-8 absolute bottom-8 uppercase tracking-widest">Tap Card to Reveal</p>
+                <p class="text-[10px] text-slate-500 mt-8 absolute bottom-8 uppercase tracking-widest">Tap to Flip</p>
             </div>
 
-            <!-- Back (Answer) -->
+            <!-- Back -->
             <div class="absolute inset-0 backface-hidden bg-white rounded-2xl border-2 border-white flex flex-col items-center justify-center p-8 text-center rotate-y-180 shadow-2xl">
                 <span class="text-xs font-mono text-slate-400 uppercase tracking-widest mb-4">ANSWER</span>
                 <h3 class="text-lg md:text-xl font-medium text-slate-900 leading-relaxed select-none" x-text="flashcardDeck[currentCardIndex]?.a"></h3>
             </div>
         </div>
 
-        <!-- 2. STATIC CONTROLS (Always Clickable) -->
-        <div x-show="!flashcardLoading && flashcardDeck.length > 0" class="flex items-center justify-between gap-4">
+        <!-- CONTROLS BAR (Enable pointer events + High Z-Index) -->
+        <div x-show="!flashcardLoading && flashcardDeck.length > 0" 
+             class="w-full flex items-center justify-between gap-4 pointer-events-auto relative z-[110]">
             
-            <!-- Progress -->
-            <div class="text-slate-400 font-mono text-xs">
-                CARD <span x-text="currentCardIndex + 1"></span> / <span x-text="flashcardDeck.length"></span>
+            <div class="text-slate-400 font-mono text-xs pl-2">
+                <span x-text="currentCardIndex + 1"></span> / <span x-text="flashcardDeck.length"></span>
             </div>
 
-            <!-- Next Button -->
+            <!-- BIGGER TOUCH TARGET -->
             <button @click.stop="nextCard()" 
-                    class="px-8 py-3 bg-hotpink hover:bg-pink-600 text-white rounded-full text-xs font-bold uppercase tracking-widest shadow-lg transition-transform active:scale-95 flex items-center gap-2">
-                Next Card <i class="fa-solid fa-arrow-right"></i>
+                    class="group relative px-8 py-4 bg-hotpink hover:bg-pink-600 text-white rounded-full text-sm font-bold uppercase tracking-widest shadow-glow-vip transition-all active:scale-95 touch-manipulation">
+                <span class="flex items-center gap-2">
+                    NEXT <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                </span>
             </button>
         </div>
 
     </div>
 </div>
-
         
 
 <!-- TOOLS SECTION -->
