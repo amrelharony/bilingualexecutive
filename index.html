@@ -337,12 +337,62 @@
                 <div class="h-20"></div>
 
                 <div class="max-w-4xl mx-auto p-4 md:p-8 space-y-8 pb-32">
+
+                    <!-- A. Video Player (Custom) -->
+<div class="aspect-video w-full bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 relative group" id="academy-player-wrapper">
+    
+    <!-- The YouTube Target Div -->
+    <div id="academy-player" class="w-full h-full"></div>
+
+    <!-- Video Overlay (Click to Play/Pause) -->
+    <div class="absolute inset-0 z-20" 
+         @click="toggleVideoPlay()"
+         :title="videoPlaying ? 'Pause' : 'Play'">
+    </div>
+
+    <!-- Custom Controls Bar -->
+    <div class="absolute bottom-0 left-0 right-0 z-30 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/90 to-transparent">
+        <div class="flex items-center gap-3 md:gap-4">
+            
+            <!-- Play/Pause -->
+            <button @click.stop="toggleVideoPlay()" class="w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all">
+                <i class="fa-solid text-xs" :class="videoPlaying ? 'fa-pause' : 'fa-play'"></i>
+            </button>
+            
+            <!-- Time Display -->
+            <div class="flex items-center gap-1 text-[10px] text-white font-mono">
+                <span x-text="formatTime(videoCurrentTime)">0:00</span>
+                <span>/</span>
+                <span x-text="formatTime(videoDuration)">0:00</span>
+            </div>
+            
+            <!-- Seek Bar -->
+            <div class="flex-1 mx-2 relative flex items-center">
+                <input type="range" 
+                       x-model="videoCurrentTime"
+                       @input="seekVideo($event.target.value)"
+                       @click.stop
+                       :max="videoDuration"
+                       step="1"
+                       class="w-full h-1 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-hotpink z-40">
+            </div>
+            
+            <!-- Volume -->
+            <div class="flex items-center gap-2">
+                <button @click.stop="toggleVideoMute()" class="text-white hover:text-hotpink transition-colors">
+                    <i class="fa-solid text-xs" :class="videoMuted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
+                </button>
+                <input type="range" x-model="videoVolume" @input="setPlayerVolume($event.target.value)" @click.stop min="0" max="100" class="w-16 h-1 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-white">
+            </div>
+
+            <!-- Fullscreen -->
+            <button @click.stop="toggleFullscreen('academy-player-wrapper')" class="text-white hover:text-hotpink transition-colors">
+                <i class="fa-solid text-xs" :class="isFullscreen ? 'fa-compress' : 'fa-expand'"></i>
+            </button>
+        </div>
+    </div>
+</div>
                     
-                    <!-- A. Video Player -->
-                    <div class="aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
-                        <iframe class="w-full h-full" 
-                                :src="'https://www.youtube.com/embed/' + activeChapter.youtubeId + '?rel=0&modestbranding=1'" 
-                                frameborder="0" allowfullscreen></iframe>
                     </div>
 
                     <!-- B. Audio Deep Dive -->
