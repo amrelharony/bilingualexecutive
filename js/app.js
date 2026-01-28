@@ -256,7 +256,7 @@ document.addEventListener('alpine:init', () => {
                 { url: this.getSlideUrl(chapter), name: `Ch${chapter.id}_Slides.pdf` },
                 { url: this.getAudioUrl(chapter), name: `Ch${chapter.id}_Audio.m4a` },
                 { url: this.getImageUrl(chapter, 'infographic'), name: `Ch${chapter.id}_Infographic.png` },
-                { url: this.getImageUrl(chapter, 'mindmap'), name: `Ch${chapter.id}_Mindmap.png` }
+                { url: this.getImageUrl(chapter, 'mindmap'), name: `Ch${chapter.id}_Mindmap.png` },
                 { url: `${this.ghBase}/${chapter.folder}/flashcards.csv`, name: `Ch${chapter.id}_Flashcards.csv` }
 
             ];
