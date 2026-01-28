@@ -382,52 +382,66 @@ document.addEventListener('alpine:init', () => {
         },
         
         // --- UPDATED VIEWER LOGIC ---
-        async viewPdf(chapter) {
-            // 1. RESET STATE IMMEDIATELY (Prevents 400 Error)
-            this.viewer.title = "Loading...";
-            this.viewer.url = ""; // Clear previous URL
+      async viewPdf(chapter) {
+            this.viewer.title = `${chapter.title} - Slides`;
             this.viewer.type = 'pdf';
-            this.viewer.active = true; // Open modal with spinner first
+            this.viewer.active = true;
+            this.viewer.loading = true; // Show spinner
+            this.pdfState.pageNum = 1;  // Reset page
 
-            const originalUrl = this.getSlideUrl(chapter);
+            // Force local path for stability
+            // This ensures it works on localhost AND GitHub Pages without CORS errors
+            const originalUrl = `assets/${chapter.folder}/slides.pdf`;
+            let finalUrl = originalUrl;
 
-            // INTELLIGENT ROUTING:
+            // 1. CHECK CACHE / OFFLINE FIRST
             if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
                 try {
                     const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
                     const cache = await caches.open(cacheName);
-                    const response = await cache.match(originalUrl);
+                    // Try to match the relative path, or the full absolute path
+                    let response = await cache.match(originalUrl);
+                    
+                    // Fallback: try matching with the full URL if relative failed
+                    if (!response) {
+                        const fullUrl = this.getSlideUrl(chapter);
+                        response = await cache.match(fullUrl);
+                    }
                     
                     if (response) {
                         const blob = await response.blob();
-                        const blobUrl = URL.createObjectURL(blob);
-                        this.viewer.isBlob = true; 
-                        
-                        // Slight delay to ensure DOM is ready
-                        setTimeout(() => { 
-                            this.viewer.url = blobUrl; 
-                            this.viewer.title = `${chapter.title} - Slides`;
-                        }, 50);
-                    } else {
-                        // Fallback
-                        this.viewer.isBlob = true;
-                        this.viewer.url = originalUrl;
-                        this.viewer.title = `${chapter.title} - Slides`;
+                        finalUrl = URL.createObjectURL(blob);
+                        console.log("Loaded PDF from Cache");
                     }
-                } catch(e) {
-                    this.viewer.isBlob = true;
-                    this.viewer.url = originalUrl;
-                    this.viewer.title = `${chapter.title} - Slides`;
+                } catch(e) { 
+                    console.warn("Cache load failed, trying network", e); 
                 }
-            } else {
-                // Online Case
-                this.viewer.isBlob = false;
+            }
+
+            // 2. LOAD INTO PDF.JS
+            try {
+                // ✅ UPDATED CONFIGURATION HERE
+                const loadingTask = pdfjsLib.getDocument({
+                    url: finalUrl,
+                    cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
+                    cMapPacked: true,
+                });
+
+                this.pdfState.pdfDoc = await loadingTask.promise;
                 
-                // Slight delay to ensure the iframe has unmounted the previous src
-                setTimeout(() => {
-                    this.viewer.url = originalUrl;
-                    this.viewer.title = `${chapter.title} - Slides`;
-                }, 100);
+                this.pdfState.numPages = this.pdfState.pdfDoc.numPages;
+                this.viewer.loading = false; // Hide spinner
+                
+                // Render first page immediately
+                this.$nextTick(() => {
+                    this.renderPage(1);
+                });
+
+            } catch (error) {
+                console.error('Error loading PDF:', error);
+                alert("Could not load PDF. " + (navigator.onLine ? "Check that slides.pdf exists in the assets folder." : "File not available offline."));
+                this.viewer.active = false;
+                this.viewer.loading = false;
             }
         },
 
