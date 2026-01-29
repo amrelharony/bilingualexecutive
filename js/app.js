@@ -12,7 +12,6 @@ document.addEventListener('alpine:init', () => {
         viewMode: 'academy', // Toggles between 'academy' and 'tools'
         activeChapterId: null,
    
-        
         // HOSTING CONFIG
         // Cloudflare R2 (Audio) - Ensure your bucket has public access enabled
         cfBase: 'https://pub-fafafe2a62594937b094305a3b9ef698.r2.dev', 
