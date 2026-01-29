@@ -12,7 +12,6 @@ document.addEventListener('alpine:init', () => {
         viewMode: 'academy', // Toggles between 'academy' and 'tools'
         activeChapterId: null,
    
-
         
         // HOSTING CONFIG
         // Cloudflare R2 (Audio) - Ensure your bucket has public access enabled
@@ -155,67 +154,64 @@ document.addEventListener('alpine:init', () => {
         // --- PDF.JS RENDERING ENGINE ---
     
 renderPage(num) {
-        // Prevent overlapping renders
-        if (this.pdfState.pageRendering) {
-            this.pdfState.pageNumPending = num;
+    if (this.pdfState.pageRendering) {
+        this.pdfState.pageNumPending = num;
+        return;
+    }
+    
+    // *** Use the non-reactive rawPdfDoc ***
+    if (!rawPdfDoc) {
+        console.error("No PDF document loaded");
+        return;
+    }
+
+    this.pdfState.pageRendering = true;
+
+    rawPdfDoc.getPage(num).then((page) => {
+        const canvas = document.getElementById('the-canvas');
+        if (!canvas) {
+            console.error("Canvas not found");
+            this.pdfState.pageRendering = false;
             return;
         }
+        
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('pdf-container');
+        let clientWidth = container?.clientWidth || 800;
+        if (clientWidth < 320) clientWidth = Math.min(window.innerWidth - 40, 800);
+        const desiredWidth = clientWidth - 30;
 
-        this.pdfState.pageRendering = true;
+        const viewport = page.getViewport({ scale: 1 });
+        const scale = desiredWidth / viewport.width;
+        const scaledViewport = page.getViewport({ scale: scale });
 
-        // Fetch page
-        this.pdfState.pdfDoc.getPage(num).then((page) => {
-            const canvas = document.getElementById('the-canvas');
-            if (!canvas) {
-                this.pdfState.pageRendering = false;
-                return;
+        canvas.width = scaledViewport.width;
+        canvas.height = scaledViewport.height;
+
+        const renderContext = {
+            canvasContext: ctx,
+            viewport: scaledViewport
+        };
+
+        page.render(renderContext).promise.then(() => {
+            console.log("Page", num, "rendered");
+            this.pdfState.pageRendering = false;
+            if (this.pdfState.pageNumPending !== null) {
+                this.renderPage(this.pdfState.pageNumPending);
+                this.pdfState.pageNumPending = null;
             }
-            
-            const ctx = canvas.getContext('2d');
-
-            // 1. Smart Width Calculation
-            const container = document.getElementById('pdf-container');
-            let clientWidth = container?.clientWidth || window.innerWidth;
-            if (clientWidth < 320) clientWidth = window.innerWidth;
-            const desiredWidth = clientWidth - 30; 
-
-            // 2. Scale Viewport
-            const viewport = page.getViewport({ scale: 1 });
-            const scale = desiredWidth / viewport.width;
-            const scaledViewport = page.getViewport({ scale: scale });
-
-            // 3. Resize Canvas
-            canvas.height = scaledViewport.height;
-            canvas.width = scaledViewport.width;
-
-            // 4. Render
-            const renderContext = {
-                canvasContext: ctx,
-                viewport: scaledViewport
-            };
-            
-            const renderTask = page.render(renderContext);
-
-            // Handle Success
-            renderTask.promise.then(() => {
-                this.pdfState.pageRendering = false;
-                if (this.pdfState.pageNumPending !== null) {
-                    this.renderPage(this.pdfState.pageNumPending);
-                    this.pdfState.pageNumPending = null;
-                }
-            }).catch(err => {
-                // Handle Render Error (e.g. cancelled)
-                console.error("Render error:", err);
-                this.pdfState.pageRendering = false;
-            });
         }).catch(err => {
-            console.error("GetPage error:", err);
+            console.error("Render error:", err);
             this.pdfState.pageRendering = false;
         });
+    }).catch(err => {
+        console.error("GetPage error:", err);
+        this.pdfState.pageRendering = false;
+    });
 
-        // Update UI counter immediately
-        this.pdfState.pageNum = num;
-    },
+    this.pdfState.pageNum = num;
+},
+
         
     queueRenderPage(num) {
         if (this.pdfState.pageRendering) {
@@ -402,7 +398,8 @@ renderPage(num) {
             }
         },
         
-async viewPdf(chapter) {
+
+        async viewPdf(chapter) {
     this.viewer.title = `${chapter.title} - Slides`;
     this.viewer.type = 'pdf';
     this.viewer.active = true;
@@ -411,11 +408,9 @@ async viewPdf(chapter) {
     this.pdfState.pageRendering = false;
     this.pdfState.pageNumPending = null;
 
-    // Use full URL from getSlideUrl
     let finalUrl = this.getSlideUrl(chapter);
     console.log("Loading PDF from:", finalUrl);
 
-    // Check cache if offline
     if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
         try {
             const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
@@ -430,25 +425,16 @@ async viewPdf(chapter) {
 
     try {
         const loadingTask = pdfjsLib.getDocument(finalUrl);
-        this.pdfState.pdfDoc = await loadingTask.promise;
-        this.pdfState.numPages = this.pdfState.pdfDoc.numPages;
-        this.viewer.loading = false;
         
+        // *** THE FIX: Store in non-reactive variable ***
+        rawPdfDoc = await loadingTask.promise;
+        this.pdfState.numPages = rawPdfDoc.numPages;
+        
+        this.viewer.loading = false;
         console.log("PDF loaded:", this.pdfState.numPages, "pages");
 
-        // *** THE FIX: Wait for Alpine to render the canvas ***
-        await this.$nextTick();  // Wait for Alpine DOM update
-        
-        // Extra safety: small timeout to ensure canvas is fully in DOM
-        setTimeout(() => {
-            const canvas = document.getElementById('the-canvas');
-            if (canvas) {
-                console.log("Canvas found, rendering page 1");
-                this.renderPage(1);
-            } else {
-                console.error("Canvas still not found after delay!");
-            }
-        }, 50);
+        await this.$nextTick();
+        setTimeout(() => this.renderPage(1), 50);
 
     } catch (error) {
         console.error('Error loading PDF:', error);
@@ -457,6 +443,8 @@ async viewPdf(chapter) {
         this.viewer.loading = false;
     }
 },
+    
+        
         // Helper for images (Mind Map / Infographic)
         async viewImage(chapter, type) {
             this.viewer.title = `${chapter.title} - ${type.toUpperCase()}`;
