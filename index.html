@@ -515,8 +515,7 @@
 
         <!-- PDF Canvas Container -->
         <div x-show="viewer.type === 'pdf' && !viewer.loading" class="w-full h-full overflow-auto flex justify-center p-2 md:p-4" id="pdf-container">
-            <canvas id="the-canvas" class="shadow-2xl max-w-full h-auto self-start"></canvas>
-        </div>
+            <canvas id="the-canvas" class="shadow-2xl max-w-full h-auto self-start bg-white"></canvas>        </div>
 
         <!-- Image Fallback (Mind Maps / Infographics) -->
         <img x-show="viewer.type === 'image' && !viewer.loading" 
