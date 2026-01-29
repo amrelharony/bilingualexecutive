@@ -391,7 +391,7 @@ document.addEventListener('alpine:init', () => {
 
             // Force local path for stability
             // This ensures it works on localhost AND GitHub Pages without CORS errors
-            const originalUrl = `assets/${chapter.folder}/slides.pdf`;
+            const originalUrl = this.getSlideUrl(chapter);
             let finalUrl = originalUrl;
 
             // 1. CHECK CACHE / OFFLINE FIRST
