@@ -12,6 +12,7 @@ document.addEventListener('alpine:init', () => {
         viewMode: 'academy', // Toggles between 'academy' and 'tools'
         activeChapterId: null,
    
+
         
         // HOSTING CONFIG
         // Cloudflare R2 (Audio) - Ensure your bucket has public access enabled
@@ -19,7 +20,7 @@ document.addEventListener('alpine:init', () => {
         
         // GitHub Raw (Images/Slides/CSV)
         // Note: Using 'raw.githubusercontent.com' to allow direct file loading
-        ghBase: 'https://amrelharony.github.io/bilingualexecutive/assets',
+        ghBase: 'https://raw.githubusercontent.com/amrelharony/bilingualexecutive/3e71ec0fae6e738cced7c893618982a3b626947e/assets',
 
         // FLASHCARD STATE
         showFlashcards: false,
@@ -27,26 +28,13 @@ document.addEventListener('alpine:init', () => {
         currentCardIndex: 0,
         isFlipped: false,
         flashcardLoading: false,
-        cardTransitioning: false,
 
         // --- VIEWER STATE ---
         viewer: {
             active: false,
             type: 'pdf', // 'pdf' or 'image'
             url: '',
-            title: '',
-            loading: false
-
-        },
-        
-        // --- PDF ENGINE STATE ---
-        pdfState: {
-            pdfDoc: null,
-            pageNum: 1,
-            pageRendering: false,
-            pageNumPending: null,
-            scale: 1.5, // Crisp quality multiplier (1.5 is good for Retina)
-            numPages: 0
+            title: ''
         },
 
 // --- OFFLINE MANAGER (Caching Engine) ---
@@ -150,90 +138,6 @@ document.addEventListener('alpine:init', () => {
             this.viewer.active = true;
         },
 
-
-        // --- PDF.JS RENDERING ENGINE ---
-    
-renderPage(num) {
-    if (this.pdfState.pageRendering) {
-        this.pdfState.pageNumPending = num;
-        return;
-    }
-    
-    // *** Use the non-reactive rawPdfDoc ***
-    if (!rawPdfDoc) {
-        console.error("No PDF document loaded");
-        return;
-    }
-
-    this.pdfState.pageRendering = true;
-
-    rawPdfDoc.getPage(num).then((page) => {
-        const canvas = document.getElementById('the-canvas');
-        if (!canvas) {
-            console.error("Canvas not found");
-            this.pdfState.pageRendering = false;
-            return;
-        }
-        
-        const ctx = canvas.getContext('2d');
-        const container = document.getElementById('pdf-container');
-        let clientWidth = container?.clientWidth || 800;
-        if (clientWidth < 320) clientWidth = Math.min(window.innerWidth - 40, 800);
-        const desiredWidth = clientWidth - 30;
-
-        const viewport = page.getViewport({ scale: 1 });
-        const scale = desiredWidth / viewport.width;
-        const scaledViewport = page.getViewport({ scale: scale });
-
-        canvas.width = scaledViewport.width;
-        canvas.height = scaledViewport.height;
-
-        const renderContext = {
-            canvasContext: ctx,
-            viewport: scaledViewport
-        };
-
-        page.render(renderContext).promise.then(() => {
-            console.log("Page", num, "rendered");
-            this.pdfState.pageRendering = false;
-            if (this.pdfState.pageNumPending !== null) {
-                this.renderPage(this.pdfState.pageNumPending);
-                this.pdfState.pageNumPending = null;
-            }
-        }).catch(err => {
-            console.error("Render error:", err);
-            this.pdfState.pageRendering = false;
-        });
-    }).catch(err => {
-        console.error("GetPage error:", err);
-        this.pdfState.pageRendering = false;
-    });
-
-    this.pdfState.pageNum = num;
-},
-
-        
-    queueRenderPage(num) {
-        if (this.pdfState.pageRendering) {
-            this.pdfState.pageNumPending = num;
-        } else {
-            this.renderPage(num);
-        }
-    },
-
-    prevPage() {
-        if (this.pdfState.pageNum <= 1) return;
-        this.pdfState.pageNum--;
-        this.queueRenderPage(this.pdfState.pageNum);
-    },
-
-    nextPage() {
-        if (this.pdfState.pageNum >= this.pdfState.numPages) return;
-        this.pdfState.pageNum++;
-        this.queueRenderPage(this.pdfState.pageNum);
-    },
-
-        
         viewImage(chapter, type) {
             this.viewer.title = `${chapter.title} - ${type.toUpperCase()}`;
             this.viewer.type = 'image';
@@ -273,9 +177,7 @@ renderPage(num) {
                 { url: this.getSlideUrl(chapter), name: `Ch${chapter.id}_Slides.pdf` },
                 { url: this.getAudioUrl(chapter), name: `Ch${chapter.id}_Audio.m4a` },
                 { url: this.getImageUrl(chapter, 'infographic'), name: `Ch${chapter.id}_Infographic.png` },
-                { url: this.getImageUrl(chapter, 'mindmap'), name: `Ch${chapter.id}_Mindmap.png` },
-                { url: `${this.ghBase}/${chapter.folder}/flashcards.csv`, name: `Ch${chapter.id}_Flashcards.csv` }
-
+                { url: this.getImageUrl(chapter, 'mindmap'), name: `Ch${chapter.id}_Mindmap.png` }
             ];
 
             // Sequential download to prevent browser blocking
@@ -398,53 +300,56 @@ renderPage(num) {
             }
         },
         
-
+        // --- UPDATED VIEWER LOGIC ---
         async viewPdf(chapter) {
-    this.viewer.title = `${chapter.title} - Slides`;
-    this.viewer.type = 'pdf';
-    this.viewer.active = true;
-    this.viewer.loading = true;
-    this.pdfState.pageNum = 1;
-    this.pdfState.pageRendering = false;
-    this.pdfState.pageNumPending = null;
+            // 1. RESET STATE IMMEDIATELY (Prevents 400 Error)
+            this.viewer.title = "Loading...";
+            this.viewer.url = ""; // Clear previous URL
+            this.viewer.type = 'pdf';
+            this.viewer.active = true; // Open modal with spinner first
 
-    let finalUrl = this.getSlideUrl(chapter);
-    console.log("Loading PDF from:", finalUrl);
+            const originalUrl = this.getSlideUrl(chapter);
 
-    if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
-        try {
-            const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
-            const cache = await caches.open(cacheName);
-            const response = await cache.match(finalUrl);
-            if (response) {
-                const blob = await response.blob();
-                finalUrl = URL.createObjectURL(blob);
+            // INTELLIGENT ROUTING:
+            if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
+                try {
+                    const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
+                    const cache = await caches.open(cacheName);
+                    const response = await cache.match(originalUrl);
+                    
+                    if (response) {
+                        const blob = await response.blob();
+                        const blobUrl = URL.createObjectURL(blob);
+                        this.viewer.isBlob = true; 
+                        
+                        // Slight delay to ensure DOM is ready
+                        setTimeout(() => { 
+                            this.viewer.url = blobUrl; 
+                            this.viewer.title = `${chapter.title} - Slides`;
+                        }, 50);
+                    } else {
+                        // Fallback
+                        this.viewer.isBlob = true;
+                        this.viewer.url = originalUrl;
+                        this.viewer.title = `${chapter.title} - Slides`;
+                    }
+                } catch(e) {
+                    this.viewer.isBlob = true;
+                    this.viewer.url = originalUrl;
+                    this.viewer.title = `${chapter.title} - Slides`;
+                }
+            } else {
+                // Online Case
+                this.viewer.isBlob = false;
+                
+                // Slight delay to ensure the iframe has unmounted the previous src
+                setTimeout(() => {
+                    this.viewer.url = originalUrl;
+                    this.viewer.title = `${chapter.title} - Slides`;
+                }, 100);
             }
-        } catch(e) { console.warn("Cache lookup failed", e); }
-    }
+        },
 
-    try {
-        const loadingTask = pdfjsLib.getDocument(finalUrl);
-        
-        // *** THE FIX: Store in non-reactive variable ***
-        rawPdfDoc = await loadingTask.promise;
-        this.pdfState.numPages = rawPdfDoc.numPages;
-        
-        this.viewer.loading = false;
-        console.log("PDF loaded:", this.pdfState.numPages, "pages");
-
-        await this.$nextTick();
-        setTimeout(() => this.renderPage(1), 50);
-
-    } catch (error) {
-        console.error('Error loading PDF:', error);
-        alert("Could not load PDF: " + finalUrl);
-        this.viewer.active = false;
-        this.viewer.loading = false;
-    }
-},
-    
-        
         // Helper for images (Mind Map / Infographic)
         async viewImage(chapter, type) {
             this.viewer.title = `${chapter.title} - ${type.toUpperCase()}`;
@@ -472,147 +377,17 @@ renderPage(num) {
 
         // Navigation
         openChapter(id) {
-    this.activeChapterId = id;
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // 1. Destroy landing page player if it exists (save resources)
-    if (this.player && this.player.destroy) {
-        this.player.destroy();
-    }
-
-    // 2. Reset Player State
-    this.videoPlaying = false;
-    this.videoCurrentTime = 0;
-    this.videoDuration = 0;
-
-    // 3. Initialize Academy Player
-    this.$nextTick(() => {
-        // Find the active chapter object to get the ID
-        const chapter = this.activeChapter; 
-        if (!chapter) return;
-
-        this.player = new YT.Player('academy-player', {
-            videoId: chapter.youtubeId,
-            playerVars: {
-                'autoplay': 0, 'controls': 0, 'rel': 0, 
-                'modestbranding': 1, 'playsinline': 1, 'enablejsapi': 1
-            },
-            events: {
-                'onReady': (event) => {
-                    this.videoDuration = event.target.getDuration();
-                    this.videoVolume = 50;
-                    event.target.setVolume(50);
-                },
-                'onStateChange': (event) => {
-                    if (event.data === YT.PlayerState.PLAYING) {
-                        this.videoPlaying = true;
-                        // Start tracking time
-                        if(this.updateTimeInterval) clearInterval(this.updateTimeInterval);
-                        this.updateTimeInterval = setInterval(() => {
-                            if (this.player && this.player.getCurrentTime) {
-                                this.videoCurrentTime = this.player.getCurrentTime();
-                            }
-                        }, 500);
-                    } else {
-                        this.videoPlaying = false;
-                        if(this.updateTimeInterval) clearInterval(this.updateTimeInterval);
-                    }
-                }
-            }
-        });
-    });
-},
+            this.activeChapterId = id;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        },
         closeChapter() {
-    this.activeChapterId = null;
-    
-    // Stop/Destroy Player to stop audio
-    if (this.player && this.player.destroy) {
-        this.player.destroy();
-        this.player = null;
-    }
-    if (this.updateTimeInterval) {
-        clearInterval(this.updateTimeInterval);
-    }
-    
-    // Stop Audio Deep Dive if playing
-    const audio = document.querySelector('audio');
-    if(audio) audio.pause();
-},
-
-        // --- ACADEMY PROGRESS ENGINE ---
-        
-        // 1. Save current status to LocalStorage
-        saveAcademyProgress() {
-            const progress = {};
-            this.metroMap.forEach(part => {
-                part.chapters.forEach(c => {
-                    progress[c.id] = c.status;
-                });
-            });
-            localStorage.setItem('bilingual_academy_progress', JSON.stringify(progress));
+            this.activeChapterId = null;
+            const audio = document.querySelector('audio');
+            if(audio) audio.pause();
         },
 
-        // 2. Load status on startup
-        loadAcademyProgress() {
-            const saved = localStorage.getItem('bilingual_academy_progress');
-            if (saved) {
-                const progress = JSON.parse(saved);
-                this.metroMap.forEach(part => {
-                    part.chapters.forEach(c => {
-                        if (progress[c.id]) {
-                            c.status = progress[c.id];
-                        }
-                    });
-                });
-            }
-        },
 
-        // 3. The "Complete" Action
-        completeActiveChapter() {
-            if (!this.activeChapter) return;
-            const currentId = this.activeChapter.id;
-            
-            // A. Create a flat list of all chapters to find the index easily
-            const allChapters = this.metroMap.flatMap(part => part.chapters);
-            const currentIndex = allChapters.findIndex(c => c.id === currentId);
-            
-            // B. Mark current as completed
-            const current = allChapters[currentIndex];
-            current.status = 'completed';
-
-            // C. Unlock next chapter (if exists)
-            let nextMessage = "Chapter Completed!";
-            if (currentIndex < allChapters.length - 1) {
-                const nextChapter = allChapters[currentIndex + 1];
-                if (nextChapter.status === 'locked') {
-                    nextChapter.status = 'active';
-                    nextMessage = `Chapter Completed! Unlocked: "${nextChapter.title}"`;
-                }
-            } else {
-                nextMessage = "CONGRATULATIONS! You have finished the Academy.";
-            }
-
-            // D. Save & Close
-            this.saveAcademyProgress();
-            alert(nextMessage);
-            this.closeChapter();
-        },
-
-        // Add inside app.js toolkit object
-vipUnlockAll() {
-    if (!this.isVipMode) return;
-    
-    if(confirm("ARCHITECT COMMAND: Unlock entire curriculum?")) {
-        this.metroMap.forEach(part => {
-            part.chapters.forEach(c => c.status = 'completed');
-        });
-        this.saveAcademyProgress();
-        alert("ACCESS GRANTED. All Knowledge nodes unlocked.");
-    }
-},
-        
-        
-       // Flashcard Engine
+        // Flashcard Engine
         async launchFlashcards(chapter) {
             this.showFlashcards = true;
             this.flashcardLoading = true;
@@ -628,67 +403,32 @@ vipUnlockAll() {
                 if (!response.ok) throw new Error("CSV not found");
                 const text = await response.text();
                 
-                // 1. ROBUST CSV PARSER
-                // This regex matches: 
-                // Group 1: Quoted string (handles escaped quotes "") OR
-                // Group 2: Unquoted string (stops at comma or newline)
-                const regex = /(?:^|\n)(?:"([^"]*(?:""[^"]*)*)"|([^,\n]*)),(?:"([^"]*(?:""[^"]*)*)"|([^,\n]*))/g;
-                
-                let match;
-                const deck = [];
-
-                while ((match = regex.exec(text)) !== null) {
-                    // Column 1 (Question): Group 1 (Quoted) OR Group 2 (Unquoted)
-                    let q = match[1] || match[2];
-                    
-                    // Column 2 (Answer): Group 3 (Quoted) OR Group 4 (Unquoted)
-                    let a = match[3] || match[4];
-
-                    // Cleanup: Remove extra whitespace and unescape double quotes ("" -> ")
-                    if (q) q = q.replace(/""/g, '"').trim();
-                    if (a) a = a.replace(/""/g, '"').trim();
-
-                    if (q && a) {
-                        deck.push({ q, a });
-                    }
-                }
-
-                if (deck.length === 0) {
-                    throw new Error("No valid flashcards found in CSV");
-                }
-
-                this.flashcardDeck = deck;
+                const rows = text.split('\n').filter(r => r.trim() !== '');
+                this.flashcardDeck = rows.map(row => {
+                    const firstComma = row.indexOf(',');
+                    if (firstComma === -1) return null; 
+                    return { 
+                        q: row.substring(0, firstComma).trim(), 
+                        a: row.substring(firstComma + 1).trim().replace(/^"|"$/g, '') 
+                    };
+                }).filter(c => c !== null);
 
             } catch (e) {
                 console.error("Flashcard Error:", e);
-                this.flashcardDeck = [{ 
-                    q: "Error Loading Deck", 
-                    a: "Could not parse CSV. Please check console for details." 
-                }];
+                this.flashcardDeck = [{ q: "Error", a: "Could not load cards from GitHub." }];
             } finally {
                 this.flashcardLoading = false;
             }
         },
-        
 
         nextCard() {
-            // 1. Prevent double-taps while animation runs
-            if (this.cardTransitioning) return; 
-            
-            this.cardTransitioning = true;
-            this.isFlipped = false; // Flip back to front
-
-            // 2. Wait for the flip animation to finish (300ms matches CSS duration)
+            this.isFlipped = false;
             setTimeout(() => {
                 if (this.currentCardIndex < this.flashcardDeck.length - 1) {
                     this.currentCardIndex++;
                 } else {
-                    // Loop back to start
-                    this.currentCardIndex = 0; 
+                    this.showFlashcards = false; // End of deck
                 }
-                
-                // Unlock the button
-                this.cardTransitioning = false;
             }, 300);
         },
         
@@ -714,10 +454,8 @@ vipUnlockAll() {
         this.isVipMode = false; // "Sims" tab remains hidden
     }
 
-           this.loadAcademyProgress(); 
-
-
-            this.navVisible = false; 
+                      // 1. SET DEFAULT TO HIDDEN (Modified)
+            this.navVisible = true; 
 
             // 2. SETUP INTERACTION LISTENERS
             // Triggers on: Mouse move, Scroll, Touch, Click, Keypress
@@ -768,7 +506,6 @@ if (window.supabase) {
     });
 
 
-            
             
             const teamCode = params.get('team_code');
             if (teamCode) {
@@ -851,11 +588,9 @@ this.$watch('talentSkills', () => {
 resetNavTimer() {
     this.navVisible = true;
     if (this.navTimer) clearTimeout(this.navTimer);
-    
-    // Auto-hide after 3 seconds of inactivity
-    this.navTimer = setTimeout(() => {
-        this.navVisible = false;
-    }, 3000);
+    // this.navTimer = setTimeout(() => {   <-- Comment out these 3 lines
+    //    this.navVisible = false;          <-- to stop it from hiding
+    // }, 3000);                            <-- automatically.
 },
 
 
@@ -959,52 +694,6 @@ initYouTubePlayer() {
         // STATE VARIABLES
         // ------------------------------------------------------------------
 
-        // VIP Mode 
-        // Add to state variables in app.js
-architectConsole: {
-    input: '',
-    logs: [
-        { text: "Verifying Bio-Signature... OK", color: "text-green-400" },
-        { text: "Connecting to Mainframe... CONNECTED", color: "text-green-400" },
-        { text: "Welcome, Architect. Type 'help' for commands.", color: "text-yellow-400" }
-    ],
-    
-    execute() {
-        const cmd = this.input.trim().toLowerCase();
-        this.logs.push({ text: `> ${this.input}`, color: "text-slate-400" });
-        this.input = '';
-
-        if (cmd === 'help') {
-            this.logs.push({ text: "AVAILABLE COMMANDS:", color: "text-white" });
-            this.logs.push({ text: "- unlock_all : Open all Academy chapters", color: "text-blue-400" });
-            this.logs.push({ text: "- max_stats : Maximize Simulator stats", color: "text-blue-400" });
-            this.logs.push({ text: "- reset : Wipe local data", color: "text-red-400" });
-        } 
-        else if (cmd === 'unlock_all') {
-            // Call the parent scope function
-            document.querySelector('[x-data]').__x.$data.vipUnlockAll(); 
-            this.logs.push({ text: "Curriculum Unlocked.", color: "text-green-400" });
-        }
-        else if (cmd === 'max_stats') {
-             // Access case study metrics directly
-             const parent = document.querySelector('[x-data]').__x.$data;
-             parent.caseStudy.metrics = { politicalCapital: 100, velocity: 100, risk: 0 };
-             this.logs.push({ text: "Case Study Metrics Maximized.", color: "text-green-400" });
-        }
-        else if (cmd === 'clear') {
-            this.logs = [];
-        }
-        else {
-            this.logs.push({ text: "Command not recognized.", color: "text-red-500" });
-        }
-        
-        // Auto-scroll to bottom
-        setTimeout(() => {
-            const el = document.getElementById('arch-logs');
-            if(el) el.scrollTop = el.scrollHeight;
-        }, 50);
-    }
-},
             // --- LANDING PAGE STATE ---
         showLanding: true,
         videoPlaying: false,
@@ -1979,56 +1668,56 @@ navGroups: [
     { id: 'sims', label: 'Sims', icon: 'fa-solid fa-gamepad', desc: 'Roleplay & Scenarios' }
 ],
 
-        // Group the tools
+
+// Group the tools
 tools: {
     radar: [
-        { id: 'assessment', label: 'Agile Audit', desc: 'Assess maturity across Data/Delivery.', icon: 'fa-solid fa-stethoscope', color: 'text-primary' },
-        { id: 'culture', label: 'Debt Monitor', desc: 'Track organizational friction.', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
-        { id: 'talent', label: 'Talent Radar', desc: 'Identify skill gaps in leadership.', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' },
-        { id: 'dumbpipe', label: 'Utility Risk', desc: 'Calculate the probability of losing the customer interface.', icon: 'fa-solid fa-link-slash', color: 'text-red-400' },
-        { id: 'datagov', label: 'Data Health', desc: 'Monitor SLOs, Lineage, and Quality in real-time.', icon: 'fa-solid fa-traffic-light', color: 'text-blue-500' },
-        { id: 'shadow', label: 'Shadow IT', desc: 'Audit SaaS sprawl and calculate the "Integration Tax".', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
-        { id: 'detector', label: 'AI Risk Scan', desc: 'Mathematically verify AI outputs against Golden Source data.', icon: 'fa-solid fa-shield-cat', color: 'text-risk' },
-        { id: 'cognitive', label: 'Brain Load', desc: 'Measure team mental overhead and burnout risk.', icon: 'fa-solid fa-brain', color: 'text-purple-400' },
-        { id: 'sprintcheck', label: 'Sprint Check', desc: '60-second pulse check on velocity, creep, and morale.', icon: 'fa-solid fa-stopwatch', color: 'text-orange-400' },
-        { id: 'adaptation', label: 'Adaptability', desc: 'Measure organizational plasticity and rigidity.', icon: 'fa-solid fa-dna', color: 'text-cyan-400' },
-        { id: 'dt_tracker', label: 'ROI Tracker', desc: 'Track the J-Curve: Hard costs vs. Soft value realization.', icon: 'fa-solid fa-chart-line', color: 'text-green-400' }
+        { id: 'assessment', label: 'Agile Audit', icon: 'fa-solid fa-stethoscope', color: 'text-primary' },
+        { id: 'culture', label: 'Debt Monitor', icon: 'fa-solid fa-heart-pulse', color: 'text-risk' },
+        { id: 'talent', label: 'Talent Radar', icon: 'fa-solid fa-fingerprint', color: 'text-hotpink' },
+        { id: 'dumbpipe', label: 'Utility Risk', icon: 'fa-solid fa-link-slash', color: 'text-red-400' },
+        { id: 'datagov', label: 'Data Health', icon: 'fa-solid fa-traffic-light', color: 'text-blue-500' },
+        { id: 'shadow', label: 'Shadow IT', icon: 'fa-solid fa-ghost', color: 'text-purple-400' },
+        { id: 'detector', label: 'AI Risk Scan', icon: 'fa-solid fa-shield-cat', color: 'text-risk' },
+        { id: 'cognitive', label: 'Brain Load', icon: 'fa-solid fa-brain', color: 'text-purple-400' },
+        { id: 'sprintcheck', label: 'Sprint Check', icon: 'fa-solid fa-stopwatch', color: 'text-orange-400' },
+        { id: 'adaptation', label: 'Adaptability', icon: 'fa-solid fa-dna', color: 'text-cyan-400' },
+        { id: 'dt_tracker', label: 'ROI Tracker', icon: 'fa-solid fa-chart-line', color: 'text-green-400' }
     ],
     academy: [
-        { id: 'translator', label: 'Translator', desc: 'Decode jargon into business value.', icon: 'fa-solid fa-language', color: 'text-blue-300' },
-        { id: 'board', label: 'Board Guide', desc: 'Navigate executive stakeholders.', icon: 'fa-solid fa-chess-king', color: 'text-yellow-400' },
-        { id: 'glossary', label: 'Glossary', desc: 'Tech terms explained simply.', icon: 'fa-solid fa-book', color: 'text-slate-400' },
-        { id: 'feed', label: 'Daily Insight', desc: 'AI-generated micro-lessons.', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
-        { id: 'library', label: 'Exec Library', desc: 'Curated books & tech stack definitions.', icon: 'fa-solid fa-book-open-reader', color: 'text-cyan-300' }
+        { id: 'translator', label: 'Translator', icon: 'fa-solid fa-language', color: 'text-blue-300' },
+        { id: 'board', label: 'Board Guide', icon: 'fa-solid fa-chess-king', color: 'text-yellow-400' },
+        { id: 'glossary', label: 'Glossary', icon: 'fa-solid fa-book', color: 'text-slate-400' },
+        { id: 'feed', label: 'Daily Insight', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
+        { id: 'library', label: 'Exec Library', icon: 'fa-solid fa-book-open-reader', color: 'text-cyan-300' }
     ],
     forge: [
-        { id: 'kpi', label: 'Outcome Gen', desc: 'Turn Project Outputs into Business Outcomes.', icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400' },
-        { id: 'lighthouse', label: 'Lighthouse', desc: 'Checklist for pilot success.', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
-        { id: 'canvas', label: 'Data Product', desc: 'Define data product contracts.', icon: 'fa-solid fa-file-contract', color: 'text-blue-500' },
-        { id: 'roi', label: 'Pilot ROI', desc: 'Calculate NPV & Cost of Delay.', icon: 'fa-solid fa-calculator', color: 'text-green-500' },
-        { id: 'excel', label: 'Excel Auditor', desc: 'Calculate OpEx waste & risk liability.', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
-        { id: 'squad', label: 'Squad Builder', desc: 'Design teams using Brooks Law.', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
-        { id: 'repair', label: 'Repair Kit', desc: 'Fix stalled transformations.', icon: 'fa-solid fa-toolbox', color: 'text-red-400' },
-        { id: 'vendor', label: 'Vendor Coach', desc: 'Shift contracts to Shared Outcomes.', icon: 'fa-solid fa-handshake', color: 'text-yellow-400' },
-        { id: 'capex', label: 'FinOps Audit', desc: 'Audit tickets against IAS 38.', icon: 'fa-solid fa-file-invoice-dollar', color: 'text-green-400' },
-        { id: 'legacy', label: 'Legacy Code', desc: 'Scan COBOL/SQL for business logic risks.', icon: 'fa-solid fa-microchip', color: 'text-slate-400' },
-        { id: 'flow', label: 'Flow Efficiency', desc: 'Measure hidden waste in processes.', icon: 'fa-solid fa-water', color: 'text-blue-400' },
-        { id: 'adr', label: 'Decision Log', desc: 'Create weighted decision matrices.', icon: 'fa-solid fa-book-journal-whills', color: 'text-indigo-300' },
-        { id: 'ticker', label: 'Meeting Tax', desc: 'Calculate real-time cash burn of meetings.', icon: 'fa-solid fa-money-bill-wave', color: 'text-green-500' }
+        { id: 'kpi', label: 'Outcome Gen', icon: 'fa-solid fa-wand-magic-sparkles', color: 'text-green-400' },
+        { id: 'lighthouse', label: 'Lighthouse', icon: 'fa-solid fa-lightbulb', color: 'text-yellow-400' },
+        { id: 'canvas', label: 'Data Product', icon: 'fa-solid fa-file-contract', color: 'text-blue-500' },
+        { id: 'roi', label: 'Pilot ROI', icon: 'fa-solid fa-calculator', color: 'text-green-500' },
+        { id: 'excel', label: 'Excel Auditor', icon: 'fa-solid fa-file-excel', color: 'text-green-400' },
+        { id: 'squad', label: 'Squad Builder', icon: 'fa-solid fa-people-group', color: 'text-indigo-400' },
+        { id: 'repair', label: 'Repair Kit', icon: 'fa-solid fa-toolbox', color: 'text-red-400' },
+        { id: 'vendor', label: 'Vendor Coach', icon: 'fa-solid fa-handshake', color: 'text-yellow-400' },
+        { id: 'capex', label: 'FinOps Audit', icon: 'fa-solid fa-file-invoice-dollar', color: 'text-green-400' },
+        { id: 'legacy', label: 'Legacy Code', icon: 'fa-solid fa-microchip', color: 'text-slate-400' },
+        { id: 'flow', label: 'Flow Efficiency', icon: 'fa-solid fa-water', color: 'text-blue-400' },
+        { id: 'adr', label: 'Decision Log', icon: 'fa-solid fa-book-journal-whills', color: 'text-indigo-300' },
+        { id: 'ticker', label: 'Meeting Tax', icon: 'fa-solid fa-money-bill-wave', color: 'text-green-500' }
     ],
     sims: [
-        { id: 'simulator', label: 'Case Study', desc: '90-Day Turnaround Simulation.', icon: 'fa-solid fa-chess-knight', color: 'text-white' },
-        { id: 'future', label: 'Future Bank', desc: 'Simulate your strategy to 2030.', icon: 'fa-solid fa-forward', color: 'text-purple-400' },
-        { id: 'roleplay', label: 'Negotiation', desc: 'Spar against skeptical stakeholders.', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
-        { id: 'conway', label: 'Conway Sim', desc: 'Simulate how Org Chart breaks Architecture.', icon: 'fa-solid fa-project-diagram', color: 'text-indigo-400' },
-        { id: 'whatif', label: 'War Games', desc: 'Strategic Pre-Mortem & Risk Analysis.', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
-        { id: 'risksim', label: 'Risk Dojo', desc: 'Simulate a high-stakes Go/No-Go meeting.', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
-        { id: 'escaperoom', label: 'Excel Escape', desc: 'Gamified technical debt simulation.', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
-        { id: 'bingo', label: 'Bingo', desc: 'Gamify cultural transformation.', icon: 'fa-solid fa-table-cells', color: 'text-pink-500' },
-        { id: 'regsim', label: 'Reg Impact', desc: 'Simulate cost of PSD3, AI Act, DORA.', icon: 'fa-solid fa-gavel', color: 'text-yellow-500' }
+        { id: 'simulator', label: 'Case Study', icon: 'fa-solid fa-chess-knight', color: 'text-white' },
+        { id: 'future', label: 'Future Bank', icon: 'fa-solid fa-forward', color: 'text-purple-400' },
+        { id: 'roleplay', label: 'Negotiation', icon: 'fa-solid fa-user-tie', color: 'text-orange-400' },
+        { id: 'conway', label: 'Conway Sim', icon: 'fa-solid fa-project-diagram', color: 'text-indigo-400' },
+        { id: 'whatif', label: 'War Games', icon: 'fa-solid fa-chess-rook', color: 'text-purple-500' },
+        { id: 'risksim', label: 'Risk Dojo', icon: 'fa-solid fa-scale-balanced', color: 'text-risk' },
+        { id: 'escaperoom', label: 'Excel Escape', icon: 'fa-solid fa-dungeon', color: 'text-green-500' },
+        { id: 'bingo', label: 'Bingo', icon: 'fa-solid fa-table-cells', color: 'text-pink-500' },
+        { id: 'regsim', label: 'Reg Impact', icon: 'fa-solid fa-gavel', color: 'text-yellow-500' }
     ]
 },
-
         
        dashboardTools: [ 
             // 1. Simulations & Games
@@ -2159,20 +1848,30 @@ toggleVideoPlay() {
 },
 
 // Toggle Fullscreen
-toggleFullscreen(elementId) {
-    // Default to landing container if no ID passed (backward compatibility)
-    const targetId = elementId || 'youtube-player-container'; 
-    // You might need to add id="youtube-player-container" to your landing page div if it's missing
+toggleFullscreen() {
+    const videoContainer = document.querySelector('.group'); // The video container div
     
-    const el = document.getElementById(targetId) || document.querySelector('.group'); // Fallback
-
     if (!this.isFullscreen) {
-        if (el.requestFullscreen) el.requestFullscreen();
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        // Enter fullscreen
+        if (videoContainer.requestFullscreen) {
+            videoContainer.requestFullscreen();
+        } else if (videoContainer.webkitRequestFullscreen) { /* Safari */
+            videoContainer.webkitRequestFullscreen();
+        } else if (videoContainer.msRequestFullscreen) { /* IE11 */
+            videoContainer.msRequestFullscreen();
+        }
+        
         this.isFullscreen = true;
     } else {
-        if (document.exitFullscreen) document.exitFullscreen();
-        else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+        // Exit fullscreen
+        if (document.exitFullscreen) {
+            document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) { /* Safari */
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) { /* IE11 */
+            document.msExitFullscreen();
+        }
+        
         this.isFullscreen = false;
     }
 },
@@ -6636,78 +6335,6 @@ meetingTicker: {
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
 },
-
-                // ---------------------------------------------------------
-        // PASTE THE NEW CODE BELOW THIS LINE
-        // ---------------------------------------------------------
-
-        // ARCHITECT CONSOLE (CLI LOGIC)
-        architectConsole: {
-            input: '',
-            logs: [
-                { text: "Verifying Bio-Signature... OK", color: "text-green-400" },
-                { text: "Connecting to Mainframe... CONNECTED", color: "text-green-400" },
-                { text: "Welcome, Architect. Type 'help' for commands.", color: "text-yellow-400" }
-            ],
-            
-            execute() {
-                const cmd = this.input.trim().toLowerCase();
-                this.logs.push({ text: `> ${this.input}`, color: "text-slate-400" });
-                this.input = ''; 
-
-                if (cmd === 'help') {
-                    this.logs.push({ text: "AVAILABLE COMMANDS:", color: "text-white" });
-                    this.logs.push({ text: "- unlock_all : Open all Academy chapters", color: "text-blue-400" });
-                    this.logs.push({ text: "- max_stats : Maximize Simulator stats", color: "text-blue-400" });
-                    this.logs.push({ text: "- clear : Clear terminal", color: "text-slate-500" });
-                } 
-                else if (cmd === 'unlock_all') {
-                    this.logs.push({ text: "Executing Skeleton Key Protocol...", color: "text-yellow-500 animate-pulse" });
-setTimeout(() => {
-     // 1. Get the main Alpine data object from the DOM
-     const parent = document.querySelector('[x-data]').__x.$data;
-     
-     // 2. Call the function on the parent
-     if (parent.vipUnlockAll) {
-         parent.vipUnlockAll();
-         this.logs.push({ text: "ACCESS GRANTED: Curriculum Unlocked.", color: "text-green-400" });
-     } else {
-         this.logs.push({ text: "ERROR: Admin privileges revoked.", color: "text-red-500" });
-     }
-}, 1000);
-                }
-                else if (cmd === 'max_stats') {
-                     // We can access sibling objects via 'this' in Alpine data
-                     if(this.caseStudy) {
-                         this.caseStudy.metrics = { politicalCapital: 100, velocity: 100, risk: 0 };
-                         this.logs.push({ text: "Simulator metrics set to GOD MODE.", color: "text-green-400" });
-                     }
-                }
-                else if (cmd === 'clear') {
-                    this.logs = [];
-                }
-                else {
-                    this.logs.push({ text: `Command '${cmd}' not recognized.`, color: "text-red-500" });
-                }
-                
-                setTimeout(() => {
-                    const el = document.getElementById('arch-logs');
-                    if(el) el.scrollTop = el.scrollHeight;
-                }, 50);
-            }
-        },
-
-        // Helper function for the 'unlock_all' command
-        vipUnlockAll() {
-            this.metroMap.forEach(part => {
-                part.chapters.forEach(c => c.status = 'completed');
-            });
-            // Try to save if the save function exists
-            if (this.saveAcademyProgress) {
-                this.saveAcademyProgress();
-            }
-        }
-
         
     })); // <--- Closes Alpine.data
 }); // <--- Closes Event Listener
