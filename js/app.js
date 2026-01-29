@@ -6663,11 +6663,18 @@ meetingTicker: {
                 } 
                 else if (cmd === 'unlock_all') {
                     this.logs.push({ text: "Executing Skeleton Key Protocol...", color: "text-yellow-500 animate-pulse" });
-                    setTimeout(() => {
-                         // Call the sibling function directly
-                         this.vipUnlockAll();
-                         this.logs.push({ text: "ACCESS GRANTED: Curriculum Unlocked.", color: "text-green-400" });
-                    }, 1000);
+setTimeout(() => {
+     // 1. Get the main Alpine data object from the DOM
+     const parent = document.querySelector('[x-data]').__x.$data;
+     
+     // 2. Call the function on the parent
+     if (parent.vipUnlockAll) {
+         parent.vipUnlockAll();
+         this.logs.push({ text: "ACCESS GRANTED: Curriculum Unlocked.", color: "text-green-400" });
+     } else {
+         this.logs.push({ text: "ERROR: Admin privileges revoked.", color: "text-red-500" });
+     }
+}, 1000);
                 }
                 else if (cmd === 'max_stats') {
                      // We can access sibling objects via 'this' in Alpine data
