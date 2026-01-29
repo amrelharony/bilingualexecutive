@@ -91,7 +91,15 @@
 
     <div x-data="toolkit" class="flex w-full h-full relative">
 
-        
+
+        <!-- VIP GOD MODE OVERLAY -->
+<div x-show="isVipMode" 
+     class="fixed inset-0 pointer-events-none z-[50] border-[4px] border-yellow-500/20 shadow-[inset_0_0_50px_rgba(234,179,8,0.2)]">
+    <div class="absolute top-4 right-4 bg-yellow-500 text-black font-black text-[10px] px-2 py-1 rounded">
+        ARCHITECT_MODE_ACTIVE
+    </div>
+</div>
+
         
 
         <!-- VIP BOOT SEQUENCE -->
