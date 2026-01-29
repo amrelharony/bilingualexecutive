@@ -6636,6 +6636,71 @@ meetingTicker: {
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     }
 },
+
+                // ---------------------------------------------------------
+        // PASTE THE NEW CODE BELOW THIS LINE
+        // ---------------------------------------------------------
+
+        // ARCHITECT CONSOLE (CLI LOGIC)
+        architectConsole: {
+            input: '',
+            logs: [
+                { text: "Verifying Bio-Signature... OK", color: "text-green-400" },
+                { text: "Connecting to Mainframe... CONNECTED", color: "text-green-400" },
+                { text: "Welcome, Architect. Type 'help' for commands.", color: "text-yellow-400" }
+            ],
+            
+            execute() {
+                const cmd = this.input.trim().toLowerCase();
+                this.logs.push({ text: `> ${this.input}`, color: "text-slate-400" });
+                this.input = ''; 
+
+                if (cmd === 'help') {
+                    this.logs.push({ text: "AVAILABLE COMMANDS:", color: "text-white" });
+                    this.logs.push({ text: "- unlock_all : Open all Academy chapters", color: "text-blue-400" });
+                    this.logs.push({ text: "- max_stats : Maximize Simulator stats", color: "text-blue-400" });
+                    this.logs.push({ text: "- clear : Clear terminal", color: "text-slate-500" });
+                } 
+                else if (cmd === 'unlock_all') {
+                    this.logs.push({ text: "Executing Skeleton Key Protocol...", color: "text-yellow-500 animate-pulse" });
+                    setTimeout(() => {
+                         // Call the sibling function directly
+                         this.vipUnlockAll();
+                         this.logs.push({ text: "ACCESS GRANTED: Curriculum Unlocked.", color: "text-green-400" });
+                    }, 1000);
+                }
+                else if (cmd === 'max_stats') {
+                     // We can access sibling objects via 'this' in Alpine data
+                     if(this.caseStudy) {
+                         this.caseStudy.metrics = { politicalCapital: 100, velocity: 100, risk: 0 };
+                         this.logs.push({ text: "Simulator metrics set to GOD MODE.", color: "text-green-400" });
+                     }
+                }
+                else if (cmd === 'clear') {
+                    this.logs = [];
+                }
+                else {
+                    this.logs.push({ text: `Command '${cmd}' not recognized.`, color: "text-red-500" });
+                }
+                
+                setTimeout(() => {
+                    const el = document.getElementById('arch-logs');
+                    if(el) el.scrollTop = el.scrollHeight;
+                }, 50);
+            }
+        },
+
+        // Helper function for the 'unlock_all' command
+        vipUnlockAll() {
+            this.metroMap.forEach(part => {
+                part.chapters.forEach(c => c.status = 'completed');
+            });
+            // Try to save if the save function exists
+            if (this.saveAcademyProgress) {
+                this.saveAcademyProgress();
+            }
+        }
+
         
     })); // <--- Closes Alpine.data
 }); // <--- Closes Event Listener
