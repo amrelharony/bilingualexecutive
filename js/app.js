@@ -402,7 +402,7 @@ renderPage(num) {
             }
         },
         
-        // --- UPDATED VIEWER LOGIC ---
+// --- UPDATED VIEWER LOGIC ---
 async viewPdf(chapter) {
         this.viewer.title = `${chapter.title} - Slides`;
         this.viewer.type = 'pdf';
@@ -412,17 +412,16 @@ async viewPdf(chapter) {
         this.pdfState.pageRendering = false; // Force reset lock
         this.pdfState.pageNumPending = null;
 
-        // 1. Determine URL (Prefer Local Relative Path)
-        // This relative path is critical for GitHub Pages & Localhost to share logic
-        const relativeUrl = `assets/${chapter.folder}/slides.pdf`;
-        let finalUrl = relativeUrl;
+        // 1. Determine URL - Use the full GitHub URL from getSlideUrl()
+        let finalUrl = this.getSlideUrl(chapter);
+        const cacheKey = finalUrl; // Store for cache lookup
 
         // 2. Check Cache
         if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
             try {
                 const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
                 const cache = await caches.open(cacheName);
-                const response = await cache.match(relativeUrl);
+                const response = await cache.match(cacheKey);
                 if (response) {
                     const blob = await response.blob();
                     finalUrl = URL.createObjectURL(blob);
