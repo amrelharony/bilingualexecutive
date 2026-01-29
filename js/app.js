@@ -402,54 +402,61 @@ renderPage(num) {
             }
         },
         
-// --- UPDATED VIEWER LOGIC ---
 async viewPdf(chapter) {
-        this.viewer.title = `${chapter.title} - Slides`;
-        this.viewer.type = 'pdf';
-        this.viewer.active = true;
-        this.viewer.loading = true;
-        this.pdfState.pageNum = 1;
-        this.pdfState.pageRendering = false; // Force reset lock
-        this.pdfState.pageNumPending = null;
+    this.viewer.title = `${chapter.title} - Slides`;
+    this.viewer.type = 'pdf';
+    this.viewer.active = true;
+    this.viewer.loading = true;
+    this.pdfState.pageNum = 1;
+    this.pdfState.pageRendering = false;
+    this.pdfState.pageNumPending = null;
 
-        // 1. Determine URL - Use the full GitHub URL from getSlideUrl()
-        let finalUrl = this.getSlideUrl(chapter);
-        const cacheKey = finalUrl; // Store for cache lookup
+    // Use full URL from getSlideUrl
+    let finalUrl = this.getSlideUrl(chapter);
+    console.log("Loading PDF from:", finalUrl);
 
-        // 2. Check Cache
-        if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
-            try {
-                const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
-                const cache = await caches.open(cacheName);
-                const response = await cache.match(cacheKey);
-                if (response) {
-                    const blob = await response.blob();
-                    finalUrl = URL.createObjectURL(blob);
-                }
-            } catch(e) { console.warn("Cache lookup failed", e); }
-        }
-
-        // 3. Load Document (Simplified Config)
+    // Check cache if offline
+    if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
         try {
-            // Removing cMap settings to prevent CDN blocking
-            const loadingTask = pdfjsLib.getDocument(finalUrl);
+            const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
+            const cache = await caches.open(cacheName);
+            const response = await cache.match(finalUrl);
+            if (response) {
+                const blob = await response.blob();
+                finalUrl = URL.createObjectURL(blob);
+            }
+        } catch(e) { console.warn("Cache lookup failed", e); }
+    }
 
-            this.pdfState.pdfDoc = await loadingTask.promise;
-            this.pdfState.numPages = this.pdfState.pdfDoc.numPages;
-            this.viewer.loading = false;
+    try {
+        const loadingTask = pdfjsLib.getDocument(finalUrl);
+        this.pdfState.pdfDoc = await loadingTask.promise;
+        this.pdfState.numPages = this.pdfState.pdfDoc.numPages;
+        this.viewer.loading = false;
+        
+        console.log("PDF loaded:", this.pdfState.numPages, "pages");
 
-            // 4. Render with Frame Delay (Ensures <canvas> is visible in DOM)
-            requestAnimationFrame(() => {
+        // *** THE FIX: Wait for Alpine to render the canvas ***
+        await this.$nextTick();  // Wait for Alpine DOM update
+        
+        // Extra safety: small timeout to ensure canvas is fully in DOM
+        setTimeout(() => {
+            const canvas = document.getElementById('the-canvas');
+            if (canvas) {
+                console.log("Canvas found, rendering page 1");
                 this.renderPage(1);
-            });
+            } else {
+                console.error("Canvas still not found after delay!");
+            }
+        }, 50);
 
-        } catch (error) {
-            console.error('Error loading PDF:', error);
-            alert("Could not load PDF: " + relativeUrl);
-            this.viewer.active = false;
-            this.viewer.loading = false;
-        }
-    },
+    } catch (error) {
+        console.error('Error loading PDF:', error);
+        alert("Could not load PDF: " + finalUrl);
+        this.viewer.active = false;
+        this.viewer.loading = false;
+    }
+},
         // Helper for images (Mind Map / Infographic)
         async viewImage(chapter, type) {
             this.viewer.title = `${chapter.title} - ${type.toUpperCase()}`;
