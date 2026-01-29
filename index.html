@@ -594,13 +594,15 @@
 <!-- TOOLS SECTION -->
 <div x-show="viewMode === 'tools'">
     
-    <!-- Header Area -->
-    <div class="mb-8 pt-8">
-<h1 class="text-3xl font-sans font-bold tracking-tight text-white mb-1">
-    <span x-text="currentGroup"></span> Tools
-</h1>
+<!-- Header Area -->
+    <div class="mb-12 pt-4 pl-4"> <!-- Added pl-4 to align with Academy layout -->
+        <h1 class="text-4xl font-black text-white mb-2 tracking-tighter uppercase">
+            THE <span x-text="currentGroup"></span>
+        </h1>
+        <p class="text-slate-400 font-mono text-xs uppercase tracking-widest">
+            <span x-text="navGroups.find(g => g.id === currentGroup)?.desc || 'Executive Toolkit'"></span>
+        </p>
     </div>
-
         
 
 
