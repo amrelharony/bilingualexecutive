@@ -700,6 +700,9 @@ renderPage(num) {
         this.isVipMode = false; // "Sims" tab remains hidden
     }
 
+           this.loadAcademyProgress(); 
+
+
             this.navVisible = false; 
 
             // 2. SETUP INTERACTION LISTENERS
