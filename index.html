@@ -6261,48 +6261,70 @@ END-IF."></textarea>
      :class="navVisible ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0'"
      class="fixed bottom-0 left-0 right-0 z-[40] pb-safe flex justify-center pointer-events-none transition-all duration-500 ease-in-out">
     
-    <div class="flex items-center gap-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 px-4 shadow-2xl shadow-black/50 pointer-events-auto">
+    <div class="flex items-center justify-around gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 px-6 shadow-2xl shadow-black/50 pointer-events-auto">
        
+        <!-- 1. ACADEMY BUTTON -->
         <button @click="viewMode = 'academy'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
-                class="relative px-2 py-2 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1 w-16"
+                class="relative w-16 flex flex-col items-center justify-center gap-1 group transition-all duration-300"
                 :class="viewMode === 'academy' ? 'text-white' : 'text-slate-500 hover:text-slate-300'">
-            <div :class="viewMode === 'academy' ? 'bg-slate-800' : 'bg-transparent'" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+            
+            <div class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
+                 :class="viewMode === 'academy' ? 'bg-slate-800 scale-100' : 'bg-transparent scale-90'">
                 <i class="fa-solid fa-graduation-cap text-lg"></i>
             </div>
+            
             <span class="text-[9px] font-bold uppercase tracking-widest">Academy</span>
-            <div x-show="viewMode === 'academy'" class="absolute bottom-0 w-1 h-1 bg-white rounded-full shadow-glow"></div>
+            
+            <!-- Active Dot -->
+            <div x-show="viewMode === 'academy'" class="absolute -bottom-1 w-1 h-1 bg-white rounded-full shadow-glow"></div>
         </button>
 
+        <!-- 2. RADAR BUTTON -->
         <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
-                :class="currentGroup === 'radar' && viewMode === 'tools' ? 'text-pink-400' : 'text-slate-400'"
-                class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg hover:bg-slate-800/50 transition-all">
-            <i class="fa-solid fa-bullseye text-xl"></i>
-            <span class="text-xs font-mono uppercase">RADAR</span>
+                class="relative w-16 flex flex-col items-center justify-center gap-1 group transition-all duration-300"
+                :class="currentGroup === 'radar' && viewMode === 'tools' ? 'text-pink-400' : 'text-slate-500 hover:text-slate-300'">
+            
+            <div class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
+                 :class="currentGroup === 'radar' && viewMode === 'tools' ? 'bg-pink-900/20 scale-100' : 'bg-transparent scale-90'">
+                <i class="fa-solid fa-bullseye text-lg"></i>
+            </div>
+            
+            <span class="text-[9px] font-bold uppercase tracking-widest">Radar</span>
+            
+            <!-- Active Dot -->
+            <div x-show="currentGroup === 'radar' && viewMode === 'tools'" class="absolute -bottom-1 w-1 h-1 bg-pink-400 rounded-full shadow-glow"></div>
         </button>
 
-
-
-
-        
+        <!-- 3. FORGE BUTTON -->
         <button @click="viewMode = 'tools'; currentGroup = 'forge'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
-                :class="currentGroup === 'forge' && viewMode === 'tools' ? 'text-cyan-400' : 'text-slate-400'"
-                class="flex flex-col items-center gap-1 px-4 py-2 rounded-lg hover:bg-slate-800/50 transition-all">
-            <i class="fa-solid fa-hammer text-xl"></i>
-            <span class="text-xs font-mono uppercase">FORGE</span>
+                class="relative w-16 flex flex-col items-center justify-center gap-1 group transition-all duration-300"
+                :class="currentGroup === 'forge' && viewMode === 'tools' ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'">
+            
+            <div class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
+                 :class="currentGroup === 'forge' && viewMode === 'tools' ? 'bg-cyan-900/20 scale-100' : 'bg-transparent scale-90'">
+                <i class="fa-solid fa-hammer text-lg"></i>
+            </div>
+            
+            <span class="text-[9px] font-bold uppercase tracking-widest">Forge</span>
+            
+            <!-- Active Dot -->
+            <div x-show="currentGroup === 'forge' && viewMode === 'tools'" class="absolute -bottom-1 w-1 h-1 bg-cyan-400 rounded-full shadow-glow"></div>
         </button>
 
+        <!-- 4. SIMS BUTTON (VIP ONLY) -->
         <template x-if="isVipMode">
             <button @click="viewMode = 'tools'; currentGroup = 'sims'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
-                    x-transition:enter="transition ease-out duration-500"
-                    x-transition:enter-start="opacity-0 scale-0"
-                    x-transition:enter-end="opacity-100 scale-100"
-                    class="relative px-2 py-2 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1 w-16"
-                    :class="viewMode === 'tools' && currentGroup === 'sims' ? 'text-yellow-400' : 'text-slate-500 hover:text-slate-300'">
-                <div :class="viewMode === 'tools' && currentGroup === 'sims' ? 'bg-yellow-900/20' : 'bg-transparent'" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                    class="relative w-16 flex flex-col items-center justify-center gap-1 group transition-all duration-300"
+                    :class="currentGroup === 'sims' && viewMode === 'tools' ? 'text-yellow-400' : 'text-slate-500 hover:text-slate-300'">
+                
+                <div class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
+                     :class="currentGroup === 'sims' && viewMode === 'tools' ? 'bg-yellow-900/20 scale-100' : 'bg-transparent scale-90'">
                     <i class="fa-solid fa-gamepad text-lg"></i>
                 </div>
+                
                 <span class="text-[9px] font-bold uppercase tracking-widest">Sims</span>
-                <div x-show="viewMode === 'tools' && currentGroup === 'sims'" class="absolute bottom-0 w-1 h-1 bg-yellow-400 rounded-full shadow-glow"></div>
+                
+                <div x-show="currentGroup === 'sims' && viewMode === 'tools'" class="absolute -bottom-1 w-1 h-1 bg-yellow-400 rounded-full shadow-glow"></div>
             </button>
         </template>
        
