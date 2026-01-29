@@ -2148,6 +2148,13 @@
                     
                     <p class="relative z-10 text-slate-300 text-sm italic" x-text="getLighthouseStatus().desc"></p>
 
+                    <!-- VIP OVERRIDE BUTTON -->
+<button x-show="isVipMode && lighthouseCount < 10" 
+        @click="lighthouseData.forEach(i => i.checked = true)"
+        class="mt-4 text-[10px] bg-red-900/50 text-red-400 border border-red-500 hover:bg-red-500 hover:text-black px-4 py-2 rounded uppercase font-bold tracking-widest transition-all">
+    <i class="fa-solid fa-key mr-2"></i> Executive Override
+</button>
+
                     <!-- Progress Bar -->
                     <div class="relative z-10 mt-8 w-full bg-slate-800 h-2 rounded-full overflow-hidden">
                         <div class="h-full transition-all duration-700 ease-out"
@@ -6250,31 +6257,46 @@ END-IF."></textarea>
                     </div>
 
 
-                    <!-- ARCHITECT CONSOLE (VIP ONLY) -->
-            <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
-                <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
-                    <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-microchip text-9xl text-hotpink"></i></div>
-                    <h2 class="font-mono text-3xl font-bold text-hotpink mb-2 flex items-center"><i class="fa-solid fa-user-secret mr-3"></i>VIP ARCHITECT CONSOLE</h2>
-                    <p class="text-sm text-slate-300 font-mono max-w-2xl relative z-10">ACCESS GRANTED. Welcome to the Command Center.</p>
-                </div>
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
-                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">JSON: Data Product Contract</h3>
-                        <div class="bg-black p-4 rounded text-xs text-green-400 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner">
-                            <pre x-text="vipJson"></pre>
-                        </div>
-                        <button @click="copyToClipboard(vipJson, 'Schema')" class="w-full border border-slate-600 hover:bg-slate-700 text-slate-300 text-xs font-mono py-3 rounded transition-colors flex items-center justify-center gap-2"><i class="fa-regular fa-copy"></i> COPY SCHEMA</button>
-                    </div>
-                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
-                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">PROMPT: The Boardroom Script</h3>
-                        <div class="bg-black p-4 rounded text-xs text-blue-300 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner h-32">
-                            <pre x-text="vipPrompt"></pre>
-                        </div>
-                        <button @click="copyToClipboard(vipPrompt, 'Prompt')" class="w-full bg-hotpink hover:bg-pink-600 text-white font-bold py-3 rounded text-xs font-mono transition-all flex items-center justify-center gap-2 shadow-glow-vip"><i class="fa-solid fa-robot"></i> COPY PROMPT</button>
-                    </div>
-                </div>
-            
-        </div>  
+            <!-- ARCHITECT CONSOLE (CLI VERSION) -->
+<div x-show="currentTab === 'architect'" x-cloak class="max-w-4xl mx-auto h-[70vh] flex flex-col">
+    
+    <div class="border border-yellow-500/50 bg-yellow-500/10 p-4 rounded-t-lg flex justify-between items-center">
+        <h2 class="font-mono text-xl font-bold text-yellow-500 flex items-center">
+            <i class="fa-solid fa-terminal mr-3"></i>COMMAND LINE
+        </h2>
+        <div class="flex gap-2">
+            <div class="w-3 h-3 rounded-full bg-yellow-600"></div>
+            <div class="w-3 h-3 rounded-full bg-yellow-600"></div>
+        </div>
+    </div>
+
+    <!-- Terminal Window -->
+    <div class="flex-1 bg-black border-x border-b border-yellow-500/30 rounded-b-lg p-6 font-mono text-sm overflow-hidden flex flex-col shadow-[0_0_30px_rgba(234,179,8,0.1)]">
+        
+        <!-- Logs -->
+        <div id="arch-logs" class="flex-1 overflow-y-auto space-y-2 mb-4">
+            <template x-for="log in architectConsole.logs">
+                <div :class="log.color" x-text="log.text"></div>
+            </template>
+        </div>
+
+        <!-- Input Line -->
+        <div class="flex items-center gap-2 border-t border-slate-800 pt-4">
+            <span class="text-yellow-500 animate-pulse">➜</span>
+            <input type="text" 
+                   x-model="architectConsole.input" 
+                   @keydown.enter="architectConsole.execute()"
+                   class="bg-transparent border-none outline-none text-white w-full font-bold focus:ring-0" 
+                   placeholder="Enter command..."
+                   autofocus>
+        </div>
+    </div>
+    
+    <p class="text-center text-[10px] text-slate-500 mt-4 font-mono">
+        CAUTION: CHANGES MADE HERE BYPASS SAFETY PROTOCOLS.
+    </p>
+</div>
+                    
     </div>  
 <div class="fixed bottom-0 left-0 right-0 z-[200] pb-safe flex justify-center pointer-events-none">
 
