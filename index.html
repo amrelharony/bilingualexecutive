@@ -28,13 +28,6 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
 
-    <!-- PDF.js Library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script>
-    // Initialize PDF.js Worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-</script>
-
     <!-- YOUR LOCAL FILES -->
     <link rel="stylesheet" href="css/styles.css">
 
@@ -91,15 +84,7 @@
 
     <div x-data="toolkit" class="flex w-full h-full relative">
 
-
-        <!-- VIP GOD MODE OVERLAY -->
-<div x-show="isVipMode" 
-     class="fixed inset-0 pointer-events-none z-[50] border-[4px] border-yellow-500/20 shadow-[inset_0_0_50px_rgba(234,179,8,0.2)]">
-    <div class="absolute top-4 right-4 bg-yellow-500 text-black font-black text-[10px] px-2 py-1 rounded">
-        ARCHITECT_MODE_ACTIVE
-    </div>
-</div>
-
+        
         
 
         <!-- VIP BOOT SEQUENCE -->
@@ -152,7 +137,7 @@
      x-transition:leave="transition ease-in duration-700"
      x-transition:leave-start="opacity-100 transform scale-100"
      x-transition:leave-end="opacity-0 transform scale-110"
-     class="fixed inset-0 z-[999] bg-black overflow-y-auto">
+     class="fixed inset-0 z-[200] bg-black overflow-y-auto">
 
     <!-- Background Texture -->
     <div class="fixed inset-0 opacity-20 pointer-events-none" 
@@ -266,13 +251,9 @@
         </div>
     </div>
 </div>
-
-        
-<!-- Main Content Area -->
-<main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pt-8 pb-32 md:pb-24">
-
-    
-
+            
+        <!-- Main Content Area -->
+<main class="flex-1 h-full overflow-y-auto bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-slate-900 via-[#0B1120] to-black p-6 pb-32 md:pb-24">
 
     <!-- ACADEMY VIEW -->
 <div x-show="viewMode === 'academy'" class="pb-24">
@@ -352,62 +333,12 @@
                 <div class="h-20"></div>
 
                 <div class="max-w-4xl mx-auto p-4 md:p-8 space-y-8 pb-32">
-
-                    <!-- A. Video Player (Custom) -->
-<div class="aspect-video w-full bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 relative group" id="academy-player-wrapper">
-    
-    <!-- The YouTube Target Div -->
-    <div id="academy-player" class="w-full h-full"></div>
-
-    <!-- Video Overlay (Click to Play/Pause) -->
-    <div class="absolute inset-0 z-20" 
-         @click="toggleVideoPlay()"
-         :title="videoPlaying ? 'Pause' : 'Play'">
-    </div>
-
-    <!-- Custom Controls Bar -->
-    <div class="absolute bottom-0 left-0 right-0 z-30 p-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-t from-black/90 to-transparent">
-        <div class="flex items-center gap-3 md:gap-4">
-            
-            <!-- Play/Pause -->
-            <button @click.stop="toggleVideoPlay()" class="w-8 h-8 rounded-full flex items-center justify-center text-white hover:bg-white/20 transition-all">
-                <i class="fa-solid text-xs" :class="videoPlaying ? 'fa-pause' : 'fa-play'"></i>
-            </button>
-            
-            <!-- Time Display -->
-            <div class="flex items-center gap-1 text-[10px] text-white font-mono">
-                <span x-text="formatTime(videoCurrentTime)">0:00</span>
-                <span>/</span>
-                <span x-text="formatTime(videoDuration)">0:00</span>
-            </div>
-            
-            <!-- Seek Bar -->
-            <div class="flex-1 mx-2 relative flex items-center">
-                <input type="range" 
-                       x-model="videoCurrentTime"
-                       @input="seekVideo($event.target.value)"
-                       @click.stop
-                       :max="videoDuration"
-                       step="1"
-                       class="w-full h-1 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-hotpink z-40">
-            </div>
-            
-            <!-- Volume -->
-            <div class="flex items-center gap-2">
-                <button @click.stop="toggleVideoMute()" class="text-white hover:text-hotpink transition-colors">
-                    <i class="fa-solid text-xs" :class="videoMuted ? 'fa-volume-xmark' : 'fa-volume-high'"></i>
-                </button>
-                <input type="range" x-model="videoVolume" @input="setPlayerVolume($event.target.value)" @click.stop min="0" max="100" class="w-16 h-1 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-white">
-            </div>
-
-            <!-- Fullscreen -->
-            <button @click.stop="toggleFullscreen('academy-player-wrapper')" class="text-white hover:text-hotpink transition-colors">
-                <i class="fa-solid text-xs" :class="isFullscreen ? 'fa-compress' : 'fa-expand'"></i>
-            </button>
-        </div>
-    </div>
-</div>
                     
+                    <!-- A. Video Player -->
+                    <div class="aspect-video w-full bg-black rounded-2xl overflow-hidden shadow-2xl border border-slate-700">
+                        <iframe class="w-full h-full" 
+                                :src="'https://www.youtube.com/embed/' + activeChapter.youtubeId + '?rel=0&modestbranding=1'" 
+                                frameborder="0" allowfullscreen></iframe>
                     </div>
 
                     <!-- B. Audio Deep Dive -->
@@ -421,11 +352,10 @@
                                 <p class="text-xs text-slate-400">Listen on the go (Background Play)</p>
                             </div>
                         </div>
-                        <audio controls controlsList="nodownload" oncontextmenu="return false;" class="w-full h-10 rounded">
-    <source :src="getAudioUrl(activeChapter)" type="audio/mp4">
-    Your browser does not support the audio element.
-</audio>
-                     
+                        <audio controls class="w-full h-10 rounded">
+                            <source :src="getAudioUrl(activeChapter)" type="audio/mp4">
+                            Your browser does not support the audio element.
+                        </audio>
                     </div>
 
                     <!-- C. Asset Grid (OFFLINE & CACHING ENABLED) -->
@@ -480,197 +410,127 @@
                         </button>
                     </div>
 
-                <!-- ... existing Asset Grid div ends here ... -->
-                    
-                   <!-- NEW: COMPLETION FOOTER (Clean Version) -->
-                    <div class="mt-8 pt-8 border-t border-slate-800 text-center">
-                        <p class="text-[10px] text-slate-500 uppercase mb-4 tracking-widest">
-                            Ready to advance?
-                        </p>
-                        
-                        <!-- Removed the internal 'shine' div for a flat look -->
-                        <button @click="completeActiveChapter()" 
-                                class="inline-flex items-center justify-center px-8 py-4 font-bold text-dark transition-all duration-200 bg-primary hover:bg-green-400 hover:-translate-y-1 font-mono text-xs rounded-full shadow-glow">
-                            
-                            <span class="mr-2">COMPLETE CHAPTER</span>
-                            <i class="fa-solid fa-check-circle text-lg"></i>
-                            
-                        </button>
-                    </div>
-
                 </div> <!-- End of max-w-4xl container -->
-            
             </div> <!-- End of content wrapper -->
         </template>
     </div> <!-- End of activeChapterId view -->
   </div>
                     
-  <!-- PDF / IMAGE VIEWER MODAL (PDF.JS VERSION) -->
+    <!-- PDF / IMAGE VIEWER MODAL -->
 <div x-show="viewer.active" x-cloak x-transition.opacity 
-     class="fixed inset-0 z-[150] bg-black/95 flex flex-col h-full w-full">
+     class="fixed inset-0 z-[150] bg-black/95 flex flex-col">
     
     <!-- Viewer Header -->
-    <div class="flex justify-between items-center p-4 border-b border-slate-800 bg-slate-900 shrink-0">
-        <h3 class="text-white font-bold text-sm truncate w-1/2" x-text="viewer.title"></h3>
-        
-        <!-- PDF Controls (Only visible for PDFs) -->
-        <div x-show="viewer.type === 'pdf' && !viewer.loading" class="flex items-center gap-4">
-            <button @click="prevPage()" class="text-slate-300 hover:text-white disabled:opacity-30 p-2" :disabled="pdfState.pageNum <= 1">
-                <i class="fa-solid fa-chevron-left"></i>
-            </button>
-            <span class="text-xs font-mono text-slate-400">
-                <span x-text="pdfState.pageNum"></span> / <span x-text="pdfState.numPages"></span>
-            </span>
-            <button @click="nextPage()" class="text-slate-300 hover:text-white disabled:opacity-30 p-2" :disabled="pdfState.pageNum >= pdfState.numPages">
-                <i class="fa-solid fa-chevron-right"></i>
-            </button>
-        </div>
-
-        <button @click="viewer.active = false" class="text-slate-400 hover:text-white px-2">
+    <div class="flex justify-between items-center p-4 border-b border-slate-800 bg-slate-900">
+        <h3 class="text-white font-bold text-sm truncate" x-text="viewer.title"></h3>
+        <button @click="viewer.active = false" class="text-slate-400 hover:text-white px-4">
             <i class="fa-solid fa-xmark text-xl"></i>
         </button>
     </div>
 
-    <!-- Viewer Body -->
-    <div class="flex-1 relative w-full h-full overflow-hidden flex items-center justify-center bg-slate-900 touch-pan-y">
+<!-- Viewer Body -->
+    <div class="flex-1 relative w-full h-full overflow-hidden flex items-center justify-center p-2">
         
-        <!-- Loading Spinner -->
-        <div x-show="viewer.loading" class="text-center">
-            <i class="fa-solid fa-circle-notch fa-spin text-4xl text-primary mb-4"></i>
-            <p class="text-slate-400 font-mono text-xs">RENDERING DOCUMENT...</p>
+        <!-- Loading Spinner (Shows while URL is being prepared) -->
+        <div x-show="!viewer.url" class="text-slate-500 flex flex-col items-center">
+            <i class="fa-solid fa-circle-notch fa-spin text-2xl mb-2"></i>
+            <span class="text-xs font-mono uppercase">Loading Document...</span>
         </div>
 
-        <!-- PDF Canvas Container -->
-        <div x-show="viewer.type === 'pdf' && !viewer.loading" class="w-full h-full overflow-auto flex justify-center p-2 md:p-4" id="pdf-container">
-            <canvas id="the-canvas" class="shadow-2xl max-w-full h-auto self-start bg-white"></canvas>        </div>
+        <!-- PDF Case 1: Online / Google Wrapper -->
+        <!-- Added check: viewer.url.length > 5 -->
+        <template x-if="viewer.type === 'pdf' && !viewer.isBlob && viewer.url.length > 5">
+            <iframe 
+                :src="'https://docs.google.com/gview?url=' + encodeURIComponent(viewer.url) + '&embedded=true'" 
+                class="w-full h-full rounded border border-slate-700 bg-white" 
+                frameborder="0">
+            </iframe>
+        </template>
 
-        <!-- Image Fallback (Mind Maps / Infographics) -->
-        <img x-show="viewer.type === 'image' && !viewer.loading" 
-             :src="viewer.url" 
-             @load="viewer.loading = false"
-             class="max-w-full max-h-full object-contain p-2">
-             
+        <!-- PDF Case 2: Offline / Cached Blob -->
+        <template x-if="viewer.type === 'pdf' && viewer.isBlob && viewer.url">
+            <iframe 
+                :src="viewer.url" 
+                class="w-full h-full rounded border border-slate-700 bg-white" 
+                frameborder="0">
+            </iframe>
+        </template>
+
+        <!-- Image Viewer -->
+        <template x-if="viewer.type === 'image' && viewer.url">
+            <img :src="viewer.url" class="max-w-full max-h-full object-contain rounded shadow-2xl">
+        </template>
+
     </div>
-</div>
 
-
+                    
 <!-- FLASHCARD MODAL OVERLAY -->
-<div x-show="showFlashcards" x-transition.opacity 
-     class="fixed inset-0 z-[100] flex items-center justify-center">
-    
-    <!-- 1. BACKDROP (Click to Close) -->
-    <div class="absolute inset-0 bg-black/90 backdrop-blur-sm" 
-         @click="showFlashcards = false"></div>
-
-    <!-- 2. CONTENT CONTAINER (Pointer Events Safe) -->
-    <div class="relative z-10 w-full max-w-md p-6 flex flex-col items-center pointer-events-none">
+<div x-show="showFlashcards" x-transition.opacity class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-sm flex items-center justify-center p-6">
+    <div class="w-full max-w-md bg-transparent perspective-1000 relative">
         
-        <!-- Close Button (Enable pointer events) -->
-        <button @click="showFlashcards = false" 
-                class="absolute -top-12 right-6 text-slate-400 hover:text-white text-2xl p-4 pointer-events-auto">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
+        <!-- Close Button -->
+        <button @click="showFlashcards = false" class="absolute -top-12 right-0 text-white text-xl"><i class="fa-solid fa-xmark"></i></button>
 
         <!-- Loading State -->
-        <div x-show="flashcardLoading" class="text-white text-center py-20">
+        <div x-show="flashcardLoading" class="text-white text-center">
             <i class="fa-solid fa-circle-notch fa-spin text-4xl mb-4"></i>
             <p>Shuffling Deck...</p>
         </div>
 
-        <!-- THE CARD (Enable pointer events) -->
+        <!-- The Card (Flip Logic) -->
         <div x-show="!flashcardLoading && flashcardDeck.length > 0" 
              @click="isFlipped = !isFlipped"
-             class="relative w-full aspect-[4/5] transition-all duration-300 transform-style-3d cursor-pointer mb-8 pointer-events-auto perspective-1000"
+             class="relative w-full aspect-[4/5] transition-all duration-500 transform-style-3d cursor-pointer"
              :class="isFlipped ? 'rotate-y-180' : ''">
             
-            <!-- Front -->
+            <!-- Front (Question) -->
             <div class="absolute inset-0 backface-hidden bg-slate-800 rounded-2xl border-2 border-slate-600 flex flex-col items-center justify-center p-8 text-center shadow-2xl">
                 <span class="text-xs font-mono text-slate-400 uppercase tracking-widest mb-4">QUESTION</span>
-                <h3 class="text-xl md:text-2xl font-bold text-white leading-tight select-none" x-text="flashcardDeck[currentCardIndex]?.q"></h3>
-                <p class="text-[10px] text-slate-500 mt-8 absolute bottom-8 uppercase tracking-widest">Tap to Flip</p>
+                <h3 class="text-2xl font-bold text-white leading-tight" x-text="flashcardDeck[currentCardIndex]?.q"></h3>
+                <p class="text-xs text-slate-500 mt-8 absolute bottom-8">Tap to Reveal</p>
             </div>
 
-            <!-- Back -->
+            <!-- Back (Answer) -->
             <div class="absolute inset-0 backface-hidden bg-white rounded-2xl border-2 border-white flex flex-col items-center justify-center p-8 text-center rotate-y-180 shadow-2xl">
                 <span class="text-xs font-mono text-slate-400 uppercase tracking-widest mb-4">ANSWER</span>
-                <h3 class="text-lg md:text-xl font-medium text-slate-900 leading-relaxed select-none" x-text="flashcardDeck[currentCardIndex]?.a"></h3>
+                <h3 class="text-xl font-medium text-slate-900 leading-relaxed" x-text="flashcardDeck[currentCardIndex]?.a"></h3>
+                <button @click.stop="nextCard()" class="mt-8 px-6 py-2 bg-black text-white rounded-full text-xs font-bold uppercase tracking-widest hover:bg-slate-800 transition-colors">
+                    Next Card <i class="fa-solid fa-arrow-right ml-2"></i>
+                </button>
             </div>
         </div>
+    </div>
+</div>
 
-        <!-- CONTROLS BAR (Enable pointer events + High Z-Index) -->
-        <div x-show="!flashcardLoading && flashcardDeck.length > 0" 
-             class="w-full flex items-center justify-between gap-4 pointer-events-auto relative z-[110]">
+        <div x-show="viewMode === 'tools'">
+
+    <!-- Header Area -->
+    <div class="mb-8 pt-8">
+        <h1 class="text-3xl font-sans font-bold tracking-tight text-white mb-1" x-text="navGroups.find(g => g.id === currentGroup).label"></h1>
+        <p class="text-slate-400 font-mono text-xs uppercase tracking-widest" x-text="navGroups.find(g => g.id === currentGroup).desc"></p>
+    </div>
+
+    <!-- The Grid of Tools for the Current Group -->
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+    <template x-for="tool in tools[currentGroup]" :key="tool.id">
+        <button @click="currentTab = tool.id; window.scrollTo({ top: 0, behavior: 'smooth' })" 
+                class="group relative bg-slate-800/40 backdrop-blur-md border border-white/5 hover:border-white/20 p-4 md:p-6 rounded-2xl text-left transition-all hover:-translate-y-1 hover:shadow-glow flex flex-col justify-between h-full">
             
-            <div class="text-slate-400 font-mono text-xs pl-2">
-                <span x-text="currentCardIndex + 1"></span> / <span x-text="flashcardDeck.length"></span>
+            <div class="w-10 h-10 rounded-full bg-slate-900/80 flex items-center justify-center mb-4 border border-white/5 group-hover:scale-110 transition-transform shadow-lg">
+                <i :class="[tool.icon, tool.color]" class="text-lg" aria-hidden="true"></i>
             </div>
-
-            <!-- BIGGER TOUCH TARGET -->
-            <button @click.stop="nextCard()" 
-                    class="group relative px-8 py-4 bg-hotpink hover:bg-pink-600 text-white rounded-full text-sm font-bold uppercase tracking-widest shadow-glow-vip transition-all active:scale-95 touch-manipulation">
-                <span class="flex items-center gap-2">
-                    NEXT <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
-                </span>
-            </button>
-        </div>
-
-    </div>
-</div>
-        
-
-<!-- TOOLS SECTION -->
-<div x-show="viewMode === 'tools'">
-    
-<!-- Header Area -->
-    <div class="mb-12 pt-4 pl-4"> <!-- Added pl-4 to align with Academy layout -->
-        <h1 class="text-4xl font-black text-white mb-2 tracking-tighter uppercase">
-            THE <span x-text="currentGroup"></span>
-        </h1>
-        <p class="text-slate-400 font-mono text-xs uppercase tracking-widest">
-            <span x-text="navGroups.find(g => g.id === currentGroup)?.desc || 'Executive Toolkit'"></span>
-        </p>
-    </div>
-        
-
-
-<!-- TOOLS DASHBOARD VIEW (DIAGNOSTIC MODE) -->
-<div x-show="currentTab === 'dashboard'" class="w-full">
-
-    <!-- 1. SAFETY CHECK: Is 'tools' loaded? -->
-    <div x-show="!tools" class="bg-red-500 text-white p-4 rounded-xl mb-4 animate-pulse">
-        <i class="fa-solid fa-bug mr-2"></i> 
-        <strong>CRITICAL ERROR:</strong> The 'tools' data is missing. Check your app.js syntax.
-    </div>
-
-    <!-- 2. SAFETY CHECK: Does the current group exist? -->
-    <div x-show="tools && !tools[currentGroup]" class="bg-yellow-500 text-black p-4 rounded-xl mb-4">
-        <i class="fa-solid fa-triangle-exclamation mr-2"></i>
-        <strong>GROUP ERROR:</strong> Cannot find tools for group "<span x-text="currentGroup"></span>". 
-        <br>Available groups: <span x-text="Object.keys(tools).join(', ')"></span>
-    </div>
-
-    <!-- 3. THE GRID (Protected Loop) -->
-    <div x-show="tools && tools[currentGroup]" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-        <template x-for="tool in (tools && tools[currentGroup] ? tools[currentGroup] : [])" :key="tool.id">
-            <button @click="currentTab = tool.id; window.scrollTo({ top: 0, behavior: 'smooth' })" 
-                    class="group relative bg-slate-800/40 backdrop-blur-md border border-white/5 hover:border-white/20 p-4 md:p-6 rounded-2xl text-left transition-all hover:-translate-y-1 hover:shadow-glow flex flex-col justify-between h-full min-h-[140px]">
-                
-                <div class="w-10 h-10 rounded-full bg-slate-900/80 flex items-center justify-center mb-4 border border-white/5 group-hover:scale-110 transition-transform shadow-lg">
-                    <!-- Safe Class Binding -->
-                    <i :class="tool.icon + ' ' + tool.color" class="text-lg" aria-hidden="true"></i>
+            
+            <div class="relative w-full">
+                <span class="block text-white font-medium text-sm leading-tight pr-4" x-text="tool.label"></span>
+                <div class="absolute bottom-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i class="fa-solid fa-arrow-right text-xs text-slate-500"></i>
                 </div>
-                
-                <div class="relative w-full">
-                    <span class="block text-white font-medium text-sm leading-tight pr-4" x-text="tool.label"></span>
-                    <div class="absolute bottom-0 right-0 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <i class="fa-solid fa-arrow-right text-xs text-slate-500"></i>
-                    </div>
-                </div>
-            </button>
-        </template>
-    </div>
+            </div>
+        </button>
+    </template>
 </div>
-    
+
+
     <!-- ACTIVE TOOL RENDERER -->
     <!-- Only show the specific tool UI if one is selected, overlaying the grid -->
     <div x-show="currentTab !== 'dashboard'" 
@@ -2147,13 +2007,6 @@
                         x-text="getLighthouseStatus().title"></h3>
                     
                     <p class="relative z-10 text-slate-300 text-sm italic" x-text="getLighthouseStatus().desc"></p>
-
-                    <!-- VIP OVERRIDE BUTTON -->
-<button x-show="isVipMode && lighthouseCount < 10" 
-        @click="lighthouseData.forEach(i => i.checked = true)"
-        class="mt-4 text-[10px] bg-red-900/50 text-red-400 border border-red-500 hover:bg-red-500 hover:text-black px-4 py-2 rounded uppercase font-bold tracking-widest transition-all">
-    <i class="fa-solid fa-key mr-2"></i> Executive Override
-</button>
 
                     <!-- Progress Bar -->
                     <div class="relative z-10 mt-8 w-full bg-slate-800 h-2 rounded-full overflow-hidden">
@@ -6257,159 +6110,143 @@ END-IF."></textarea>
                     </div>
 
 
-           <!-- ARCHITECT CONSOLE (CLI VERSION) -->
-<div x-show="currentTab === 'architect'" x-cloak class="max-w-4xl mx-auto h-[70vh] flex flex-col">
-    
-    <div class="border border-yellow-500/50 bg-yellow-500/10 p-4 rounded-t-lg flex justify-between items-center">
-        <h2 class="font-mono text-xl font-bold text-yellow-500 flex items-center">
-            <i class="fa-solid fa-terminal mr-3"></i>COMMAND LINE
-        </h2>
-        <div class="flex gap-2">
-            <div class="w-3 h-3 rounded-full bg-yellow-600"></div>
-            <div class="w-3 h-3 rounded-full bg-yellow-600"></div>
-        </div>
-    </div>
-
-    <!-- Terminal Window -->
-    <div class="flex-1 bg-black border-x border-b border-yellow-500/30 rounded-b-lg p-6 font-mono text-sm overflow-hidden flex flex-col shadow-[0_0_30px_rgba(234,179,8,0.1)]">
-        
-        <!-- Logs -->
-        <div id="arch-logs" class="flex-1 overflow-y-auto space-y-2 mb-4">
-            <template x-for="log in architectConsole.logs">
-                <div :class="log.color" x-text="log.text"></div>
-            </template>
-        </div>
-
-        <!-- Input Line -->
-        <div class="flex items-center gap-2 border-t border-slate-800 pt-4">
-            <span class="text-yellow-500 animate-pulse">➜</span>
-            <input type="text" 
-                   x-model="architectConsole.input" 
-                   @keydown.enter="architectConsole.execute()"
-                   class="bg-transparent border-none outline-none text-white w-full font-bold focus:ring-0" 
-                   placeholder="Enter command..."
-                   autofocus>
-        </div>
-    </div>
-    
-    <p class="text-center text-[10px] text-slate-500 mt-4 font-mono">
-        CAUTION: CHANGES MADE HERE BYPASS SAFETY PROTOCOLS.
-    </p>
-</div>
-
-    <!-- Terminal Window -->
-    <div class="flex-1 bg-black border-x border-b border-yellow-500/30 rounded-b-lg p-6 font-mono text-sm overflow-hidden flex flex-col shadow-[0_0_30px_rgba(234,179,8,0.1)]">
-        
-        <!-- Logs -->
-        <div id="arch-logs" class="flex-1 overflow-y-auto space-y-2 mb-4">
-            <template x-for="log in architectConsole.logs">
-                <div :class="log.color" x-text="log.text"></div>
-            </template>
-        </div>
-
-        <!-- Input Line -->
-        <div class="flex items-center gap-2 border-t border-slate-800 pt-4">
-            <span class="text-yellow-500 animate-pulse">➜</span>
-            <input type="text" 
-                   x-model="architectConsole.input" 
-                   @keydown.enter="architectConsole.execute()"
-                   class="bg-transparent border-none outline-none text-white w-full font-bold focus:ring-0" 
-                   placeholder="Enter command..."
-                   autofocus>
-        </div>
-    </div>
-    
-    <p class="text-center text-[10px] text-slate-500 mt-4 font-mono">
-        CAUTION: CHANGES MADE HERE BYPASS SAFETY PROTOCOLS.
-    </p>
-</div>
-                    
+                    <!-- ARCHITECT CONSOLE (VIP ONLY) -->
+            <div x-show="currentTab === 'architect'" x-cloak class="max-w-5xl mx-auto">
+                <div class="border border-hotpink/50 bg-hotpink/5 p-6 rounded-lg mb-8 relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-4 opacity-20"><i class="fa-solid fa-microchip text-9xl text-hotpink"></i></div>
+                    <h2 class="font-mono text-3xl font-bold text-hotpink mb-2 flex items-center"><i class="fa-solid fa-user-secret mr-3"></i>VIP ARCHITECT CONSOLE</h2>
+                    <p class="text-sm text-slate-300 font-mono max-w-2xl relative z-10">ACCESS GRANTED. Welcome to the Command Center.</p>
+                </div>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
+                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">JSON: Data Product Contract</h3>
+                        <div class="bg-black p-4 rounded text-xs text-green-400 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner">
+                            <pre x-text="vipJson"></pre>
+                        </div>
+                        <button @click="copyToClipboard(vipJson, 'Schema')" class="w-full border border-slate-600 hover:bg-slate-700 text-slate-300 text-xs font-mono py-3 rounded transition-colors flex items-center justify-center gap-2"><i class="fa-regular fa-copy"></i> COPY SCHEMA</button>
+                    </div>
+                    <div class="bg-card p-6 rounded-lg border-t-4 border-t-hotpink">
+                        <h3 class="text-white font-bold mb-3 font-mono flex justify-between">PROMPT: The Boardroom Script</h3>
+                        <div class="bg-black p-4 rounded text-xs text-blue-300 font-mono overflow-x-auto mb-4 border border-slate-800 shadow-inner h-32">
+                            <pre x-text="vipPrompt"></pre>
+                        </div>
+                        <button @click="copyToClipboard(vipPrompt, 'Prompt')" class="w-full bg-hotpink hover:bg-pink-600 text-white font-bold py-3 rounded text-xs font-mono transition-all flex items-center justify-center gap-2 shadow-glow-vip"><i class="fa-solid fa-robot"></i> COPY PROMPT</button>
+                    </div>
+                </div>
+            
+        </div>  
     </div>  
-<div class="fixed bottom-0 left-0 right-0 z-[200] pb-safe flex justify-center pointer-events-none">
 
-</div>  
+</div> 
 
-    </div> <!-- End of tools content -->
-</div> <!-- End viewMode='tools' Wrapper -->
+
+<!-- UNIFIED FLOATING DOCK -->
+<<div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-auto transition-all duration-500 ease-in-out"
+
+    
+    <div class="flex items-center gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 shadow-2xl shadow-black/50">
+        
+        <!-- 1. ACADEMY TAB -->
+        <button @click="viewMode = 'academy'; currentTab = 'dashboard'"
+                class="relative px-4 md:px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
+                :class="viewMode === 'academy' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+            <i class="fa-solid fa-graduation-cap text-lg mb-0.5 transition-transform group-active:scale-90"></i>
+            <span class="text-[9px] font-bold uppercase tracking-widest">Academy</span>
+            <div x-show="viewMode === 'academy'" class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
+        </button>
+
+        <!-- DIVIDER -->
+        <div class="w-px h-8 bg-white/10 mx-1"></div>
+
+        <!-- 2. RADAR TAB -->
+        <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'"
+                class="relative px-4 md:px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
+                :class="viewMode === 'tools' && currentGroup === 'radar' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+            <i class="fa-solid fa-bullseye text-lg mb-0.5 transition-transform group-active:scale-90"></i>
+            <span class="text-[9px] font-bold uppercase tracking-widest">Radar</span>
+            <div x-show="viewMode === 'tools' && currentGroup === 'radar'" class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
+        </button>
+
+        <!-- 3. FORGE TAB -->
+        <button @click="viewMode = 'tools'; currentGroup = 'forge'; currentTab = 'dashboard'"
+                class="relative px-4 md:px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
+                :class="viewMode === 'tools' && currentGroup === 'forge' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+            <i class="fa-solid fa-hammer text-lg mb-0.5 transition-transform group-active:scale-90"></i>
+            <span class="text-[9px] font-bold uppercase tracking-widest">Forge</span>
+            <div x-show="viewMode === 'tools' && currentGroup === 'forge'" class="absolute -bottom-1 w-1 h-1 bg-primary rounded-full shadow-glow"></div>
+        </button>
+
+        <!-- 4. SIMS TAB (VIP ONLY) -->
+        <button @click="viewMode = 'tools'; currentGroup = 'sims'; currentTab = 'dashboard'"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 scale-50"
+                x-transition:enter-end="opacity-100 scale-100"
+                class="relative px-4 md:px-6 py-3 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1"
+                :class="viewMode === 'tools' && currentGroup === 'sims' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'">
+            <i class="fa-solid fa-gamepad text-lg mb-0.5 transition-transform group-active:scale-90 text-hotpink"></i>
+            <span class="text-[9px] font-bold uppercase tracking-widest text-hotpink">Sims</span>
+            <div x-show="viewMode === 'tools' && currentGroup === 'sims'" class="absolute -bottom-1 w-1 h-1 bg-hotpink rounded-full shadow-glow"></div>
+        </button>
+
+    </div>
+</div>
+
+    </div> <!-- End viewMode='tools' Wrapper -->
+
+    <div class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-auto transition-all duration-500 ease-in-out">
+    
+    <div class="flex items-center gap-2 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 px-4 shadow-2xl shadow-black/50">
+        
+        <button @click="viewMode = 'academy'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
+                class="relative px-2 py-2 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1 w-16"
+                :class="viewMode === 'academy' ? 'text-white' : 'text-slate-500 hover:text-slate-300'">
+            <div :class="viewMode === 'academy' ? 'bg-slate-800' : 'bg-transparent'" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-graduation-cap text-lg"></i>
+            </div>
+            <span class="text-[9px] font-bold uppercase tracking-widest">Academy</span>
+            <div x-show="viewMode === 'academy'" class="absolute bottom-0 w-1 h-1 bg-white rounded-full shadow-glow"></div>
+        </button>
+
+        <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
+                class="relative px-2 py-2 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1 w-16"
+                :class="viewMode === 'tools' && currentGroup === 'radar' ? 'text-hotpink' : 'text-slate-500 hover:text-slate-300'">
+             <div :class="viewMode === 'tools' && currentGroup === 'radar' ? 'bg-hotpink/10' : 'bg-transparent'" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-bullseye text-lg"></i>
+            </div>
+            <span class="text-[9px] font-bold uppercase tracking-widest">Radar</span>
+            <div x-show="viewMode === 'tools' && currentGroup === 'radar'" class="absolute bottom-0 w-1 h-1 bg-hotpink rounded-full shadow-glow"></div>
+        </button>
+
+        <button @click="viewMode = 'tools'; currentGroup = 'forge'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
+                class="relative px-2 py-2 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1 w-16"
+                :class="viewMode === 'tools' && currentGroup === 'forge' ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'">
+             <div :class="viewMode === 'tools' && currentGroup === 'forge' ? 'bg-cyan-900/20' : 'bg-transparent'" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                <i class="fa-solid fa-hammer text-lg"></i>
+            </div>
+            <span class="text-[9px] font-bold uppercase tracking-widest">Forge</span>
+            <div x-show="viewMode === 'tools' && currentGroup === 'forge'" class="absolute bottom-0 w-1 h-1 bg-cyan-400 rounded-full shadow-glow"></div>
+        </button>
+
+        <template x-if="isVipMode">
+            <button @click="viewMode = 'tools'; currentGroup = 'sims'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
+                    x-transition:enter="transition ease-out duration-500"
+                    x-transition:enter-start="opacity-0 scale-0"
+                    x-transition:enter-end="opacity-100 scale-100"
+                    class="relative px-2 py-2 rounded-full transition-all duration-300 group flex flex-col items-center justify-center gap-1 w-16"
+                    :class="viewMode === 'tools' && currentGroup === 'sims' ? 'text-yellow-400' : 'text-slate-500 hover:text-slate-300'">
+                 <div :class="viewMode === 'tools' && currentGroup === 'sims' ? 'bg-yellow-900/20' : 'bg-transparent'" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-gamepad text-lg"></i>
+                </div>
+                <span class="text-[9px] font-bold uppercase tracking-widest">Sims</span>
+                <div x-show="viewMode === 'tools' && currentGroup === 'sims'" class="absolute bottom-0 w-1 h-1 bg-yellow-400 rounded-full shadow-glow"></div>
+            </button>
+        </template>
+
+    </div>
+</div>
 </main>
 
 
-    <!-- NAVIGATION BAR -->
-<div x-show="!showLanding" 
-     :class="navVisible ? 'translate-y-0 opacity-100' : 'translate-y-[120%] opacity-0'"
-     class="fixed bottom-0 left-0 right-0 z-[40] pb-safe flex justify-center pointer-events-none transition-all duration-500 ease-in-out">
-    
-    <div class="flex items-center justify-around gap-1 bg-slate-900/90 backdrop-blur-xl border border-white/10 rounded-full p-2 px-6 shadow-2xl shadow-black/50 pointer-events-auto">
-       
-        <!-- 1. ACADEMY BUTTON -->
-        <button @click="viewMode = 'academy'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
-                class="relative w-16 flex flex-col items-center justify-center gap-1 group transition-all duration-300"
-                :class="viewMode === 'academy' ? 'text-white' : 'text-slate-500 hover:text-slate-300'">
-            
-            <div class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
-                 :class="viewMode === 'academy' ? 'bg-slate-800 scale-100' : 'bg-transparent scale-90'">
-                <i class="fa-solid fa-graduation-cap text-lg"></i>
-            </div>
-            
-            <span class="text-[9px] font-bold uppercase tracking-widest">Academy</span>
-            
-            <!-- Active Dot -->
-            <div x-show="viewMode === 'academy'" class="absolute -bottom-1 w-1 h-1 bg-white rounded-full shadow-glow"></div>
-        </button>
-
-        <!-- 2. RADAR BUTTON -->
-        <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
-                class="relative w-16 flex flex-col items-center justify-center gap-1 group transition-all duration-300"
-                :class="currentGroup === 'radar' && viewMode === 'tools' ? 'text-pink-400' : 'text-slate-500 hover:text-slate-300'">
-            
-            <div class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
-                 :class="currentGroup === 'radar' && viewMode === 'tools' ? 'bg-pink-900/20 scale-100' : 'bg-transparent scale-90'">
-                <i class="fa-solid fa-bullseye text-lg"></i>
-            </div>
-            
-            <span class="text-[9px] font-bold uppercase tracking-widest">Radar</span>
-            
-            <!-- Active Dot -->
-            <div x-show="currentGroup === 'radar' && viewMode === 'tools'" class="absolute -bottom-1 w-1 h-1 bg-pink-400 rounded-full shadow-glow"></div>
-        </button>
-
-        <!-- 3. FORGE BUTTON -->
-        <button @click="viewMode = 'tools'; currentGroup = 'forge'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
-                class="relative w-16 flex flex-col items-center justify-center gap-1 group transition-all duration-300"
-                :class="currentGroup === 'forge' && viewMode === 'tools' ? 'text-cyan-400' : 'text-slate-500 hover:text-slate-300'">
-            
-            <div class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
-                 :class="currentGroup === 'forge' && viewMode === 'tools' ? 'bg-cyan-900/20 scale-100' : 'bg-transparent scale-90'">
-                <i class="fa-solid fa-hammer text-lg"></i>
-            </div>
-            
-            <span class="text-[9px] font-bold uppercase tracking-widest">Forge</span>
-            
-            <!-- Active Dot -->
-            <div x-show="currentGroup === 'forge' && viewMode === 'tools'" class="absolute -bottom-1 w-1 h-1 bg-cyan-400 rounded-full shadow-glow"></div>
-        </button>
-
-        <!-- 4. SIMS BUTTON (VIP ONLY) -->
-        <template x-if="isVipMode">
-            <button @click="viewMode = 'tools'; currentGroup = 'sims'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
-                    class="relative w-16 flex flex-col items-center justify-center gap-1 group transition-all duration-300"
-                    :class="currentGroup === 'sims' && viewMode === 'tools' ? 'text-yellow-400' : 'text-slate-500 hover:text-slate-300'">
-                
-                <div class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
-                     :class="currentGroup === 'sims' && viewMode === 'tools' ? 'bg-yellow-900/20 scale-100' : 'bg-transparent scale-90'">
-                    <i class="fa-solid fa-gamepad text-lg"></i>
-                </div>
-                
-                <span class="text-[9px] font-bold uppercase tracking-widest">Sims</span>
-                
-                <div x-show="currentGroup === 'sims' && viewMode === 'tools'" class="absolute -bottom-1 w-1 h-1 bg-yellow-400 rounded-full shadow-glow"></div>
-            </button>
-        </template>
-       
-    </div>
-</div> <!-- End viewMode='tools' wrapper -->
-
-    
     <!-- Service Worker -->
 
     <script>
