@@ -539,6 +539,64 @@ renderPage(num) {
     if(audio) audio.pause();
 },
 
+        // --- ACADEMY PROGRESS ENGINE ---
+        
+        // 1. Save current status to LocalStorage
+        saveAcademyProgress() {
+            const progress = {};
+            this.metroMap.forEach(part => {
+                part.chapters.forEach(c => {
+                    progress[c.id] = c.status;
+                });
+            });
+            localStorage.setItem('bilingual_academy_progress', JSON.stringify(progress));
+        },
+
+        // 2. Load status on startup
+        loadAcademyProgress() {
+            const saved = localStorage.getItem('bilingual_academy_progress');
+            if (saved) {
+                const progress = JSON.parse(saved);
+                this.metroMap.forEach(part => {
+                    part.chapters.forEach(c => {
+                        if (progress[c.id]) {
+                            c.status = progress[c.id];
+                        }
+                    });
+                });
+            }
+        },
+
+        // 3. The "Complete" Action
+        completeActiveChapter() {
+            if (!this.activeChapter) return;
+            const currentId = this.activeChapter.id;
+            
+            // A. Create a flat list of all chapters to find the index easily
+            const allChapters = this.metroMap.flatMap(part => part.chapters);
+            const currentIndex = allChapters.findIndex(c => c.id === currentId);
+            
+            // B. Mark current as completed
+            const current = allChapters[currentIndex];
+            current.status = 'completed';
+
+            // C. Unlock next chapter (if exists)
+            let nextMessage = "Chapter Completed!";
+            if (currentIndex < allChapters.length - 1) {
+                const nextChapter = allChapters[currentIndex + 1];
+                if (nextChapter.status === 'locked') {
+                    nextChapter.status = 'active';
+                    nextMessage = `Chapter Completed! Unlocked: "${nextChapter.title}"`;
+                }
+            } else {
+                nextMessage = "CONGRATULATIONS! You have finished the Academy.";
+            }
+
+            // D. Save & Close
+            this.saveAcademyProgress();
+            alert(nextMessage);
+            this.closeChapter();
+        },
         
        // Flashcard Engine
         async launchFlashcards(chapter) {
