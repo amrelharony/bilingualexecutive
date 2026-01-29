@@ -154,50 +154,69 @@ document.addEventListener('alpine:init', () => {
 
         // --- PDF.JS RENDERING ENGINE ---
     
-    renderPage(num) {
+renderPage(num) {
+        // Prevent overlapping renders
+        if (this.pdfState.pageRendering) {
+            this.pdfState.pageNumPending = num;
+            return;
+        }
+
         this.pdfState.pageRendering = true;
-        
+
         // Fetch page
         this.pdfState.pdfDoc.getPage(num).then((page) => {
             const canvas = document.getElementById('the-canvas');
-            const ctx = canvas.getContext('2d');
+            if (!canvas) {
+                this.pdfState.pageRendering = false;
+                return;
+            }
             
-            // Calculate scale to fit width of container
+            const ctx = canvas.getContext('2d');
+
+            // 1. Smart Width Calculation
             const container = document.getElementById('pdf-container');
-            // Fallback to window width if container is hidden/zero
-            let desiredWidth = container ? container.clientWidth - 20 : window.innerWidth - 20;
-            if (desiredWidth <= 0) desiredWidth = window.innerWidth - 20;
+            let clientWidth = container?.clientWidth || window.innerWidth;
+            if (clientWidth < 320) clientWidth = window.innerWidth;
+            const desiredWidth = clientWidth - 30; 
+
+            // 2. Scale Viewport
             const viewport = page.getViewport({ scale: 1 });
             const scale = desiredWidth / viewport.width;
             const scaledViewport = page.getViewport({ scale: scale });
 
-            // Set dimensions
+            // 3. Resize Canvas
             canvas.height = scaledViewport.height;
             canvas.width = scaledViewport.width;
 
-            // Render
+            // 4. Render
             const renderContext = {
                 canvasContext: ctx,
                 viewport: scaledViewport
             };
+            
             const renderTask = page.render(renderContext);
 
-            // Wait for render to finish
+            // Handle Success
             renderTask.promise.then(() => {
                 this.pdfState.pageRendering = false;
-                
-                // Check if next page requested while rendering
                 if (this.pdfState.pageNumPending !== null) {
                     this.renderPage(this.pdfState.pageNumPending);
                     this.pdfState.pageNumPending = null;
                 }
+            }).catch(err => {
+                // Handle Render Error (e.g. cancelled)
+                console.error("Render error:", err);
+                this.pdfState.pageRendering = false;
             });
+        }).catch(err => {
+            console.error("GetPage error:", err);
+            this.pdfState.pageRendering = false;
         });
 
-        // Update current page counter
+        // Update UI counter immediately
         this.pdfState.pageNum = num;
     },
-
+        
     queueRenderPage(num) {
         if (this.pdfState.pageRendering) {
             this.pdfState.pageNumPending = num;
@@ -384,69 +403,54 @@ document.addEventListener('alpine:init', () => {
         },
         
         // --- UPDATED VIEWER LOGIC ---
-      async viewPdf(chapter) {
-            this.viewer.title = `${chapter.title} - Slides`;
-            this.viewer.type = 'pdf';
-            this.viewer.active = true;
-            this.viewer.loading = true; // Show spinner
-            this.pdfState.pageNum = 1;  // Reset page
+async viewPdf(chapter) {
+        this.viewer.title = `${chapter.title} - Slides`;
+        this.viewer.type = 'pdf';
+        this.viewer.active = true;
+        this.viewer.loading = true;
+        this.pdfState.pageNum = 1;
+        this.pdfState.pageRendering = false; // Force reset lock
+        this.pdfState.pageNumPending = null;
 
-            // Force local path for stability
-            // This ensures it works on localhost AND GitHub Pages without CORS errors
-            const originalUrl = this.getSlideUrl(chapter);
-            let finalUrl = originalUrl;
+        // 1. Determine URL (Prefer Local Relative Path)
+        // This relative path is critical for GitHub Pages & Localhost to share logic
+        const relativeUrl = `assets/${chapter.folder}/slides.pdf`;
+        let finalUrl = relativeUrl;
 
-            // 1. CHECK CACHE / OFFLINE FIRST
-            if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
-                try {
-                    const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
-                    const cache = await caches.open(cacheName);
-                    // Try to match the relative path, or the full absolute path
-                    let response = await cache.match(originalUrl);
-                    
-                    // Fallback: try matching with the full URL if relative failed
-                    if (!response) {
-                        const fullUrl = this.getSlideUrl(chapter);
-                        response = await cache.match(fullUrl);
-                    }
-                    
-                    if (response) {
-                        const blob = await response.blob();
-                        finalUrl = URL.createObjectURL(blob);
-                        console.log("Loaded PDF from Cache");
-                    }
-                } catch(e) { 
-                    console.warn("Cache load failed, trying network", e); 
-                }
-            }
-
-            // 2. LOAD INTO PDF.JS
+        // 2. Check Cache
+        if (this.offlineManager.isCached(chapter.id) || !navigator.onLine) {
             try {
-                // ✅ UPDATED CONFIGURATION HERE
-                const loadingTask = pdfjsLib.getDocument({
-                    url: finalUrl,
-                    cMapUrl: 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/cmaps/',
-                    cMapPacked: true,
-                });
+                const cacheName = this.offlineManager.cacheName || 'bilingual-content-v1';
+                const cache = await caches.open(cacheName);
+                const response = await cache.match(relativeUrl);
+                if (response) {
+                    const blob = await response.blob();
+                    finalUrl = URL.createObjectURL(blob);
+                }
+            } catch(e) { console.warn("Cache lookup failed", e); }
+        }
 
-                this.pdfState.pdfDoc = await loadingTask.promise;
-                
-                this.pdfState.numPages = this.pdfState.pdfDoc.numPages;
-                this.viewer.loading = false; // Hide spinner
+        // 3. Load Document (Simplified Config)
+        try {
+            // Removing cMap settings to prevent CDN blocking
+            const loadingTask = pdfjsLib.getDocument(finalUrl);
 
-                // Wait 50ms for the DOM to update (removes the "hidden" class)
-                setTimeout(() => {
-                    this.renderPage(1);
-                }, 50);
+            this.pdfState.pdfDoc = await loadingTask.promise;
+            this.pdfState.numPages = this.pdfState.pdfDoc.numPages;
+            this.viewer.loading = false;
 
-            } catch (error) {
-                console.error('Error loading PDF:', error);
-                alert("Could not load PDF. " + (navigator.onLine ? "Check that slides.pdf exists in the assets folder." : "File not available offline."));
-                this.viewer.active = false;
-                this.viewer.loading = false;
-            }
-        },
+            // 4. Render with Frame Delay (Ensures <canvas> is visible in DOM)
+            requestAnimationFrame(() => {
+                this.renderPage(1);
+            });
 
+        } catch (error) {
+            console.error('Error loading PDF:', error);
+            alert("Could not load PDF: " + relativeUrl);
+            this.viewer.active = false;
+            this.viewer.loading = false;
+        }
+    },
         // Helper for images (Mind Map / Infographic)
         async viewImage(chapter, type) {
             this.viewer.title = `${chapter.title} - ${type.toUpperCase()}`;
