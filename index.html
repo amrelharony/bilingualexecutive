@@ -474,25 +474,23 @@
 
 <!-- ... existing Asset Grid div ends here ... -->
                     
-                    <!-- NEW: COMPLETION FOOTER -->
+<!-- NEW: COMPLETION FOOTER (Clean Version) -->
                     <div class="mt-8 pt-8 border-t border-slate-800 text-center">
                         <p class="text-[10px] text-slate-500 uppercase mb-4 tracking-widest">
                             Ready to advance?
                         </p>
                         
+                        <!-- Removed the internal 'shine' div for a flat look -->
                         <button @click="completeActiveChapter()" 
-                                class="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white transition-all duration-200 bg-primary hover:bg-green-400 font-mono text-xs rounded-full shadow-glow">
+                                class="inline-flex items-center justify-center px-8 py-4 font-bold text-dark transition-all duration-200 bg-primary hover:bg-green-400 hover:-translate-y-1 font-mono text-xs rounded-full shadow-glow">
                             
                             <span class="mr-2">COMPLETE CHAPTER</span>
                             <i class="fa-solid fa-check-circle text-lg"></i>
                             
-                            <!-- Shine Effect -->
-                            <div class="absolute inset-0 -translate-x-full group-hover:animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
                         </button>
                     </div>
 
-                </div> <!-- End of max-w-4xl container -->
-                
+                </div> <!-- End of max-w-4xl container -->                
 
                         </div> <!-- End of content wrapper -->
         </template>
