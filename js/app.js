@@ -164,7 +164,9 @@ document.addEventListener('alpine:init', () => {
             
             // Calculate scale to fit width of container
             const container = document.getElementById('pdf-container');
-            const desiredWidth = container.clientWidth - 20; // Padding
+            // Fallback to window width if container is hidden/zero
+            let desiredWidth = container ? container.clientWidth - 20 : window.innerWidth - 20;
+            if (desiredWidth <= 0) desiredWidth = window.innerWidth - 20;
             const viewport = page.getViewport({ scale: 1 });
             const scale = desiredWidth / viewport.width;
             const scaledViewport = page.getViewport({ scale: scale });
@@ -431,11 +433,11 @@ document.addEventListener('alpine:init', () => {
                 
                 this.pdfState.numPages = this.pdfState.pdfDoc.numPages;
                 this.viewer.loading = false; // Hide spinner
-                
-                // Render first page immediately
-                this.$nextTick(() => {
+
+                // Wait 50ms for the DOM to update (removes the "hidden" class)
+                setTimeout(() => {
                     this.renderPage(1);
-                });
+                }, 50);
 
             } catch (error) {
                 console.error('Error loading PDF:', error);
