@@ -516,6 +516,9 @@
             <button @click="nextPage()" class="text-slate-300 hover:text-white disabled:opacity-30 p-2" :disabled="pdfState.pageNum >= pdfState.numPages">
                 <i class="fa-solid fa-chevron-right"></i>
             </button>
+            <button @click="toggleViewerFullscreen()" class="text-blue-400 hover:text-white p-2 ml-2 border-l border-slate-700 pl-4">
+            <i class="fa-solid fa-expand"></i>
+        </button>
         </div>
 
         <button @click="viewer.active = false" class="text-slate-400 hover:text-white px-2">
