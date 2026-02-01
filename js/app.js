@@ -200,73 +200,64 @@ document.addEventListener('alpine:init', () => {
         // --- PDF.JS RENDERING ENGINE ---
     
 renderPage(num) {
-            // 1. Prevent concurrent rendering
-            if (this.pdfState.pageRendering) {
-                this.pdfState.pageNumPending = num;
-                return;
+    if (this.pdfState.pageRendering) {
+        this.pdfState.pageNumPending = num;
+        return;
+    }
+    
+    // *** Use the non-reactive rawPdfDoc ***
+    if (!rawPdfDoc) {
+        console.error("No PDF document loaded");
+        return;
+    }
+
+    this.pdfState.pageRendering = true;
+
+    rawPdfDoc.getPage(num).then((page) => {
+        const canvas = document.getElementById('the-canvas');
+        if (!canvas) {
+            console.error("Canvas not found");
+            this.pdfState.pageRendering = false;
+            return;
+        }
+        
+        const ctx = canvas.getContext('2d');
+        const container = document.getElementById('pdf-container');
+        let clientWidth = container?.clientWidth || 800;
+        if (clientWidth < 320) clientWidth = Math.min(window.innerWidth - 40, 800);
+        const desiredWidth = clientWidth - 30;
+
+        const viewport = page.getViewport({ scale: 1 });
+        const scale = desiredWidth / viewport.width;
+        const scaledViewport = page.getViewport({ scale: scale });
+
+        canvas.width = scaledViewport.width;
+        canvas.height = scaledViewport.height;
+
+        const renderContext = {
+            canvasContext: ctx,
+            viewport: scaledViewport
+        };
+
+        page.render(renderContext).promise.then(() => {
+            console.log("Page", num, "rendered");
+            this.pdfState.pageRendering = false;
+            if (this.pdfState.pageNumPending !== null) {
+                this.renderPage(this.pdfState.pageNumPending);
+                this.pdfState.pageNumPending = null;
             }
+        }).catch(err => {
+            console.error("Render error:", err);
+            this.pdfState.pageRendering = false;
+        });
+    }).catch(err => {
+        console.error("GetPage error:", err);
+        this.pdfState.pageRendering = false;
+    });
 
-            // 2. Ensure PDF is loaded (rawPdfDoc is the non-reactive global var)
-            if (typeof rawPdfDoc === 'undefined' || !rawPdfDoc) return;
+    this.pdfState.pageNum = num;
+},
 
-            this.pdfState.pageRendering = true;
-
-            // 3. Get the page
-            rawPdfDoc.getPage(num).then((page) => {
-                const canvas = document.getElementById('the-canvas');
-                const ctx = canvas.getContext('2d');
-                const container = document.getElementById('pdf-container');
-                
-                // Get available width
-                const containerWidth = container.clientWidth - 20; // -20 for padding
-                
-                // --- PERFORMANCE FIX START ---
-                // We cap the Device Pixel Ratio (DPR) at 2.0.
-                // High-end phones often have DPR of 3.0 or 4.0, which forces the browser
-                // to render 9x to 16x more pixels than necessary, causing lag.
-                // 2.0 is "Retina" quality and is visually indistinguishable on phone screens.
-                const dpr = Math.min(window.devicePixelRatio || 1, 2); 
-                // --- PERFORMANCE FIX END ---
-
-                // Calculate visual scale
-                const unscaledViewport = page.getViewport({ scale: 1 });
-                const scale = containerWidth / unscaledViewport.width;
-
-                // Create the viewport at the Optimized Resolution
-                const viewport = page.getViewport({ scale: scale * dpr });
-
-                // Set actual canvas memory size (High Res / Capped)
-                canvas.width = Math.floor(viewport.width);
-                canvas.height = Math.floor(viewport.height);
-
-                // Force CSS to match the container size (Visual Size)
-                canvas.style.width = `${Math.floor(viewport.width / dpr)}px`;
-                canvas.style.height = `${Math.floor(viewport.height / dpr)}px`;
-
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport,
-                    // Transform: Scale the drawing context to match the high-res backing store
-                    transform: [dpr, 0, 0, dpr, 0, 0] 
-                };
-
-                // Execute Render
-                const renderTask = page.render(renderContext);
-
-                renderTask.promise.then(() => {
-                    this.pdfState.pageRendering = false;
-                    if (this.pdfState.pageNumPending !== null) {
-                        this.renderPage(this.pdfState.pageNumPending);
-                        this.pdfState.pageNumPending = null;
-                    }
-                });
-            }).catch(err => {
-                console.error("Render error:", err);
-                this.pdfState.pageRendering = false;
-            });
-
-            this.pdfState.pageNum = num;
-        },
         
     queueRenderPage(num) {
         if (this.pdfState.pageRendering) {
@@ -2246,30 +2237,6 @@ toggleVideoMute() {
             
             this.videoMuted = true;
             this.videoVolume = 0;
-        }
-    }
-},
-
-        // js/app.js - Add this method
-
-toggleViewerFullscreen() {
-    // We target the PDF Container specifically
-    const el = document.getElementById('pdf-container'); 
-    
-    if (!document.fullscreenElement) {
-        // Enter Fullscreen
-        if (el.requestFullscreen) {
-            el.requestFullscreen().then(() => {
-                // Optional: Force a re-render after a slight delay to adjust width
-                setTimeout(() => this.renderPage(this.pdfState.pageNum), 200);
-            });
-        }
-    } else {
-        // Exit Fullscreen
-        if (document.exitFullscreen) {
-            document.exitFullscreen().then(() => {
-                setTimeout(() => this.renderPage(this.pdfState.pageNum), 200);
-            });
         }
     }
 },
