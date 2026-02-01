@@ -4,6 +4,53 @@
 document.addEventListener('alpine:init', () => {
     Alpine.data('toolkit', () => ({
 
+
+            // --- NEW: BOOK CONFIGURATION ---
+    bookConfig: {
+    title: "The Bilingual Executive",
+    subtitle: "Surviving the Fintech Tsunami",
+    description: "The definitive playbook for banking leaders. Learn to bridge the gap between legacy banking (Risk, Capital, Liquidity) and modern technology (Cloud, AI, APIs).",
+    amazonLink: "https://www.amazon.com/dp/YOUR_BOOK_ID", // UPDATE THIS WITH YOUR LINK
+    coverImage: "assets/book-cover.png",
+    
+    // --- 21-PAGE PDF PATH ---
+    pdfPath: "assets/book_summary.pdf", 
+    // ------------------------
+
+    activeSummarySection: 0,
+    summary: [
+        {
+            title: "INTRODUCTION: The Translation Gap",
+            content: "The modern bank is paralyzed not by technology, but by language. The 'Suits' (Business) and the 'Hoodies' (Tech) are speaking different languages. The Suits optimize for Stability and EBITDA. The Hoodies optimize for Velocity and Agility. This book provides the dictionary to align them."
+        },
+        {
+            title: "PART 1: THE BURNING PLATFORM",
+            content: "Why the 'Universal Bank' model is dead. We explore the 'Fintech Tsunami'—the unbundling of banking services by agile competitors. The core argument: Digitizing a bad process just creates a faster bad process. You cannot 'buy' transformation; you have to build it."
+        },
+        {
+            title: "Chapter 1: The Fintech Tsunami",
+            content: "Deep dive into how Neobanks utilize 'Interchange Zero' strategies to acquire customers cheaply. Traditional banks rely on 'lazy loyalty' which is eroding fast. Action: Identify your 'Dumb Pipe' risk score."
+        },
+        {
+            title: "Chapter 2: Data as a Liability",
+            content: "Most banks treat data like oil (hoarding it). They should treat it like water (it must flow). We discuss the 'Data Swamp' problem and why monolithic data warehouses fail. Introduction to 'Data Mesh' and domain-oriented ownership."
+        },
+        {
+            title: "PART 2: THE FRAMEWORK",
+            content: "Moving from Project to Product. The 'Project' model (Funding -> Build -> Disband) kills knowledge. The 'Product' model (Long-lived teams -> Iterate -> Own) builds assets. We outline the 'Metro Map' strategy for gradual modernization."
+        },
+        {
+            title: "Chapter 5: Governance as Code",
+            content: "The bottleneck of manual compliance. How to move from 'Gatekeepers' (manual review boards) to 'Guardrails' (automated policy checks in the CI/CD pipeline). If it's not automated, it's not governed."
+        },
+        {
+            title: "PART 3: EXECUTION",
+            content: "The Day 1 Playbook. How to launch a 'Lighthouse Pilot' that actually scales. We cover the specific rituals needed to change culture: changing the questions Board Directors ask, killing 'Zombie Projects', and hiring 'Missionaries' instead of 'Mercenaries'."
+        }
+    ]
+},
+
+
         // ==========================================
         // ACADEMY CONFIG & STATE
         // ==========================================
@@ -442,7 +489,48 @@ renderPage(num) {
         this.viewer.loading = false;
     }
 },
+
+
+
+        async readBookPdf() {
+    // 1. Setup Viewer State
+    this.viewer.title = "Executive Summary (21 Pages)";
+    this.viewer.type = 'pdf';
+    this.viewer.active = true;
+    this.viewer.loading = true;
     
+    // 2. Reset PDF State
+    this.pdfState.pageNum = 1;
+    this.pdfState.pageRendering = false;
+    this.pdfState.pageNumPending = null;
+
+    // 3. Load the File
+    const url = this.bookConfig.pdfPath;
+    console.log("Opening Book Summary:", url);
+
+    try {
+        const loadingTask = pdfjsLib.getDocument(url);
+        
+        // Use the global rawPdfDoc variable you defined in viewPdf
+        rawPdfDoc = await loadingTask.promise;
+        
+        this.pdfState.numPages = rawPdfDoc.numPages;
+        this.viewer.loading = false;
+
+        // 4. Render First Page
+        this.$nextTick(() => {
+            setTimeout(() => this.renderPage(1), 100);
+        });
+
+    } catch (error) {
+        console.error('Error loading Book PDF:', error);
+        alert("Could not load PDF. Please ensure 'assets/book_summary.pdf' exists.");
+        this.viewer.active = false;
+        this.viewer.loading = false;
+    }
+},
+
+        
         
         // Helper for images (Mind Map / Infographic)
         async viewImage(chapter, type) {
