@@ -200,65 +200,73 @@ document.addEventListener('alpine:init', () => {
         // --- PDF.JS RENDERING ENGINE ---
     
 renderPage(num) {
-    if (this.pdfState.pageRendering) {
-        this.pdfState.pageNumPending = num;
-        return;
-    }
-
-    if (!rawPdfDoc) return;
-
-    this.pdfState.pageRendering = true;
-
-    rawPdfDoc.getPage(num).then((page) => {
-        const canvas = document.getElementById('the-canvas');
-        const ctx = canvas.getContext('2d');
-        const container = document.getElementById('pdf-container');
-        
-        // 1. Get the container width (the visual space available)
-        const containerWidth = container.clientWidth - 20; // -20 for padding
-        
-        // 2. Get the device pixel ratio (2 or 3 on mobiles, 1 on standard monitors)
-        const dpr = window.devicePixelRatio || 1;
-
-        // 3. Calculate scale to fit the container width
-        const unscaledViewport = page.getViewport({ scale: 1 });
-        const scale = containerWidth / unscaledViewport.width;
-
-        // 4. Create the viewport at the High-DPI resolution
-        const viewport = page.getViewport({ scale: scale * dpr });
-
-        // 5. Set the actual canvas dimensions (High Res)
-        canvas.width = Math.floor(viewport.width);
-        canvas.height = Math.floor(viewport.height);
-
-        // 6. Force the CSS dimensions to match the container (Visual Size)
-        canvas.style.width = `${Math.floor(viewport.width / dpr)}px`;
-        canvas.style.height = `${Math.floor(viewport.height / dpr)}px`;
-
-        const renderContext = {
-            canvasContext: ctx,
-            viewport: viewport,
-            // This transform fixes the scaling for the High DPI context
-            transform: [dpr, 0, 0, dpr, 0, 0] 
-        };
-
-        // Render
-        const renderTask = page.render(renderContext);
-
-        renderTask.promise.then(() => {
-            this.pdfState.pageRendering = false;
-            if (this.pdfState.pageNumPending !== null) {
-                this.renderPage(this.pdfState.pageNumPending);
-                this.pdfState.pageNumPending = null;
+            // 1. Prevent concurrent rendering
+            if (this.pdfState.pageRendering) {
+                this.pdfState.pageNumPending = num;
+                return;
             }
-        });
-    }).catch(err => {
-        console.error("Render error:", err);
-        this.pdfState.pageRendering = false;
-    });
 
-    this.pdfState.pageNum = num;
-},
+            // 2. Ensure PDF is loaded (rawPdfDoc is the non-reactive global var)
+            if (typeof rawPdfDoc === 'undefined' || !rawPdfDoc) return;
+
+            this.pdfState.pageRendering = true;
+
+            // 3. Get the page
+            rawPdfDoc.getPage(num).then((page) => {
+                const canvas = document.getElementById('the-canvas');
+                const ctx = canvas.getContext('2d');
+                const container = document.getElementById('pdf-container');
+                
+                // Get available width
+                const containerWidth = container.clientWidth - 20; // -20 for padding
+                
+                // --- PERFORMANCE FIX START ---
+                // We cap the Device Pixel Ratio (DPR) at 2.0.
+                // High-end phones often have DPR of 3.0 or 4.0, which forces the browser
+                // to render 9x to 16x more pixels than necessary, causing lag.
+                // 2.0 is "Retina" quality and is visually indistinguishable on phone screens.
+                const dpr = Math.min(window.devicePixelRatio || 1, 2); 
+                // --- PERFORMANCE FIX END ---
+
+                // Calculate visual scale
+                const unscaledViewport = page.getViewport({ scale: 1 });
+                const scale = containerWidth / unscaledViewport.width;
+
+                // Create the viewport at the Optimized Resolution
+                const viewport = page.getViewport({ scale: scale * dpr });
+
+                // Set actual canvas memory size (High Res / Capped)
+                canvas.width = Math.floor(viewport.width);
+                canvas.height = Math.floor(viewport.height);
+
+                // Force CSS to match the container size (Visual Size)
+                canvas.style.width = `${Math.floor(viewport.width / dpr)}px`;
+                canvas.style.height = `${Math.floor(viewport.height / dpr)}px`;
+
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport,
+                    // Transform: Scale the drawing context to match the high-res backing store
+                    transform: [dpr, 0, 0, dpr, 0, 0] 
+                };
+
+                // Execute Render
+                const renderTask = page.render(renderContext);
+
+                renderTask.promise.then(() => {
+                    this.pdfState.pageRendering = false;
+                    if (this.pdfState.pageNumPending !== null) {
+                        this.renderPage(this.pdfState.pageNumPending);
+                        this.pdfState.pageNumPending = null;
+                    }
+                });
+            }).catch(err => {
+                console.error("Render error:", err);
+                this.pdfState.pageRendering = false;
+            });
+
+            this.pdfState.pageNum = num;
+        },
         
     queueRenderPage(num) {
         if (this.pdfState.pageRendering) {
