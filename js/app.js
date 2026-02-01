@@ -10,7 +10,7 @@ document.addEventListener('alpine:init', () => {
     title: "The Bilingual Executive",
     subtitle: "Surviving the Fintech Tsunami",
     description: "The definitive playbook for banking leaders. Learn to bridge the gap between legacy banking (Risk, Capital, Liquidity) and modern technology (Cloud, AI, APIs).",
-    amazonLink: "https://www.amazon.com/dp/YOUR_BOOK_ID", // UPDATE THIS WITH YOUR LINK
+    amazonLink: "https://www.amazon.com/dp/B0GKWZKFXC", // UPDATE THIS WITH YOUR LINK
     coverImage: "assets/book-cover.png",
     
     // --- 21-PAGE PDF PATH ---
