@@ -6399,6 +6399,23 @@ END-IF."></textarea>
             <div x-show="viewMode === 'academy'" class="absolute -bottom-1 w-1 h-1 bg-white rounded-full shadow-glow"></div>
         </button>
 
+                <!--  🔴 PASTE THE NEW BOOK BUTTON HERE 🔴  -->
+        <button @click="viewMode = 'ebook'; window.scrollTo({ top: 0, behavior: 'smooth' })"
+                class="relative w-16 flex flex-col items-center justify-center gap-1 group transition-all duration-300"
+                :class="viewMode === 'ebook' ? 'text-indigo-400' : 'text-slate-500 hover:text-slate-300'">
+            
+            <div class="w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300"
+                 :class="viewMode === 'ebook' ? 'bg-indigo-900/20 scale-100' : 'bg-transparent scale-90'">
+                <i class="fa-solid fa-book-open text-lg"></i>
+            </div>
+            
+            <span class="text-[9px] font-bold uppercase tracking-widest">Book</span>
+            
+            <!-- Active Dot -->
+            <div x-show="viewMode === 'ebook'" class="absolute -bottom-1 w-1 h-1 bg-indigo-400 rounded-full shadow-glow"></div>
+        </button>
+
+
         <!-- 2. RADAR BUTTON -->
         <button @click="viewMode = 'tools'; currentGroup = 'radar'; currentTab = 'dashboard'; window.scrollTo({ top: 0, behavior: 'smooth' })"
                 class="relative w-16 flex flex-col items-center justify-center gap-1 group transition-all duration-300"
